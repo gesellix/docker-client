@@ -1,0 +1,10 @@
+repositories {
+  maven { url 'http://kt3k.github.io/repository/maven/release' }
+  mavenLocal()
+  mavenCentral()
+}
+
+dependencies {
+  classpath 'net.saliman:gradle-cobertura-plugin:2.0.0'
+  classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:0.4.0'
+}

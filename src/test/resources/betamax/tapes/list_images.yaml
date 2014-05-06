@@ -1,0 +1,21 @@
+!tape
+name: list images
+interactions:
+- recorded: 2014-04-28T21:55:37.538Z
+  request:
+    method: GET
+    uri: http://172.17.42.1:4243/images/json?all=0
+    headers:
+      Accept: '*/*'
+      Accept-Encoding: gzip,deflate
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Mon, 28 Apr 2014 21:55:37 GMT
+      X-Betamax: PLAY
+    body: |-
+      [{"Created":1371157430,"Id":"511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158","ParentId":"","RepoTags":["scratch:latest","yetAnotherTag:latest"],"Size":0,"VirtualSize":0}
+      ]

@@ -1,0 +1,21 @@
+!tape
+name: pull image
+interactions:
+- recorded: 2014-04-27T22:04:16.753Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/images/create?fromImage=scratch
+    headers:
+      Accept: '*/*'
+      Accept-Encoding: gzip,deflate
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Sun, 27 Apr 2014 22:04:13 GMT
+    body: "{\"status\":\"Pulling repository scratch\"}\r\n{\"status\":\"Pulling image (latest) from scratch\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling image (latest) from scratch, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
+      progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
+      :{},\"id\":\"511136ea3c5a\"}"
