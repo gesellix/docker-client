@@ -22,7 +22,7 @@ class DockerClientImplSpec extends Specification {
 
   def setup() {
     dockerClient = new DockerClientImpl()
-    BetamaxRoutePlanner.configure(dockerClient.client.client)
+    BetamaxRoutePlanner.configure(dockerClient.delegate.client)
   }
 
   @Betamax(tape = 'auth', match = [MatchRule.method, MatchRule.path])
@@ -166,6 +166,9 @@ class DockerClientImplSpec extends Specification {
 
     then:
     containerStatus.status == 204
+
+    cleanup:
+    dockerClient.stop(containerStatus.container.Id)
   }
 
   @Betamax(tape = 'stop container', match = [MatchRule.method, MatchRule.path])
@@ -180,5 +183,20 @@ class DockerClientImplSpec extends Specification {
 
     then:
     result == 204
+  }
+
+  @Betamax(tape = 'rm container', match = [MatchRule.method, MatchRule.path])
+  def "rm container"() {
+    given:
+    def imageId = dockerClient.pull("busybox")
+    def containerConfig = ["Cmd"  : ["true"],
+                           "Image": imageId]
+    def containerId = dockerClient.createContainer(containerConfig).Id
+
+    when:
+    def rmContainerResult = dockerClient.rm(containerId)
+
+    then:
+    rmContainerResult == 204
   }
 }

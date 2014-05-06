@@ -1,7 +1,7 @@
 !tape
-name: run container
+name: rm container
 interactions:
-- recorded: 2014-05-06T09:53:43.256Z
+- recorded: 2014-05-06T10:15:39.817Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=busybox
@@ -14,56 +14,39 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Tue, 06 May 2014 09:53:41 GMT
+      Date: Tue, 06 May 2014 10:15:37 GMT
     body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"2d8e5b282c81\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
       progressDetail\":{},\"id\":\"2d8e5b282c81\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"2d8e5b282c81\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
       :{},\"id\":\"6c991eb93460\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"9f4e93171ec5\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"2d8e5b282c81\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
       2d8e5b282c81\"}"
-- recorded: 2014-05-06T09:53:43.285Z
+- recorded: 2014-05-06T10:15:39.847Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create
     headers:
       Accept: '*/*'
-      Content-Length: '304'
+      Content-Length: '39'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
-    body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"busybox","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":{"DisableNetwork":false}}'
+    body: '{"Cmd":["true"],"Image":"2d8e5b282c81"}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Tue, 06 May 2014 09:53:43 GMT
+      Date: Tue, 06 May 2014 10:15:39 GMT
     body: |
-      {"Id":"851b1002213886e0a6aaf934e617baeb6cf303014087710815706c1a02ea1475","Warnings":null}
-- recorded: 2014-05-06T09:53:43.298Z
+      {"Id":"cab3b187c9ae1e4482f33106fcff7a5f1514b38478b3972e145758282997a2ba","Warnings":null}
+- recorded: 2014-05-06T10:15:39.863Z
   request:
-    method: POST
-    uri: http://172.17.42.1:4243/containers/851b1002213886e0a6aaf934e617baeb6cf303014087710815706c1a02ea1475/start
+    method: DELETE
+    uri: http://172.17.42.1:4243/containers/cab3b187c9ae1e4482f33106fcff7a5f1514b38478b3972e145758282997a2ba
     headers:
       Accept: '*/*'
-      Content-Length: '2'
-      Content-Type: application/json
-      Host: 172.17.42.1:4243
-      Proxy-Connection: Keep-Alive
-    body: '{}'
-  response:
-    status: 204
-    headers:
-      Content-Type: text/plain; charset=utf-8
-      Date: Tue, 06 May 2014 09:53:43 GMT
-- recorded: 2014-05-06T10:17:22.350Z
-  request:
-    method: POST
-    uri: http://172.17.42.1:4243/containers/851b1002213886e0a6aaf934e617baeb6cf303014087710815706c1a02ea1475/stop
-    headers:
-      Accept: '*/*'
-      Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
   response:
     status: 204
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Tue, 06 May 2014 10:17:22 GMT
+      Date: Tue, 06 May 2014 10:15:39 GMT

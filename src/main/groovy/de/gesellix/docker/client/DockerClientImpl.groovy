@@ -2,8 +2,8 @@ package de.gesellix.docker.client
 
 import groovy.json.JsonSlurper
 import groovyx.net.http.ContentType
-import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.HttpResponseDecorator
+import groovyx.net.http.RESTClient
 import org.apache.commons.io.IOUtils
 import org.codehaus.groovy.runtime.MethodClosure
 import org.slf4j.Logger
@@ -15,21 +15,21 @@ class DockerClientImpl implements DockerClient {
 
   def hostname
   def port
-  def HTTPBuilder client
+  def delegate
 
   DockerClientImpl(hostname = "172.17.42.1", port = 4243) {
     this.hostname = hostname
     this.port = port
 
     def dockerUri = "http://$hostname:$port/"
-    this.client = new HTTPBuilder(dockerUri)
+    this.delegate = new RESTClient(dockerUri)
     logger.info "using docker at '${dockerUri}'"
   }
 
   @Override
   def auth(def authDetails) {
     logger.info "auth..."
-    client.post([path              : "/auth",
+    delegate.post([path: "/auth",
                  body              : authDetails,
                  requestContentType: ContentType.JSON
     ]) { response ->
@@ -42,8 +42,8 @@ class DockerClientImpl implements DockerClient {
   def build(InputStream buildContext) {
     logger.info "build image..."
     def responseHandler = new ChunkedResponseHandler()
-    client.handler.'200' = new MethodClosure(responseHandler, "handleResponse")
-    client.post([path              : "/build",
+    delegate.handler.'200' = new MethodClosure(responseHandler, "handleResponse")
+    delegate.post([path: "/build",
                  body              : IOUtils.toByteArray(buildContext),
                  requestContentType: ContentType.BINARY])
 
@@ -55,7 +55,7 @@ class DockerClientImpl implements DockerClient {
   @Override
   def tag(imageId, repositoryName) {
     logger.info "tag image"
-    client.post([path : "/images/${imageId}/tag".toString(),
+    delegate.post([path: "/images/${imageId}/tag".toString(),
                  query: [repo : repositoryName,
                          force: 0]]) { response ->
       logger.info "${response.statusLine}"
@@ -68,8 +68,8 @@ class DockerClientImpl implements DockerClient {
     logger.info "push image '${repositoryName}'"
 
     def responseHandler = new ChunkedResponseHandler()
-    client.handler.'200' = new MethodClosure(responseHandler, "handleResponse")
-    client.post([path   : "/images/${repositoryName}/push".toString(),
+    delegate.handler.'200' = new MethodClosure(responseHandler, "handleResponse")
+    delegate.post([path: "/images/${repositoryName}/push".toString(),
                  headers: ["X-Registry-Auth": authBase64Encoded]])
 
     def lastResponseDetail = responseHandler.lastResponseDetail
@@ -82,8 +82,8 @@ class DockerClientImpl implements DockerClient {
     logger.info "pull image '${imageName}'..."
 
     def responseHandler = new ChunkedResponseHandler()
-    client.handler.'200' = new MethodClosure(responseHandler, "handleResponse")
-    client.post([path : "/images/create",
+    delegate.handler.'200' = new MethodClosure(responseHandler, "handleResponse")
+    delegate.post([path: "/images/create",
                  query: [fromImage: imageName]])
 
     def lastResponseDetail = responseHandler.lastResponseDetail
@@ -94,8 +94,8 @@ class DockerClientImpl implements DockerClient {
   @Override
   def createContainer(containerConfig) {
     logger.info "create container..."
-    client.post([path              : "/containers/create".toString(),
-                 body: containerConfig,
+    delegate.post([path: "/containers/create".toString(),
+                   body: containerConfig,
                  requestContentType: ContentType.JSON]) { response, reader ->
       logger.info "${response.statusLine}"
       return reader
@@ -105,7 +105,7 @@ class DockerClientImpl implements DockerClient {
   @Override
   def startContainer(containerId) {
     logger.info "start container..."
-    client.post([path              : "/containers/${containerId}/start".toString(),
+    delegate.post([path: "/containers/${containerId}/start".toString(),
                  body              : [:],
                  requestContentType: ContentType.JSON]) { response, reader ->
       logger.info "${response.statusLine}"
@@ -164,7 +164,7 @@ class DockerClientImpl implements DockerClient {
   @Override
   def stop(containerId) {
     logger.info "stop container"
-    client.post([path: "/containers/${containerId}/stop".toString()]) { response ->
+    delegate.post([path: "/containers/${containerId}/stop".toString()]) { response ->
       logger.info "${response.statusLine}"
       return response.statusLine.statusCode
     }
@@ -173,6 +173,9 @@ class DockerClientImpl implements DockerClient {
   @Override
   def rm(containerId) {
     logger.info "rm container"
+    def response = delegate.delete([path: "/containers/${containerId}".toString()])
+    logger.info "${response.statusLine}"
+    return response.statusLine.statusCode
   }
 
   @Override
@@ -184,8 +187,8 @@ class DockerClientImpl implements DockerClient {
   def ps() {
     logger.info "list containers"
     def responseHandler = new ChunkedResponseHandler()
-    client.handler.'200' = new MethodClosure(responseHandler, "handleResponse")
-    client.get([path : "/containers/json",
+    delegate.handler.'200' = new MethodClosure(responseHandler, "handleResponse")
+    delegate.get([path: "/containers/json",
                 query: [all : true,
                         size: true]])
 
@@ -198,7 +201,7 @@ class DockerClientImpl implements DockerClient {
   @Override
   def images() {
     logger.info "list images"
-    client.get([path : "/images/json",
+    delegate.get([path: "/images/json",
                 query: [all: 0]]) { response, reader ->
       logger.info "${response.statusLine}"
       return reader
