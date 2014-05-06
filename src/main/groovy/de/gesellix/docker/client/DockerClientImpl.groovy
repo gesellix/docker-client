@@ -154,16 +154,24 @@ class DockerClientImpl implements DockerClient {
     pull(fromImage)
 
     def containerInfo = createContainer(containerConfig)
-    startContainer(containerInfo.Id)
+    def result = startContainer(containerInfo.Id)
+    return [
+        container: containerInfo,
+        status   : result
+    ]
   }
 
   @Override
-  def stop() {
+  def stop(containerId) {
     logger.info "stop container"
+    client.post([path: "/containers/${containerId}/stop".toString()]) { response ->
+      logger.info "${response.statusLine}"
+      return response.statusLine.statusCode
+    }
   }
 
   @Override
-  def rm() {
+  def rm(containerId) {
     logger.info "rm container"
   }
 

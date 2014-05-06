@@ -22,9 +22,9 @@ interface DockerClient {
 
   def run(fromImage, cmds)
 
-  def stop()
+  def stop(containerId)
 
-  def rm()
+  def rm(containerId)
 
   def rmi()
 }
