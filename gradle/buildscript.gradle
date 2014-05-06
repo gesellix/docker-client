@@ -1,5 +1,6 @@
 repositories {
   maven { url 'http://kt3k.github.io/repository/maven/release' }
+  maven { url 'http://jcenter.bintray.com' }
   mavenLocal()
   mavenCentral()
 }
@@ -7,4 +8,5 @@ repositories {
 dependencies {
   classpath 'net.saliman:gradle-cobertura-plugin:2.0.0'
   classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:0.4.0'
+  classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.3'
 }
