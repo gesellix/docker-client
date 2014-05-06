@@ -91,8 +91,10 @@ class DockerClientImplSpec extends Specification {
     given:
     def imageId = dockerClient.pull("busybox")
     def repositoryName = "list_containers"
+    def containerConfig = ["Cmd"  : ["true || false"],
+                           "Image": "list_containers"]
     dockerClient.tag(imageId, repositoryName)
-    def containerId = dockerClient.createContainer("list_containers", ["true || false"]).Id
+    def containerId = dockerClient.createContainer(containerConfig).Id
     dockerClient.startContainer(containerId)
 
     when:
@@ -128,24 +130,41 @@ class DockerClientImplSpec extends Specification {
   def "create container"() {
     given:
     def imageId = dockerClient.pull("busybox")
+    def containerConfig = ["Cmd"  : ["true"],
+                           "Image": imageId]
 
     when:
-    def containerCreateInfo = dockerClient.createContainer(imageId, ["true"])
+    def containerInfo = dockerClient.createContainer(containerConfig)
 
     then:
-    containerCreateInfo.Id == "5f3510d90e8dea56b8a80f70fad75330dad0aa4d4aea5b2b2ed16f5f766925fd"
+    containerInfo.Id == "5f3510d90e8dea56b8a80f70fad75330dad0aa4d4aea5b2b2ed16f5f766925fd"
   }
 
   @Betamax(tape = 'start container', match = [MatchRule.method, MatchRule.path])
   def "start container"() {
     given:
     def imageId = dockerClient.pull("busybox")
-    def containerId = dockerClient.createContainer(imageId, ["true"]).Id
+    def containerConfig = ["Cmd"  : ["true"],
+                           "Image": imageId]
+    def containerId = dockerClient.createContainer(containerConfig).Id
 
     when:
     def startContainerResult = dockerClient.startContainer(containerId)
 
     then:
     startContainerResult == 204
+  }
+
+  @Betamax(tape = 'run container', match = [MatchRule.method, MatchRule.path])
+  def "run container"() {
+    given:
+    def imageName = "busybox"
+    def cmds = ["sh", "-c", "ping 127.0.0.1"]
+
+    when:
+    def result = dockerClient.run(imageName, cmds)
+
+    then:
+    result == 204
   }
 }

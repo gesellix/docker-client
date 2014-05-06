@@ -92,30 +92,10 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def createContainer(fromImage, cmd) {
+  def createContainer(containerConfig) {
     logger.info "create container..."
     client.post([path              : "/containers/create".toString(),
-                 body              : ["Hostname"      : "",
-                                      "User"          : "",
-                                      "Memory"        : 0,
-                                      "MemorySwap"    : 0,
-                                      "AttachStdin"   : false,
-                                      "AttachStdout"  : true,
-                                      "AttachStderr"  : true,
-                                      "PortSpecs"     : null,
-                                      "Tty"           : false,
-                                      "OpenStdin"     : false,
-                                      "StdinOnce"     : false,
-                                      "Env"           : null,
-                                      "Cmd"           : cmd,
-                                      "Image"         : fromImage,
-                                      "Volumes"       : [],
-                                      "WorkingDir"    : "",
-                                      "DisableNetwork": false,
-                                      "ExposedPorts"  : [
-                                          "DisableNetwork": false
-                                      ]
-                 ],
+                 body: containerConfig,
                  requestContentType: ContentType.JSON]) { response, reader ->
       logger.info "${response.statusLine}"
       return reader
@@ -134,6 +114,50 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
+  def run(fromImage, cmds) {
+    logger.info "run container"
+/*
+    http://docs.docker.io/reference/api/docker_remote_api_v1.10/#3-going-further
+
+    Here are the steps of ‘docker run’ :
+      Create the container
+      If the status code is 404, it means the image doesn’t exist:
+        - Try to pull it
+        - Then retry to create the container
+      Start the container
+      If you are not in detached mode:
+        - Attach to the container, using logs=1 (to have stdout and stderr from the container’s start) and stream=1
+      If in detached mode or only stdin is attached:
+        - Display the container’s id
+*/
+    def containerConfig = ["Hostname"      : "",
+                           "User"          : "",
+                           "Memory"        : 0,
+                           "MemorySwap"    : 0,
+                           "AttachStdin"   : false,
+                           "AttachStdout"  : true,
+                           "AttachStderr"  : true,
+                           "PortSpecs"     : null,
+                           "Tty"           : false,
+                           "OpenStdin"     : false,
+                           "StdinOnce"     : false,
+                           "Env"           : null,
+                           "Cmd"           : cmds,
+                           "Image"         : fromImage,
+                           "Volumes"       : [],
+                           "WorkingDir"    : "",
+                           "DisableNetwork": false,
+                           "ExposedPorts"  : [
+                               "DisableNetwork": false
+                           ]]
+
+    pull(fromImage)
+
+    def containerInfo = createContainer(containerConfig)
+    startContainer(containerInfo.Id)
+  }
+
+  @Override
   def stop() {
     logger.info "stop container"
   }
@@ -146,21 +170,6 @@ class DockerClientImpl implements DockerClient {
   @Override
   def rmi() {
     logger.info "rm image"
-  }
-
-  @Override
-  def run() {
-    logger.info "run container"
-/*
-    http://docs.docker.io/reference/api/docker_remote_api_v1.10/#3-going-further
-
-    Here are the steps of ‘docker run’ :
-      Create the container
-      If the status code is 404, it means the image doesn’t exists: : - Try to pull it - Then retry to create the container
-      Start the container
-      If you are not in detached mode: : - Attach to the container, using logs=1 (to have stdout and stderr from the container’s start) and stream=1
-      If in detached mode or only stdin is attached: : - Display the container’s id
-*/
   }
 
   @Override
