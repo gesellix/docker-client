@@ -8,4 +8,22 @@ A Docker client written in Groovy
 
 ## Usage
 
+For use in Gradle, add the bintray repository first:
+
+```
+repositories {
+  maven { url 'http://dl.bintray.com/gesellix/docker-utils' }
+}
+```
+
+Then, you need to add the dependency:
+
+```
+dependencies {
+  compile 'de.gesellix:docker-client:1'
+}
+```
+
+Since Gradle uses an older Groovy release as the Docker client, you need to manually hack the classpath. You can find an example at the [gradle-docker-plugin](https://github.com/gesellix-docker/gradle-docker-plugin/blob/master/build.gradle).
+
 The tests in `DockerClientImplSpec` should give you an idea how to use the docker-client.
