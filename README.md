@@ -24,6 +24,4 @@ dependencies {
 }
 ```
 
-Since Gradle uses an older Groovy release as the Docker client, you need to manually hack the classpath. You can find an example at the [gradle-docker-plugin](https://github.com/gesellix-docker/gradle-docker-plugin/blob/master/build.gradle).
-
 The tests in `DockerClientImplSpec` should give you an idea how to use the docker-client.
