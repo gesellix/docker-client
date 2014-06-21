@@ -29,12 +29,12 @@ cobertura.coverageSourceDirs = sourceSets.main.groovy.srcDirs
 
 def dependencyVersions = [
     'commons-lang:commons-lang'                            : '2.6',
-    'commons-logging:commons-logging'     : '1.1.3',
-    'org.apache.httpcomponents:httpclient': '4.3',
-    'org.codehaus.groovy:groovy-all'      : '2.3.2',
+    'commons-logging:commons-logging'                      : '1.1.3',
+    'org.apache.httpcomponents:httpclient'                 : '4.3',
+    'org.codehaus.groovy:groovy-all'                       : '2.3.2',
     'org.codehaus.groovy.modules.http-builder:http-builder': '0.7.1',
     'org.hamcrest:hamcrest-core'                           : '1.3',
-    'org.slf4j:slf4j-api'                 : '1.7.7',
+    'org.slf4j:slf4j-api'                                  : '1.7.7',
     'xerces:xmlParserAPIs'                                 : '2.6.2',
     'xerces:xercesImpl'                                    : '2.9.1',
     'xml-apis:xml-apis'                                    : '2.0.2'
@@ -42,7 +42,7 @@ def dependencyVersions = [
 
 dependencies {
   compile 'org.codehaus.groovy:groovy-all:2.3.2'
-  compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.2'
+  compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
 
   compile 'org.apache.commons:commons-compress:1.8.1'
   compile 'commons-io:commons-io:2.4'
