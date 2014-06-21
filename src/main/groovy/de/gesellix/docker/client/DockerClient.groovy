@@ -22,7 +22,7 @@ interface DockerClient {
 
   def startContainer(containerId)
 
-  def run(fromImage, cmds)
+  def run(fromImage, containerConfig)
 
   def stop(containerId)
 

@@ -36,9 +36,9 @@ class DockerClientImpl implements DockerClient {
   @Override
   def auth(def authDetails) {
     logger.info "auth..."
-    getDelegate().post([path: "/auth",
-                   body              : authDetails,
-                   requestContentType: ContentType.JSON
+    getDelegate().post([path              : "/auth",
+                        body              : authDetails,
+                        requestContentType: ContentType.JSON
     ]) { response ->
       logger.info "${response.statusLine}"
       return response.statusLine.statusCode
@@ -50,9 +50,9 @@ class DockerClientImpl implements DockerClient {
     logger.info "build image..."
     def responseHandler = new ChunkedResponseHandler()
     getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
-    getDelegate().post([path: "/build",
-                   body              : IOUtils.toByteArray(buildContext),
-                   requestContentType: ContentType.BINARY])
+    getDelegate().post([path              : "/build",
+                        body              : IOUtils.toByteArray(buildContext),
+                        requestContentType: ContentType.BINARY])
 
     def lastResponseDetail = responseHandler.lastResponseDetail
     logger.info "${lastResponseDetail}"
@@ -62,9 +62,9 @@ class DockerClientImpl implements DockerClient {
   @Override
   def tag(imageId, repositoryName) {
     logger.info "tag image"
-    getDelegate().post([path: "/images/${imageId}/tag".toString(),
-                   query: [repo : repositoryName,
-                           force: 0]]) { response ->
+    getDelegate().post([path : "/images/${imageId}/tag".toString(),
+                        query: [repo : repositoryName,
+                                force: 0]]) { response ->
       logger.info "${response.statusLine}"
       return response.statusLine.statusCode
     }
@@ -76,8 +76,8 @@ class DockerClientImpl implements DockerClient {
 
     def responseHandler = new ChunkedResponseHandler()
     getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
-    getDelegate().post([path: "/images/${repositoryName}/push".toString(),
-                   headers: ["X-Registry-Auth": authBase64Encoded]])
+    getDelegate().post([path   : "/images/${repositoryName}/push".toString(),
+                        headers: ["X-Registry-Auth": authBase64Encoded]])
 
     def lastResponseDetail = responseHandler.lastResponseDetail
     logger.info "${lastResponseDetail}"
@@ -90,8 +90,8 @@ class DockerClientImpl implements DockerClient {
 
     def responseHandler = new ChunkedResponseHandler()
     getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
-    getDelegate().post([path: "/images/create",
-                   query: [fromImage: imageName]])
+    getDelegate().post([path : "/images/create",
+                        query: [fromImage: imageName]])
 
     def lastResponseDetail = responseHandler.lastResponseDetail
     logger.info "${lastResponseDetail}"
@@ -101,9 +101,9 @@ class DockerClientImpl implements DockerClient {
   @Override
   def createContainer(containerConfig) {
     logger.info "create container..."
-    getDelegate().post([path: "/containers/create".toString(),
-                   body              : containerConfig,
-                   requestContentType: ContentType.JSON]) { response, reader ->
+    getDelegate().post([path              : "/containers/create".toString(),
+                        body              : containerConfig,
+                        requestContentType: ContentType.JSON]) { response, reader ->
       logger.info "${response.statusLine}"
       return reader
     }
@@ -112,16 +112,16 @@ class DockerClientImpl implements DockerClient {
   @Override
   def startContainer(containerId) {
     logger.info "start container..."
-    getDelegate().post([path: "/containers/${containerId}/start".toString(),
-                   body              : [:],
-                   requestContentType: ContentType.JSON]) { response, reader ->
+    getDelegate().post([path              : "/containers/${containerId}/start".toString(),
+                        body              : [:],
+                        requestContentType: ContentType.JSON]) { response, reader ->
       logger.info "${response.statusLine}"
       return response.statusLine.statusCode
     }
   }
 
   @Override
-  def run(fromImage, cmds) {
+  def run(fromImage, containerConfig) {
     logger.info "run container"
 /*
     http://docs.docker.io/reference/api/docker_remote_api_v1.10/#3-going-further
@@ -137,30 +137,32 @@ class DockerClientImpl implements DockerClient {
       If in detached mode or only stdin is attached:
         - Display the container’s id
 */
-    def containerConfig = ["Hostname"      : "",
-                           "User"          : "",
-                           "Memory"        : 0,
-                           "MemorySwap"    : 0,
-                           "AttachStdin"   : false,
-                           "AttachStdout"  : true,
-                           "AttachStderr"  : true,
-                           "PortSpecs"     : null,
-                           "Tty"           : false,
-                           "OpenStdin"     : false,
-                           "StdinOnce"     : false,
-                           "Env"           : null,
-                           "Cmd"           : cmds,
-                           "Image"         : fromImage,
-                           "Volumes"       : [],
-                           "WorkingDir"    : "",
-                           "DisableNetwork": false,
-                           "ExposedPorts"  : [
-                               "DisableNetwork": false
-                           ]]
+    def defaultContainerConfig = ["Hostname"      : "",
+                                  "User"          : "",
+                                  "Memory"        : 0,
+                                  "MemorySwap"    : 0,
+                                  "AttachStdin"   : false,
+                                  "AttachStdout"  : true,
+                                  "AttachStderr"  : true,
+                                  "PortSpecs"     : null,
+                                  "Tty"           : false,
+                                  "OpenStdin"     : false,
+                                  "StdinOnce"     : false,
+                                  "Env"           : null,
+                                  "Cmd"           : [],
+                                  "Image"         : null,
+                                  "Volumes"       : [],
+                                  "WorkingDir"    : "",
+                                  "DisableNetwork": false,
+                                  "ExposedPorts"  : [
+                                  ]]
+
+    def actualContainerConfig = defaultContainerConfig + containerConfig
+    actualContainerConfig.Image = fromImage
 
     pull(fromImage)
 
-    def containerInfo = createContainer(containerConfig)
+    def containerInfo = createContainer(actualContainerConfig)
     def result = startContainer(containerInfo.Id)
     return [
         container: containerInfo,
@@ -195,9 +197,9 @@ class DockerClientImpl implements DockerClient {
     logger.info "list containers"
     def responseHandler = new ChunkedResponseHandler()
     getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
-    getDelegate().get([path: "/containers/json",
-                  query: [all : true,
-                          size: true]])
+    getDelegate().get([path : "/containers/json",
+                       query: [all : true,
+                               size: true]])
 
     def completeResponse = responseHandler.completeResponse
     def containersAsJson = new JsonSlurper().parseText(completeResponse)
@@ -208,8 +210,8 @@ class DockerClientImpl implements DockerClient {
   @Override
   def images() {
     logger.info "list images"
-    getDelegate().get([path: "/images/json",
-                  query: [all: 0]]) { response, reader ->
+    getDelegate().get([path : "/images/json",
+                       query: [all: 0]]) { response, reader ->
       logger.info "${response.statusLine}"
       return reader
     }

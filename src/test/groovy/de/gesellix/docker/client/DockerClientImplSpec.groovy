@@ -162,7 +162,7 @@ class DockerClientImplSpec extends Specification {
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
 
     when:
-    def containerStatus = dockerClient.run(imageName, cmds)
+    def containerStatus = dockerClient.run(imageName, ["Cmd": cmds])
 
     then:
     containerStatus.status == 204
@@ -176,7 +176,7 @@ class DockerClientImplSpec extends Specification {
     given:
     def imageName = "busybox"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
-    def containerStatus = dockerClient.run(imageName, cmds)
+    def containerStatus = dockerClient.run(imageName, ["Cmd": cmds])
 
     when:
     def result = dockerClient.stop(containerStatus.container.Id)
