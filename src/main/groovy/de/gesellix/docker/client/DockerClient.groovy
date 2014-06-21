@@ -2,6 +2,8 @@ package de.gesellix.docker.client
 
 interface DockerClient {
 
+  def dockerHost(hostname, port)
+
   def auth(authDetails)
 
   def build(InputStream buildContext)
