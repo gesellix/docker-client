@@ -46,7 +46,7 @@ class DockerClientImplSpec extends Specification {
     def buildResult = dockerClient.build(buildContext)
 
     then:
-    buildResult == "Successfully built 3f076777da89"
+    buildResult == "3f076777da89"
   }
 
   @Betamax(tape = 'tag image', match = [MatchRule.method, MatchRule.path])
