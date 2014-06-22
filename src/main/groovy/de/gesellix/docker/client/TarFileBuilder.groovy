@@ -7,6 +7,12 @@ import org.apache.commons.io.IOUtils
 // with modifications based on https://github.com/docker-java/docker-java/blob/master/src/main/java/com/github/dockerjava/client/utils/CompressArchiveUtil.java
 class TarFileBuilder {
 
+  public static File archiveTarFilesRecursively(File base, String archiveNameWithOutExtension) throws IOException {
+    def files = []
+    base.eachFileRecurse { files << it }
+    return archiveTarFiles(base, files, archiveNameWithOutExtension)
+  }
+
   public static File archiveTarFiles(File base, Iterable<File> files, String archiveNameWithOutExtension) throws IOException {
     File tarFile = File.createTempFile(archiveNameWithOutExtension, ".tar")
     tarFile.deleteOnExit()
