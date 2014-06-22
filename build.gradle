@@ -35,6 +35,7 @@ cobertura.coverageSourceDirs = sourceSets.main.groovy.srcDirs
 
 ext {
   artifactVersion = new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss').format(new Date())
+  bintrayDryRun = false
 }
 
 def dependencyVersions = [
@@ -89,7 +90,6 @@ publishing {
   }
 }
 
-ext.dry = false
 bintray {
   user = project["bintray.user"]
   key = project["bintray.key"]
@@ -102,9 +102,9 @@ bintray {
     licenses = ['Apache-2.0']
     labels = ['docker']
   }
-  dryRun = dry
+  dryRun = bintrayDryRun
 }
-bintrayUpload.dependsOn(":build")
+bintrayUpload.dependsOn build
 
 task wrapper(type: Wrapper) {
   gradleVersion = '2.0-rc-1'
