@@ -1,13 +1,12 @@
 !tape
 name: build image
 interactions:
-- recorded: 2014-04-27T22:43:08.368Z
+- recorded: 2014-06-22T14:27:44.507Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/build
     headers:
       Accept: '*/*'
-      Accept-Encoding: gzip,deflate
       Content-Length: '10240'
       Content-Type: application/octet-stream
       Host: 172.17.42.1:4243
@@ -18,6 +17,6 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sun, 27 Apr 2014 22:43:08 GMT
+      Date: Sun, 22 Jun 2014 14:27:44 GMT
     body: "{\"stream\":\"Step 0 : FROM debian:jessie\\n\"}\r\n{\"stream\":\" ---\\u003e 4bd7c3e53dc0\\n\"}\r\n{\"stream\":\"Step 1 : MAINTAINER Tobias Gesellchen \\u003ctobias@gesellix.de\\u003e\\n\"}\r\n{\"stream\":\" ---\\u003e Using cache\\n\"}\r\n{\"stream\"\
-      :\" ---\\u003e 5ef484deca66\\n\"}\r\n{\"stream\":\"Step 2 : ADD payload.txt /payload.txt\\n\"}\r\n{\"stream\":\" ---\\u003e Using cache\\n\"}\r\n{\"stream\":\" ---\\u003e 3f076777da89\\n\"}\r\n{\"stream\":\"Successfully built 3f076777da89\\n\"}\r\n"
+      :\" ---\\u003e 3e4600918237\\n\"}\r\n{\"stream\":\"Step 2 : ADD payload.txt /payload.txt\\n\"}\r\n{\"stream\":\" ---\\u003e Using cache\\n\"}\r\n{\"stream\":\" ---\\u003e 87746d9ade98\\n\"}\r\n{\"stream\":\"Successfully built 87746d9ade98\\n\"}\r\n"

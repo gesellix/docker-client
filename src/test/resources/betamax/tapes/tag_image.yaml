@@ -1,13 +1,12 @@
 !tape
 name: tag image
 interactions:
-- recorded: 2014-04-28T21:34:09.936Z
+- recorded: 2014-06-22T14:43:35.938Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/create?fromImage=scratch
+    uri: http://172.17.42.1:4243/images/create?fromImage=scratch&tag=
     headers:
       Accept: '*/*'
-      Accept-Encoding: gzip,deflate
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
@@ -15,18 +14,16 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 28 Apr 2014 21:34:06 GMT
-      X-Betamax: PLAY
+      Date: Sun, 22 Jun 2014 14:43:33 GMT
     body: "{\"status\":\"Pulling repository scratch\"}\r\n{\"status\":\"Pulling image (latest) from scratch\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling image (latest) from scratch, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
       progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
       :{},\"id\":\"511136ea3c5a\"}"
-- recorded: 2014-04-28T21:39:17.820Z
+- recorded: 2014-06-22T14:43:35.956Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/511136ea3c5a/tag?repo=yetAnotherTag&force=0
     headers:
       Accept: '*/*'
-      Accept-Encoding: gzip,deflate
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
@@ -34,5 +31,5 @@ interactions:
     status: 201
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Mon, 28 Apr 2014 21:39:17 GMT
+      Date: Sun, 22 Jun 2014 14:43:35 GMT
     body: ''

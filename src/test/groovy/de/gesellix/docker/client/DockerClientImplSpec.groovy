@@ -46,7 +46,7 @@ class DockerClientImplSpec extends Specification {
     def buildResult = dockerClient.build(buildContext)
 
     then:
-    buildResult == "3f076777da89"
+    buildResult == "87746d9ade98"
   }
 
   @Betamax(tape = 'tag image', match = [MatchRule.method, MatchRule.path])
@@ -77,7 +77,7 @@ class DockerClientImplSpec extends Specification {
     pushResult.status == "Pushing tag for rev [511136ea3c5a] on {https://registry-1.docker.io/v1/repositories/gesellix/test/tags/latest}"
   }
 
-  @Betamax(tape = 'pull image', match = [MatchRule.method, MatchRule.path])
+  @Betamax(tape = 'pull image', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "pull image"() {
     when:
     def imageId = dockerClient.pull("scratch")
@@ -89,7 +89,7 @@ class DockerClientImplSpec extends Specification {
   @Betamax(tape = 'list containers', match = [MatchRule.method, MatchRule.path])
   def "get containers"() {
     given:
-    def imageId = dockerClient.pull("busybox")
+    def imageId = dockerClient.pull("busybox", "latest")
     def repositoryName = "list_containers"
     def containerConfig = ["Cmd"  : ["true || false"],
                            "Image": "list_containers"]
@@ -102,11 +102,11 @@ class DockerClientImplSpec extends Specification {
 
     then:
     ["Command"   : "true || false",
-     "Created"   : 1399325264,
-     "Id"        : "19bb6aa83a3f2e20b57adc3d70a32fd0d7d7984309bbd1d4908ee0a97645395b",
+     "Created"   : 1403447968,
+     "Id"        : "795cdc234ed9684f7e7bad454b4499e9d359b5ed91940269a8fe7d0e2028c16b",
      "Image"     : "busybox:latest",
-     "Names"     : ["/elegant_pare"],
-     "Ports"     : [["PublicPort": 0, "Type": "tcp"]],
+     "Names"     : ["/sharp_hopper"],
+     "Ports"     : [],
      "SizeRootFs": 0,
      "SizeRw"    : 0,
      "Status"    : "Up Less than a second"] in containers
@@ -129,7 +129,7 @@ class DockerClientImplSpec extends Specification {
   @Betamax(tape = 'create container', match = [MatchRule.method, MatchRule.path])
   def "create container"() {
     given:
-    def imageId = dockerClient.pull("busybox")
+    def imageId = dockerClient.pull("busybox", "latest")
     def containerConfig = ["Cmd"  : ["true"],
                            "Image": imageId]
 
@@ -137,13 +137,13 @@ class DockerClientImplSpec extends Specification {
     def containerInfo = dockerClient.createContainer(containerConfig)
 
     then:
-    containerInfo.Id == "5f3510d90e8dea56b8a80f70fad75330dad0aa4d4aea5b2b2ed16f5f766925fd"
+    containerInfo.Id == "acf71166506eb9eca56b7e4d505eef6ae87101a188ff3a7cec0566552f86de63"
   }
 
   @Betamax(tape = 'start container', match = [MatchRule.method, MatchRule.path])
   def "start container"() {
     given:
-    def imageId = dockerClient.pull("busybox")
+    def imageId = dockerClient.pull("busybox", "latest")
     def containerConfig = ["Cmd"  : ["true"],
                            "Image": imageId]
     def containerId = dockerClient.createContainer(containerConfig).Id
@@ -155,14 +155,15 @@ class DockerClientImplSpec extends Specification {
     startContainerResult == 204
   }
 
-  @Betamax(tape = 'run container', match = [MatchRule.method, MatchRule.path])
+  @Betamax(tape = 'run container', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "run container"() {
     given:
-    def imageName = "busybox"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
+    def imageName = "busybox"
+    def tag = "latest"
 
     when:
-    def containerStatus = dockerClient.run(imageName, ["Cmd": cmds])
+    def containerStatus = dockerClient.run(["Cmd": cmds], imageName, tag)
 
     then:
     containerStatus.status == 204
@@ -174,9 +175,10 @@ class DockerClientImplSpec extends Specification {
   @Betamax(tape = 'stop container', match = [MatchRule.method, MatchRule.path])
   def "stop container"() {
     given:
-    def imageName = "busybox"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
-    def containerStatus = dockerClient.run(imageName, ["Cmd": cmds])
+    def imageName = "busybox"
+    def tag = "latest"
+    def containerStatus = dockerClient.run(["Cmd": cmds], imageName, tag)
 
     when:
     def result = dockerClient.stop(containerStatus.container.Id)
@@ -188,7 +190,7 @@ class DockerClientImplSpec extends Specification {
   @Betamax(tape = 'rm container', match = [MatchRule.method, MatchRule.path])
   def "rm container"() {
     given:
-    def imageId = dockerClient.pull("busybox")
+    def imageId = dockerClient.pull("busybox", "latest")
     def containerConfig = ["Cmd"  : ["true"],
                            "Image": imageId]
     def containerId = dockerClient.createContainer(containerConfig).Id

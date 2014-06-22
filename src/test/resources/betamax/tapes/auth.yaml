@@ -1,13 +1,12 @@
 !tape
 name: auth
 interactions:
-- recorded: 2014-05-04T21:38:38.741Z
+- recorded: 2014-06-22T14:26:35.305Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/auth
     headers:
       Accept: '*/*'
-      Accept-Encoding: gzip,deflate
       Content-Length: '123'
       Content-Type: application/json
       Host: 172.17.42.1:4243
@@ -17,6 +16,6 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sun, 04 May 2014 21:38:38 GMT
+      Date: Sun, 22 Jun 2014 14:26:35 GMT
     body: |
       {"Status":"Login Succeeded"}
