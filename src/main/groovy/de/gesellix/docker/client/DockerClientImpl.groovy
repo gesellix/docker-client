@@ -85,13 +85,14 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def pull(imageName) {
+  def pull(imageName, tag = "") {
     logger.info "pull image '${imageName}'..."
 
     def responseHandler = new ChunkedResponseHandler()
     getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
     getDelegate().post([path : "/images/create",
-                        query: [fromImage: imageName]])
+                        query: [fromImage: imageName,
+                                tag      : tag]])
 
     def lastResponseDetail = responseHandler.lastResponseDetail
     logger.info "${lastResponseDetail}"

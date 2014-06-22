@@ -14,6 +14,8 @@ interface DockerClient {
 
   def pull(imageName)
 
+  def pull(imageName, tag)
+
   def ps()
 
   def images()
