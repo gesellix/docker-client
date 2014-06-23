@@ -4,7 +4,7 @@ A Docker client written in Groovy
 
 [![Build Status](https://travis-ci.org/gesellix-docker/docker-client.svg)](https://travis-ci.org/gesellix-docker/docker-client)
 [![Coverage Status](https://coveralls.io/repos/gesellix-docker/docker-client/badge.png)](https://coveralls.io/r/gesellix-docker/docker-client)
-
+[![Latest version](https://api.bintray.com/packages/gesellix/docker-utils/docker-client/images/download.png) ](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion)
 
 ## Usage
 
@@ -20,7 +20,7 @@ Then, you need to add the dependency:
 
 ```
 dependencies {
-  compile 'de.gesellix:docker-client:2014-06-22T16-49-33'
+  compile 'de.gesellix:docker-client:2014-06-23T21-06-35'
 }
 ```
 
