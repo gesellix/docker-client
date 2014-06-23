@@ -21,7 +21,7 @@ class DockerClientImplSpec extends Specification {
   Recorder recorder = new Recorder()
 
   def setup() {
-    dockerClient = new DockerClientImpl()
+    dockerClient = new DockerClientImpl(dockerHost: "http://172.17.42.1:4243/")
     BetamaxRoutePlanner.configure(dockerClient.delegate.client)
   }
 

@@ -13,24 +13,15 @@ class DockerClientImpl implements DockerClient {
 
   private static Logger logger = LoggerFactory.getLogger(DockerClientImpl)
 
-  def dockerUri
+  def dockerHost = "http://127.0.0.1:2375/"
   def delegate
-
-  DockerClientImpl(hostname = "127.0.0.1", port = 2375) {
-    dockerHost(hostname, port)
-  }
 
   def getDelegate() {
     if (!delegate) {
-      this.delegate = new RESTClient(dockerUri)
-      logger.info "using docker at '${dockerUri}'"
+      this.delegate = new RESTClient(dockerHost)
+      logger.info "using docker at '${dockerHost}'"
     }
     return delegate
-  }
-
-  @Override
-  def dockerHost(hostname, port) {
-    this.dockerUri = "http://$hostname:$port/"
   }
 
   @Override
