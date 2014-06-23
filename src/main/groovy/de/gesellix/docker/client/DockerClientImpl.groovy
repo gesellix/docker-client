@@ -16,7 +16,7 @@ class DockerClientImpl implements DockerClient {
   def dockerUri
   def delegate
 
-  DockerClientImpl(hostname = "172.17.42.1", port = 4243) {
+  DockerClientImpl(hostname = "127.0.0.1", port = 2375) {
     dockerHost(hostname, port)
   }
 
