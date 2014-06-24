@@ -1,5 +1,6 @@
 package de.gesellix.docker.client
 
+import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovyx.net.http.ContentType
 import groovyx.net.http.HttpResponseDecorator
@@ -34,6 +35,12 @@ class DockerClientImpl implements DockerClient {
       logger.info "${response.statusLine}"
       return response.statusLine.statusCode
     }
+  }
+
+  @Override
+  def encodeAuthConfig(def authConfig) {
+    logger.info "encodeAuthConfig..."
+    return new JsonBuilder(authConfig).toString().bytes.encodeBase64().toString()
   }
 
   @Override

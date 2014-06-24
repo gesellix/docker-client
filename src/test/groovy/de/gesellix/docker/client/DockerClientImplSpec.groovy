@@ -4,7 +4,6 @@ import co.freeside.betamax.Betamax
 import co.freeside.betamax.MatchRule
 import co.freeside.betamax.Recorder
 import co.freeside.betamax.httpclient.BetamaxRoutePlanner
-import groovy.json.JsonBuilder
 import org.junit.Rule
 import spock.lang.Specification
 
@@ -37,6 +36,17 @@ class DockerClientImplSpec extends Specification {
     authResult == 200
   }
 
+  def encodeAuthConfig() {
+    given:
+    def authPlain = authDetails
+
+    when:
+    def authResult = dockerClient.encodeAuthConfig(authPlain)
+
+    then:
+    authResult == 'eyJ1c2VybmFtZSI6Imdlc2VsbGl4IiwicGFzc3dvcmQiOiIteWV0LWFub3RoZXItcGFzc3dvcmQtIiwiZW1haWwiOiJ0b2JpYXNAZ2VzZWxsaXguZGUiLCJzZXJ2ZXJhZGRyZXNzIjoiaHR0cHM6Ly9pbmRleC5kb2NrZXIuaW8vdjEvIn0='
+  }
+
   @Betamax(tape = 'build image', match = [MatchRule.method, MatchRule.path])
   def "build image"() {
     given:
@@ -65,7 +75,7 @@ class DockerClientImplSpec extends Specification {
   @Betamax(tape = 'push image', match = [MatchRule.method, MatchRule.path])
   def "push image"() {
     given:
-    def authBase64Encoded = new JsonBuilder(authDetails).toString().bytes.encodeBase64()
+    def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
     def imageId = dockerClient.pull("scratch")
     def repositoryName = "gesellix/test"
     dockerClient.tag(imageId, repositoryName)

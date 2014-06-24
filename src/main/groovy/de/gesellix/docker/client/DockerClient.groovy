@@ -4,6 +4,8 @@ interface DockerClient {
 
   def auth(authDetails)
 
+  def encodeAuthConfig(authConfig)
+
   def build(InputStream buildContext)
 
   def tag(imageId, repositoryName)
