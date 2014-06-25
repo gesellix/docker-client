@@ -56,7 +56,7 @@ class DockerClientImplSpec extends Specification {
     def buildResult = dockerClient.build(buildContext)
 
     then:
-    buildResult == "87746d9ade98"
+    buildResult == "d272ea9847fb"
   }
 
   @Betamax(tape = 'tag image', match = [MatchRule.method, MatchRule.path])
@@ -72,7 +72,7 @@ class DockerClientImplSpec extends Specification {
     buildResult == 201
   }
 
-  @Betamax(tape = 'push image', match = [MatchRule.method, MatchRule.path])
+  @Betamax(tape = 'push image', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "push image"() {
     given:
     def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
@@ -82,6 +82,21 @@ class DockerClientImplSpec extends Specification {
 
     when:
     def pushResult = dockerClient.push(repositoryName, authBase64Encoded)
+
+    then:
+    pushResult.status == "Pushing tag for rev [511136ea3c5a] on {https://registry-1.docker.io/v1/repositories/gesellix/test/tags/latest}"
+  }
+
+  @Betamax(tape = 'push image with registry', match = [MatchRule.method, MatchRule.path, MatchRule.query])
+  def "push image with registry"() {
+    given:
+    def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
+    def imageId = dockerClient.pull("scratch")
+    def repositoryName = "gesellix/test"
+    dockerClient.tag(imageId, repositoryName)
+
+    when:
+    def pushResult = dockerClient.push(repositoryName, authBase64Encoded, "registry.docker.io")
 
     then:
     pushResult.status == "Pushing tag for rev [511136ea3c5a] on {https://registry-1.docker.io/v1/repositories/gesellix/test/tags/latest}"

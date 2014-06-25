@@ -7,13 +7,13 @@ import org.apache.commons.io.IOUtils
 // with modifications based on https://github.com/docker-java/docker-java/blob/master/src/main/java/com/github/dockerjava/client/utils/CompressArchiveUtil.java
 class TarFileBuilder {
 
-  public static File archiveTarFilesRecursively(File base, String archiveNameWithOutExtension) throws IOException {
+  def static File archiveTarFilesRecursively(File base, String archiveNameWithOutExtension) throws IOException {
     def files = []
     base.eachFileRecurse { files << it }
     return archiveTarFiles(base, files, archiveNameWithOutExtension)
   }
 
-  public static File archiveTarFiles(File base, Iterable<File> files, String archiveNameWithOutExtension) throws IOException {
+  def static File archiveTarFiles(File base, Iterable<File> files, String archiveNameWithOutExtension) throws IOException {
     File tarFile = File.createTempFile(archiveNameWithOutExtension, ".tar")
     tarFile.deleteOnExit()
     TarArchiveOutputStream tos = new TarArchiveOutputStream(new FileOutputStream(tarFile))
@@ -38,12 +38,12 @@ class TarFileBuilder {
     return tarFile
   }
 
-  private static String relativize(File base, File absolute) {
+  def static String relativize(File base, File absolute) {
     String relative = base.toURI().relativize(absolute.toURI()).getPath()
     return relative
   }
 
-  private static long copyFile(File input, OutputStream output) throws IOException {
+  def static long copyFile(File input, OutputStream output) throws IOException {
     final FileInputStream fis = new FileInputStream(input);
     try {
       return IOUtils.copyLarge(fis, output);
