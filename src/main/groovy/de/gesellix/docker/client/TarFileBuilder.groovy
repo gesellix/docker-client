@@ -43,10 +43,10 @@ class TarFileBuilder {
     return relative
   }
 
-  def static long copyFile(File input, OutputStream output) throws IOException {
+  def static copyFile(File input, OutputStream output) throws IOException {
     final FileInputStream fis = new FileInputStream(input);
     try {
-      return IOUtils.copyLarge(fis, output);
+      IOUtils.copyLarge(fis, output);
     }
     finally {
       fis.close();
