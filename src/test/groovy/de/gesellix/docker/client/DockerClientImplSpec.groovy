@@ -96,10 +96,10 @@ class DockerClientImplSpec extends Specification {
     dockerClient.tag(imageId, repositoryName)
 
     when:
-    def pushResult = dockerClient.push(repositoryName, authBase64Encoded, "registry.docker.io")
+    def pushResult = dockerClient.push(repositoryName, authBase64Encoded, "localhost:5000")
 
     then:
-    pushResult.status == "Pushing tag for rev [511136ea3c5a] on {https://registry-1.docker.io/v1/repositories/gesellix/test/tags/latest}"
+    pushResult.status == "Pushing tag for rev [511136ea3c5a] on {http://localhost:5000/v1/repositories/gesellix/test/tags/latest}"
   }
 
   @Betamax(tape = 'pull image', match = [MatchRule.method, MatchRule.path, MatchRule.query])

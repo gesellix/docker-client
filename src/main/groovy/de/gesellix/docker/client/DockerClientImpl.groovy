@@ -20,6 +20,9 @@ class DockerClientImpl implements DockerClient {
   def getDelegate() {
     if (!delegate) {
       this.delegate = new RESTClient(dockerHost)
+      this.delegate.handler.failure = { response ->
+        logger.error "Failure: $response.statusLine"
+      }
       logger.info "using docker at '${dockerHost}'"
     }
     return delegate
@@ -73,9 +76,14 @@ class DockerClientImpl implements DockerClient {
   def push(repositoryName, authBase64Encoded, registry = "") {
     logger.info "push image '${repositoryName}'"
 
+    def actualRepositoryName = repositoryName
+    if (registry) {
+      actualRepositoryName = "$registry/$repositoryName".toString()
+      tag(repositoryName, actualRepositoryName)
+    }
     def responseHandler = new ChunkedResponseHandler()
     getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
-    getDelegate().post([path   : "/images/${repositoryName}/push".toString(),
+    getDelegate().post([path: "/images/${actualRepositoryName}/push".toString(),
                         query  : ["registry": registry],
                         headers: ["X-Registry-Auth": authBase64Encoded]])
 
@@ -220,9 +228,11 @@ class DockerClientImpl implements DockerClient {
 
   static class ChunkedResponseHandler {
 
-    def completeResponse = ""
+    def completeResponse
 
     def handleResponse(HttpResponseDecorator response) {
+      logger.info "response: $response.statusLine"
+      completeResponse = ""
       new InputStreamReader(response.entity.content).each { chunk ->
         logger.debug("received chunk: '${chunk}'")
         completeResponse += chunk
@@ -234,9 +244,14 @@ class DockerClientImpl implements DockerClient {
     }
 
     def getLastResponseDetail() {
-      logger.debug("find last detail in: '${completeResponse}'")
-      def lastResponseDetail = completeResponse.substring(completeResponse.lastIndexOf("}{") + 1)
-      return new JsonSlurper().parseText(lastResponseDetail)
+      if (completeResponse) {
+        logger.debug("find last detail in: '${completeResponse}'")
+        def lastResponseDetail = completeResponse.substring(completeResponse.lastIndexOf("}{") + 1)
+        return new JsonSlurper().parseText(lastResponseDetail)
+      }
+      else {
+        return ""
+      }
     }
   }
 }
