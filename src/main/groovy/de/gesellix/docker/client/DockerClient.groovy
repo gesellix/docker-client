@@ -26,6 +26,8 @@ interface DockerClient {
 
   def createContainer(containerConfig)
 
+  def createContainer(containerConfig, name)
+
   def startContainer(containerId)
 
   def run(containerConfig, fromImage)

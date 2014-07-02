@@ -151,7 +151,7 @@ class DockerClientImplSpec extends Specification {
      "VirtualSize": 0] in images
   }
 
-  @Betamax(tape = 'create container', match = [MatchRule.method, MatchRule.path])
+  @Betamax(tape = 'create container', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "create container"() {
     given:
     def imageId = dockerClient.pull("busybox", "latest")
@@ -162,7 +162,21 @@ class DockerClientImplSpec extends Specification {
     def containerInfo = dockerClient.createContainer(containerConfig)
 
     then:
-    containerInfo.Id == "acf71166506eb9eca56b7e4d505eef6ae87101a188ff3a7cec0566552f86de63"
+    containerInfo.Id == "ad94b0da235a3bc79509a812f52161d7ff2ddc235ced3751aee3e6b12a30705f"
+  }
+
+  @Betamax(tape = 'create container with name', match = [MatchRule.method, MatchRule.path, MatchRule.query])
+  def "create container with name"() {
+    given:
+    def imageId = dockerClient.pull("busybox", "latest")
+    def containerConfig = ["Cmd"  : ["true"],
+                           "Image": imageId]
+
+    when:
+    def containerInfo = dockerClient.createContainer(containerConfig, "example")
+
+    then:
+    containerInfo.Id == "3ed1fe86d54fafa09b57f7d6ac27b8b89a627eb733963e87d1c047eab098aa9f"
   }
 
   @Betamax(tape = 'start container', match = [MatchRule.method, MatchRule.path])

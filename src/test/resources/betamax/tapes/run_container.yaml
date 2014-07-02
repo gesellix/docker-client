@@ -22,7 +22,7 @@ interactions:
 - recorded: 2014-06-22T14:03:07.977Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/create
+    uri: http://172.17.42.1:4243/containers/create?name=
     headers:
       Accept: '*/*'
       Content-Length: '289'

@@ -108,10 +108,33 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def createContainer(containerConfig) {
+  def createContainer(containerConfig, name = "") {
     logger.info "create container..."
-    getDelegate().post([path              : "/containers/create".toString(),
-                        body              : containerConfig,
+      def defaultContainerConfig = ["Hostname"      : "",
+                                    "User"          : "",
+                                    "Memory"        : 0,
+                                    "MemorySwap"    : 0,
+                                    "AttachStdin"   : false,
+                                    "AttachStdout"  : true,
+                                    "AttachStderr"  : true,
+                                    "PortSpecs"     : null,
+                                    "Tty"           : false,
+                                    "OpenStdin"     : false,
+                                    "StdinOnce"     : false,
+                                    "Env"           : null,
+                                    "Cmd"           : [],
+                                    "Image"         : null,
+                                    "Volumes"       : [],
+                                    "WorkingDir"    : "",
+                                    "DisableNetwork": false,
+                                    "ExposedPorts"  : [
+                                    ]]
+
+      def actualContainerConfig = defaultContainerConfig + containerConfig
+
+      getDelegate().post([path              : "/containers/create".toString(),
+                        query             : ["name": name],
+                        body              : actualContainerConfig,
                         requestContentType: ContentType.JSON]) { response, reader ->
       logger.info "${response.statusLine}"
       return reader
@@ -146,32 +169,12 @@ class DockerClientImpl implements DockerClient {
       If in detached mode or only stdin is attached:
         - Display the container’s id
 */
-    def defaultContainerConfig = ["Hostname"      : "",
-                                  "User"          : "",
-                                  "Memory"        : 0,
-                                  "MemorySwap"    : 0,
-                                  "AttachStdin"   : false,
-                                  "AttachStdout"  : true,
-                                  "AttachStderr"  : true,
-                                  "PortSpecs"     : null,
-                                  "Tty"           : false,
-                                  "OpenStdin"     : false,
-                                  "StdinOnce"     : false,
-                                  "Env"           : null,
-                                  "Cmd"           : [],
-                                  "Image"         : null,
-                                  "Volumes"       : [],
-                                  "WorkingDir"    : "",
-                                  "DisableNetwork": false,
-                                  "ExposedPorts"  : [
-                                  ]]
-
-    def actualContainerConfig = defaultContainerConfig + containerConfig
-    actualContainerConfig.Image = fromImage + (tag ? ":$tag" : "")
+    def containerConfigWithImageName = [:] + containerConfig
+    containerConfigWithImageName.Image = fromImage + (tag ? ":$tag" : "")
 
     pull(fromImage, tag)
 
-    def containerInfo = createContainer(actualContainerConfig)
+    def containerInfo = createContainer(containerConfigWithImageName)
     def result = startContainer(containerInfo.Id)
     return [
         container: containerInfo,

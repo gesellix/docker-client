@@ -4,7 +4,7 @@ interactions:
 - recorded: 2014-06-22T14:28:49.224Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=
+    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -15,33 +15,25 @@ interactions:
     headers:
       Content-Type: application/json
       Date: Sun, 22 Jun 2014 14:28:47 GMT
-    body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (ubuntu-12.04) from busybox\",\"progressDetail\":{},\"id\":\"fd5373b3d938\"}{\"status\":\"Pulling image (ubuntu-12.04) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\"\
-      ,\"progressDetail\":{},\"id\":\"fd5373b3d938\"}{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"progressDetail\"\
-      :{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (ubuntu-14.04) from busybox\",\"progressDetail\":{},\"id\":\"37fca75d01ff\"}{\"status\":\"Pulling image (ubuntu-14.04) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"progressDetail\"\
-      :{},\"id\":\"37fca75d01ff\"}{\"status\":\"Pulling image (buildroot-2013.08.1) from busybox\",\"progressDetail\":{},\"id\":\"d200959a3e91\"}{\"status\":\"Pulling image (buildroot-2013.08.1) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\"\
-      ,\"progressDetail\":{},\"id\":\"d200959a3e91\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"37fca75d01ff\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
-      :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"f06b02872d52\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"37fca75d01ff\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
-      37fca75d01ff\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"fd5373b3d938\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"42eed7f1bf2a\"\
-      }{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"1f5049b3536e\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"fd5373b3d938\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"fd5373b3d938\"}{\"status\"\
-      :\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"d200959a3e91\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download\
-      \ complete\",\"progressDetail\":{},\"id\":\"c120b7cab0b0\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"d200959a3e91\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"d200959a3e91\"}{\"status\":\"Pulling dependent layers\"\
-      ,\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\"\
-      :{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}"
+    body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
+      progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
+      :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
+      a9eb17255234\"}"
 - recorded: 2014-06-22T14:28:49.255Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/create
+    uri: http://172.17.42.1:4243/containers/create?name=
     headers:
       Accept: '*/*'
-      Content-Length: '39'
+      Content-Length: '267'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
-    body: '{"Cmd":["true"],"Image":"a9eb17255234"}'
+    body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["true"],"Image":"a9eb17255234","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":[]}'
   response:
     status: 201
     headers:
       Content-Type: application/json
       Date: Sun, 22 Jun 2014 14:28:49 GMT
     body: |
-      {"Id":"acf71166506eb9eca56b7e4d505eef6ae87101a188ff3a7cec0566552f86de63","Warnings":null}
+      {"Id":"ad94b0da235a3bc79509a812f52161d7ff2ddc235ced3751aee3e6b12a30705f","Warnings":null}
