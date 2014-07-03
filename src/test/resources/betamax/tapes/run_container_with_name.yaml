@@ -1,0 +1,85 @@
+!tape
+name: run container with name
+interactions:
+- recorded: 2014-07-03T16:22:12.371Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Thu, 03 Jul 2014 16:22:09 GMT
+    body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
+      progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
+      :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
+      a9eb17255234\"}"
+- recorded: 2014-07-03T16:22:12.492Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/create?name=example-name
+    headers:
+      Accept: '*/*'
+      Content-Length: '289'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+    body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"busybox:latest","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":[]}'
+  response:
+    status: 201
+    headers:
+      Content-Type: application/json
+      Date: Thu, 03 Jul 2014 16:22:12 GMT
+    body: |
+      {"Id":"2c68d4aa77e4b03b84a1b70282d91e00d83b73f426542483b0ab9ca732b657aa","Warnings":null}
+- recorded: 2014-07-03T16:22:12.549Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/2c68d4aa77e4b03b84a1b70282d91e00d83b73f426542483b0ab9ca732b657aa/start
+    headers:
+      Accept: '*/*'
+      Content-Length: '2'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+    body: '{}'
+  response:
+    status: 204
+    headers:
+      Content-Type: text/plain; charset=utf-8
+      Date: Thu, 03 Jul 2014 16:22:12 GMT
+- recorded: 2014-07-03T16:22:12.563Z
+  request:
+    method: GET
+    uri: http://172.17.42.1:4243/containers/json?all=true&size=true
+    headers:
+      Accept: '*/*'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Thu, 03 Jul 2014 16:22:12 GMT
+    body: |-
+      [{"Command":"sh -c 'ping 127.0.0.1'","Created":1404404532,"Id":"2c68d4aa77e4b03b84a1b70282d91e00d83b73f426542483b0ab9ca732b657aa","Image":"busybox:latest","Names":["/example-name"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":"Up Less than a second"}
+      ]
+- recorded: 2014-07-03T16:22:12.611Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/2c68d4aa77e4b03b84a1b70282d91e00d83b73f426542483b0ab9ca732b657aa/stop
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 204
+    headers:
+      Content-Type: text/plain; charset=utf-8
+      Date: Thu, 03 Jul 2014 16:22:12 GMT

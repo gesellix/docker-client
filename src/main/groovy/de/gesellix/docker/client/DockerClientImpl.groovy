@@ -153,7 +153,7 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def run(containerConfig, fromImage, tag = "") {
+  def run(containerConfig, fromImage, tag = "", name = "") {
     logger.info "run container"
 /*
     http://docs.docker.io/reference/api/docker_remote_api_v1.10/#3-going-further
@@ -174,7 +174,7 @@ class DockerClientImpl implements DockerClient {
 
     pull(fromImage, tag)
 
-    def containerInfo = createContainer(containerConfigWithImageName)
+    def containerInfo = createContainer(containerConfigWithImageName, name)
     def result = startContainer(containerInfo.Id)
     return [
         container: containerInfo,
