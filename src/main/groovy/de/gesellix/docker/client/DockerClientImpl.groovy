@@ -73,7 +73,7 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def push(repositoryName, authBase64Encoded, registry = "") {
+  def push(repositoryName, authBase64Encoded = "''", registry = "") {
     logger.info "push image '${repositoryName}'"
 
     def actualRepositoryName = repositoryName
