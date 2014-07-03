@@ -1,16 +1,35 @@
 package de.gesellix.docker.client
 
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.io.IOUtils
 import spock.lang.Specification
 
 class TarFileBuilderTest extends Specification {
 
   def "test archiveTarFilesRecursively"() {
-    TarFileBuilder.archiveTarFilesRecursively()
+    given:
+    def resource = getClass().getResource('/docker/Dockerfile')
+    def inputDirectory = new File(resource.toURI()).parentFile
+
+    when:
+    def archivedDirectory = TarFileBuilder.archiveTarFilesRecursively(inputDirectory, "archive-name")
+
+    then:
+    archivedDirectory.name.endsWith(".tar")
+    and:
+    def collectedEntryNames = collectEntryNames(archivedDirectory)
+    collectedEntryNames == ["subdirectory/", "subdirectory/payload.txt", "Dockerfile"]
   }
 
-  def "test archiveTarFiles"() {
-    TarFileBuilder.archiveTarFiles()
+  def collectEntryNames(File tarArchive) {
+    def collectedEntryNames = []
+    def tarArchiveInputStream = new TarArchiveInputStream(new FileInputStream(tarArchive))
+
+    def entry
+    while (entry = tarArchiveInputStream.nextTarEntry) {
+      collectedEntryNames << entry.name
+    }
+    collectedEntryNames
   }
 
   def "test relativize"() {
