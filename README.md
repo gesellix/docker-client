@@ -6,7 +6,7 @@ A Docker client written in Groovy
 [![Coverage Status](https://coveralls.io/repos/gesellix-docker/docker-client/badge.png)](https://coveralls.io/r/gesellix-docker/docker-client)
 [![Latest version](https://api.bintray.com/packages/gesellix/docker-utils/docker-client/images/download.png) ](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion)
 
-## Usage
+## Plain Usage
 
 For use in Gradle, add the bintray repository first:
 
@@ -25,3 +25,10 @@ dependencies {
 ```
 
 The tests in `DockerClientImplSpec` should give you an idea how to use the docker-client.
+
+## Usage with Gradle-Docker-Plugin
+
+My personal focus implementing this Docker client was to leverage the Docker API in our Gradle scripts.
+A better integration in Gradle is possible by using the [Gradle-Docker-Plugin](https://github.com/gesellix-docker/gradle-docker-plugin),
+which will be developed along with the Docker client library.
+
