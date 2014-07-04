@@ -73,7 +73,7 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def push(repositoryName, authBase64Encoded = "''", registry = "") {
+  def push(repositoryName, authBase64Encoded = ".", registry = "") {
     logger.info "push image '${repositoryName}'"
 
     def actualRepositoryName = repositoryName
@@ -85,7 +85,7 @@ class DockerClientImpl implements DockerClient {
     getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
     getDelegate().post([path: "/images/${actualRepositoryName}/push".toString(),
                         query  : ["registry": registry],
-                        headers: ["X-Registry-Auth": authBase64Encoded]])
+                        headers: ["X-Registry-Auth": authBase64Encoded ?: "."]])
 
     def lastResponseDetail = responseHandler.lastResponseDetail
     logger.info "${lastResponseDetail}"
