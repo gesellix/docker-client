@@ -135,7 +135,7 @@ class DockerClientImplSpec extends Specification {
   }
 
   @Betamax(tape = 'list containers', match = [MatchRule.method, MatchRule.path])
-  def "get containers"() {
+  def "list containers"() {
     given:
     def imageId = dockerClient.pull("busybox", "latest")
     def imageName = "list_containers"
@@ -160,8 +160,88 @@ class DockerClientImplSpec extends Specification {
      "Status"    : "Up Less than a second"] in containers
   }
 
+  @Betamax(tape = 'inspect container', match = [MatchRule.method, MatchRule.path])
+  def "inspect container"() {
+    given:
+    def imageId = dockerClient.pull("busybox", "latest")
+    def imageName = "inspect_container"
+    def containerConfig = ["Cmd"  : ["true || false"],
+                           "Image": "inspect_container"]
+    def hostConfig = ["PublishAllPorts": true]
+    dockerClient.tag(imageId, imageName)
+    def containerId = dockerClient.createContainer(containerConfig).Id
+    dockerClient.startContainer(containerId, hostConfig)
+
+    when:
+    def containerInspection = dockerClient.inspectContainer(containerId)
+
+    then:
+    [HostnamePath   : "/var/lib/docker/containers/b38eefac713c3fa55eddf80b79d35d4e8709b6f75c2808406d0a1f806928584b/hostname",
+     Config         : [User           : '',
+                       OnBuild        : null,
+                       Tty            : false,
+                       MemorySwap     : 0,
+                       StdinOnce      : false,
+                       NetworkDisabled: false,
+                       ExposedPorts   : null,
+                       Cmd            : ["true || false"],
+                       CpuShares      : 0,
+                       WorkingDir     : '',
+                       Cpuset         : '',
+                       Env            : ["HOME=/",
+                                         "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],
+                       Entrypoint     : null,
+                       Memory         : 0,
+                       AttachStdout   : true,
+                       Domainname     : '',
+                       AttachStderr   : true,
+                       Image          : "inspect_container",
+                       AttachStdin    : false,
+                       PortSpecs      : null,
+                       Hostname       : "b38eefac713c",
+                       Volumes        : null,
+                       OpenStdin      : false],
+     ResolvConfPath : "/var/lib/docker/containers/b38eefac713c3fa55eddf80b79d35d4e8709b6f75c2808406d0a1f806928584b/resolv.conf",
+     HostConfig     : [Dns            : [],
+                       ContainerIDFile: '',
+                       PublishAllPorts: true,
+                       Links          : null,
+                       DnsSearch      : null,
+                       Privileged     : false,
+                       NetworkMode    : '',
+                       Binds          : [],
+                       VolumesFrom    : [],
+                       PortBindings   : null,
+                       LxcConf        : []],
+     VolumesRW      : [:],
+     Path           : "true || false",
+     ProcessLabel   : '',
+     Driver         : "aufs",
+     Name           : "/agitated_pasteur",
+     Args           : [],
+     Created        : "2014-07-05T18:56:36.829260762Z",
+     State          : [ExitCode  : 0,
+                       Paused    : false,
+                       Running   : false,
+                       Pid       : 0,
+                       StartedAt : "0001-01-01T00:00:00Z",
+                       FinishedAt: "0001-01-01T00:00:00Z"],
+     ExecDriver     : "native-0.2",
+     Image          : "a9eb172552348a9a49180694790b33a1097f546456d041b6e82e4d7716ddb721",
+     Id             : "b38eefac713c3fa55eddf80b79d35d4e8709b6f75c2808406d0a1f806928584b",
+     NetworkSettings: [IPPrefixLen: 0,
+                       IPAddress  : '',
+                       Gateway    : '',
+                       Bridge     : '',
+                       PortMapping: null,
+                       Ports      : null],
+     HostsPath      : "/var/lib/docker/containers/b38eefac713c3fa55eddf80b79d35d4e8709b6f75c2808406d0a1f806928584b/hosts",
+     MountLabel     : '',
+     Volumes        : [:]] == containerInspection
+  }
+
   @Betamax(tape = 'list images', match = [MatchRule.method, MatchRule.path])
-  def "get images"() {
+  def "list images"() {
     when:
     def images = dockerClient.images()
 
@@ -220,12 +300,14 @@ class DockerClientImplSpec extends Specification {
   @Betamax(tape = 'run container', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "run container"() {
     given:
-    def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def imageName = "busybox"
     def tag = "latest"
+    def cmds = ["sh", "-c", "ping 127.0.0.1"]
+    def containerConfig = ["Cmd": cmds]
+    def hostConfig = []
 
     when:
-    def containerStatus = dockerClient.run(["Cmd": cmds], imageName, tag)
+    def containerStatus = dockerClient.run(imageName, containerConfig, hostConfig, tag)
 
     then:
     containerStatus.status == 204
@@ -234,16 +316,50 @@ class DockerClientImplSpec extends Specification {
     dockerClient.stop(containerStatus.container.Id)
   }
 
+  @Betamax(tape = 'run container with PortBindings', match = [MatchRule.method, MatchRule.path, MatchRule.query])
+  def "run container with PortBindings"() {
+    given:
+    def imageName = "busybox"
+    def tag = "latest"
+    def cmds = ["sh", "-c", "ping 127.0.0.1"]
+    def containerConfig = ["Cmd"       : cmds,
+                           ExposedPorts: ["4711/tcp": [:]]]
+    def hostConfig = ["PortBindings": [
+        "4711/tcp": [
+            ["HostIp"  : "0.0.0.0",
+             "HostPort": "4712"]]
+    ]]
+
+    when:
+    def containerStatus = dockerClient.run(imageName, containerConfig, hostConfig, tag)
+
+    then:
+    containerStatus.status == 204
+    and:
+    dockerClient.inspectContainer(containerStatus.container.Id).Config.ExposedPorts == ["4711/tcp": [:]]
+    and:
+    dockerClient.inspectContainer(containerStatus.container.Id).HostConfig.PortBindings == [
+        "4711/tcp": [
+            ["HostIp"  : "0.0.0.0",
+             "HostPort": "4712"]]
+    ]
+
+    cleanup:
+    dockerClient.stop(containerStatus.container.Id)
+  }
+
   @Betamax(tape = 'run container with name', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "run container with name"() {
     given:
-    def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def imageName = "busybox"
     def tag = "latest"
+    def cmds = ["sh", "-c", "ping 127.0.0.1"]
+    def containerConfig = ["Cmd": cmds]
+    def hostConfig = [:]
     def name = "example-name"
 
     when:
-    def containerStatus = dockerClient.run(["Cmd": cmds], imageName, tag, name)
+    def containerStatus = dockerClient.run(imageName, containerConfig, hostConfig, tag, name)
 
     then:
     containerStatus.status == 204
@@ -259,10 +375,12 @@ class DockerClientImplSpec extends Specification {
   @Betamax(tape = 'stop container', match = [MatchRule.method, MatchRule.path])
   def "stop container"() {
     given:
-    def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def imageName = "busybox"
     def tag = "latest"
-    def containerStatus = dockerClient.run(["Cmd": cmds], imageName, tag)
+    def cmds = ["sh", "-c", "ping 127.0.0.1"]
+    def containerConfig = ["Cmd": cmds]
+    def hostConfig = [:]
+    def containerStatus = dockerClient.run(imageName, containerConfig, hostConfig, tag)
 
     when:
     def result = dockerClient.stop(containerStatus.container.Id)

@@ -65,7 +65,7 @@ class DockerClientImpl implements DockerClient {
   def tag(imageId, name) {
     logger.info "tag image"
     getDelegate().post([path : "/images/${imageId}/tag".toString(),
-                        query: [repo: name,
+                        query: [repo : name,
                                 force: 0]]) { response ->
       logger.info "${response.statusLine}"
       return response.statusLine.statusCode
@@ -83,7 +83,7 @@ class DockerClientImpl implements DockerClient {
     }
     def responseHandler = new ChunkedResponseHandler()
     getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
-    getDelegate().post([path: "/images/${actualImageName}/push".toString(),
+    getDelegate().post([path   : "/images/${actualImageName}/push".toString(),
                         query  : ["registry": registry],
                         headers: ["X-Registry-Auth": authBase64Encoded ?: "."]])
 
@@ -138,7 +138,7 @@ class DockerClientImpl implements DockerClient {
 
     def actualContainerConfig = defaultContainerConfig + containerConfig
 
-    getDelegate().post([path: "/containers/create".toString(),
+    getDelegate().post([path              : "/containers/create".toString(),
                         query             : ["name": name],
                         body              : actualContainerConfig,
                         requestContentType: ContentType.JSON]) { response, reader ->
@@ -148,10 +148,22 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def startContainer(containerId) {
+  def startContainer(containerId, hostConfig = [:]) {
     logger.info "start container..."
+    def defaultHostConfig = ["Binds"          : [],
+                             "Links"          : [],
+                             "LxcConf"        : [],
+                             "PortBindings"   : [],
+                             "PublishAllPorts": false,
+                             "Privileged"     : false,
+                             "Dns"            : [],
+                             "VolumesFrom"    : [
+                             ]]
+
+    def actualHostConfig = defaultHostConfig + hostConfig
+
     getDelegate().post([path              : "/containers/${containerId}/start".toString(),
-                        body              : [:],
+                        body              : actualHostConfig,
                         requestContentType: ContentType.JSON]) { response, reader ->
       logger.info "${response.statusLine}"
       return response.statusLine.statusCode
@@ -159,10 +171,10 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def run(containerConfig, fromImage, tag = "", name = "") {
+  def run(fromImage, containerConfig, hostConfig, tag = "", name = "") {
     logger.info "run container"
 /*
-    http://docs.docker.io/reference/api/docker_remote_api_v1.10/#3-going-further
+    http://docs.docker.com/reference/api/docker_remote_api_v1.13/#31-inside-docker-run
 
     Here are the steps of ‘docker run’ :
       Create the container
@@ -181,7 +193,7 @@ class DockerClientImpl implements DockerClient {
     pull(fromImage, tag)
 
     def containerInfo = createContainer(containerConfigWithImageName, name)
-    def result = startContainer(containerInfo.Id)
+    def result = startContainer(containerInfo.Id, hostConfig)
     return [
         container: containerInfo,
         status   : result
@@ -223,6 +235,19 @@ class DockerClientImpl implements DockerClient {
     def containersAsJson = new JsonSlurper().parseText(completeResponse)
     logger.info "${containersAsJson}"
     return containersAsJson
+  }
+
+  @Override
+  def inspectContainer(containerId) {
+    logger.info "inspect container"
+    def responseHandler = new ChunkedResponseHandler()
+    getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
+    getDelegate().get([path: "/containers/${containerId}/json"])
+
+    def completeResponse = responseHandler.completeResponse
+    def resultAsJson = new JsonSlurper().parseText(completeResponse)
+    logger.info "${resultAsJson}"
+    return resultAsJson
   }
 
   @Override

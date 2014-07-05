@@ -1,0 +1,87 @@
+!tape
+name: inspect container
+interactions:
+- recorded: 2014-07-05T18:56:36.692Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Sat, 05 Jul 2014 18:56:33 GMT
+    body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
+      progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
+      :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
+      a9eb17255234\"}"
+- recorded: 2014-07-05T18:56:36.774Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/images/a9eb17255234/tag?repo=inspect_container&force=0
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 201
+    headers:
+      Content-Type: text/plain; charset=utf-8
+      Date: Sat, 05 Jul 2014 18:56:36 GMT
+    body: ''
+- recorded: 2014-07-05T18:56:36.841Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/create?name=
+    headers:
+      Accept: '*/*'
+      Content-Length: '281'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+    body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["true || false"],"Image":"inspect_container","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":[]}'
+  response:
+    status: 201
+    headers:
+      Content-Type: application/json
+      Date: Sat, 05 Jul 2014 18:56:36 GMT
+    body: |
+      {"Id":"b38eefac713c3fa55eddf80b79d35d4e8709b6f75c2808406d0a1f806928584b","Warnings":null}
+- recorded: 2014-07-05T18:56:36.970Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/b38eefac713c3fa55eddf80b79d35d4e8709b6f75c2808406d0a1f806928584b/start
+    headers:
+      Accept: '*/*'
+      Content-Length: '122'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+    body: '{"Binds":[],"Links":[],"LxcConf":[],"PortBindings":[],"PublishAllPorts":true,"Privileged":false,"Dns":[],"VolumesFrom":[]}'
+  response:
+    status: 500
+    headers:
+      Content-Type: text/plain; charset=utf-8
+      Date: Sat, 05 Jul 2014 18:56:36 GMT
+    body: |
+      Cannot start container b38eefac713c3fa55eddf80b79d35d4e8709b6f75c2808406d0a1f806928584b: exec: "true || false": executable file not found in $PATH
+- recorded: 2014-07-05T18:56:36.986Z
+  request:
+    method: GET
+    uri: http://172.17.42.1:4243/containers/b38eefac713c3fa55eddf80b79d35d4e8709b6f75c2808406d0a1f806928584b/json
+    headers:
+      Accept: '*/*'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Sat, 05 Jul 2014 18:56:36 GMT
+    body: |
+      {"Args":[],"Config":{"AttachStderr":true,"AttachStdin":false,"AttachStdout":true,"Cmd":["true || false"],"CpuShares":0,"Cpuset":"","Domainname":"","Entrypoint":null,"Env":["HOME=/","PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"ExposedPorts":null,"Hostname":"b38eefac713c","Image":"inspect_container","Memory":0,"MemorySwap":0,"NetworkDisabled":false,"OnBuild":null,"OpenStdin":false,"PortSpecs":null,"StdinOnce":false,"Tty":false,"User":"","Volumes":null,"WorkingDir":""},"Created":"2014-07-05T18:56:36.829260762Z","Driver":"aufs","ExecDriver":"native-0.2","HostConfig":{"Binds":[],"ContainerIDFile":"","Dns":[],"DnsSearch":null,"Links":null,"LxcConf":[],"NetworkMode":"","PortBindings":null,"Privileged":false,"PublishAllPorts":true,"VolumesFrom":[]},"HostnamePath":"/var/lib/docker/containers/b38eefac713c3fa55eddf80b79d35d4e8709b6f75c2808406d0a1f806928584b/hostname","HostsPath":"/var/lib/docker/containers/b38eefac713c3fa55eddf80b79d35d4e8709b6f75c2808406d0a1f806928584b/hosts","Id":"b38eefac713c3fa55eddf80b79d35d4e8709b6f75c2808406d0a1f806928584b","Image":"a9eb172552348a9a49180694790b33a1097f546456d041b6e82e4d7716ddb721","MountLabel":"","Name":"/agitated_pasteur","NetworkSettings":{"Bridge":"","Gateway":"","IPAddress":"","IPPrefixLen":0,"PortMapping":null,"Ports":null},"Path":"true || false","ProcessLabel":"","ResolvConfPath":"/var/lib/docker/containers/b38eefac713c3fa55eddf80b79d35d4e8709b6f75c2808406d0a1f806928584b/resolv.conf","State":{"ExitCode":0,"FinishedAt":"0001-01-01T00:00:00Z","Paused":false,"Pid":0,"Running":false,"StartedAt":"0001-01-01T00:00:00Z"},"Volumes":{},"VolumesRW":{}}

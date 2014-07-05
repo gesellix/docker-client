@@ -1,0 +1,88 @@
+!tape
+name: run container with PortBindings
+interactions:
+- recorded: 2014-07-05T18:46:17.395Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Sat, 05 Jul 2014 18:46:15 GMT
+      X-Betamax: PLAY
+    body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
+      progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
+      :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
+      a9eb17255234\"}"
+- recorded: 2014-07-05T18:46:17.525Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/create?name=
+    headers:
+      Accept: '*/*'
+      Content-Length: '302'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+    body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"busybox:latest","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":{"4711/tcp":[]}}'
+  response:
+    status: 201
+    headers:
+      Content-Type: application/json
+      Date: Sat, 05 Jul 2014 18:46:17 GMT
+      X-Betamax: PLAY
+    body: |
+      {"Id":"103b60d6bfed1d100c0364e5b7c84302de8669244106b69128152bdcb39ced40","Warnings":null}
+- recorded: 2014-07-05T18:46:17.628Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/103b60d6bfed1d100c0364e5b7c84302de8669244106b69128152bdcb39ced40/start
+    headers:
+      Accept: '*/*'
+      Content-Length: '174'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+    body: '{"Binds":[],"Links":[],"LxcConf":[],"PortBindings":{"4711/tcp":[{"HostIp":"0.0.0.0","HostPort":"4712"}]},"PublishAllPorts":false,"Privileged":false,"Dns":[],"VolumesFrom":[]}'
+  response:
+    status: 204
+    headers:
+      Content-Type: text/plain; charset=utf-8
+      Date: Sat, 05 Jul 2014 18:46:17 GMT
+      X-Betamax: PLAY
+- recorded: 2014-07-05T18:46:17.662Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/103b60d6bfed1d100c0364e5b7c84302de8669244106b69128152bdcb39ced40/stop
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 204
+    headers:
+      Content-Type: text/plain; charset=utf-8
+      Date: Sat, 05 Jul 2014 18:46:17 GMT
+      X-Betamax: PLAY
+- recorded: 2014-07-05T20:42:22.205Z
+  request:
+    method: GET
+    uri: http://172.17.42.1:4243/containers/103b60d6bfed1d100c0364e5b7c84302de8669244106b69128152bdcb39ced40/json
+    headers:
+      Accept: '*/*'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Sat, 05 Jul 2014 20:42:22 GMT
+    body: |
+      {"Args":["-c","ping 127.0.0.1"],"Config":{"AttachStderr":true,"AttachStdin":false,"AttachStdout":true,"Cmd":["sh","-c","ping 127.0.0.1"],"CpuShares":0,"Cpuset":"","Domainname":"","Entrypoint":null,"Env":["HOME=/","PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"ExposedPorts":{"4711/tcp":{}},"Hostname":"103b60d6bfed","Image":"busybox:latest","Memory":0,"MemorySwap":0,"NetworkDisabled":false,"OnBuild":null,"OpenStdin":false,"PortSpecs":null,"StdinOnce":false,"Tty":false,"User":"","Volumes":null,"WorkingDir":""},"Created":"2014-07-05T18:46:17.513247896Z","Driver":"aufs","ExecDriver":"native-0.2","HostConfig":{"Binds":[],"ContainerIDFile":"","Dns":[],"DnsSearch":null,"Links":null,"LxcConf":[],"NetworkMode":"","PortBindings":{"4711/tcp":[{"HostIp":"0.0.0.0","HostPort":"4712"}]},"Privileged":false,"PublishAllPorts":false,"VolumesFrom":[]},"HostnamePath":"/var/lib/docker/containers/103b60d6bfed1d100c0364e5b7c84302de8669244106b69128152bdcb39ced40/hostname","HostsPath":"/var/lib/docker/containers/103b60d6bfed1d100c0364e5b7c84302de8669244106b69128152bdcb39ced40/hosts","Id":"103b60d6bfed1d100c0364e5b7c84302de8669244106b69128152bdcb39ced40","Image":"a9eb172552348a9a49180694790b33a1097f546456d041b6e82e4d7716ddb721","MountLabel":"","Name":"/grave_bohr","NetworkSettings":{"Bridge":"","Gateway":"","IPAddress":"","IPPrefixLen":0,"PortMapping":null,"Ports":null},"Path":"sh","ProcessLabel":"","ResolvConfPath":"/var/lib/docker/containers/103b60d6bfed1d100c0364e5b7c84302de8669244106b69128152bdcb39ced40/resolv.conf","State":{"ExitCode":-1,"FinishedAt":"2014-07-05T18:46:17.659319866Z","Paused":false,"Pid":0,"Running":false,"StartedAt":"2014-07-05T18:46:17.625274669Z"},"Volumes":{},"VolumesRW":{}}

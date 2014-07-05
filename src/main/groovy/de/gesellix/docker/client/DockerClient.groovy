@@ -24,6 +24,8 @@ interface DockerClient {
 
   def ps()
 
+  def inspectContainer(containerId)
+
   def images()
 
   def createContainer(containerConfig)
@@ -32,11 +34,13 @@ interface DockerClient {
 
   def startContainer(containerId)
 
-  def run(containerConfig, fromImage)
+  def startContainer(containerId, hostConfig)
 
-  def run(containerConfig, fromImage, tag)
+  def run(fromImage, containerConfig, hostConfig)
 
-  def run(containerConfig, fromImage, tag, name)
+  def run(fromImage, containerConfig, hostConfig, tag)
+
+  def run(fromImage, containerConfig, hostConfig, tag, name)
 
   def stop(containerId)
 
