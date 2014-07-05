@@ -1,10 +1,10 @@
 !tape
 name: run container
 interactions:
-- recorded: 2014-06-22T14:03:07.946Z
+- recorded: 2014-07-05T17:39:18.455Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest
+    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -14,12 +14,12 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sun, 22 Jun 2014 14:03:05 GMT
+      Date: Sat, 05 Jul 2014 17:39:16 GMT
     body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
       progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
       :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
       a9eb17255234\"}"
-- recorded: 2014-06-22T14:03:07.977Z
+- recorded: 2014-07-05T17:39:18.481Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=
@@ -34,13 +34,13 @@ interactions:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Sun, 22 Jun 2014 14:03:07 GMT
+      Date: Sat, 05 Jul 2014 17:39:18 GMT
     body: |
-      {"Id":"736b71fe34a4c432fe0bdd85aa532b394d40a384c9027956b8374f8bac77f199","Warnings":null}
-- recorded: 2014-06-22T14:03:08.021Z
+      {"Id":"784498924f7e844df75eacfd8486a2e6dc0a502978324fb0637ed6096c9fb3c8","Warnings":null}
+- recorded: 2014-07-05T17:39:18.574Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/736b71fe34a4c432fe0bdd85aa532b394d40a384c9027956b8374f8bac77f199/start
+    uri: http://172.17.42.1:4243/containers/784498924f7e844df75eacfd8486a2e6dc0a502978324fb0637ed6096c9fb3c8/start
     headers:
       Accept: '*/*'
       Content-Length: '2'
@@ -52,11 +52,11 @@ interactions:
     status: 204
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Sun, 22 Jun 2014 14:03:08 GMT
-- recorded: 2014-06-22T14:03:08.078Z
+      Date: Sat, 05 Jul 2014 17:39:18 GMT
+- recorded: 2014-07-05T17:39:18.625Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/736b71fe34a4c432fe0bdd85aa532b394d40a384c9027956b8374f8bac77f199/stop
+    uri: http://172.17.42.1:4243/containers/784498924f7e844df75eacfd8486a2e6dc0a502978324fb0637ed6096c9fb3c8/stop
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -66,4 +66,4 @@ interactions:
     status: 204
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Sun, 22 Jun 2014 14:03:08 GMT
+      Date: Sat, 05 Jul 2014 17:39:18 GMT

@@ -1,10 +1,10 @@
 !tape
 name: run container with name
 interactions:
-- recorded: 2014-07-03T16:22:12.371Z
+- recorded: 2014-07-05T17:39:21.294Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest
+    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -14,12 +14,12 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Thu, 03 Jul 2014 16:22:09 GMT
+      Date: Sat, 05 Jul 2014 17:39:19 GMT
     body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
       progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
       :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
       a9eb17255234\"}"
-- recorded: 2014-07-03T16:22:12.492Z
+- recorded: 2014-07-05T17:39:21.331Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=example-name
@@ -34,13 +34,13 @@ interactions:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Thu, 03 Jul 2014 16:22:12 GMT
+      Date: Sat, 05 Jul 2014 17:39:21 GMT
     body: |
-      {"Id":"2c68d4aa77e4b03b84a1b70282d91e00d83b73f426542483b0ab9ca732b657aa","Warnings":null}
-- recorded: 2014-07-03T16:22:12.549Z
+      {"Id":"10734fced134f62495ff92f28abdd1b4e1842cb691364b78f9d9cfd5a85d11b1","Warnings":null}
+- recorded: 2014-07-05T17:39:21.419Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/2c68d4aa77e4b03b84a1b70282d91e00d83b73f426542483b0ab9ca732b657aa/start
+    uri: http://172.17.42.1:4243/containers/10734fced134f62495ff92f28abdd1b4e1842cb691364b78f9d9cfd5a85d11b1/start
     headers:
       Accept: '*/*'
       Content-Length: '2'
@@ -52,8 +52,8 @@ interactions:
     status: 204
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Thu, 03 Jul 2014 16:22:12 GMT
-- recorded: 2014-07-03T16:22:12.563Z
+      Date: Sat, 05 Jul 2014 17:39:21 GMT
+- recorded: 2014-07-05T17:39:21.449Z
   request:
     method: GET
     uri: http://172.17.42.1:4243/containers/json?all=true&size=true
@@ -65,14 +65,18 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Thu, 03 Jul 2014 16:22:12 GMT
+      Date: Sat, 05 Jul 2014 17:39:21 GMT
     body: |-
-      [{"Command":"sh -c 'ping 127.0.0.1'","Created":1404404532,"Id":"2c68d4aa77e4b03b84a1b70282d91e00d83b73f426542483b0ab9ca732b657aa","Image":"busybox:latest","Names":["/example-name"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":"Up Less than a second"}
+      [{"Command":"sh -c 'ping 127.0.0.1'","Created":1404581961,"Id":"10734fced134f62495ff92f28abdd1b4e1842cb691364b78f9d9cfd5a85d11b1","Image":"busybox:latest","Names":["/example-name"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":"Up Less than a second"}
+      ,{"Command":"sh -c 'ping 127.0.0.1'","Created":1404581958,"Id":"784498924f7e844df75eacfd8486a2e6dc0a502978324fb0637ed6096c9fb3c8","Image":"busybox:latest","Names":["/jovial_mcclintock"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":"Exited (-1) 2 seconds ago"}
+      ,{"Command":"true","Created":1404581955,"Id":"e2081400cd60ababbf4197bf4b424cce8455241cec9dfed0ab77e01a7c218eef","Image":"busybox:latest","Names":["/example"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":""}
+      ,{"Command":"true","Created":1404581952,"Id":"b461a280c429a89a9408746f6155b730677515f0b4abeb87f8e56ce4b61754ac","Image":"busybox:latest","Names":["/dreamy_davinci"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":""}
+      ,{"Command":"/bin/sh -c 'exec docker-registry'","Created":1404581922,"Id":"800b5f375acf123df744368adee21811dff338b4a99986048ac3d3b9b644c16a","Image":"registry:0.7.3","Names":["/loving_lalande"],"Ports":[{"IP":"0.0.0.0","PrivatePort":5000,"PublicPort":5000,"Type":"tcp"}],"SizeRootFs":0,"SizeRw":5246,"Status":"Up 38 seconds"}
       ]
-- recorded: 2014-07-03T16:22:12.611Z
+- recorded: 2014-07-05T17:39:21.501Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/2c68d4aa77e4b03b84a1b70282d91e00d83b73f426542483b0ab9ca732b657aa/stop
+    uri: http://172.17.42.1:4243/containers/10734fced134f62495ff92f28abdd1b4e1842cb691364b78f9d9cfd5a85d11b1/stop
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -82,4 +86,4 @@ interactions:
     status: 204
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Thu, 03 Jul 2014 16:22:12 GMT
+      Date: Sat, 05 Jul 2014 17:39:21 GMT

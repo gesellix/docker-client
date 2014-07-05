@@ -1,10 +1,10 @@
 !tape
 name: create container with name
 interactions:
-- recorded: 2014-07-02T17:23:21.839Z
+- recorded: 2014-07-05T17:43:56.295Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest
+    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -14,12 +14,12 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Wed, 02 Jul 2014 17:23:16 GMT
+      Date: Sat, 05 Jul 2014 17:43:54 GMT
     body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
       progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
       :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
       a9eb17255234\"}"
-- recorded: 2014-07-02T17:23:21.931Z
+- recorded: 2014-07-05T17:43:56.328Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=example
@@ -34,6 +34,6 @@ interactions:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Wed, 02 Jul 2014 17:23:19 GMT
+      Date: Sat, 05 Jul 2014 17:43:56 GMT
     body: |
       {"Id":"3ed1fe86d54fafa09b57f7d6ac27b8b89a627eb733963e87d1c047eab098aa9f","Warnings":null}

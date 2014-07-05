@@ -63,10 +63,10 @@ class DockerClientImplSpec extends Specification {
   def "tag image"() {
     given:
     def imageId = dockerClient.pull("scratch")
-    def repositoryName = "yetAnotherTag"
+    def imageName = "yetAnotherTag"
 
     when:
-    def buildResult = dockerClient.tag(imageId, repositoryName)
+    def buildResult = dockerClient.tag(imageId, imageName)
 
     then:
     buildResult == 201
@@ -77,11 +77,11 @@ class DockerClientImplSpec extends Specification {
     given:
     def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
     def imageId = dockerClient.pull("scratch")
-    def repositoryName = "gesellix/test"
-    dockerClient.tag(imageId, repositoryName)
+    def imageName = "gesellix/test"
+    dockerClient.tag(imageId, imageName)
 
     when:
-    def pushResult = dockerClient.push(repositoryName, authBase64Encoded)
+    def pushResult = dockerClient.push(imageName, authBase64Encoded)
 
     then:
     pushResult.status == "Pushing tag for rev [511136ea3c5a] on {https://registry-1.docker.io/v1/repositories/gesellix/test/tags/latest}"
@@ -92,11 +92,11 @@ class DockerClientImplSpec extends Specification {
     given:
     def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
     def imageId = dockerClient.pull("scratch")
-    def repositoryName = "gesellix/test"
-    dockerClient.tag(imageId, repositoryName)
+    def imageName = "gesellix/test"
+    dockerClient.tag(imageId, imageName)
 
     when:
-    def pushResult = dockerClient.push(repositoryName, authBase64Encoded, "localhost:5000")
+    def pushResult = dockerClient.push(imageName, authBase64Encoded, "localhost:5000")
 
     then:
     pushResult.status == "Pushing tag for rev [511136ea3c5a] on {http://localhost:5000/v1/repositories/gesellix/test/tags/latest}"
@@ -106,11 +106,11 @@ class DockerClientImplSpec extends Specification {
   def "push image with undefined authentication"() {
     given:
     def imageId = dockerClient.pull("scratch")
-    def repositoryName = "gesellix/test"
-    dockerClient.tag(imageId, repositoryName)
+    def imageName = "gesellix/test"
+    dockerClient.tag(imageId, imageName)
 
     when:
-    def pushResult = dockerClient.push(repositoryName, null, "localhost:5000")
+    def pushResult = dockerClient.push(imageName, null, "localhost:5000")
 
     then:
     pushResult.status == "Pushing tag for rev [511136ea3c5a] on {http://localhost:5000/v1/repositories/gesellix/test/tags/latest}"
@@ -125,14 +125,23 @@ class DockerClientImplSpec extends Specification {
     imageId == "511136ea3c5a"
   }
 
+  @Betamax(tape = 'pull image from private registry', match = [MatchRule.method, MatchRule.path, MatchRule.query])
+  def "pull image from private registry"() {
+    when:
+    def imageId = dockerClient.pull("scratch", "", "localhost:5000")
+
+    then:
+    imageId == "511136ea3c5a"
+  }
+
   @Betamax(tape = 'list containers', match = [MatchRule.method, MatchRule.path])
   def "get containers"() {
     given:
     def imageId = dockerClient.pull("busybox", "latest")
-    def repositoryName = "list_containers"
+    def imageName = "list_containers"
     def containerConfig = ["Cmd"  : ["true || false"],
                            "Image": "list_containers"]
-    dockerClient.tag(imageId, repositoryName)
+    dockerClient.tag(imageId, imageName)
     def containerId = dockerClient.createContainer(containerConfig).Id
     dockerClient.startContainer(containerId)
 

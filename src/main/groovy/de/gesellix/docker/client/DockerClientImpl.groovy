@@ -62,10 +62,10 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def tag(imageId, repositoryName) {
+  def tag(imageId, name) {
     logger.info "tag image"
     getDelegate().post([path : "/images/${imageId}/tag".toString(),
-                        query: [repo : repositoryName,
+                        query: [repo: name,
                                 force: 0]]) { response ->
       logger.info "${response.statusLine}"
       return response.statusLine.statusCode
@@ -73,17 +73,17 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def push(repositoryName, authBase64Encoded = ".", registry = "") {
-    logger.info "push image '${repositoryName}'"
+  def push(imageName, authBase64Encoded = ".", registry = "") {
+    logger.info "push image '${imageName}'"
 
-    def actualRepositoryName = repositoryName
+    def actualImageName = imageName
     if (registry) {
-      actualRepositoryName = "$registry/$repositoryName".toString()
-      tag(repositoryName, actualRepositoryName)
+      actualImageName = "$registry/$imageName".toString()
+      tag(imageName, actualImageName)
     }
     def responseHandler = new ChunkedResponseHandler()
     getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
-    getDelegate().post([path: "/images/${actualRepositoryName}/push".toString(),
+    getDelegate().post([path: "/images/${actualImageName}/push".toString(),
                         query  : ["registry": registry],
                         headers: ["X-Registry-Auth": authBase64Encoded ?: "."]])
 
@@ -93,14 +93,20 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def pull(imageName, tag = "") {
+  def pull(imageName, tag = "", registry = "") {
     logger.info "pull image '${imageName}'..."
+
+    def actualImageName = imageName
+    if (registry) {
+      actualImageName = "$registry/$imageName".toString()
+    }
 
     def responseHandler = new ChunkedResponseHandler()
     getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
     getDelegate().post([path : "/images/create",
-                        query: [fromImage: imageName,
-                                tag      : tag]])
+                        query: [fromImage: actualImageName,
+                                tag      : tag,
+                                registry : registry]])
 
     def lastResponseDetail = responseHandler.lastResponseDetail
     logger.info "${lastResponseDetail}"
@@ -110,29 +116,29 @@ class DockerClientImpl implements DockerClient {
   @Override
   def createContainer(containerConfig, name = "") {
     logger.info "create container..."
-      def defaultContainerConfig = ["Hostname"      : "",
-                                    "User"          : "",
-                                    "Memory"        : 0,
-                                    "MemorySwap"    : 0,
-                                    "AttachStdin"   : false,
-                                    "AttachStdout"  : true,
-                                    "AttachStderr"  : true,
-                                    "PortSpecs"     : null,
-                                    "Tty"           : false,
-                                    "OpenStdin"     : false,
-                                    "StdinOnce"     : false,
-                                    "Env"           : null,
-                                    "Cmd"           : [],
-                                    "Image"         : null,
-                                    "Volumes"       : [],
-                                    "WorkingDir"    : "",
-                                    "DisableNetwork": false,
-                                    "ExposedPorts"  : [
-                                    ]]
+    def defaultContainerConfig = ["Hostname"      : "",
+                                  "User"          : "",
+                                  "Memory"        : 0,
+                                  "MemorySwap"    : 0,
+                                  "AttachStdin"   : false,
+                                  "AttachStdout"  : true,
+                                  "AttachStderr"  : true,
+                                  "PortSpecs"     : null,
+                                  "Tty"           : false,
+                                  "OpenStdin"     : false,
+                                  "StdinOnce"     : false,
+                                  "Env"           : null,
+                                  "Cmd"           : [],
+                                  "Image"         : null,
+                                  "Volumes"       : [],
+                                  "WorkingDir"    : "",
+                                  "DisableNetwork": false,
+                                  "ExposedPorts"  : [
+                                  ]]
 
-      def actualContainerConfig = defaultContainerConfig + containerConfig
+    def actualContainerConfig = defaultContainerConfig + containerConfig
 
-      getDelegate().post([path              : "/containers/create".toString(),
+    getDelegate().post([path: "/containers/create".toString(),
                         query             : ["name": name],
                         body              : actualContainerConfig,
                         requestContentType: ContentType.JSON]) { response, reader ->

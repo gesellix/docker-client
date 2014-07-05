@@ -1,0 +1,20 @@
+!tape
+name: pull image from private registry
+interactions:
+- recorded: 2014-07-05T17:46:07.123Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/images/create?fromImage=localhost%3A5000%2Fscratch&tag=&registry=localhost%3A5000
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Sat, 05 Jul 2014 17:46:07 GMT
+    body: "{\"status\":\"Pulling repository localhost:5000/scratch\"}\r\n{\"status\":\"Pulling image (latest) from localhost:5000/scratch\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling image (latest) from localhost:5000/scratch, endpoint:\
+      \ http://localhost:5000/v1/\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\"\
+      :\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}"

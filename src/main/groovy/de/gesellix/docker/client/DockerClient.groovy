@@ -10,15 +10,17 @@ interface DockerClient {
 
   def build(InputStream buildContext, removeIntermediateContainers)
 
-  def tag(imageId, repositoryName)
+  def tag(imageId, name)
 
-  def push(repositoryName, authBase64Encoded)
+  def push(imageName, authBase64Encoded)
 
-  def push(repositoryName, authBase64Encoded, registry)
+  def push(imageName, authBase64Encoded, registry)
 
   def pull(imageName)
 
   def pull(imageName, tag)
+
+  def pull(imageName, tag, registry)
 
   def ps()
 
