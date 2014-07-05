@@ -18,7 +18,7 @@ class TarFileBuilderTest extends Specification {
     archivedDirectory.name.endsWith(".tar")
     and:
     def collectedEntryNames = collectEntryNames(archivedDirectory)
-    collectedEntryNames == ["subdirectory/", "subdirectory/payload.txt", "Dockerfile"]
+    collectedEntryNames.sort() == ["subdirectory/", "subdirectory/payload.txt", "Dockerfile"].sort()
   }
 
   def collectEntryNames(File tarArchive) {
