@@ -2,4 +2,4 @@ language: java
 jdk: openjdk7
 env:
 - TERM=dumb
-script: ./gradlew clean build cobertura coveralls
+script: ./gradlew clean build cobertura coveralls --stacktrace --info
