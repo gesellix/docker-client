@@ -14,12 +14,12 @@ apply plugin: 'groovy'
 
 apply plugin: 'idea'
 
-apply plugin: 'cobertura'
+apply plugin: 'jacoco'
 apply plugin: 'coveralls'
 
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
-apply plugin: 'bintray'
+apply plugin: 'com.jfrog.bintray'
 
 apply plugin: 'versions'
 
@@ -31,8 +31,6 @@ task sourcesJar(type: Jar) {
   from sourceSets.main.allSource
 }
 
-cobertura.coverageSourceDirs = sourceSets.main.groovy.srcDirs
-
 ext {
   artifactVersion = new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss').format(new Date())
   bintrayDryRun = false
@@ -43,6 +41,7 @@ def dependencyVersions = [
     'commons-lang:commons-lang'                            : '2.6',
     'commons-logging:commons-logging'                      : '1.1.3',
     'org.apache.httpcomponents:httpclient'                 : '4.3',
+    'org.apache.httpcomponents:httpmime'                   : '4.3',
     'org.codehaus.groovy:groovy-all'                       : '2.2.2',
     'org.codehaus.groovy.modules.http-builder:http-builder': '0.7.1',
     'org.hamcrest:hamcrest-core'                           : '1.3',
@@ -76,7 +75,10 @@ configurations.all {
   }
 }
 
-cobertura.coverageFormats = ['html', 'xml']
+jacocoTestReport.reports {
+  xml.enabled = true
+  html.enabled = true
+}
 
 artifacts {
   archives sourcesJar
