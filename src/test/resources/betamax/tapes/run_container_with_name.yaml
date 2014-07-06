@@ -1,7 +1,7 @@
 !tape
 name: run container with name
 interactions:
-- recorded: 2014-07-05T17:39:21.294Z
+- recorded: 2014-07-06T21:16:32.747Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
@@ -14,12 +14,12 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sat, 05 Jul 2014 17:39:19 GMT
+      Date: Sun, 06 Jul 2014 21:16:30 GMT
     body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
       progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
       :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
       a9eb17255234\"}"
-- recorded: 2014-07-05T17:39:21.331Z
+- recorded: 2014-07-06T21:16:32.775Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=example-name
@@ -34,26 +34,26 @@ interactions:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Sat, 05 Jul 2014 17:39:21 GMT
+      Date: Sun, 06 Jul 2014 21:16:32 GMT
     body: |
-      {"Id":"10734fced134f62495ff92f28abdd1b4e1842cb691364b78f9d9cfd5a85d11b1","Warnings":null}
-- recorded: 2014-07-05T17:39:21.419Z
+      {"Id":"4f3851283b6e994c7d0e5964ccef3675b1a893874c409baa44bab086d8c5d4ff","Warnings":null}
+- recorded: 2014-07-06T21:16:32.861Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/10734fced134f62495ff92f28abdd1b4e1842cb691364b78f9d9cfd5a85d11b1/start
+    uri: http://172.17.42.1:4243/containers/4f3851283b6e994c7d0e5964ccef3675b1a893874c409baa44bab086d8c5d4ff/start
     headers:
       Accept: '*/*'
-      Content-Length: '2'
+      Content-Length: '123'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
-    body: '{}'
+    body: '{"Binds":[],"Links":[],"LxcConf":[],"PortBindings":[],"PublishAllPorts":false,"Privileged":false,"Dns":[],"VolumesFrom":[]}'
   response:
     status: 204
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Sat, 05 Jul 2014 17:39:21 GMT
-- recorded: 2014-07-05T17:39:21.449Z
+      Date: Sun, 06 Jul 2014 21:16:32 GMT
+- recorded: 2014-07-06T21:16:32.912Z
   request:
     method: GET
     uri: http://172.17.42.1:4243/containers/json?all=true&size=true
@@ -65,18 +65,24 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sat, 05 Jul 2014 17:39:21 GMT
+      Date: Sun, 06 Jul 2014 21:16:32 GMT
     body: |-
-      [{"Command":"sh -c 'ping 127.0.0.1'","Created":1404581961,"Id":"10734fced134f62495ff92f28abdd1b4e1842cb691364b78f9d9cfd5a85d11b1","Image":"busybox:latest","Names":["/example-name"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":"Up Less than a second"}
-      ,{"Command":"sh -c 'ping 127.0.0.1'","Created":1404581958,"Id":"784498924f7e844df75eacfd8486a2e6dc0a502978324fb0637ed6096c9fb3c8","Image":"busybox:latest","Names":["/jovial_mcclintock"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":"Exited (-1) 2 seconds ago"}
-      ,{"Command":"true","Created":1404581955,"Id":"e2081400cd60ababbf4197bf4b424cce8455241cec9dfed0ab77e01a7c218eef","Image":"busybox:latest","Names":["/example"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":""}
-      ,{"Command":"true","Created":1404581952,"Id":"b461a280c429a89a9408746f6155b730677515f0b4abeb87f8e56ce4b61754ac","Image":"busybox:latest","Names":["/dreamy_davinci"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":""}
-      ,{"Command":"/bin/sh -c 'exec docker-registry'","Created":1404581922,"Id":"800b5f375acf123df744368adee21811dff338b4a99986048ac3d3b9b644c16a","Image":"registry:0.7.3","Names":["/loving_lalande"],"Ports":[{"IP":"0.0.0.0","PrivatePort":5000,"PublicPort":5000,"Type":"tcp"}],"SizeRootFs":0,"SizeRw":5246,"Status":"Up 38 seconds"}
+      [{"Command":"sh -c 'ping 127.0.0.1'","Created":1404681392,"Id":"4f3851283b6e994c7d0e5964ccef3675b1a893874c409baa44bab086d8c5d4ff","Image":"busybox:latest","Names":["/example-name"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":"Up Less than a second"}
+      ,{"Command":"sh -c 'ping 127.0.0.1'","Created":1404681389,"Id":"40094c8693c89a7dcf9ca0db4198b2c6b490855166526535f62fb837bb6c7f38","Image":"busybox:latest","Names":["/pensive_feynman"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":"Exited (-1) 3 seconds ago"}
+      ,{"Command":"sh -c 'ping 127.0.0.1'","Created":1404681386,"Id":"23c36f63316d9f5d36bc784eef87ef7ce9904e12dc065e9cd3ce49c1819f40d0","Image":"busybox:latest","Names":["/sad_engelbart"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":"Exited (-1) 6 seconds ago"}
+      ,{"Command":"true","Created":1404681383,"Id":"42b2dae0e20f1d4ad1c6fed02cdf67ae0769bf4c5fe71c6fad06a808da957d31","Image":"busybox:latest","Names":["/mad_sinoussi"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":"Exited (0) 9 seconds ago"}
+      ,{"Command":"true","Created":1404681380,"Id":"93ef71b2892dfdeb4b657fca1a36651e6a397f2bfbc198f29aaef0ec18a059e1","Image":"busybox:latest","Names":["/example"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":""}
+      ,{"Command":"true","Created":1404681377,"Id":"934e64deb11bfa504ac9b8a0ec6acfe85359749a2712e2436f998b78ca5dc310","Image":"busybox:latest","Names":["/tender_newton"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":""}
+      ,{"Command":"true || false","Created":1404681374,"Id":"f9c4ec2b2e213c4645fee17acca2ed88564ce52c0a44bcd686a3a4d2843218ae","Image":"busybox:latest","Names":["/cranky_babbage"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":""}
+      ,{"Command":"true || false","Created":1404681371,"Id":"5a06e7b9f2bae8082adb82b3bcfb6e73148717737cd64d9b92f3dc833a33556b","Image":"busybox:latest","Names":["/mad_goldstine"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":""}
+      ,{"Command":"sh -c 'ping 127.0.0.1'","Created":1404674040,"Id":"ddd321102c20d45189671838e684f56b1fb24d987d25b91c7209d47cedd3bcd3","Image":"busybox:latest","Names":["/backstabbing_jones"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":"Exited (-1) 2 hours ago"}
+      ,{"Command":"true","Created":1404673680,"Id":"79b370dd3074d99c00e4aae825484ff2b30261c375f9559f5790aedeae45574d","Image":"busybox:latest","Names":["/drunk_heisenberg"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":"Exited (0) 2 hours ago"}
+      ,{"Command":"/bin/sh -c 'exec docker-registry'","Created":1404660708,"Id":"1e2ff0672054372bbfbeb124cafe4ba92e92deba74184a85b684ce5be3b385c7","Image":"registry:0.7.3","Names":["/clever_fermat"],"Ports":[{"IP":"0.0.0.0","PrivatePort":5000,"PublicPort":5000,"Type":"tcp"}],"SizeRootFs":0,"SizeRw":1196726,"Status":"Up 5 hours"}
       ]
-- recorded: 2014-07-05T17:39:21.501Z
+- recorded: 2014-07-06T21:16:32.946Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/10734fced134f62495ff92f28abdd1b4e1842cb691364b78f9d9cfd5a85d11b1/stop
+    uri: http://172.17.42.1:4243/containers/4f3851283b6e994c7d0e5964ccef3675b1a893874c409baa44bab086d8c5d4ff/stop
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -86,4 +92,4 @@ interactions:
     status: 204
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Sat, 05 Jul 2014 17:39:21 GMT
+      Date: Sun, 06 Jul 2014 21:16:32 GMT

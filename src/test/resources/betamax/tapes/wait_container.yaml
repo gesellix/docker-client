@@ -1,7 +1,7 @@
 !tape
-name: start container
+name: wait container
 interactions:
-- recorded: 2014-07-06T21:16:23.626Z
+- recorded: 2014-07-06T21:16:38.679Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
@@ -14,33 +14,33 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sun, 06 Jul 2014 21:16:21 GMT
+      Date: Sun, 06 Jul 2014 21:16:36 GMT
     body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
       progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
       :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
       a9eb17255234\"}"
-- recorded: 2014-07-06T21:16:23.652Z
+- recorded: 2014-07-06T21:16:38.707Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=
     headers:
       Accept: '*/*'
-      Content-Length: '267'
+      Content-Length: '289'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
-    body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["true"],"Image":"a9eb17255234","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":[]}'
+    body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"busybox:latest","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":[]}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Sun, 06 Jul 2014 21:16:23 GMT
+      Date: Sun, 06 Jul 2014 21:16:38 GMT
     body: |
-      {"Id":"42b2dae0e20f1d4ad1c6fed02cdf67ae0769bf4c5fe71c6fad06a808da957d31","Warnings":null}
-- recorded: 2014-07-06T21:16:23.733Z
+      {"Id":"a0f14bf7a40a4c72af7edc0ca6e6d353855872d7c4659cef2184a4821f73126d","Warnings":null}
+- recorded: 2014-07-06T21:16:38.789Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/42b2dae0e20f1d4ad1c6fed02cdf67ae0769bf4c5fe71c6fad06a808da957d31/start
+    uri: http://172.17.42.1:4243/containers/a0f14bf7a40a4c72af7edc0ca6e6d353855872d7c4659cef2184a4821f73126d/start
     headers:
       Accept: '*/*'
       Content-Length: '123'
@@ -52,4 +52,34 @@ interactions:
     status: 204
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Sun, 06 Jul 2014 21:16:23 GMT
+      Date: Sun, 06 Jul 2014 21:16:38 GMT
+- recorded: 2014-07-06T21:16:38.834Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/a0f14bf7a40a4c72af7edc0ca6e6d353855872d7c4659cef2184a4821f73126d/stop
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 204
+    headers:
+      Content-Type: text/plain; charset=utf-8
+      Date: Sun, 06 Jul 2014 21:16:38 GMT
+- recorded: 2014-07-06T21:16:38.853Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/a0f14bf7a40a4c72af7edc0ca6e6d353855872d7c4659cef2184a4821f73126d/wait
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Sun, 06 Jul 2014 21:16:38 GMT
+    body: |
+      {"StatusCode":-1}

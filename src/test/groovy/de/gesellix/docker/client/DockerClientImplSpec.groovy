@@ -56,7 +56,7 @@ class DockerClientImplSpec extends Specification {
     def buildResult = dockerClient.build(buildContext)
 
     then:
-    buildResult == "d272ea9847fb"
+    buildResult == "7efe20b8e170"
   }
 
   @Betamax(tape = 'tag image', match = [MatchRule.method, MatchRule.path])
@@ -127,6 +127,10 @@ class DockerClientImplSpec extends Specification {
 
   @Betamax(tape = 'pull image from private registry', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "pull image from private registry"() {
+    given:
+    dockerClient.pull("scratch")
+    dockerClient.push("scratch", "", "localhost:5000")
+
     when:
     def imageId = dockerClient.pull("scratch", "", "localhost:5000")
 
@@ -139,9 +143,9 @@ class DockerClientImplSpec extends Specification {
     given:
     def imageId = dockerClient.pull("busybox", "latest")
     def imageName = "list_containers"
-    def containerConfig = ["Cmd"  : ["true || false"],
-                           "Image": "list_containers"]
     dockerClient.tag(imageId, imageName)
+    def containerConfig = ["Cmd"  : ["true"],
+                           "Image": imageName]
     def containerId = dockerClient.createContainer(containerConfig).Id
     dockerClient.startContainer(containerId)
 
@@ -149,11 +153,11 @@ class DockerClientImplSpec extends Specification {
     def containers = dockerClient.ps()
 
     then:
-    ["Command"   : "true || false",
-     "Created"   : 1403447968,
-     "Id"        : "795cdc234ed9684f7e7bad454b4499e9d359b5ed91940269a8fe7d0e2028c16b",
+    ["Command"   : "true",
+     "Created"   : 1404683249,
+     "Id"        : "70a1534434ec4ee0708bdfccef5c38ceee28f9023a0b1ef42c788cfc2db13428",
      "Image"     : "busybox:latest",
-     "Names"     : ["/sharp_hopper"],
+     "Names"     : ["/berserk_colden"],
      "Ports"     : [],
      "SizeRootFs": 0,
      "SizeRw"    : 0,
@@ -176,7 +180,7 @@ class DockerClientImplSpec extends Specification {
     def containerInspection = dockerClient.inspectContainer(containerId)
 
     then:
-    [HostnamePath   : "/var/lib/docker/containers/b38eefac713c3fa55eddf80b79d35d4e8709b6f75c2808406d0a1f806928584b/hostname",
+    [HostnamePath   : "/var/lib/docker/containers/90eb75b01e8223d01ac14b9ad925aff5755e16f80b1341a914c2d5ceb684b472/hostname",
      Config         : [User           : '',
                        OnBuild        : null,
                        Tty            : false,
@@ -198,10 +202,10 @@ class DockerClientImplSpec extends Specification {
                        Image          : "inspect_container",
                        AttachStdin    : false,
                        PortSpecs      : null,
-                       Hostname       : "b38eefac713c",
+                       Hostname       : "90eb75b01e82",
                        Volumes        : null,
                        OpenStdin      : false],
-     ResolvConfPath : "/var/lib/docker/containers/b38eefac713c3fa55eddf80b79d35d4e8709b6f75c2808406d0a1f806928584b/resolv.conf",
+     ResolvConfPath : "/var/lib/docker/containers/90eb75b01e8223d01ac14b9ad925aff5755e16f80b1341a914c2d5ceb684b472/resolv.conf",
      HostConfig     : [Dns            : [],
                        ContainerIDFile: '',
                        PublishAllPorts: true,
@@ -217,9 +221,9 @@ class DockerClientImplSpec extends Specification {
      Path           : "true || false",
      ProcessLabel   : '',
      Driver         : "aufs",
-     Name           : "/agitated_pasteur",
+     Name           : "/agitated_wozniak",
      Args           : [],
-     Created        : "2014-07-05T18:56:36.829260762Z",
+     Created        : "2014-07-06T21:22:49.728215358Z",
      State          : [ExitCode  : 0,
                        Paused    : false,
                        Running   : false,
@@ -228,14 +232,14 @@ class DockerClientImplSpec extends Specification {
                        FinishedAt: "0001-01-01T00:00:00Z"],
      ExecDriver     : "native-0.2",
      Image          : "a9eb172552348a9a49180694790b33a1097f546456d041b6e82e4d7716ddb721",
-     Id             : "b38eefac713c3fa55eddf80b79d35d4e8709b6f75c2808406d0a1f806928584b",
+     Id             : "90eb75b01e8223d01ac14b9ad925aff5755e16f80b1341a914c2d5ceb684b472",
      NetworkSettings: [IPPrefixLen: 0,
                        IPAddress  : '',
                        Gateway    : '',
                        Bridge     : '',
                        PortMapping: null,
                        Ports      : null],
-     HostsPath      : "/var/lib/docker/containers/b38eefac713c3fa55eddf80b79d35d4e8709b6f75c2808406d0a1f806928584b/hosts",
+     HostsPath      : "/var/lib/docker/containers/90eb75b01e8223d01ac14b9ad925aff5755e16f80b1341a914c2d5ceb684b472/hosts",
      MountLabel     : '',
      Volumes        : [:]] == containerInspection
   }
@@ -265,7 +269,7 @@ class DockerClientImplSpec extends Specification {
     def containerInfo = dockerClient.createContainer(containerConfig)
 
     then:
-    containerInfo.Id == "ad94b0da235a3bc79509a812f52161d7ff2ddc235ced3751aee3e6b12a30705f"
+    containerInfo.Id == "934e64deb11bfa504ac9b8a0ec6acfe85359749a2712e2436f998b78ca5dc310"
   }
 
   @Betamax(tape = 'create container with name', match = [MatchRule.method, MatchRule.path, MatchRule.query])
@@ -279,7 +283,7 @@ class DockerClientImplSpec extends Specification {
     def containerInfo = dockerClient.createContainer(containerConfig, "example")
 
     then:
-    containerInfo.Id == "3ed1fe86d54fafa09b57f7d6ac27b8b89a627eb733963e87d1c047eab098aa9f"
+    containerInfo.Id == "93ef71b2892dfdeb4b657fca1a36651e6a397f2bfbc198f29aaef0ec18a059e1"
   }
 
   @Betamax(tape = 'start container', match = [MatchRule.method, MatchRule.path])
@@ -387,6 +391,26 @@ class DockerClientImplSpec extends Specification {
 
     then:
     result == 204
+  }
+
+  @Betamax(tape = 'wait container', match = [MatchRule.method, MatchRule.path])
+  def "wait container"() {
+    given:
+    def imageName = "busybox"
+    def tag = "latest"
+    def cmds = ["sh", "-c", "ping 127.0.0.1"]
+    def containerConfig = ["Cmd": cmds]
+    def hostConfig = [:]
+    def containerStatus = dockerClient.run(imageName, containerConfig, hostConfig, tag)
+    dockerClient.stop(containerStatus.container.Id)
+
+    when:
+    def result = dockerClient.wait(containerStatus.container.Id)
+
+    then:
+    result.status.statusCode == 200
+    and:
+    result.response.StatusCode == -1
   }
 
   @Betamax(tape = 'rm container', match = [MatchRule.method, MatchRule.path])

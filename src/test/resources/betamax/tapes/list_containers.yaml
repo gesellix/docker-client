@@ -1,10 +1,10 @@
 !tape
 name: list containers
 interactions:
-- recorded: 2014-06-22T14:39:28.388Z
+- recorded: 2014-07-06T21:47:29.808Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest
+    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -14,12 +14,12 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sun, 22 Jun 2014 14:39:25 GMT
+      Date: Sun, 06 Jul 2014 21:47:27 GMT
     body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
       progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
       :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
       a9eb17255234\"}"
-- recorded: 2014-06-22T14:39:28.453Z
+- recorded: 2014-07-06T21:47:29.831Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/a9eb17255234/tag?repo=list_containers&force=0
@@ -32,30 +32,30 @@ interactions:
     status: 201
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Sun, 22 Jun 2014 14:39:28 GMT
+      Date: Sun, 06 Jul 2014 21:47:29 GMT
     body: ''
-- recorded: 2014-06-22T14:39:28.524Z
+- recorded: 2014-07-06T21:47:29.857Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/create
+    uri: http://172.17.42.1:4243/containers/create?name=
     headers:
       Accept: '*/*'
-      Content-Length: '51'
+      Content-Length: '270'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
-    body: '{"Cmd":["true || false"],"Image":"list_containers"}'
+    body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["true"],"Image":"list_containers","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":[]}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Sun, 22 Jun 2014 14:39:28 GMT
+      Date: Sun, 06 Jul 2014 21:47:29 GMT
     body: |
-      {"Id":"795cdc234ed9684f7e7bad454b4499e9d359b5ed91940269a8fe7d0e2028c16b","Warnings":null}
-- recorded: 2014-06-22T14:39:28.590Z
+      {"Id":"70a1534434ec4ee0708bdfccef5c38ceee28f9023a0b1ef42c788cfc2db13428","Warnings":null}
+- recorded: 2014-07-06T21:47:29.937Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/795cdc234ed9684f7e7bad454b4499e9d359b5ed91940269a8fe7d0e2028c16b/start
+    uri: http://172.17.42.1:4243/containers/70a1534434ec4ee0708bdfccef5c38ceee28f9023a0b1ef42c788cfc2db13428/start
     headers:
       Accept: '*/*'
       Content-Length: '2'
@@ -67,8 +67,8 @@ interactions:
     status: 204
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Sun, 22 Jun 2014 14:39:28 GMT
-- recorded: 2014-06-22T14:39:28.611Z
+      Date: Sun, 06 Jul 2014 21:47:29 GMT
+- recorded: 2014-07-06T21:47:29.980Z
   request:
     method: GET
     uri: http://172.17.42.1:4243/containers/json?all=true&size=true
@@ -80,7 +80,7 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sun, 22 Jun 2014 14:39:28 GMT
+      Date: Sun, 06 Jul 2014 21:47:29 GMT
     body: |-
-      [{"Command":"true || false","Created":1403447968,"Id":"795cdc234ed9684f7e7bad454b4499e9d359b5ed91940269a8fe7d0e2028c16b","Image":"busybox:latest","Names":["/sharp_hopper"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":"Up Less than a second"}
+      [{"Command":"true","Created":1404683249,"Id":"70a1534434ec4ee0708bdfccef5c38ceee28f9023a0b1ef42c788cfc2db13428","Image":"busybox:latest","Names":["/berserk_colden"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":"Up Less than a second"}
       ]

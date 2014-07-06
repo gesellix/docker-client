@@ -1,13 +1,13 @@
 !tape
 name: auth
 interactions:
-- recorded: 2014-06-22T14:26:35.305Z
+- recorded: 2014-07-06T21:15:46.641Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/auth
     headers:
       Accept: '*/*'
-      Content-Length: '123'
+      Content-Length: '134'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
@@ -16,6 +16,6 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sun, 22 Jun 2014 14:26:35 GMT
+      Date: Sun, 06 Jul 2014 21:15:46 GMT
     body: |
       {"Status":"Login Succeeded"}

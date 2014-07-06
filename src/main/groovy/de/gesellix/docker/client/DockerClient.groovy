@@ -44,6 +44,8 @@ interface DockerClient {
 
   def stop(containerId)
 
+  def wait(containerId)
+
   def rm(containerId)
 
   def rmi()
