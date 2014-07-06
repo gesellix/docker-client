@@ -110,6 +110,9 @@ bintray {
     desc = 'A Docker client written in Groovy'
     licenses = ['Apache-2.0']
     labels = ['docker']
+    version = [
+        name: artifactVersion
+    ]
   }
   dryRun = bintrayDryRun
 }
