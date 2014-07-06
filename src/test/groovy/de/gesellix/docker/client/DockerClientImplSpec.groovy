@@ -427,4 +427,13 @@ class DockerClientImplSpec extends Specification {
     then:
     rmContainerResult == 204
   }
+
+  @Betamax(tape = 'rm unkown container', match = [MatchRule.method, MatchRule.path])
+  def "rm unknown container"() {
+    when:
+    def rmContainerResult = dockerClient.rm("a_not_so_random_id")
+
+    then:
+    rmContainerResult == 404
+  }
 }

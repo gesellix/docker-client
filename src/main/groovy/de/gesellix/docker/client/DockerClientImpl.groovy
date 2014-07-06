@@ -24,6 +24,7 @@ class DockerClientImpl implements DockerClient {
       this.delegate = new RESTClient(dockerHost)
       this.delegate.handler.failure = { response ->
         logger.error "Failure: $response.statusLine"
+        return response
       }
       logger.info "using docker at '${dockerHost}'"
     }
