@@ -15,6 +15,7 @@ apply plugin: 'groovy'
 apply plugin: 'idea'
 
 apply plugin: 'jacoco'
+apply plugin: 'cobertura'
 apply plugin: 'coveralls'
 
 apply plugin: 'maven'
@@ -30,6 +31,8 @@ task sourcesJar(type: Jar) {
   classifier 'sources'
   from sourceSets.main.allSource
 }
+
+cobertura.coverageSourceDirs = sourceSets.main.groovy.srcDirs
 
 ext {
   artifactVersion = new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss').format(new Date())
@@ -74,6 +77,8 @@ configurations.all {
     force dependencyVersions.collect { k, v -> "$k:$v" }
   }
 }
+
+cobertura.coverageFormats = ['html', 'xml']
 
 jacocoTestReport.reports {
   xml.enabled = true
