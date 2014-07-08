@@ -10,14 +10,14 @@ class TarFileBuilderTest extends Specification {
     given:
     def resource = getClass().getResource('/docker/Dockerfile')
     def inputDirectory = new File(resource.toURI()).parentFile
+    def targetFile = File.createTempFile("buildContext", ".tar")
+    targetFile.deleteOnExit()
 
     when:
-    def archivedDirectory = TarFileBuilder.archiveTarFilesRecursively(inputDirectory, "archive-name")
+    TarFileBuilder.archiveTarFilesRecursively(inputDirectory, targetFile)
 
     then:
-    archivedDirectory.name.endsWith(".tar")
-    and:
-    def collectedEntryNames = collectEntryNames(archivedDirectory)
+    def collectedEntryNames = collectEntryNames(targetFile)
     collectedEntryNames.sort() == ["subdirectory/", "subdirectory/payload.txt", "Dockerfile"].sort()
   }
 
