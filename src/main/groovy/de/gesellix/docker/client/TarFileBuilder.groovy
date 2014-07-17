@@ -12,7 +12,11 @@ class TarFileBuilder {
 
   def static archiveTarFilesRecursively(File base, File targetFile) throws IOException {
     def files = []
-    base.eachFileRecurse { files << it }
+    base.eachFileRecurse {
+      if (it != targetFile) {
+        files << it
+      }
+    }
     logger.debug "found ${files.size()} files in buildContext."
     archiveTarFiles(base, files, targetFile)
   }
