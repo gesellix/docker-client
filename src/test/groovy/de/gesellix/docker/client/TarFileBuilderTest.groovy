@@ -32,6 +32,13 @@ class TarFileBuilderTest extends Specification {
     collectedEntryNames
   }
 
+  def "test ignoreFile"() {
+    when:
+    def ignoreFile = TarFileBuilder.ignoreFile([".git"], ".git/refs/remotes/")
+    then:
+    ignoreFile == true
+  }
+
   def "test relativize"() {
     when:
     def relativized = TarFileBuilder.relativize(new File("./base/dir"), new File("./base/dir/with/sub/dir"))
