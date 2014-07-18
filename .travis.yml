@@ -4,5 +4,6 @@ env:
   global:
     - TERM=dumb
     - secure: Q/v1TpiKjd5LvRGhx1PPICwE0Ve08OlhafLDSo7+AmvMYCvdU9HuSb0u6E8PM07rGP6hCtq3R0Lep7DNPeIjcySBoyCyfH922P/Nvlar6o3PhBMjXl6N/uz563FTUBjAj6iqCWl1qQKHXW3ENfqSL6BUhyQzmtrrr4RZdebjhxU=
+    - secure: qrgDjRVLQ7OE9BlZLHR9DBGYtU3POGygnF+hzImbd+mvvLHnSZ/4HbFOCmjteU0HrwAUownAWFEoZUdsf34L3fSNXUlOSA8f6woR3HeMSiNO1wBnmy2KC4VCbhH0DuVLhpojr3OlqE4eKg1aP6hzkNUuKg5u+aj9Mp6frSX1nO0=
 script: ./gradlew clean build cobertura coveralls --stacktrace --info
 #after_success: ./gradlew bintrayUpload --info
