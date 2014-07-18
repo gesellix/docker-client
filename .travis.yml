@@ -1,5 +1,8 @@
 language: java
 jdk: openjdk7
 env:
-- TERM=dumb
+  global:
+    - TERM=dumb
+    - secure: Q/v1TpiKjd5LvRGhx1PPICwE0Ve08OlhafLDSo7+AmvMYCvdU9HuSb0u6E8PM07rGP6hCtq3R0Lep7DNPeIjcySBoyCyfH922P/Nvlar6o3PhBMjXl6N/uz563FTUBjAj6iqCWl1qQKHXW3ENfqSL6BUhyQzmtrrr4RZdebjhxU=
 script: ./gradlew clean build cobertura coveralls --stacktrace --info
+#after_success: ./gradlew bintrayUpload --info

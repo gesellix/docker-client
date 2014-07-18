@@ -99,6 +99,9 @@ publishing {
   }
 }
 
+logger.warn "TRAVIS_SECURE_ENV_VARS: ${System.env.TRAVIS_SECURE_ENV_VARS}."
+logger.warn "FOO: ${System.env.FOO}."
+
 bintray {
   user = project["bintray.user"]
   key = project["bintray.key"]
