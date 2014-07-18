@@ -21,6 +21,25 @@ class TarFileBuilderTest extends Specification {
     collectedEntryNames.sort() == ["subdirectory/", "subdirectory/payload.txt", "Dockerfile"].sort()
   }
 
+  def "test archiveTarFilesRecursively excludes targetFile"() {
+    given:
+    def resource = getClass().getResource('/docker/Dockerfile')
+    def inputDirectory = new File(resource.toURI()).parentFile
+    def targetFile = new File(inputDirectory, "buildContext.tar")
+    targetFile.createNewFile()
+    targetFile.deleteOnExit()
+
+    when:
+    TarFileBuilder.archiveTarFilesRecursively(inputDirectory, targetFile)
+
+    then:
+    def collectedEntryNames = collectEntryNames(targetFile)
+    collectedEntryNames.sort() == ["subdirectory/", "subdirectory/payload.txt", "Dockerfile"].sort()
+
+    cleanup:
+    targetFile.delete()
+  }
+
   def collectEntryNames(File tarArchive) {
     def collectedEntryNames = []
     def tarArchiveInputStream = new TarArchiveInputStream(new FileInputStream(tarArchive))
@@ -30,6 +49,13 @@ class TarFileBuilderTest extends Specification {
       collectedEntryNames << entry.name
     }
     collectedEntryNames
+  }
+
+  def "test ignoreFile"() {
+    when:
+    def ignoreFile = TarFileBuilder.ignoreFile([".git"], ".git/refs/remotes/")
+    then:
+    ignoreFile == true
   }
 
   def "test relativize"() {
