@@ -99,12 +99,11 @@ publishing {
   }
 }
 
-logger.warn "TRAVIS_SECURE_ENV_VARS: ${System.env.TRAVIS_SECURE_ENV_VARS}."
-logger.warn "FOO: ${System.env.FOO}."
+logger.warn "uses TRAVIS_SECURE_ENV_VARS: ${System.env.TRAVIS_SECURE_ENV_VARS}."
 
 bintray {
-  user = project["bintray.user"]
-  key = project["bintray.key"]
+  user = System.env.BINTRAY_USER ?: project["bintray.user"]
+  key = System.env.BINTRAY_API_KEY ?: project["bintray.key"]
   publications = ['dockerClient']
   pkg {
     repo = 'docker-utils'
