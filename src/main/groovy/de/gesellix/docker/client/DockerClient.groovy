@@ -2,6 +2,10 @@ package de.gesellix.docker.client
 
 interface DockerClient {
 
+  def info()
+
+  def version()
+
   def auth(authDetails)
 
   def encodeAuthConfig(authConfig)

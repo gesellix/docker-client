@@ -59,6 +59,19 @@ class DockerClientImplSpec extends Specification {
     buildResult == "7efe20b8e170"
   }
 
+  @Betamax(tape = 'build image with unknown base image', match = [MatchRule.method, MatchRule.path])
+  def "build image with unknown base image"() {
+    given:
+    def buildContext = getClass().getResourceAsStream("build/build_with_unknown_base_image.tar")
+
+    when:
+    def buildResult = dockerClient.build(buildContext)
+
+    then:
+    IllegalStateException ex = thrown()
+    ex.message == 'build failed. reason: [errorDetail:[message:HTTP code: 404], error:HTTP code: 404]'
+  }
+
   @Betamax(tape = 'tag image', match = [MatchRule.method, MatchRule.path])
   def "tag image"() {
     given:

@@ -22,13 +22,34 @@ class DockerClientImpl implements DockerClient {
   def getDelegate() {
     if (!delegate) {
       this.delegate = new RESTClient(dockerHost)
-      this.delegate.handler.failure = { response ->
-        logger.error "Failure: $response.statusLine"
-        return response
-      }
+      this.delegate.handler.failure = new MethodClosure(responseHandler, "handleFailure")
       logger.info "using docker at '${dockerHost}'"
     }
     return delegate
+  }
+
+  @Override
+  def info() {
+    logger.info "get system info"
+    getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
+    getDelegate().get([path: "/info"])
+
+    def completeResponse = responseHandler.completeResponse
+    def systemInfo = new JsonSlurper().parseText(completeResponse)
+    logger.info "${systemInfo}"
+    return systemInfo
+  }
+
+  @Override
+  def version() {
+    logger.info "get docker version"
+    getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
+    getDelegate().get([path: "/version"])
+
+    def completeResponse = responseHandler.completeResponse
+    def dockerVersion = new JsonSlurper().parseText(completeResponse)
+    logger.info "${dockerVersion}"
+    return dockerVersion
   }
 
   @Override
@@ -61,6 +82,9 @@ class DockerClientImpl implements DockerClient {
 
     def lastResponseDetail = responseHandler.lastResponseDetail
     logger.info "${lastResponseDetail}"
+    if (!responseHandler.success || lastResponseDetail?.error) {
+      throw new IllegalStateException("build failed. reason: ${lastResponseDetail}")
+    }
     return lastResponseDetail.stream.trim() - "Successfully built "
   }
 
@@ -110,6 +134,9 @@ class DockerClientImpl implements DockerClient {
                                 tag      : tag,
                                 registry : registry]])
 
+    if (!responseHandler.success) {
+      throw new IllegalStateException("pull failed. reason: ${responseHandler.lastResponseDetail}")
+    }
     def lastResponseDetail = responseHandler.lastResponseDetail
     logger.info "${lastResponseDetail}"
     return lastResponseDetail.id
@@ -280,18 +307,39 @@ class DockerClientImpl implements DockerClient {
 
   static class ChunkedResponseHandler {
 
+    def success
+    def statusLine
     def completeResponse
 
     def handleResponse(HttpResponseDecorator response) {
       logger.info "response: $response.statusLine"
+      success = response.success
+      statusLine = response.statusLine
       completeResponse = ""
       new InputStreamReader(response.entity.content).each { chunk ->
         logger.debug("received chunk: '${chunk}'")
         completeResponse += chunk
       }
+      return response
+    }
+
+    def handleFailure(HttpResponseDecorator response) {
+      logger.error "Failure: $response.statusLine"
+      success = response.success
+      statusLine = response.statusLine
+      completeResponse = ""
+      new InputStreamReader(response.entity.content).each { chunk ->
+        logger.debug("received chunk: '${chunk}'")
+        completeResponse += chunk
+      }
+      return response
     }
 
     def getLastResponseDetail() {
+      if (!success) {
+        return completeResponse ?: statusLine
+      }
+
       if (completeResponse) {
         logger.debug("find last detail in: '${completeResponse}'")
         def lastResponseDetail = completeResponse.substring(completeResponse.lastIndexOf("}{") + 1)
