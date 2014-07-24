@@ -20,7 +20,8 @@ class DockerClientImplSpec extends Specification {
   Recorder recorder = new Recorder()
 
   def setup() {
-    dockerClient = new DockerClientImpl(dockerHost: "http://172.17.42.1:4243/")
+    def defaultDockerHost = System.env.DOCKER_HOST?.replaceFirst("tcp://", "http://")
+    dockerClient = new DockerClientImpl(dockerHost: defaultDockerHost ?: "http://172.17.42.1:4243/")
     BetamaxRoutePlanner.configure(dockerClient.delegate.client)
   }
 
@@ -321,7 +322,7 @@ class DockerClientImplSpec extends Specification {
     def tag = "latest"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def containerConfig = ["Cmd": cmds]
-    def hostConfig = []
+    def hostConfig = [:]
 
     when:
     def containerStatus = dockerClient.run(imageName, containerConfig, hostConfig, tag)
@@ -448,5 +449,45 @@ class DockerClientImplSpec extends Specification {
 
     then:
     rmContainerResult == 404
+  }
+
+  @Betamax(tape = 'rm image', match = [MatchRule.method, MatchRule.path])
+  def "rm image"() {
+    given:
+    def imageId = dockerClient.pull("scratch", "latest")
+    dockerClient.tag(imageId, "an_image_to_be_deleted")
+
+    when:
+    def rmImageResult = dockerClient.rmi("an_image_to_be_deleted")
+
+    then:
+    rmImageResult == 200
+  }
+
+  @Betamax(tape = 'rm unkown image', match = [MatchRule.method, MatchRule.path])
+  def "rm unkown image"() {
+    when:
+    def rmImageResult = dockerClient.rmi("an_unkown_image")
+
+    then:
+    rmImageResult == 404
+  }
+
+  @Betamax(tape = 'rm image with existing container', match = [MatchRule.method, MatchRule.path])
+  def "rm image with existing container"() {
+    given:
+    def imageId = dockerClient.pull("busybox", "latest")
+    dockerClient.tag(imageId, "an_image_with_existing_container")
+
+    def containerConfig = ["Cmd": ["true"]]
+    def tag = "latest"
+    def name = "another-example-name"
+    def runResult = dockerClient.run("an_image_with_existing_container", containerConfig, [:], tag, name)
+
+    when:
+    def rmImageResult = dockerClient.rmi("an_image_with_existing_container:latest")
+
+    then:
+    rmImageResult == 200
   }
 }

@@ -264,8 +264,12 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def rmi() {
+  def rmi(imageId) {
     logger.info "rm image"
+    getDelegate().handler.'200' = null
+    def response = getDelegate().delete([path: "/images/${imageId}".toString()])
+    logger.info "${response.statusLine}"
+    return response.statusLine.statusCode
   }
 
   @Override

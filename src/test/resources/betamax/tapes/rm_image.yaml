@@ -1,0 +1,51 @@
+!tape
+name: rm image
+interactions:
+- recorded: 2014-07-24T07:24:55.312Z
+  request:
+    method: POST
+    uri: http://127.0.0.1:2375/images/create?fromImage=scratch&tag=latest&registry=
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 127.0.0.1:2375
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Thu, 24 Jul 2014 07:24:55 GMT
+    body: "{\"status\":\"Pulling repository scratch\"}\r\n{\"status\":\"Pulling image (latest) from scratch\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling image (latest)\
+      \ from scratch, endpoint: https://cdn-registry-1.docker.io/v1/\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\"\
+      :\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}"
+- recorded: 2014-07-24T07:24:55.392Z
+  request:
+    method: POST
+    uri: http://127.0.0.1:2375/images/511136ea3c5a/tag?repo=an_image_to_be_deleted&force=0
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 127.0.0.1:2375
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 201
+    headers:
+      Content-Type: text/plain; charset=utf-8
+      Date: Thu, 24 Jul 2014 07:24:55 GMT
+    body: ''
+- recorded: 2014-07-24T07:25:13.233Z
+  request:
+    method: DELETE
+    uri: http://127.0.0.1:2375/images/an_image_to_be_deleted
+    headers:
+      Accept: '*/*'
+      Host: 127.0.0.1:2375
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Thu, 24 Jul 2014 07:25:13 GMT
+    body: |-
+      [{"Untagged":"an_image_to_be_deleted:latest"}
+      ]

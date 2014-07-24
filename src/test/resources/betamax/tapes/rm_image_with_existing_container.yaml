@@ -1,0 +1,86 @@
+!tape
+name: rm image with existing container
+interactions:
+- recorded: 2014-07-24T07:28:01.930Z
+  request:
+    method: POST
+    uri: http://127.0.0.1:2375/images/create?fromImage=busybox&tag=latest&registry=
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 127.0.0.1:2375
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Thu, 24 Jul 2014 07:28:01 GMT
+    body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
+      progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
+      :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
+      a9eb17255234\"}"
+- recorded: 2014-07-24T07:35:45.340Z
+  request:
+    method: POST
+    uri: http://127.0.0.1:2375/images/a9eb17255234/tag?repo=an_image_with_existing_container&force=0
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 127.0.0.1:2375
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 201
+    headers:
+      Content-Type: text/plain; charset=utf-8
+      Date: Thu, 24 Jul 2014 07:35:45 GMT
+    body: ''
+- recorded: 2014-07-24T07:42:02.841Z
+  request:
+    method: POST
+    uri: http://127.0.0.1:2375/containers/create?name=another-example-name
+    headers:
+      Accept: '*/*'
+      Content-Length: '294'
+      Content-Type: application/json
+      Host: 127.0.0.1:2375
+      Proxy-Connection: Keep-Alive
+    body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["true"],"Image":"an_image_with_existing_container:latest","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":[]}'
+  response:
+    status: 201
+    headers:
+      Content-Type: application/json
+      Date: Thu, 24 Jul 2014 07:42:02 GMT
+    body: |
+      {"Id":"5028e23862f46a3b27b72a4d2465d6a017c57a42277156ba5d6e1929a3fe1b97","Warnings":null}
+- recorded: 2014-07-24T07:42:02.944Z
+  request:
+    method: POST
+    uri: http://127.0.0.1:2375/containers/5028e23862f46a3b27b72a4d2465d6a017c57a42277156ba5d6e1929a3fe1b97/start
+    headers:
+      Accept: '*/*'
+      Content-Length: '2'
+      Content-Type: application/json
+      Host: 127.0.0.1:2375
+      Proxy-Connection: Keep-Alive
+    body: '{}'
+  response:
+    status: 204
+    headers:
+      Content-Type: text/plain; charset=utf-8
+      Date: Thu, 24 Jul 2014 07:42:02 GMT
+- recorded: 2014-07-24T07:42:03Z
+  request:
+    method: DELETE
+    uri: http://127.0.0.1:2375/images/an_image_with_existing_container:latest
+    headers:
+      Accept: '*/*'
+      Host: 127.0.0.1:2375
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Thu, 24 Jul 2014 07:42:02 GMT
+    body: |-
+      [{"Untagged":"an_image_with_existing_container:latest"}
+      ]

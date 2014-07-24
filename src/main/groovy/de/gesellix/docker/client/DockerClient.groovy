@@ -52,5 +52,5 @@ interface DockerClient {
 
   def rm(containerId)
 
-  def rmi()
+  def rmi(imageId)
 }
