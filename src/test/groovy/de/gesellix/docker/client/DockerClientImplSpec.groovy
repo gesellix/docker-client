@@ -6,6 +6,7 @@ import co.freeside.betamax.Recorder
 import co.freeside.betamax.httpclient.BetamaxRoutePlanner
 import org.junit.Rule
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class DockerClientImplSpec extends Specification {
 
@@ -128,6 +129,27 @@ class DockerClientImplSpec extends Specification {
 
     then:
     pushResult.status == "Pushing tag for rev [511136ea3c5a] on {http://localhost:5000/v1/repositories/gesellix/test/tags/latest}"
+  }
+
+  @Unroll
+  def "parse repository tag #name to repo '#repo' and tag '#tag'"() {
+    when:
+    def result = dockerClient.parseRepositoryTag(name)
+
+    then:
+    result.repo == repo
+    and:
+    result.tag == tag
+
+    where:
+    name                      || repo | tag
+    "scratch"                 || "scratch" | ""
+    "root:tag"                || "root" | "tag"
+    "user/repo"               || "user/repo" | ""
+    "user/repo:tag"           || "user/repo" | "tag"
+    "url:5000/repo"           || "url:5000/repo" | ""
+    "url:5000/repo:tag"       || "url:5000/repo" | "tag"
+    "url:5000/user/image:tag" || "url:5000/user/image" | "tag"
   }
 
   @Betamax(tape = 'pull image', match = [MatchRule.method, MatchRule.path, MatchRule.query])

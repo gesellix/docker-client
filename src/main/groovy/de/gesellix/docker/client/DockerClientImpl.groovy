@@ -92,8 +92,10 @@ class DockerClientImpl implements DockerClient {
   def tag(imageId, name) {
     logger.info "tag image"
 //    getDelegate().handler.'200' = null
+    def repoAndTag = parseRepositoryTag(name)
     getDelegate().post([path : "/images/${imageId}/tag".toString(),
-                        query: [repo : name,
+                        query: [repo: repoAndTag.repo,
+                                tag : repoAndTag.tag,
                                 force: 0]]) { response ->
       logger.info "${response.statusLine}"
       return response.statusLine.statusCode
@@ -109,14 +111,50 @@ class DockerClientImpl implements DockerClient {
       actualImageName = "$registry/$imageName".toString()
       tag(imageName, actualImageName)
     }
+    def repoAndTag = parseRepositoryTag(actualImageName)
+
     getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
-    getDelegate().post([path   : "/images/${actualImageName}/push".toString(),
-                        query  : ["registry": registry],
+    getDelegate().post([path : "/images/${repoAndTag.repo}/push".toString(),
+                        query: ["registry": registry,
+                                tag       : repoAndTag.tag],
                         headers: ["X-Registry-Auth": authBase64Encoded ?: "."]])
 
     def lastResponseDetail = responseHandler.lastResponseDetail
     logger.info "${lastResponseDetail}"
     return lastResponseDetail
+  }
+
+  @Override
+  def parseRepositoryTag(name) {
+    if (name.endsWith(':')) {
+      throw new IllegalArgumentException("'$name' should not end with a ':'")
+    }
+
+    // see https://github.com/dotcloud/docker/blob/master/utils/utils.go:
+    // Get a repos name and returns the right reposName + tag
+    // The tag can be confusing because of a port in a repository name.
+    //     Ex: localhost.localdomain:5000/samalba/hipache:latest
+
+    def lastColonIndex = name.lastIndexOf(':')
+    if (lastColonIndex < 0) {
+      return [
+          repo: name,
+          tag : ""
+      ]
+    }
+
+    def tag = name.substring(lastColonIndex + 1)
+    if (!tag.contains('/')) {
+      return [
+          repo: name.substring(0, lastColonIndex),
+          tag : tag
+      ]
+    }
+
+    return [
+        repo: name,
+        tag : ""
+    ]
   }
 
   @Override
