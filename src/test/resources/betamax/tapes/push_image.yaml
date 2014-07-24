@@ -21,7 +21,7 @@ interactions:
 - recorded: 2014-07-06T21:15:52.942Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/511136ea3c5a/tag?repo=gesellix%2Ftest&force=0
+    uri: http://172.17.42.1:4243/images/511136ea3c5a/tag?repo=gesellix%2Ftest&tag=&force=0
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -36,7 +36,7 @@ interactions:
 - recorded: 2014-07-06T21:15:54.148Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/gesellix/test/push?registry=
+    uri: http://172.17.42.1:4243/images/gesellix/test/push?registry=&tag=
     headers:
       Accept: '*/*'
       Content-Length: '0'

@@ -21,7 +21,7 @@ interactions:
 - recorded: 2014-07-06T21:15:56.824Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/511136ea3c5a/tag?repo=gesellix%2Ftest&force=0
+    uri: http://172.17.42.1:4243/images/511136ea3c5a/tag?repo=gesellix%2Ftest&tag=&force=0
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -36,7 +36,7 @@ interactions:
 - recorded: 2014-07-06T21:15:56.847Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/gesellix/test/tag?repo=localhost%3A5000%2Fgesellix%2Ftest&force=0
+    uri: http://172.17.42.1:4243/images/gesellix/test/tag?repo=localhost%3A5000%2Fgesellix%2Ftest&tag=&force=0
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -51,7 +51,7 @@ interactions:
 - recorded: 2014-07-06T21:15:58.890Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/localhost:5000/gesellix/test/push?registry=localhost%3A5000
+    uri: http://172.17.42.1:4243/images/localhost:5000/gesellix/test/push?registry=localhost%3A5000&tag=
     headers:
       Accept: '*/*'
       Content-Length: '0'
