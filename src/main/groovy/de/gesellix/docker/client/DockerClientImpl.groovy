@@ -316,7 +316,7 @@ class DockerClientImpl implements DockerClient {
     getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
     getDelegate().get([path : "/containers/json",
                        query: [all : true,
-                               size: true]])
+                               size: false]])
 
     def completeResponse = responseHandler.completeResponse
     def containersAsJson = new JsonSlurper().parseText(completeResponse)

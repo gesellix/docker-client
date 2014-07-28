@@ -1,18 +1,18 @@
 !tape
 name: rm unkown image
 interactions:
-- recorded: 2014-07-24T07:25:55.779Z
+- recorded: 2014-07-28T20:34:40.594Z
   request:
     method: DELETE
-    uri: http://127.0.0.1:2375/images/an_unkown_image
+    uri: http://localhost:2375/images/an_unkown_image
     headers:
       Accept: '*/*'
-      Host: 127.0.0.1:2375
+      Host: localhost:2375
       Proxy-Connection: Keep-Alive
   response:
     status: 404
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Thu, 24 Jul 2014 07:25:55 GMT
+      Date: Mon, 28 Jul 2014 20:34:38 GMT
     body: |
       No such image: an_unkown_image

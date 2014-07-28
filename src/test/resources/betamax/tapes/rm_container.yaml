@@ -1,52 +1,52 @@
 !tape
 name: rm container
 interactions:
-- recorded: 2014-07-06T21:16:41.725Z
+- recorded: 2014-07-28T20:34:35.608Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
+    uri: http://localhost:2375/images/create?fromImage=busybox&tag=latest&registry=
     headers:
       Accept: '*/*'
       Content-Length: '0'
-      Host: 172.17.42.1:4243
+      Host: localhost:2375
       Proxy-Connection: Keep-Alive
   response:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sun, 06 Jul 2014 21:16:39 GMT
+      Date: Mon, 28 Jul 2014 20:34:29 GMT
     body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
       progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
       :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
       a9eb17255234\"}"
-- recorded: 2014-07-06T21:16:41.752Z
+- recorded: 2014-07-28T20:34:35.754Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/create?name=
+    uri: http://localhost:2375/containers/create?name=
     headers:
       Accept: '*/*'
       Content-Length: '267'
       Content-Type: application/json
-      Host: 172.17.42.1:4243
+      Host: localhost:2375
       Proxy-Connection: Keep-Alive
     body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["true"],"Image":"a9eb17255234","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":[]}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Sun, 06 Jul 2014 21:16:41 GMT
+      Date: Mon, 28 Jul 2014 20:34:34 GMT
     body: |
-      {"Id":"797c2343f528dd290cc8755eb49fe47751d7fefad9b2ab4666bd251895910da4","Warnings":null}
-- recorded: 2014-07-06T21:16:41.767Z
+      {"Id":"7e36439ae9fec91e6e3672d4ad4d018414b6641523fab5ab6585efa583f950ea","Warnings":null}
+- recorded: 2014-07-28T20:34:35.773Z
   request:
     method: DELETE
-    uri: http://172.17.42.1:4243/containers/797c2343f528dd290cc8755eb49fe47751d7fefad9b2ab4666bd251895910da4
+    uri: http://localhost:2375/containers/7e36439ae9fec91e6e3672d4ad4d018414b6641523fab5ab6585efa583f950ea
     headers:
       Accept: '*/*'
-      Host: 172.17.42.1:4243
+      Host: localhost:2375
       Proxy-Connection: Keep-Alive
   response:
     status: 204
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Sun, 06 Jul 2014 21:16:41 GMT
+      Date: Mon, 28 Jul 2014 20:34:34 GMT

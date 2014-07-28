@@ -58,7 +58,7 @@ class DockerClientImplSpec extends Specification {
     def buildResult = dockerClient.build(buildContext)
 
     then:
-    buildResult == "7efe20b8e170"
+    buildResult == "0459a9b32b6b"
   }
 
   @Betamax(tape = 'build image with unknown base image', match = [MatchRule.method, MatchRule.path])
@@ -195,8 +195,6 @@ class DockerClientImplSpec extends Specification {
      "Image"     : "busybox:latest",
      "Names"     : ["/berserk_colden"],
      "Ports"     : [],
-     "SizeRootFs": 0,
-     "SizeRw"    : 0,
      "Status"    : "Up Less than a second"] in containers
   }
 
@@ -205,7 +203,7 @@ class DockerClientImplSpec extends Specification {
     given:
     def imageId = dockerClient.pull("busybox", "latest")
     def imageName = "inspect_container"
-    def containerConfig = ["Cmd"  : ["true || false"],
+    def containerConfig = ["Cmd"  : ["true"],
                            "Image": "inspect_container"]
     def hostConfig = ["PublishAllPorts": true]
     dockerClient.tag(imageId, imageName)
@@ -216,68 +214,15 @@ class DockerClientImplSpec extends Specification {
     def containerInspection = dockerClient.inspectContainer(containerId)
 
     then:
-    [HostnamePath   : "/var/lib/docker/containers/90eb75b01e8223d01ac14b9ad925aff5755e16f80b1341a914c2d5ceb684b472/hostname",
-     Config         : [User           : '',
-                       OnBuild        : null,
-                       Tty            : false,
-                       MemorySwap     : 0,
-                       StdinOnce      : false,
-                       NetworkDisabled: false,
-                       ExposedPorts   : null,
-                       Cmd            : ["true || false"],
-                       CpuShares      : 0,
-                       WorkingDir     : '',
-                       Cpuset         : '',
-                       Env            : ["HOME=/",
-                                         "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],
-                       Entrypoint     : null,
-                       Memory         : 0,
-                       AttachStdout   : true,
-                       Domainname     : '',
-                       AttachStderr   : true,
-                       Image          : "inspect_container",
-                       AttachStdin    : false,
-                       PortSpecs      : null,
-                       Hostname       : "90eb75b01e82",
-                       Volumes        : null,
-                       OpenStdin      : false],
-     ResolvConfPath : "/var/lib/docker/containers/90eb75b01e8223d01ac14b9ad925aff5755e16f80b1341a914c2d5ceb684b472/resolv.conf",
-     HostConfig     : [Dns            : [],
-                       ContainerIDFile: '',
-                       PublishAllPorts: true,
-                       Links          : null,
-                       DnsSearch      : null,
-                       Privileged     : false,
-                       NetworkMode    : '',
-                       Binds          : [],
-                       VolumesFrom    : [],
-                       PortBindings   : null,
-                       LxcConf        : []],
-     VolumesRW      : [:],
-     Path           : "true || false",
-     ProcessLabel   : '',
-     Driver         : "aufs",
-     Name           : "/agitated_wozniak",
-     Args           : [],
-     Created        : "2014-07-06T21:22:49.728215358Z",
-     State          : [ExitCode  : 0,
-                       Paused    : false,
-                       Running   : false,
-                       Pid       : 0,
-                       StartedAt : "0001-01-01T00:00:00Z",
-                       FinishedAt: "0001-01-01T00:00:00Z"],
-     ExecDriver     : "native-0.2",
-     Image          : "a9eb172552348a9a49180694790b33a1097f546456d041b6e82e4d7716ddb721",
-     Id             : "90eb75b01e8223d01ac14b9ad925aff5755e16f80b1341a914c2d5ceb684b472",
-     NetworkSettings: [IPPrefixLen: 0,
-                       IPAddress  : '',
-                       Gateway    : '',
-                       Bridge     : '',
-                       PortMapping: null,
-                       Ports      : null],
-     HostsPath      : "/var/lib/docker/containers/90eb75b01e8223d01ac14b9ad925aff5755e16f80b1341a914c2d5ceb684b472/hosts",
-     MountLabel     : '',
-     Volumes        : [:]] == containerInspection
+    containerInspection.HostnamePath == "/var/lib/docker/containers/ecf9b1dbbb3e36dc5f4074193839c84e416c4d70fcbcb1f5021c65145093df38/hostname"
+    and:
+    containerInspection.Config.Cmd == ["true"]
+    and:
+    containerInspection.Config.Image == "inspect_container"
+    and:
+    containerInspection.Image == "a9eb172552348a9a49180694790b33a1097f546456d041b6e82e4d7716ddb721"
+    and:
+    containerInspection.Id == "ecf9b1dbbb3e36dc5f4074193839c84e416c4d70fcbcb1f5021c65145093df38"
   }
 
   @Betamax(tape = 'list images', match = [MatchRule.method, MatchRule.path])
@@ -289,7 +234,7 @@ class DockerClientImplSpec extends Specification {
     ["Created"    : 1371157430,
      "Id"         : "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158",
      "ParentId"   : "",
-     "RepoTags"   : ["scratch:latest", "yetAnotherTag:latest"],
+     "RepoTags"   : ["scratch:latest", "gesellix/test:latest"],
      "Size"       : 0,
      "VirtualSize": 0] in images
   }
@@ -305,7 +250,7 @@ class DockerClientImplSpec extends Specification {
     def containerInfo = dockerClient.createContainer(containerConfig)
 
     then:
-    containerInfo.Id == "934e64deb11bfa504ac9b8a0ec6acfe85359749a2712e2436f998b78ca5dc310"
+    containerInfo.Id == "eb8e04b15e4c11e5af13f088569d5c3c0a47f0cc4949cb241811cdbf14700636"
   }
 
   @Betamax(tape = 'create container with name', match = [MatchRule.method, MatchRule.path, MatchRule.query])
@@ -319,7 +264,7 @@ class DockerClientImplSpec extends Specification {
     def containerInfo = dockerClient.createContainer(containerConfig, "example")
 
     then:
-    containerInfo.Id == "93ef71b2892dfdeb4b657fca1a36651e6a397f2bfbc198f29aaef0ec18a059e1"
+    containerInfo.Id == "0627bb9e7b28213923379abfe3d1b5fbe7647849572ad88b298264f2d2a8cd48"
   }
 
   @Betamax(tape = 'start container', match = [MatchRule.method, MatchRule.path])

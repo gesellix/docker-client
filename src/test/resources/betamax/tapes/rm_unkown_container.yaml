@@ -1,18 +1,18 @@
 !tape
 name: rm unkown container
 interactions:
-- recorded: 2014-07-06T22:27:49.067Z
+- recorded: 2014-07-28T20:34:35.943Z
   request:
     method: DELETE
-    uri: http://172.17.42.1:4243/containers/a_not_so_random_id
+    uri: http://localhost:2375/containers/a_not_so_random_id
     headers:
       Accept: '*/*'
-      Host: 172.17.42.1:4243
+      Host: localhost:2375
       Proxy-Connection: Keep-Alive
   response:
     status: 404
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Sun, 06 Jul 2014 22:27:49 GMT
+      Date: Mon, 28 Jul 2014 20:34:34 GMT
     body: |
       No such container: a_not_so_random_id

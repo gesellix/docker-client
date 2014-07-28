@@ -1,69 +1,69 @@
 !tape
 name: run container
 interactions:
-- recorded: 2014-07-06T21:16:26.587Z
+- recorded: 2014-07-28T20:34:08.161Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
+    uri: http://localhost:2375/images/create?fromImage=busybox&tag=latest&registry=
     headers:
       Accept: '*/*'
       Content-Length: '0'
-      Host: 172.17.42.1:4243
+      Host: localhost:2375
       Proxy-Connection: Keep-Alive
   response:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sun, 06 Jul 2014 21:16:24 GMT
+      Date: Mon, 28 Jul 2014 20:34:01 GMT
     body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
       progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
       :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
       a9eb17255234\"}"
-- recorded: 2014-07-06T21:16:26.614Z
+- recorded: 2014-07-28T20:34:08.254Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/create?name=
+    uri: http://localhost:2375/containers/create?name=
     headers:
       Accept: '*/*'
       Content-Length: '289'
       Content-Type: application/json
-      Host: 172.17.42.1:4243
+      Host: localhost:2375
       Proxy-Connection: Keep-Alive
     body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"busybox:latest","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":[]}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Sun, 06 Jul 2014 21:16:26 GMT
+      Date: Mon, 28 Jul 2014 20:34:06 GMT
     body: |
-      {"Id":"23c36f63316d9f5d36bc784eef87ef7ce9904e12dc065e9cd3ce49c1819f40d0","Warnings":null}
-- recorded: 2014-07-06T21:16:26.693Z
+      {"Id":"e883d7a858c7efa9ab82b2bd7e30a44073921f48f81a2b25bba727931e5616e6","Warnings":null}
+- recorded: 2014-07-28T20:34:08.539Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/23c36f63316d9f5d36bc784eef87ef7ce9904e12dc065e9cd3ce49c1819f40d0/start
+    uri: http://localhost:2375/containers/e883d7a858c7efa9ab82b2bd7e30a44073921f48f81a2b25bba727931e5616e6/start
     headers:
       Accept: '*/*'
-      Content-Length: '123'
+      Content-Length: '2'
       Content-Type: application/json
-      Host: 172.17.42.1:4243
+      Host: localhost:2375
       Proxy-Connection: Keep-Alive
-    body: '{"Binds":[],"Links":[],"LxcConf":[],"PortBindings":[],"PublishAllPorts":false,"Privileged":false,"Dns":[],"VolumesFrom":[]}'
+    body: '{}'
   response:
     status: 204
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Sun, 06 Jul 2014 21:16:26 GMT
-- recorded: 2014-07-06T21:16:26.742Z
+      Date: Mon, 28 Jul 2014 20:34:06 GMT
+- recorded: 2014-07-28T20:34:08.716Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/23c36f63316d9f5d36bc784eef87ef7ce9904e12dc065e9cd3ce49c1819f40d0/stop
+    uri: http://localhost:2375/containers/e883d7a858c7efa9ab82b2bd7e30a44073921f48f81a2b25bba727931e5616e6/stop
     headers:
       Accept: '*/*'
       Content-Length: '0'
-      Host: 172.17.42.1:4243
+      Host: localhost:2375
       Proxy-Connection: Keep-Alive
   response:
     status: 204
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Sun, 06 Jul 2014 21:16:26 GMT
+      Date: Mon, 28 Jul 2014 20:34:06 GMT

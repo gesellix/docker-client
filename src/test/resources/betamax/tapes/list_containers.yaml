@@ -1,86 +1,86 @@
 !tape
 name: list containers
 interactions:
-- recorded: 2014-07-06T21:47:29.808Z
+- recorded: 2014-07-28T21:06:23.254Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
+    uri: http://localhost:2375/images/create?fromImage=busybox&tag=latest&registry=
     headers:
       Accept: '*/*'
       Content-Length: '0'
-      Host: 172.17.42.1:4243
+      Host: localhost:2375
       Proxy-Connection: Keep-Alive
   response:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sun, 06 Jul 2014 21:47:27 GMT
+      Date: Mon, 28 Jul 2014 21:06:17 GMT
     body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
       progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
       :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
       a9eb17255234\"}"
-- recorded: 2014-07-06T21:47:29.831Z
+- recorded: 2014-07-28T21:06:23.379Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/a9eb17255234/tag?repo=list_containers&force=0
+    uri: http://localhost:2375/images/a9eb17255234/tag?repo=list_containers&tag=&force=0
     headers:
       Accept: '*/*'
       Content-Length: '0'
-      Host: 172.17.42.1:4243
+      Host: localhost:2375
       Proxy-Connection: Keep-Alive
   response:
     status: 201
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Sun, 06 Jul 2014 21:47:29 GMT
+      Date: Mon, 28 Jul 2014 21:06:21 GMT
     body: ''
-- recorded: 2014-07-06T21:47:29.857Z
+- recorded: 2014-07-28T21:06:23.570Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/create?name=
+    uri: http://localhost:2375/containers/create?name=
     headers:
       Accept: '*/*'
       Content-Length: '270'
       Content-Type: application/json
-      Host: 172.17.42.1:4243
+      Host: localhost:2375
       Proxy-Connection: Keep-Alive
     body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["true"],"Image":"list_containers","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":[]}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Sun, 06 Jul 2014 21:47:29 GMT
+      Date: Mon, 28 Jul 2014 21:06:21 GMT
     body: |
-      {"Id":"70a1534434ec4ee0708bdfccef5c38ceee28f9023a0b1ef42c788cfc2db13428","Warnings":null}
-- recorded: 2014-07-06T21:47:29.937Z
+      {"Id":"791b022d8ec3bb6b03b6e9a5d94afa105c330ab1d6485cd21d8cc893bde7fa6f","Warnings":null}
+- recorded: 2014-07-28T21:06:23.859Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/70a1534434ec4ee0708bdfccef5c38ceee28f9023a0b1ef42c788cfc2db13428/start
+    uri: http://localhost:2375/containers/791b022d8ec3bb6b03b6e9a5d94afa105c330ab1d6485cd21d8cc893bde7fa6f/start
     headers:
       Accept: '*/*'
       Content-Length: '2'
       Content-Type: application/json
-      Host: 172.17.42.1:4243
+      Host: localhost:2375
       Proxy-Connection: Keep-Alive
     body: '{}'
   response:
     status: 204
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Sun, 06 Jul 2014 21:47:29 GMT
-- recorded: 2014-07-06T21:47:29.980Z
+      Date: Mon, 28 Jul 2014 21:06:22 GMT
+- recorded: 2014-07-28T21:06:23.905Z
   request:
     method: GET
-    uri: http://172.17.42.1:4243/containers/json?all=true&size=true
+    uri: http://localhost:2375/containers/json?all=true&size=false
     headers:
       Accept: '*/*'
-      Host: 172.17.42.1:4243
+      Host: localhost:2375
       Proxy-Connection: Keep-Alive
   response:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sun, 06 Jul 2014 21:47:29 GMT
+      Date: Mon, 28 Jul 2014 21:06:22 GMT
     body: |-
-      [{"Command":"true","Created":1404683249,"Id":"70a1534434ec4ee0708bdfccef5c38ceee28f9023a0b1ef42c788cfc2db13428","Image":"busybox:latest","Names":["/berserk_colden"],"Ports":[],"SizeRootFs":0,"SizeRw":0,"Status":"Up Less than a second"}
+      [{"Command":"true","Created":1404683249,"Id":"70a1534434ec4ee0708bdfccef5c38ceee28f9023a0b1ef42c788cfc2db13428","Image":"busybox:latest","Names":["/berserk_colden"],"Ports":[],"Status":"Up Less than a second"}
       ]
