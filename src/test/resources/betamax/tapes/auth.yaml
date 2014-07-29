@@ -4,12 +4,12 @@ interactions:
 - recorded: 2014-07-28T20:42:56.933Z
   request:
     method: POST
-    uri: http://localhost:2375/auth
+    uri: http://172.17.42.1:4243/auth
     headers:
       Accept: '*/*'
       Content-Length: '134'
       Content-Type: application/json
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
     body: '{"username":"gesellix","password":"-yet-another-password-","email":"tobias@gesellix.de","serveraddress":"https://index.docker.io/v1/"}'
   response:

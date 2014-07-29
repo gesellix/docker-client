@@ -4,10 +4,10 @@ interactions:
 - recorded: 2014-07-28T20:34:40.594Z
   request:
     method: DELETE
-    uri: http://localhost:2375/images/an_unkown_image
+    uri: http://172.17.42.1:4243/images/an_unkown_image
     headers:
       Accept: '*/*'
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
   response:
     status: 404

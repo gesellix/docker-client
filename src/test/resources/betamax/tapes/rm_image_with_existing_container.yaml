@@ -4,11 +4,11 @@ interactions:
 - recorded: 2014-07-28T20:34:45.135Z
   request:
     method: POST
-    uri: http://localhost:2375/images/create?fromImage=busybox&tag=latest&registry=
+    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
     headers:
       Accept: '*/*'
       Content-Length: '0'
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
   response:
     status: 200
@@ -23,11 +23,11 @@ interactions:
 - recorded: 2014-07-28T20:34:45.157Z
   request:
     method: POST
-    uri: http://localhost:2375/images/a9eb17255234/tag?repo=an_image_with_existing_container&tag=&force=0
+    uri: http://172.17.42.1:4243/images/a9eb17255234/tag?repo=an_image_with_existing_container&tag=&force=0
     headers:
       Accept: '*/*'
       Content-Length: '0'
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
   response:
     status: 201
@@ -38,12 +38,12 @@ interactions:
 - recorded: 2014-07-28T20:34:45.274Z
   request:
     method: POST
-    uri: http://localhost:2375/containers/create?name=another-example-name
+    uri: http://172.17.42.1:4243/containers/create?name=another-example-name
     headers:
       Accept: '*/*'
       Content-Length: '294'
       Content-Type: application/json
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
     body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["true"],"Image":"an_image_with_existing_container:latest","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":[]}'
   response:
@@ -56,12 +56,12 @@ interactions:
 - recorded: 2014-07-28T20:34:45.530Z
   request:
     method: POST
-    uri: http://localhost:2375/containers/d541b78d37148dc25f21e04acb07a4af30fc95dd9c534614ec20218064a51a54/start
+    uri: http://172.17.42.1:4243/containers/d541b78d37148dc25f21e04acb07a4af30fc95dd9c534614ec20218064a51a54/start
     headers:
       Accept: '*/*'
       Content-Length: '2'
       Content-Type: application/json
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
     body: '{}'
   response:
@@ -72,10 +72,10 @@ interactions:
 - recorded: 2014-07-28T20:34:45.574Z
   request:
     method: DELETE
-    uri: http://localhost:2375/images/an_image_with_existing_container:latest
+    uri: http://172.17.42.1:4243/images/an_image_with_existing_container:latest
     headers:
       Accept: '*/*'
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
   response:
     status: 200

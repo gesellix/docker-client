@@ -4,11 +4,11 @@ interactions:
 - recorded: 2014-07-28T20:34:25.468Z
   request:
     method: POST
-    uri: http://localhost:2375/images/create?fromImage=busybox&tag=latest&registry=
+    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
     headers:
       Accept: '*/*'
       Content-Length: '0'
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
   response:
     status: 200
@@ -22,12 +22,12 @@ interactions:
 - recorded: 2014-07-28T20:34:25.572Z
   request:
     method: POST
-    uri: http://localhost:2375/containers/create?name=
+    uri: http://172.17.42.1:4243/containers/create?name=
     headers:
       Accept: '*/*'
       Content-Length: '289'
       Content-Type: application/json
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
     body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"busybox:latest","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":[]}'
   response:
@@ -40,12 +40,12 @@ interactions:
 - recorded: 2014-07-28T20:34:25.819Z
   request:
     method: POST
-    uri: http://localhost:2375/containers/4f13d70ca6fbfcba1b43e8742e11fb0d109d1db544111c32200b046a1b5cf7a3/start
+    uri: http://172.17.42.1:4243/containers/4f13d70ca6fbfcba1b43e8742e11fb0d109d1db544111c32200b046a1b5cf7a3/start
     headers:
       Accept: '*/*'
       Content-Length: '2'
       Content-Type: application/json
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
     body: '{}'
   response:
@@ -56,11 +56,11 @@ interactions:
 - recorded: 2014-07-28T20:34:26.025Z
   request:
     method: POST
-    uri: http://localhost:2375/containers/4f13d70ca6fbfcba1b43e8742e11fb0d109d1db544111c32200b046a1b5cf7a3/stop
+    uri: http://172.17.42.1:4243/containers/4f13d70ca6fbfcba1b43e8742e11fb0d109d1db544111c32200b046a1b5cf7a3/stop
     headers:
       Accept: '*/*'
       Content-Length: '0'
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
   response:
     status: 204

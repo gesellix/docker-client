@@ -4,11 +4,11 @@ interactions:
 - recorded: 2014-07-28T20:33:58.842Z
   request:
     method: POST
-    uri: http://localhost:2375/images/create?fromImage=busybox&tag=latest&registry=
+    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
     headers:
       Accept: '*/*'
       Content-Length: '0'
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
   response:
     status: 200
@@ -22,12 +22,12 @@ interactions:
 - recorded: 2014-07-28T20:33:58.933Z
   request:
     method: POST
-    uri: http://localhost:2375/containers/create?name=example
+    uri: http://172.17.42.1:4243/containers/create?name=example
     headers:
       Accept: '*/*'
       Content-Length: '267'
       Content-Type: application/json
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
     body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["true"],"Image":"a9eb17255234","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":[]}'
   response:

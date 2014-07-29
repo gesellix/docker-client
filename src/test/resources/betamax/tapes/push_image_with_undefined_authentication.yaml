@@ -4,11 +4,11 @@ interactions:
 - recorded: 2014-07-28T20:52:24.007Z
   request:
     method: POST
-    uri: http://localhost:2375/images/create?fromImage=scratch&tag=&registry=
+    uri: http://172.17.42.1:4243/images/create?fromImage=scratch&tag=&registry=
     headers:
       Accept: '*/*'
       Content-Length: '0'
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
   response:
     status: 200
@@ -21,11 +21,11 @@ interactions:
 - recorded: 2014-07-28T20:52:24.044Z
   request:
     method: POST
-    uri: http://localhost:2375/images/511136ea3c5a/tag?repo=gesellix%2Ftest&tag=&force=0
+    uri: http://172.17.42.1:4243/images/511136ea3c5a/tag?repo=gesellix%2Ftest&tag=&force=0
     headers:
       Accept: '*/*'
       Content-Length: '0'
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
   response:
     status: 201
@@ -36,11 +36,11 @@ interactions:
 - recorded: 2014-07-28T20:52:24.065Z
   request:
     method: POST
-    uri: http://localhost:2375/images/gesellix/test/tag?repo=localhost%3A5000%2Fgesellix%2Ftest&tag=&force=0
+    uri: http://172.17.42.1:4243/images/gesellix/test/tag?repo=localhost%3A5000%2Fgesellix%2Ftest&tag=&force=0
     headers:
       Accept: '*/*'
       Content-Length: '0'
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
   response:
     status: 201
@@ -51,11 +51,11 @@ interactions:
 - recorded: 2014-07-28T20:52:26.180Z
   request:
     method: POST
-    uri: http://localhost:2375/images/localhost:5000/gesellix/test/push?registry=localhost%3A5000&tag=
+    uri: http://172.17.42.1:4243/images/localhost:5000/gesellix/test/push?registry=localhost%3A5000&tag=
     headers:
       Accept: '*/*'
       Content-Length: '0'
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
       X-Registry-Auth: .
   response:

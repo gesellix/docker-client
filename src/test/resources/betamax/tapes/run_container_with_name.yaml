@@ -4,11 +4,11 @@ interactions:
 - recorded: 2014-07-28T20:57:23.637Z
   request:
     method: POST
-    uri: http://localhost:2375/images/create?fromImage=busybox&tag=latest&registry=
+    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
     headers:
       Accept: '*/*'
       Content-Length: '0'
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
   response:
     status: 200
@@ -22,12 +22,12 @@ interactions:
 - recorded: 2014-07-28T20:57:23.898Z
   request:
     method: POST
-    uri: http://localhost:2375/containers/create?name=example-name
+    uri: http://172.17.42.1:4243/containers/create?name=example-name
     headers:
       Accept: '*/*'
       Content-Length: '289'
       Content-Type: application/json
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
     body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"busybox:latest","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":[]}'
   response:
@@ -40,12 +40,12 @@ interactions:
 - recorded: 2014-07-28T20:57:24.367Z
   request:
     method: POST
-    uri: http://localhost:2375/containers/2299c0c8b8fb93851289a744c5cefd5342c6ce4be17ebb07b7487e703ef23494/start
+    uri: http://172.17.42.1:4243/containers/2299c0c8b8fb93851289a744c5cefd5342c6ce4be17ebb07b7487e703ef23494/start
     headers:
       Accept: '*/*'
       Content-Length: '2'
       Content-Type: application/json
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
     body: '{}'
   response:
@@ -56,10 +56,10 @@ interactions:
 - recorded: 2014-07-28T20:57:24.385Z
   request:
     method: GET
-    uri: http://localhost:2375/containers/json?all=true&size=false
+    uri: http://172.17.42.1:4243/containers/json?all=true&size=false
     headers:
       Accept: '*/*'
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
   response:
     status: 200
@@ -73,11 +73,11 @@ interactions:
 - recorded: 2014-07-28T20:57:24.598Z
   request:
     method: POST
-    uri: http://localhost:2375/containers/2299c0c8b8fb93851289a744c5cefd5342c6ce4be17ebb07b7487e703ef23494/stop
+    uri: http://172.17.42.1:4243/containers/2299c0c8b8fb93851289a744c5cefd5342c6ce4be17ebb07b7487e703ef23494/stop
     headers:
       Accept: '*/*'
       Content-Length: '0'
-      Host: localhost:2375
+      Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
   response:
     status: 204
