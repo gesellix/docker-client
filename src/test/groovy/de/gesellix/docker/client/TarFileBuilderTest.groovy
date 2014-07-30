@@ -8,8 +8,7 @@ class TarFileBuilderTest extends Specification {
 
   def "test archiveTarFilesRecursively"() {
     given:
-    def resource = getClass().getResource('/docker/Dockerfile')
-    def inputDirectory = new File(resource.toURI()).parentFile
+    def inputDirectory = new ResourceReader().getClasspathResourceAsFile('/docker/Dockerfile').parentFile
     def targetFile = File.createTempFile("buildContext", ".tar")
     targetFile.deleteOnExit()
 
@@ -23,8 +22,7 @@ class TarFileBuilderTest extends Specification {
 
   def "test archiveTarFilesRecursively excludes targetFile"() {
     given:
-    def resource = getClass().getResource('/docker/Dockerfile')
-    def inputDirectory = new File(resource.toURI()).parentFile
+    def inputDirectory = new ResourceReader().getClasspathResourceAsFile('/docker/Dockerfile').parentFile
     def targetFile = new File(inputDirectory, "buildContext.tar")
     targetFile.createNewFile()
     targetFile.deleteOnExit()
@@ -68,8 +66,7 @@ class TarFileBuilderTest extends Specification {
 
   def "test copyFile"() {
     given:
-    def resource = getClass().getResource('/docker/subdirectory/payload.txt')
-    def inputFile = new File(resource.toURI())
+    def inputFile = new ResourceReader().getClasspathResourceAsFile('/docker/subdirectory/payload.txt')
     def outputStream = new ByteArrayOutputStream()
 
     when:
