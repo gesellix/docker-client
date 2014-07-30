@@ -115,8 +115,8 @@ class DockerClientImpl implements DockerClient {
 
     getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
     getDelegate().post([path : "/images/${repoAndTag.repo}/push".toString(),
-                        query: ["registry": registry,
-                                tag       : repoAndTag.tag],
+                        query: [registry: registry,
+                                tag     : repoAndTag.tag],
                         headers: ["X-Registry-Auth": authBase64Encoded ?: "."]])
 
     def lastResponseDetail = responseHandler.lastResponseDetail
@@ -183,28 +183,7 @@ class DockerClientImpl implements DockerClient {
   @Override
   def createContainer(containerConfig, name = "") {
     logger.info "create container..."
-    def defaultContainerConfig = ["Hostname"      : "",
-                                  "User"          : "",
-                                  "Memory"        : 0,
-                                  "MemorySwap"    : 0,
-                                  "AttachStdin"   : false,
-                                  "AttachStdout"  : true,
-                                  "AttachStderr"  : true,
-                                  "PortSpecs"     : null,
-                                  "Tty"           : false,
-                                  "OpenStdin"     : false,
-                                  "StdinOnce"     : false,
-                                  "Env"           : null,
-                                  "Cmd"           : [],
-                                  "Image"         : null,
-                                  "Volumes"       : [],
-                                  "WorkingDir"    : "",
-                                  "DisableNetwork": false,
-                                  "ExposedPorts"  : [
-                                  ]]
-
-//    defaultContainerConfig = [:]
-    def actualContainerConfig = defaultContainerConfig + containerConfig
+    def actualContainerConfig = [:] + containerConfig
 
 //    getDelegate().handler.'200' = null
     getDelegate().post([path              : "/containers/create".toString(),
@@ -219,18 +198,7 @@ class DockerClientImpl implements DockerClient {
   @Override
   def startContainer(containerId, hostConfig = [:]) {
     logger.info "start container..."
-    def defaultHostConfig = ["Binds"          : [],
-                             "Links"          : [],
-                             "LxcConf"        : [],
-                             "PortBindings"   : [],
-                             "PublishAllPorts": false,
-                             "Privileged"     : false,
-                             "Dns"            : [],
-                             "VolumesFrom"    : [
-                             ]]
-
-    defaultHostConfig = [:]
-    def actualHostConfig = defaultHostConfig + hostConfig
+    def actualHostConfig = [:] + hostConfig
 
 //    getDelegate().handler.'200' = null
     getDelegate().post([path              : "/containers/${containerId}/start".toString(),
