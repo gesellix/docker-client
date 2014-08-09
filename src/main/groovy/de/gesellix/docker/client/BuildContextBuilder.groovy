@@ -6,9 +6,9 @@ import org.apache.commons.io.IOUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class TarFileBuilder {
+class BuildContextBuilder {
 
-  private static Logger logger = LoggerFactory.getLogger(TarFileBuilder)
+  private static Logger logger = LoggerFactory.getLogger(BuildContextBuilder)
 
   def static archiveTarFilesRecursively(File base, File targetFile) throws IOException {
     def files = []

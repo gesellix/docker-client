@@ -4,7 +4,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.io.IOUtils
 import spock.lang.Specification
 
-class TarFileBuilderTest extends Specification {
+class BuildContextBuilderTest extends Specification {
 
   def "test archiveTarFilesRecursively"() {
     given:
@@ -13,7 +13,7 @@ class TarFileBuilderTest extends Specification {
     targetFile.deleteOnExit()
 
     when:
-    TarFileBuilder.archiveTarFilesRecursively(inputDirectory, targetFile)
+    BuildContextBuilder.archiveTarFilesRecursively(inputDirectory, targetFile)
 
     then:
     def collectedEntryNames = collectEntryNames(targetFile)
@@ -28,14 +28,16 @@ class TarFileBuilderTest extends Specification {
     targetFile.deleteOnExit()
 
     when:
-    TarFileBuilder.archiveTarFilesRecursively(inputDirectory, targetFile)
+    BuildContextBuilder.archiveTarFilesRecursively(inputDirectory, targetFile)
 
     then:
     def collectedEntryNames = collectEntryNames(targetFile)
     collectedEntryNames.sort() == ["subdirectory/", "subdirectory/payload.txt", "Dockerfile"].sort()
 
-    cleanup:
-    targetFile.delete()
+    // TODO cannot be deleted while the Gradle daemon is running?
+//    cleanup:
+//    Files.delete(targetFile.toPath())
+//    println targetFile.delete()
   }
 
   def collectEntryNames(File tarArchive) {
@@ -51,14 +53,14 @@ class TarFileBuilderTest extends Specification {
 
   def "test ignoreFile"() {
     when:
-    def ignoreFile = TarFileBuilder.ignoreFile([".git"], ".git/refs/remotes/")
+    def ignoreFile = BuildContextBuilder.ignoreFile([".git"], ".git/refs/remotes/")
     then:
     ignoreFile == true
   }
 
   def "test relativize"() {
     when:
-    def relativized = TarFileBuilder.relativize(new File("./base/dir"), new File("./base/dir/with/sub/dir"))
+    def relativized = BuildContextBuilder.relativize(new File("./base/dir"), new File("./base/dir/with/sub/dir"))
 
     then:
     relativized == "with/sub/dir"
@@ -70,7 +72,7 @@ class TarFileBuilderTest extends Specification {
     def outputStream = new ByteArrayOutputStream()
 
     when:
-    TarFileBuilder.copyFile(inputFile, outputStream)
+    BuildContextBuilder.copyFile(inputFile, outputStream)
 
     then:
     new String(outputStream.toByteArray()) == IOUtils.toString(new FileInputStream(inputFile))
