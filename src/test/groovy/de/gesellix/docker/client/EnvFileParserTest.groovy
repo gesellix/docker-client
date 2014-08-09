@@ -40,11 +40,10 @@ class EnvFileParserTest extends Specification {
     env == ["MY_ENV=VALUE", "A_VARIABLE= A VALUE"]
   }
 
-  // TODO
-  @Ignore
   def "allows pass-through of environment variables"() {
     given:
-    System.setProperty("A_KNOWN_VARIABLE", "my value")
+    // this needs to set up in the current environment (see build.gradle)
+    assert System.env["A_KNOWN_VARIABLE"] == "my value"
     when:
     def env = new EnvFileParser().parse(new ResourceReader().getClasspathResourceAsFile('/env-files/env-pass-through.properties'))
     then:

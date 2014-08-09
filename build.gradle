@@ -78,6 +78,11 @@ configurations.all {
   }
 }
 
+test {
+  // minimal way of providing a special environment variable for the EnvFileParserTest
+  environment "A_KNOWN_VARIABLE", "my value"
+}
+
 cobertura.coverageFormats = ['html', 'xml']
 
 jacocoTestReport.reports {
