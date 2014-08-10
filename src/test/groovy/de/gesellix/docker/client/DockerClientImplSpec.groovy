@@ -225,7 +225,7 @@ class DockerClientImplSpec extends Specification {
     containerInspection.Id == "ecf9b1dbbb3e36dc5f4074193839c84e416c4d70fcbcb1f5021c65145093df38"
   }
 
-  @Betamax(tape = 'list images', match = [MatchRule.method, MatchRule.path])
+  @Betamax(tape = 'list images', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "list images"() {
     when:
     def images = dockerClient.images()
@@ -237,6 +237,55 @@ class DockerClientImplSpec extends Specification {
      "RepoTags"   : ["scratch:latest", "gesellix/test:latest"],
      "Size"       : 0,
      "VirtualSize": 0] in images
+  }
+
+  @Betamax(tape = 'list images with intermediate layers', match = [MatchRule.method, MatchRule.path, MatchRule.query])
+  def "list images with intermediate layers"() {
+    when:
+    def images = dockerClient.images([all: true])
+
+    then:
+    [ParentId   : "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158",
+     Created    : 1401926735,
+     Id         : "42eed7f1bf2ac3f1610c5e616d2ab1ee9c7290234240388d6297bc0f32c34229",
+     VirtualSize: 0,
+     RepoTags   : ["<none>:<none>"],
+     Size       : 0] in images
+
+    and:
+    [ParentId   : "42eed7f1bf2ac3f1610c5e616d2ab1ee9c7290234240388d6297bc0f32c34229",
+     Created    : 1401926735,
+     Id         : "120e218dd395ec314e7b6249f39d2853911b3d6def6ea164ae05722649f34b16",
+     VirtualSize: 2433303,
+     RepoTags   : ["<none>:<none>"],
+     Size       : 2433303] in images
+
+    and:
+    [ParentId   : "120e218dd395ec314e7b6249f39d2853911b3d6def6ea164ae05722649f34b16",
+     Created    : 1401926735,
+     Id         : "a9eb172552348a9a49180694790b33a1097f546456d041b6e82e4d7716ddb721",
+     VirtualSize: 2433303,
+     RepoTags   : ["busybox:latest"],
+     Size       : 0] in images
+
+    and:
+    [ParentId   : "",
+     Created    : 1371157430,
+     Id         : "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158",
+     VirtualSize: 0,
+     RepoTags   : ["scratch:latest"],
+     Size       : 0] in images
+  }
+
+  @Betamax(tape = 'list images filtered', match = [MatchRule.method, MatchRule.path, MatchRule.query])
+  def "list images filtered"() {
+    when:
+    def images = dockerClient.images([filters: '{"dangling":["true"]}'])
+
+    then:
+    images.every { image ->
+        image.RepoTags == ["<none>:<none>"]
+    }
   }
 
   @Betamax(tape = 'create container', match = [MatchRule.method, MatchRule.path, MatchRule.query])

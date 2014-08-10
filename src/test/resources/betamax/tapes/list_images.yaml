@@ -1,10 +1,10 @@
 !tape
 name: list images
 interactions:
-- recorded: 2014-07-28T21:03:24.274Z
+- recorded: 2014-08-10T19:54:16.004Z
   request:
     method: GET
-    uri: http://172.17.42.1:4243/images/json?all=0
+    uri: http://172.17.42.1:4243/images/json?all=false&filters=%7B%7D
     headers:
       Accept: '*/*'
       Host: 172.17.42.1:4243
@@ -13,7 +13,7 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 28 Jul 2014 21:03:22 GMT
+      Date: Sun, 10 Aug 2014 19:54:13 GMT
     body: |-
       [{"Created":1371157430,"Id":"511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158","ParentId":"","RepoTags":["scratch:latest","gesellix/test:latest"],"Size":0,"VirtualSize":0}
       ]

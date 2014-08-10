@@ -34,6 +34,8 @@ interface DockerClient {
 
   def images()
 
+  def images(query)
+
   def createContainer(containerConfig)
 
   def createContainer(containerConfig, name)

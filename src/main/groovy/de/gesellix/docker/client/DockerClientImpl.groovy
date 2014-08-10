@@ -305,11 +305,12 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def images() {
+  def images(query = [all    : false,
+                      filters: [:]]) {
     logger.info "list images"
     getDelegate().handler.'200' = null
     getDelegate().get([path : "/images/json",
-                       query: [all: 0]]) { response, reader ->
+                       query: query]) { response, reader ->
       logger.info "${response.statusLine}"
       return reader
     }
