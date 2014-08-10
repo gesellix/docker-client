@@ -17,10 +17,23 @@ class BuildContextBuilderTest extends Specification {
 
     then:
     def collectedEntryNames = collectEntryNames(targetFile)
-    collectedEntryNames.sort() == ["subdirectory/", "subdirectory/payload.txt", "Dockerfile"].sort()
+    collectedEntryNames.sort() == ["subdirectory/", "subdirectory/payload.txt", "Dockerfile", "script.sh"].sort()
   }
 
-  def "test archiveTarFilesRecursively excludes targetFile"() {
+  def "test archiveTarFilesRecursively keeps executable flag"() {
+    given:
+    def inputDirectory = new ResourceReader().getClasspathResourceAsFile('/docker/Dockerfile').parentFile
+    def targetFile = File.createTempFile("buildContext", ".tar")
+    targetFile.deleteOnExit()
+
+    when:
+    BuildContextBuilder.archiveTarFilesRecursively(inputDirectory, targetFile)
+
+    then:
+    getFileMode(targetFile, "script.sh") == 0100755
+  }
+
+  def "test archiveTarFilesRecursively excludes targetFile when in same baseDir"() {
     given:
     def inputDirectory = new ResourceReader().getClasspathResourceAsFile('/docker/Dockerfile').parentFile
     def targetFile = new File(inputDirectory, "buildContext.tar")
@@ -32,7 +45,7 @@ class BuildContextBuilderTest extends Specification {
 
     then:
     def collectedEntryNames = collectEntryNames(targetFile)
-    collectedEntryNames.sort() == ["subdirectory/", "subdirectory/payload.txt", "Dockerfile"].sort()
+    collectedEntryNames.sort() == ["subdirectory/", "subdirectory/payload.txt", "Dockerfile", "script.sh"].sort()
 
     // TODO cannot be deleted while the Gradle daemon is running?
 //    cleanup:
@@ -49,6 +62,18 @@ class BuildContextBuilderTest extends Specification {
       collectedEntryNames << entry.name
     }
     collectedEntryNames
+  }
+
+  def getFileMode(File tarArchive, String filename) {
+    def tarArchiveInputStream = new TarArchiveInputStream(new FileInputStream(tarArchive))
+
+    def entry
+    while (entry = tarArchiveInputStream.nextTarEntry) {
+      if (entry.name == filename) {
+        return entry.getMode()
+      }
+    }
+    throw new FileNotFoundException(filename)
   }
 
   def "test ignoreFile"() {

@@ -6,6 +6,8 @@ import org.apache.commons.io.IOUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import java.nio.file.Files
+
 class BuildContextBuilder {
 
   private static Logger logger = LoggerFactory.getLogger(BuildContextBuilder)
@@ -43,9 +45,15 @@ class BuildContextBuilder {
     }
   }
 
-  private static void addAsTarEntry(File file, String relativeFileName, TarArchiveOutputStream tos) {
+  static addAsTarEntry(File file, String relativeFileName, TarArchiveOutputStream tos) {
     TarArchiveEntry tarEntry = new TarArchiveEntry(file)
     tarEntry.setName(relativeFileName)
+
+    if (!file.isDirectory()) {
+      if (Files.isExecutable(file.toPath())) {
+        tarEntry.setMode(tarEntry.getMode() | 0755)
+      }
+    }
 
     tos.putArchiveEntry(tarEntry)
 
@@ -71,7 +79,7 @@ class BuildContextBuilder {
       def relativeFileName = relativize(base, it)
       return ".dockerignore" == relativeFileName
     }
-    dockerignoreFile ? IOUtils.toString(new FileInputStream(dockerignoreFile)).split("\n") : []
+    dockerignoreFile ? IOUtils.toString(new FileInputStream(dockerignoreFile as File)).split("\n") : []
   }
 
   def static String relativize(File base, File absolute) {
