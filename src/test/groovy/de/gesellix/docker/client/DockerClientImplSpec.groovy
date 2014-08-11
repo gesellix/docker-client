@@ -26,6 +26,50 @@ class DockerClientImplSpec extends Specification {
     BetamaxRoutePlanner.configure(dockerClient.delegate.client)
   }
 
+  @Betamax(tape = 'info', match = [MatchRule.method, MatchRule.path])
+  def info() {
+    when:
+    def info = dockerClient.info()
+
+    then:
+    info == [
+            Containers        : 1,
+            InitSha1          : "",
+            ExecutionDriver   : "native-0.2",
+            NEventsListener   : 0,
+            DriverStatus      : [
+                    ["Root Dir", "/mnt/sda1/var/lib/docker/aufs"],
+                    ["Dirs", "35"]],
+            IPv4Forwarding    : 1,
+            Debug             : 1,
+            Images            : 33,
+            IndexServerAddress: "https://index.docker.io/v1/",
+            MemoryLimit       : 1,
+            Driver            : "aufs",
+            Sockets           : ["unix:///var/run/docker.sock", "tcp://0.0.0.0:4243"],
+            KernelVersion     : "3.15.3-tinycore64",
+            InitPath          : "/usr/local/bin/docker",
+            NGoroutines       : 15,
+            SwapLimit         : 1,
+            NFd               : 15]
+  }
+
+  @Betamax(tape = 'version', match = [MatchRule.method, MatchRule.path])
+  def version() {
+    when:
+    def version = dockerClient.version()
+
+    then:
+    version == [
+            Os           : "linux",
+            Arch         : "amd64",
+            GitCommit    : "d84a070",
+            KernelVersion: "3.15.3-tinycore64",
+            GoVersion    : "go1.2.1",
+            Version      : "1.1.2",
+            ApiVersion   : "1.13"]
+  }
+
   @Betamax(tape = 'auth', match = [MatchRule.method, MatchRule.path])
   def auth() {
     given:
@@ -67,7 +111,7 @@ class DockerClientImplSpec extends Specification {
     def buildContext = getClass().getResourceAsStream("build/build_with_unknown_base_image.tar")
 
     when:
-    def buildResult = dockerClient.build(buildContext)
+    dockerClient.build(buildContext)
 
     then:
     IllegalStateException ex = thrown()
@@ -310,7 +354,7 @@ class DockerClientImplSpec extends Specification {
                            "Image": imageId]
 
     when:
-    def containerInfo = dockerClient.createContainer(containerConfig, "example")
+    def containerInfo = dockerClient.createContainer(containerConfig, [name: "example"])
 
     then:
     containerInfo.Id == "0627bb9e7b28213923379abfe3d1b5fbe7647849572ad88b298264f2d2a8cd48"
@@ -498,7 +542,7 @@ class DockerClientImplSpec extends Specification {
     def containerConfig = ["Cmd": ["true"]]
     def tag = "latest"
     def name = "another-example-name"
-    def runResult = dockerClient.run("an_image_with_existing_container", containerConfig, [:], tag, name)
+    dockerClient.run("an_image_with_existing_container", containerConfig, [:], tag, name)
 
     when:
     def rmImageResult = dockerClient.rmi("an_image_with_existing_container:latest")

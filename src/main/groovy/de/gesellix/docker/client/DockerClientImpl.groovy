@@ -22,7 +22,10 @@ class DockerClientImpl implements DockerClient {
   def getDelegate() {
     if (!delegate) {
       this.delegate = new RESTClient(dockerHost)
-      this.delegate.handler.failure = new MethodClosure(responseHandler, "handleFailure")
+      this.delegate.with {
+          handler.failure = new MethodClosure(responseHandler, "handleFailure")
+          handler.success = new MethodClosure(responseHandler, "handleResponse")
+      }
       logger.info "using docker at '${dockerHost}'"
     }
     return delegate
@@ -31,31 +34,24 @@ class DockerClientImpl implements DockerClient {
   @Override
   def info() {
     logger.info "get system info"
-    getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
-    getDelegate().get([path: "/info"])
-
-    def completeResponse = responseHandler.completeResponse
-    def systemInfo = new JsonSlurper().parseText(completeResponse)
-    logger.info "${systemInfo}"
-    return systemInfo
+    getDelegate().get([path: "/info"]) { response, reader ->
+      logger.info "${response.statusLine}"
+      return reader
+    }
   }
 
   @Override
   def version() {
     logger.info "get docker version"
-    getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
-    getDelegate().get([path: "/version"])
-
-    def completeResponse = responseHandler.completeResponse
-    def dockerVersion = new JsonSlurper().parseText(completeResponse)
-    logger.info "${dockerVersion}"
-    return dockerVersion
+    getDelegate().get([path: "/version"]) { response, reader ->
+      logger.info "${response.statusLine}"
+      return reader
+    }
   }
 
   @Override
   def auth(def authDetails) {
     logger.info "auth..."
-    getDelegate().handler.'200' = null
     getDelegate().post([path              : "/auth",
                         body              : authDetails,
                         requestContentType: ContentType.JSON
@@ -72,11 +68,10 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def build(InputStream buildContext, removeIntermediateContainers = true) {
+  def build(InputStream buildContext, query = ["rm": true]) {
     logger.info "build image..."
-    getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
     getDelegate().post([path              : "/build",
-                        query             : ["rm": removeIntermediateContainers],
+                        query             : query,
                         body              : IOUtils.toByteArray(buildContext),
                         requestContentType: ContentType.BINARY])
 
@@ -89,14 +84,13 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def tag(imageId, name) {
+  def tag(imageId, repository) {
     logger.info "tag image"
-//    getDelegate().handler.'200' = null
-    def repoAndTag = parseRepositoryTag(name)
+    def repoAndTag = parseRepositoryTag(repository)
     getDelegate().post([path : "/images/${imageId}/tag".toString(),
-                        query: [repo: repoAndTag.repo,
-                                tag : repoAndTag.tag,
-                                force: 0]]) { response ->
+                        query: [repo : repoAndTag.repo,
+                                tag  : repoAndTag.tag,
+                                force: false]]) { response ->
       logger.info "${response.statusLine}"
       return response.statusLine.statusCode
     }
@@ -113,7 +107,6 @@ class DockerClientImpl implements DockerClient {
     }
     def repoAndTag = parseRepositoryTag(actualImageName)
 
-    getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
     getDelegate().post([path : "/images/${repoAndTag.repo}/push".toString(),
                         query: [registry: registry,
                                 tag     : repoAndTag.tag],
@@ -166,7 +159,6 @@ class DockerClientImpl implements DockerClient {
       actualImageName = "$registry/$imageName".toString()
     }
 
-    getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
     getDelegate().post([path : "/images/create",
                         query: [fromImage: actualImageName,
                                 tag      : tag,
@@ -181,13 +173,12 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def createContainer(containerConfig, name = "") {
+  def createContainer(containerConfig, query = [name: ""]) {
     logger.info "create container..."
     def actualContainerConfig = [:] + containerConfig
 
-//    getDelegate().handler.'200' = null
     getDelegate().post([path              : "/containers/create".toString(),
-                        query             : ["name": name],
+                        query             : query,
                         body              : actualContainerConfig,
                         requestContentType: ContentType.JSON]) { response, reader ->
       logger.info "${response.statusLine}"
@@ -200,7 +191,6 @@ class DockerClientImpl implements DockerClient {
     logger.info "start container..."
     def actualHostConfig = [:] + hostConfig
 
-//    getDelegate().handler.'200' = null
     getDelegate().post([path              : "/containers/${containerId}/start".toString(),
                         body              : actualHostConfig,
                         requestContentType: ContentType.JSON]) { response, reader ->
@@ -231,7 +221,7 @@ class DockerClientImpl implements DockerClient {
 
     pull(fromImage, tag)
 
-    def containerInfo = createContainer(containerConfigWithImageName, name)
+    def containerInfo = createContainer(containerConfigWithImageName, [name: name])
     def result = startContainer(containerInfo.Id, hostConfig)
     return [
         container: containerInfo,
@@ -242,7 +232,6 @@ class DockerClientImpl implements DockerClient {
   @Override
   def stop(containerId) {
     logger.info "stop container"
-    getDelegate().handler.'200' = null
     getDelegate().post([path: "/containers/${containerId}/stop".toString()]) { response ->
       logger.info "${response.statusLine}"
       return response.statusLine.statusCode
@@ -252,7 +241,6 @@ class DockerClientImpl implements DockerClient {
   @Override
   def wait(containerId) {
     logger.info "wait container"
-    getDelegate().handler.'200' = null
     getDelegate().post([path: "/containers/${containerId}/wait".toString()]) { response, reader ->
       logger.info "${response.statusLine}"
       return [status  : response.statusLine,
@@ -263,7 +251,6 @@ class DockerClientImpl implements DockerClient {
   @Override
   def rm(containerId) {
     logger.info "rm container"
-    getDelegate().handler.'200' = null
     def response = getDelegate().delete([path: "/containers/${containerId}".toString()])
     logger.info "${response.statusLine}"
     return response.statusLine.statusCode
@@ -272,7 +259,6 @@ class DockerClientImpl implements DockerClient {
   @Override
   def rmi(imageId) {
     logger.info "rm image"
-    getDelegate().handler.'200' = null
     def response = getDelegate().delete([path: "/images/${imageId}".toString()])
     logger.info "${response.statusLine}"
     return response.statusLine.statusCode
@@ -281,34 +267,27 @@ class DockerClientImpl implements DockerClient {
   @Override
   def ps() {
     logger.info "list containers"
-    getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
     getDelegate().get([path : "/containers/json",
                        query: [all : true,
-                               size: false]])
-
-    def completeResponse = responseHandler.completeResponse
-    def containersAsJson = new JsonSlurper().parseText(completeResponse)
-    logger.info "${containersAsJson}"
-    return containersAsJson
+                               size: false]]) { response, reader ->
+      logger.info "${response.statusLine}"
+      return reader
+    }
   }
 
   @Override
   def inspectContainer(containerId) {
     logger.info "inspect container"
-    getDelegate().handler.'200' = new MethodClosure(responseHandler, "handleResponse")
-    getDelegate().get([path: "/containers/${containerId}/json"])
-
-    def completeResponse = responseHandler.completeResponse
-    def resultAsJson = new JsonSlurper().parseText(completeResponse)
-    logger.info "${resultAsJson}"
-    return resultAsJson
+    getDelegate().get([path: "/containers/${containerId}/json"]) { response, reader ->
+      logger.info "${response.statusLine}"
+      return reader
+    }
   }
 
   @Override
   def images(query = [all    : false,
                       filters: [:]]) {
     logger.info "list images"
-    getDelegate().handler.'200' = null
     getDelegate().get([path : "/images/json",
                        query: query]) { response, reader ->
       logger.info "${response.statusLine}"
@@ -324,26 +303,30 @@ class DockerClientImpl implements DockerClient {
 
     def handleResponse(HttpResponseDecorator response) {
       logger.info "response: $response.statusLine"
-      success = response.success
-      statusLine = response.statusLine
-      completeResponse = ""
-      new InputStreamReader(response.entity.content).each { chunk ->
-        logger.debug("received chunk: '${chunk}'")
-        completeResponse += chunk
-      }
-      return response
+      handle(response)
     }
 
     def handleFailure(HttpResponseDecorator response) {
-      logger.error "Failure: $response.statusLine"
+      logger.error "failure: $response.statusLine"
+      handle(response)
+    }
+
+    def handle(HttpResponseDecorator response) {
       success = response.success
       statusLine = response.statusLine
-      completeResponse = ""
-      new InputStreamReader(response.entity.content).each { chunk ->
-        logger.debug("received chunk: '${chunk}'")
-        completeResponse += chunk
-      }
+      completeResponse = readResponseBody(response)
       return response
+    }
+
+    def readResponseBody(HttpResponseDecorator response) {
+      def completeResponse = ""
+      if (response.entity) {
+        new InputStreamReader(response.entity?.content).each { chunk ->
+          logger.debug("received chunk: '${chunk}'")
+          completeResponse += chunk
+        }
+      }
+      return completeResponse
     }
 
     def getLastResponseDetail() {

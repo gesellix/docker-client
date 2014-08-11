@@ -12,9 +12,9 @@ interface DockerClient {
 
   def build(InputStream buildContext)
 
-  def build(InputStream buildContext, removeIntermediateContainers)
+  def build(InputStream buildContext, query)
 
-  def tag(imageId, name)
+  def tag(imageId, repository)
 
   def parseRepositoryTag(name)
 
@@ -38,7 +38,7 @@ interface DockerClient {
 
   def createContainer(containerConfig)
 
-  def createContainer(containerConfig, name)
+  def createContainer(containerConfig, query)
 
   def startContainer(containerId)
 

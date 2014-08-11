@@ -21,7 +21,7 @@ interactions:
 - recorded: 2014-07-28T20:52:30.888Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/scratch/tag?repo=localhost%3A5000%2Fscratch&tag=&force=0
+    uri: http://172.17.42.1:4243/images/scratch/tag?repo=localhost%3A5000%2Fscratch&tag=&force=false
     headers:
       Accept: '*/*'
       Content-Length: '0'
