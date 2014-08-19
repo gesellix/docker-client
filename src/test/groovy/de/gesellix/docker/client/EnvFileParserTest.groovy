@@ -1,6 +1,5 @@
 package de.gesellix.docker.client
 
-import spock.lang.Ignore
 import spock.lang.Specification
 
 class EnvFileParserTest extends Specification {
