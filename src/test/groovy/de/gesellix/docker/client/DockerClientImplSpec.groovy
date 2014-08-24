@@ -33,25 +33,25 @@ class DockerClientImplSpec extends Specification {
 
     then:
     info == [
-            Containers        : 1,
-            InitSha1          : "",
-            ExecutionDriver   : "native-0.2",
-            NEventsListener   : 0,
-            DriverStatus      : [
-                    ["Root Dir", "/mnt/sda1/var/lib/docker/aufs"],
-                    ["Dirs", "35"]],
-            IPv4Forwarding    : 1,
-            Debug             : 1,
-            Images            : 33,
-            IndexServerAddress: "https://index.docker.io/v1/",
-            MemoryLimit       : 1,
-            Driver            : "aufs",
-            Sockets           : ["unix:///var/run/docker.sock", "tcp://0.0.0.0:4243"],
-            KernelVersion     : "3.15.3-tinycore64",
-            InitPath          : "/usr/local/bin/docker",
-            NGoroutines       : 15,
-            SwapLimit         : 1,
-            NFd               : 15]
+        Containers        : 1,
+        InitSha1          : "",
+        ExecutionDriver   : "native-0.2",
+        NEventsListener   : 0,
+        DriverStatus      : [
+            ["Root Dir", "/mnt/sda1/var/lib/docker/aufs"],
+            ["Dirs", "35"]],
+        IPv4Forwarding    : 1,
+        Debug             : 1,
+        Images            : 33,
+        IndexServerAddress: "https://index.docker.io/v1/",
+        MemoryLimit       : 1,
+        Driver            : "aufs",
+        Sockets           : ["unix:///var/run/docker.sock", "tcp://0.0.0.0:4243"],
+        KernelVersion     : "3.15.3-tinycore64",
+        InitPath          : "/usr/local/bin/docker",
+        NGoroutines       : 15,
+        SwapLimit         : 1,
+        NFd               : 15]
   }
 
   @Betamax(tape = 'version', match = [MatchRule.method, MatchRule.path])
@@ -61,13 +61,13 @@ class DockerClientImplSpec extends Specification {
 
     then:
     version == [
-            Os           : "linux",
-            Arch         : "amd64",
-            GitCommit    : "d84a070",
-            KernelVersion: "3.15.3-tinycore64",
-            GoVersion    : "go1.2.1",
-            Version      : "1.1.2",
-            ApiVersion   : "1.13"]
+        Os           : "linux",
+        Arch         : "amd64",
+        GitCommit    : "d84a070",
+        KernelVersion: "3.15.3-tinycore64",
+        GoVersion    : "go1.2.1",
+        Version      : "1.1.2",
+        ApiVersion   : "1.13"]
   }
 
   @Betamax(tape = 'auth', match = [MatchRule.method, MatchRule.path])
@@ -233,13 +233,13 @@ class DockerClientImplSpec extends Specification {
     def containers = dockerClient.ps()
 
     then:
-    ["Command"   : "true",
-     "Created"   : 1404683249,
-     "Id"        : "70a1534434ec4ee0708bdfccef5c38ceee28f9023a0b1ef42c788cfc2db13428",
-     "Image"     : "busybox:latest",
-     "Names"     : ["/berserk_colden"],
-     "Ports"     : [],
-     "Status"    : "Up Less than a second"] in containers
+    ["Command": "true",
+     "Created": 1404683249,
+     "Id"     : "70a1534434ec4ee0708bdfccef5c38ceee28f9023a0b1ef42c788cfc2db13428",
+     "Image"  : "busybox:latest",
+     "Names"  : ["/berserk_colden"],
+     "Ports"  : [],
+     "Status" : "Up Less than a second"] in containers
   }
 
   @Betamax(tape = 'inspect container', match = [MatchRule.method, MatchRule.path])
@@ -328,7 +328,7 @@ class DockerClientImplSpec extends Specification {
 
     then:
     images.every { image ->
-        image.RepoTags == ["<none>:<none>"]
+      image.RepoTags == ["<none>:<none>"]
     }
   }
 

@@ -23,8 +23,8 @@ class DockerClientImpl implements DockerClient {
     if (!delegate) {
       this.delegate = new RESTClient(dockerHost)
       this.delegate.with {
-          handler.failure = new MethodClosure(responseHandler, "handleFailure")
-          handler.success = new MethodClosure(responseHandler, "handleResponse")
+        handler.failure = new MethodClosure(responseHandler, "handleFailure")
+        handler.success = new MethodClosure(responseHandler, "handleResponse")
       }
       logger.info "using docker at '${dockerHost}'"
     }
