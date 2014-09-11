@@ -18,6 +18,8 @@ interface DockerClient {
 
   def parseRepositoryTag(name)
 
+  def push(imageName)
+
   def push(imageName, authBase64Encoded)
 
   def push(imageName, authBase64Encoded, registry)

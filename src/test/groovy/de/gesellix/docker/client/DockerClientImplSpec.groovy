@@ -4,7 +4,10 @@ import co.freeside.betamax.Betamax
 import co.freeside.betamax.MatchRule
 import co.freeside.betamax.Recorder
 import co.freeside.betamax.httpclient.BetamaxRoutePlanner
+import co.freeside.betamax.tape.yaml.OrderedPropertyComparator
+import co.freeside.betamax.tape.yaml.TapePropertyUtils
 import org.junit.Rule
+import org.yaml.snakeyaml.introspector.Property
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -21,6 +24,11 @@ class DockerClientImplSpec extends Specification {
   Recorder recorder = new Recorder()
 
   def setup() {
+    // see https://github.com/robfletcher/betamax/issues/141#issuecomment-48077632
+    TapePropertyUtils.metaClass.sort = { Set<Property> properties, List<String> names ->
+      new LinkedHashSet(properties.sort(true, new OrderedPropertyComparator(names)))
+    }
+
     def defaultDockerHost = System.env.DOCKER_HOST?.replaceFirst("tcp://", "http://")
     dockerClient = new DockerClientImpl(dockerHost: defaultDockerHost ?: "http://172.17.42.1:4243/")
     BetamaxRoutePlanner.configure(dockerClient.delegate.client)
@@ -114,8 +122,9 @@ class DockerClientImplSpec extends Specification {
     dockerClient.build(buildContext)
 
     then:
-    IllegalStateException ex = thrown()
-    ex.message == 'build failed. reason: [errorDetail:[message:HTTP code: 404], error:HTTP code: 404]'
+    DockerClientException ex = thrown()
+    ex.cause.message == 'build failed'
+    ex.detail == [errorDetail: [message: "HTTP code: 404"], error: "HTTP code: 404"]
   }
 
   @Betamax(tape = 'tag image', match = [MatchRule.method, MatchRule.path])

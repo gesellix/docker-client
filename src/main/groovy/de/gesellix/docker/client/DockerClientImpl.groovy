@@ -78,7 +78,7 @@ class DockerClientImpl implements DockerClient {
     def lastResponseDetail = responseHandler.lastResponseDetail
     logger.info "${lastResponseDetail}"
     if (!responseHandler.success || lastResponseDetail?.error) {
-      throw new IllegalStateException("build failed. reason: ${lastResponseDetail}")
+      throw new DockerClientException(new IllegalStateException("build failed"), lastResponseDetail)
     }
     return lastResponseDetail.stream.trim() - "Successfully built "
   }
@@ -107,9 +107,9 @@ class DockerClientImpl implements DockerClient {
     }
     def repoAndTag = parseRepositoryTag(actualImageName)
 
-    getDelegate().post([path : "/images/${repoAndTag.repo}/push".toString(),
-                        query: [registry: registry,
-                                tag     : repoAndTag.tag],
+    getDelegate().post([path   : "/images/${repoAndTag.repo}/push".toString(),
+                        query  : [registry: registry,
+                                  tag     : repoAndTag.tag],
                         headers: ["X-Registry-Auth": authBase64Encoded ?: "."]])
 
     def lastResponseDetail = responseHandler.lastResponseDetail
@@ -120,7 +120,7 @@ class DockerClientImpl implements DockerClient {
   @Override
   def parseRepositoryTag(name) {
     if (name.endsWith(':')) {
-      throw new IllegalArgumentException("'$name' should not end with a ':'")
+      throw new DockerClientException(new IllegalArgumentException("'$name' should not end with a ':'"))
     }
 
     // see https://github.com/dotcloud/docker/blob/master/utils/utils.go:
@@ -165,7 +165,7 @@ class DockerClientImpl implements DockerClient {
                                 registry : registry]])
 
     if (!responseHandler.success) {
-      throw new IllegalStateException("pull failed. reason: ${responseHandler.lastResponseDetail}")
+      throw new DockerClientException(new IllegalStateException("pull failed."), responseHandler.lastResponseDetail)
     }
     def lastResponseDetail = responseHandler.lastResponseDetail
     logger.info "${lastResponseDetail}"
