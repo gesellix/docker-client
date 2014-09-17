@@ -123,7 +123,7 @@ class DockerClientImpl implements DockerClient {
       throw new DockerClientException(new IllegalArgumentException("'$name' should not end with a ':'"))
     }
 
-    // see https://github.com/dotcloud/docker/blob/master/utils/utils.go:
+    // see https://github.com/docker/docker/blob/master/pkg/parsers/parsers.go#L72:
     // Get a repos name and returns the right reposName + tag
     // The tag can be confusing because of a port in a repository name.
     //     Ex: localhost.localdomain:5000/samalba/hipache:latest
