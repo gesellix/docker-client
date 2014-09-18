@@ -76,6 +76,8 @@ dependencies {
 
   compile 'org.slf4j:slf4j-api:1.7.7'
 
+  compile fileTree(dir: 'libs', include: ['*.jar'])
+
   testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
   testCompile 'co.freeside:betamax:1.1.2'
   testCompile 'org.yaml:snakeyaml:1.14'

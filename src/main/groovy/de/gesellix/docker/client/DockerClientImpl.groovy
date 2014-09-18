@@ -21,7 +21,9 @@ class DockerClientImpl implements DockerClient {
 
   def getDelegate() {
     if (!delegate) {
+      dockerHost = UnixSocketFactory.sanitize(dockerHost)
       this.delegate = new RESTClient(dockerHost)
+      UnixSocketFactory.configure(delegate.client, dockerHost)
       this.delegate.with {
         handler.failure = new MethodClosure(responseHandler, "handleFailure")
         handler.success = new MethodClosure(responseHandler, "handleResponse")
