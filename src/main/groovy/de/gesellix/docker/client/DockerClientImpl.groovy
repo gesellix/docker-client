@@ -9,6 +9,8 @@ import org.apache.commons.io.IOUtils
 import org.codehaus.groovy.runtime.MethodClosure
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import socketfactory.SocketFactoryService
+import socketfactory.spi.SocketFactory
 
 class DockerClientImpl implements DockerClient {
 
@@ -21,9 +23,15 @@ class DockerClientImpl implements DockerClient {
 
   def getDelegate() {
     if (!delegate) {
-      dockerHost = UnixSocketFactory.sanitize(dockerHost)
+      SocketFactoryService socketFactoryService = SocketFactoryService.getInstance()
+      SocketFactory schemeSocketFactory = socketFactoryService.getSchemeSocketFactory(dockerHost[0..dockerHost.indexOf(':') - 1])
+      if (schemeSocketFactory) {
+        dockerHost = schemeSocketFactory.sanitize(dockerHost)
+      }
       this.delegate = new RESTClient(dockerHost)
-      UnixSocketFactory.configure(delegate.client, dockerHost)
+      if (schemeSocketFactory) {
+        schemeSocketFactory.configure(delegate.client, dockerHost)
+      }
       this.delegate.with {
         handler.failure = new MethodClosure(responseHandler, "handleFailure")
         handler.success = new MethodClosure(responseHandler, "handleResponse")

@@ -24,22 +24,22 @@ class DockerClientImplUnixSocketTest extends Specification {
 
     then:
     info == [
-        Containers        : 19,
+        Containers        : 0,
         Debug             : 1,
         Driver            : "aufs",
         DriverStatus      : [["Root Dir", "/var/lib/docker/aufs"],
-                             ["Dirs", "340"]],
+                             ["Dirs", "252"]],
         ExecutionDriver   : "native-0.2",
         IPv4Forwarding    : 1,
-        Images            : 302,
+        Images            : 252,
         IndexServerAddress: "https://index.docker.io/v1/",
         InitPath          : "/usr/bin/docker",
         InitSha1          : "",
         KernelVersion     : "3.13.0-36-generic",
         MemoryLimit       : 1,
         NEventsListener   : 0,
-        NFd               : 12,
-        NGoroutines       : 17,
+        NFd               : 11,
+        NGoroutines       : 11,
         OperatingSystem   : "Ubuntu 14.04.1 LTS",
         SwapLimit         : 0]
   }
