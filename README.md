@@ -20,7 +20,7 @@ Then, you need to add the dependency:
 
 ```
 dependencies {
-  compile 'de.gesellix:docker-client:2014-07-05T22-47-42'
+  compile 'de.gesellix:docker-client:2014-09-20T22-32-56'
 }
 ```
 
