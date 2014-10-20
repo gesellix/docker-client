@@ -1,7 +1,7 @@
 !tape
 name: info
 interactions:
-- recorded: 2014-08-11T19:45:57.328Z
+- recorded: 2014-10-20T18:21:39.890Z
   request:
     method: GET
     uri: http://172.17.42.1:4243/info
@@ -13,6 +13,7 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 11 Aug 2014 19:45:55 GMT
+      Date: Mon, 20 Oct 2014 18:21:39 GMT
+      Job-Name: info
     body: |
-      {"Containers":1,"Debug":1,"Driver":"aufs","DriverStatus":[["Root Dir","/mnt/sda1/var/lib/docker/aufs"],["Dirs","35"]],"ExecutionDriver":"native-0.2","IPv4Forwarding":1,"Images":33,"IndexServerAddress":"https://index.docker.io/v1/","InitPath":"/usr/local/bin/docker","InitSha1":"","KernelVersion":"3.15.3-tinycore64","MemoryLimit":1,"NEventsListener":0,"NFd":15,"NGoroutines":15,"Sockets":["unix:///var/run/docker.sock","tcp://0.0.0.0:4243"],"SwapLimit":1}
+      {"Containers":6,"Debug":1,"Driver":"aufs","DriverStatus":[["Root Dir","/var/lib/docker/aufs"],["Dirs","231"]],"ExecutionDriver":"native-0.2","IPv4Forwarding":1,"Images":219,"IndexServerAddress":"https://index.docker.io/v1/","InitPath":"/usr/bin/docker","InitSha1":"","KernelVersion":"3.13.0-38-generic","MemoryLimit":1,"NEventsListener":0,"NFd":19,"NGoroutines":24,"OperatingSystem":"Ubuntu 14.04.1 LTS","SwapLimit":0}

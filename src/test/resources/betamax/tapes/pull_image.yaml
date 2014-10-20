@@ -1,7 +1,7 @@
 !tape
 name: pull image
 interactions:
-- recorded: 2014-07-28T20:33:27.631Z
+- recorded: 2014-10-20T19:25:03.614Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=scratch&tag=&registry=
@@ -14,7 +14,7 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 28 Jul 2014 20:33:22 GMT
-    body: "{\"status\":\"Pulling repository scratch\"}\r\n{\"status\":\"Pulling image (latest) from scratch\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling image (latest) from scratch, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
-      progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
-      :{},\"id\":\"511136ea3c5a\"}"
+      Date: Mon, 20 Oct 2014 19:25:01 GMT
+    body: "{\"status\":\"Pulling repository scratch\"}\r\n{\"status\":\"Pulling image (latest) from scratch\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling image (latest) from scratch, endpoint: https://registry-1.docker.io/v1/\",\"progressDetail\"\
+      :{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"\
+      id\":\"511136ea3c5a\"}{\"status\":\"Status: Image is up to date for scratch\"}\r\n"

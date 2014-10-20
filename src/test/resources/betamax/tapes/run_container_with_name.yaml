@@ -1,7 +1,7 @@
 !tape
 name: run container with name
 interactions:
-- recorded: 2014-07-28T20:57:23.637Z
+- recorded: 2014-10-20T19:58:04.046Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
@@ -14,33 +14,31 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 28 Jul 2014 20:57:17 GMT
-    body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
-      progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
-      :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
-      a9eb17255234\"}"
-- recorded: 2014-07-28T20:57:23.898Z
+      Date: Mon, 20 Oct 2014 19:58:03 GMT
+    body: "{\"status\":\"The image you are pulling has been verified\",\"id\":\"busybox:latest\"}\r\n{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"df7546f9f060\"}{\"\
+      status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e433a6c5b276\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e72ac664f4f0\"}{\"status\":\"Status: Image is up to date for busybox:latest\"}\r\n"
+- recorded: 2014-10-20T19:58:04.199Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=example-name
     headers:
       Accept: '*/*'
-      Content-Length: '289'
+      Content-Length: '61'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
-    body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"busybox:latest","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":[]}'
+    body: '{"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"busybox:latest"}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Mon, 28 Jul 2014 20:57:22 GMT
+      Date: Mon, 20 Oct 2014 19:58:04 GMT
     body: |
-      {"Id":"2299c0c8b8fb93851289a744c5cefd5342c6ce4be17ebb07b7487e703ef23494","Warnings":null}
-- recorded: 2014-07-28T20:57:24.367Z
+      {"Id":"449db040a179485b8042654c54b2c5392a5ae7a189b9768c81f2f2c82fc8f6fa","Warnings":null}
+- recorded: 2014-10-20T19:58:04.320Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/2299c0c8b8fb93851289a744c5cefd5342c6ce4be17ebb07b7487e703ef23494/start
+    uri: http://172.17.42.1:4243/containers/449db040a179485b8042654c54b2c5392a5ae7a189b9768c81f2f2c82fc8f6fa/start
     headers:
       Accept: '*/*'
       Content-Length: '2'
@@ -51,9 +49,8 @@ interactions:
   response:
     status: 204
     headers:
-      Content-Type: text/plain; charset=utf-8
-      Date: Mon, 28 Jul 2014 20:57:22 GMT
-- recorded: 2014-07-28T20:57:24.385Z
+      Date: Mon, 20 Oct 2014 19:58:04 GMT
+- recorded: 2014-10-20T19:58:04.353Z
   request:
     method: GET
     uri: http://172.17.42.1:4243/containers/json?all=true&size=false
@@ -65,15 +62,15 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 28 Jul 2014 20:57:22 GMT
+      Date: Mon, 20 Oct 2014 19:58:04 GMT
     body: |-
-      [{"Command":"sh -c 'ping 127.0.0.1'","Created":1406581042,"Id":"2299c0c8b8fb93851289a744c5cefd5342c6ce4be17ebb07b7487e703ef23494","Image":"busybox:latest","Names":["/example-name"],"Ports":[],"Status":"Up Less than a second"}
-      ,{"Command":"/bin/sh -c 'exec docker-registry'","Created":1406580296,"Id":"5e1ec44244fdb43195afd96f3cfca140a2435e6f0b0874d24e8ca8b8cc79f993","Image":"registry:0.7.3","Names":["/pensive_galileo"],"Ports":[{"IP":"0.0.0.0","PrivatePort":5000,"PublicPort":5000,"Type":"tcp"}],"Status":"Up 12 minutes"}
+      [{"Command":"sh -c 'ping 127.0.0.1'","Created":1413835084,"Id":"449db040a179485b8042654c54b2c5392a5ae7a189b9768c81f2f2c82fc8f6fa","Image":"busybox:latest","Names":["/example-name"],"Ports":[],"Status":"Up Less than a second"}
+      ,{"Command":"/bin/sh -c 'exec docker-registry'","Created":1413829151,"Id":"5289e19527b929fc1887ae6565287f4612e18eb0d3c03a2dbd1665c0cd4d1241","Image":"registry:0.8.1","Names":["/stoic_leakey"],"Ports":[{"IP":"0.0.0.0","PrivatePort":5000,"PublicPort":5000,"Type":"tcp"}],"Status":"Up About an hour"}
       ]
-- recorded: 2014-07-28T20:57:24.598Z
+- recorded: 2014-10-20T19:58:04.439Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/2299c0c8b8fb93851289a744c5cefd5342c6ce4be17ebb07b7487e703ef23494/stop
+    uri: http://172.17.42.1:4243/containers/449db040a179485b8042654c54b2c5392a5ae7a189b9768c81f2f2c82fc8f6fa/stop
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -82,5 +79,4 @@ interactions:
   response:
     status: 204
     headers:
-      Content-Type: text/plain; charset=utf-8
-      Date: Mon, 28 Jul 2014 20:57:22 GMT
+      Date: Mon, 20 Oct 2014 19:58:04 GMT

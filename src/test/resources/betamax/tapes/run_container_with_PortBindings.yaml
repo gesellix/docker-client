@@ -1,7 +1,7 @@
 !tape
 name: run container with PortBindings
 interactions:
-- recorded: 2014-07-28T20:34:13.500Z
+- recorded: 2014-10-20T19:57:17.888Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
@@ -14,33 +14,31 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 28 Jul 2014 20:34:07 GMT
-    body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
-      progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
-      :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
-      a9eb17255234\"}"
-- recorded: 2014-07-28T20:34:13.618Z
+      Date: Mon, 20 Oct 2014 19:57:17 GMT
+    body: "{\"status\":\"The image you are pulling has been verified\",\"id\":\"busybox:latest\"}\r\n{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"df7546f9f060\"}{\"\
+      status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e433a6c5b276\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e72ac664f4f0\"}{\"status\":\"Status: Image is up to date for busybox:latest\"}\r\n"
+- recorded: 2014-10-20T19:57:18.039Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=
     headers:
       Accept: '*/*'
-      Content-Length: '302'
+      Content-Length: '92'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
-    body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"busybox:latest","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":{"4711/tcp":{}}}'
+    body: '{"Cmd":["sh","-c","ping 127.0.0.1"],"ExposedPorts":{"4711/tcp":{}},"Image":"busybox:latest"}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Mon, 28 Jul 2014 20:34:11 GMT
+      Date: Mon, 20 Oct 2014 19:57:18 GMT
     body: |
-      {"Id":"9bad9c471de5bcd97f81b5e304cd47fdf06952205af7ca42909e0ad58c9ca390","Warnings":null}
-- recorded: 2014-07-28T20:34:14.016Z
+      {"Id":"a81872fd854c74b6d5c793e882ddfde7cfdace162cf6ee2257fabf0994d20c27","Warnings":null}
+- recorded: 2014-10-20T19:57:18.177Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/9bad9c471de5bcd97f81b5e304cd47fdf06952205af7ca42909e0ad58c9ca390/start
+    uri: http://172.17.42.1:4243/containers/a81872fd854c74b6d5c793e882ddfde7cfdace162cf6ee2257fabf0994d20c27/start
     headers:
       Accept: '*/*'
       Content-Length: '70'
@@ -51,12 +49,11 @@ interactions:
   response:
     status: 204
     headers:
-      Content-Type: text/plain; charset=utf-8
-      Date: Mon, 28 Jul 2014 20:34:12 GMT
-- recorded: 2014-07-28T20:34:14.048Z
+      Date: Mon, 20 Oct 2014 19:57:18 GMT
+- recorded: 2014-10-20T19:57:18.195Z
   request:
     method: GET
-    uri: http://172.17.42.1:4243/containers/9bad9c471de5bcd97f81b5e304cd47fdf06952205af7ca42909e0ad58c9ca390/json
+    uri: http://172.17.42.1:4243/containers/a81872fd854c74b6d5c793e882ddfde7cfdace162cf6ee2257fabf0994d20c27/json
     headers:
       Accept: '*/*'
       Host: 172.17.42.1:4243
@@ -65,14 +62,14 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 28 Jul 2014 20:34:12 GMT
+      Date: Mon, 20 Oct 2014 19:57:18 GMT
       X-Betamax: PLAY
     body: |
-      {"Args":["-c","ping 127.0.0.1"],"Config":{"AttachStderr":true,"AttachStdin":false,"AttachStdout":true,"Cmd":["sh","-c","ping 127.0.0.1"],"CpuShares":0,"Cpuset":"","Domainname":"","Entrypoint":null,"Env":["HOME=/","PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"ExposedPorts":{"4711/tcp":{}},"Hostname":"9bad9c471de5","Image":"busybox:latest","Memory":0,"MemorySwap":0,"NetworkDisabled":false,"OnBuild":null,"OpenStdin":false,"PortSpecs":null,"StdinOnce":false,"Tty":false,"User":"","Volumes":null,"WorkingDir":""},"Created":"2014-07-28T20:34:11.81301403Z","Driver":"aufs","ExecDriver":"native-0.2","HostConfig":{"Binds":null,"ContainerIDFile":"","Dns":null,"DnsSearch":null,"Links":null,"LxcConf":null,"NetworkMode":"","PortBindings":{"4711/tcp":[{"HostIp":"0.0.0.0","HostPort":"4712"}]},"Privileged":false,"PublishAllPorts":false,"VolumesFrom":null},"HostnamePath":"/mnt/sda1/var/lib/docker/containers/9bad9c471de5bcd97f81b5e304cd47fdf06952205af7ca42909e0ad58c9ca390/hostname","HostsPath":"/mnt/sda1/var/lib/docker/containers/9bad9c471de5bcd97f81b5e304cd47fdf06952205af7ca42909e0ad58c9ca390/hosts","Id":"9bad9c471de5bcd97f81b5e304cd47fdf06952205af7ca42909e0ad58c9ca390","Image":"a9eb172552348a9a49180694790b33a1097f546456d041b6e82e4d7716ddb721","MountLabel":"","Name":"/evil_perlman","NetworkSettings":{"Bridge":"docker0","Gateway":"172.17.42.1","IPAddress":"172.17.0.6","IPPrefixLen":16,"PortMapping":null,"Ports":{"4711/tcp":[{"HostIp":"0.0.0.0","HostPort":"4712"}]}},"Path":"sh","ProcessLabel":"","ResolvConfPath":"/mnt/sda1/var/lib/docker/containers/9bad9c471de5bcd97f81b5e304cd47fdf06952205af7ca42909e0ad58c9ca390/resolv.conf","State":{"ExitCode":0,"FinishedAt":"0001-01-01T00:00:00Z","Paused":false,"Pid":1109,"Running":true,"StartedAt":"2014-07-28T20:34:12.28075639Z"},"Volumes":{},"VolumesRW":{}}
-- recorded: 2014-07-28T20:34:14.265Z
+      {"Args":["-c","ping 127.0.0.1"],"Config":{"AttachStderr":false,"AttachStdin":false,"AttachStdout":false,"Cmd":["sh","-c","ping 127.0.0.1"],"CpuShares":0,"Cpuset":"","Domainname":"","Entrypoint":null,"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"ExposedPorts":{"4711/tcp":{}},"Hostname":"a81872fd854c","Image":"busybox:latest","Memory":0,"MemorySwap":0,"NetworkDisabled":false,"OnBuild":null,"OpenStdin":false,"PortSpecs":null,"SecurityOpt":null,"StdinOnce":false,"Tty":false,"User":"","Volumes":null,"WorkingDir":""},"Created":"2014-10-20T19:57:17.996884338Z","Driver":"aufs","ExecDriver":"native-0.2","HostConfig":{"Binds":null,"CapAdd":null,"CapDrop":null,"ContainerIDFile":"","Devices":null,"Dns":null,"DnsSearch":null,"ExtraHosts":null,"Links":null,"LxcConf":null,"NetworkMode":"","PortBindings":{"4711/tcp":[{"HostIp":"0.0.0.0","HostPort":"4712"}]},"Privileged":false,"PublishAllPorts":false,"RestartPolicy":{"MaximumRetryCount":0,"Name":""},"VolumesFrom":null},"HostnamePath":"/var/lib/docker/containers/a81872fd854c74b6d5c793e882ddfde7cfdace162cf6ee2257fabf0994d20c27/hostname","HostsPath":"/var/lib/docker/containers/a81872fd854c74b6d5c793e882ddfde7cfdace162cf6ee2257fabf0994d20c27/hosts","Id":"a81872fd854c74b6d5c793e882ddfde7cfdace162cf6ee2257fabf0994d20c27","Image":"e72ac664f4f0c6a061ac4ef332557a70d69b0c624b6add35f1c181ff7fff2287","MountLabel":"","Name":"/boring_rosalind","NetworkSettings":{"Bridge":"docker0","Gateway":"172.17.42.1","IPAddress":"172.17.0.17","IPPrefixLen":16,"MacAddress":"02:42:ac:11:00:11","PortMapping":null,"Ports":{"4711/tcp":[{"HostIp":"0.0.0.0","HostPort":"4712"}]}},"Path":"sh","ProcessLabel":"","ResolvConfPath":"/var/lib/docker/containers/a81872fd854c74b6d5c793e882ddfde7cfdace162cf6ee2257fabf0994d20c27/resolv.conf","State":{"ExitCode":0,"FinishedAt":"0001-01-01T00:00:00Z","Paused":false,"Pid":19518,"Restarting":false,"Running":true,"StartedAt":"2014-10-20T19:57:18.175102467Z"},"Volumes":{},"VolumesRW":{}}
+- recorded: 2014-10-20T19:57:18.288Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/9bad9c471de5bcd97f81b5e304cd47fdf06952205af7ca42909e0ad58c9ca390/stop
+    uri: http://172.17.42.1:4243/containers/a81872fd854c74b6d5c793e882ddfde7cfdace162cf6ee2257fabf0994d20c27/stop
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -81,5 +78,4 @@ interactions:
   response:
     status: 204
     headers:
-      Content-Type: text/plain; charset=utf-8
-      Date: Mon, 28 Jul 2014 20:34:12 GMT
+      Date: Mon, 20 Oct 2014 19:57:18 GMT

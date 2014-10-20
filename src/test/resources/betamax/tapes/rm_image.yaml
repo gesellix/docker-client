@@ -1,7 +1,7 @@
 !tape
 name: rm image
 interactions:
-- recorded: 2014-07-28T20:34:40.377Z
+- recorded: 2014-10-20T20:03:48.464Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=scratch&tag=latest&registry=
@@ -14,14 +14,14 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 28 Jul 2014 20:34:34 GMT
-    body: "{\"status\":\"Pulling repository scratch\"}\r\n{\"status\":\"Pulling image (latest) from scratch\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling image (latest) from scratch, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
-      progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
-      :{},\"id\":\"511136ea3c5a\"}"
-- recorded: 2014-07-28T20:34:40.391Z
+      Date: Mon, 20 Oct 2014 20:03:46 GMT
+    body: "{\"status\":\"Pulling repository scratch\"}\r\n{\"status\":\"Pulling image (latest) from scratch\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling image (latest) from scratch, endpoint: https://registry-1.docker.io/v1/\",\"progressDetail\"\
+      :{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"\
+      id\":\"511136ea3c5a\"}{\"status\":\"Status: Image is up to date for scratch:latest\"}\r\n"
+- recorded: 2014-10-20T20:03:48.539Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/511136ea3c5a/tag?repo=an_image_to_be_deleted&tag=&force=0
+    uri: http://172.17.42.1:4243/images/511136ea3c5a/tag?repo=an_image_to_be_deleted&tag=&force=false
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -31,9 +31,9 @@ interactions:
     status: 201
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Mon, 28 Jul 2014 20:34:38 GMT
+      Date: Mon, 20 Oct 2014 20:03:48 GMT
     body: ''
-- recorded: 2014-07-28T20:34:40.408Z
+- recorded: 2014-10-20T20:03:48.589Z
   request:
     method: DELETE
     uri: http://172.17.42.1:4243/images/an_image_to_be_deleted
@@ -45,7 +45,7 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 28 Jul 2014 20:34:38 GMT
+      Date: Mon, 20 Oct 2014 20:03:48 GMT
     body: |-
       [{"Untagged":"an_image_to_be_deleted:latest"}
       ]

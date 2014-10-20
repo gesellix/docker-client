@@ -41,25 +41,25 @@ class DockerClientImplSpec extends Specification {
 
     then:
     info == [
-        Containers        : 1,
-        InitSha1          : "",
-        ExecutionDriver   : "native-0.2",
-        NEventsListener   : 0,
-        DriverStatus      : [
-            ["Root Dir", "/mnt/sda1/var/lib/docker/aufs"],
-            ["Dirs", "35"]],
-        IPv4Forwarding    : 1,
+        Containers        : 6,
         Debug             : 1,
-        Images            : 33,
-        IndexServerAddress: "https://index.docker.io/v1/",
-        MemoryLimit       : 1,
         Driver            : "aufs",
-        Sockets           : ["unix:///var/run/docker.sock", "tcp://0.0.0.0:4243"],
-        KernelVersion     : "3.15.3-tinycore64",
-        InitPath          : "/usr/local/bin/docker",
-        NGoroutines       : 15,
-        SwapLimit         : 1,
-        NFd               : 15]
+        DriverStatus      : [
+            ["Root Dir", "/var/lib/docker/aufs"],
+            ["Dirs", "231"]],
+        ExecutionDriver   : "native-0.2",
+        Images            : 219,
+        IndexServerAddress: "https://index.docker.io/v1/",
+        InitPath          : "/usr/bin/docker",
+        InitSha1          : "",
+        IPv4Forwarding    : 1,
+        NEventsListener   : 0,
+        NFd               : 19,
+        NGoroutines       : 24,
+        KernelVersion     : "3.13.0-38-generic",
+        MemoryLimit       : 1,
+        OperatingSystem   : "Ubuntu 14.04.1 LTS",
+        SwapLimit         : 0]
   }
 
   @Betamax(tape = 'version', match = [MatchRule.method, MatchRule.path])
@@ -69,13 +69,13 @@ class DockerClientImplSpec extends Specification {
 
     then:
     version == [
-        Os           : "linux",
+        ApiVersion   : "1.15",
         Arch         : "amd64",
-        GitCommit    : "d84a070",
-        KernelVersion: "3.15.3-tinycore64",
-        GoVersion    : "go1.2.1",
-        Version      : "1.1.2",
-        ApiVersion   : "1.13"]
+        GitCommit    : "c78088f",
+        GoVersion    : "go1.3.3",
+        KernelVersion: "3.13.0-38-generic",
+        Os           : "linux",
+        Version      : "1.3.0"]
   }
 
   @Betamax(tape = 'auth', match = [MatchRule.method, MatchRule.path])
@@ -110,7 +110,7 @@ class DockerClientImplSpec extends Specification {
     def buildResult = dockerClient.build(buildContext)
 
     then:
-    buildResult == "0459a9b32b6b"
+    buildResult == "41cd82e420b4"
   }
 
   @Betamax(tape = 'build image with unknown base image', match = [MatchRule.method, MatchRule.path])
@@ -124,7 +124,7 @@ class DockerClientImplSpec extends Specification {
     then:
     DockerClientException ex = thrown()
     ex.cause.message == 'build failed'
-    ex.detail == [errorDetail: [message: "HTTP code: 404"], error: "HTTP code: 404"]
+    ex.detail == [errorDetail: [message: "Error: image missing/image not found"], error: "Error: image missing/image not found"]
   }
 
   @Betamax(tape = 'tag image', match = [MatchRule.method, MatchRule.path])
@@ -152,7 +152,7 @@ class DockerClientImplSpec extends Specification {
     def pushResult = dockerClient.push(imageName, authBase64Encoded)
 
     then:
-    pushResult.status == "Pushing tag for rev [511136ea3c5a] on {https://registry-1.docker.io/v1/repositories/gesellix/test/tags/latest}"
+    pushResult.status == "Pushing tag for rev [511136ea3c5a] on {https://cdn-registry-1.docker.io/v1/repositories/gesellix/test/tags/latest}"
   }
 
   @Betamax(tape = 'push image with registry', match = [MatchRule.method, MatchRule.path, MatchRule.query, MatchRule.headers])
@@ -243,10 +243,10 @@ class DockerClientImplSpec extends Specification {
 
     then:
     ["Command": "true",
-     "Created": 1404683249,
-     "Id"     : "70a1534434ec4ee0708bdfccef5c38ceee28f9023a0b1ef42c788cfc2db13428",
+     "Created": 1413833702,
+     "Id"     : "0900eb1d8e8d7ac298f07e8f1a7c42a86aeb0deeac1f80723eb062ff5dc53728",
      "Image"  : "busybox:latest",
-     "Names"  : ["/berserk_colden"],
+     "Names"  : ["/tender_hawking"],
      "Ports"  : [],
      "Status" : "Up Less than a second"] in containers
   }
@@ -267,15 +267,15 @@ class DockerClientImplSpec extends Specification {
     def containerInspection = dockerClient.inspectContainer(containerId)
 
     then:
-    containerInspection.HostnamePath == "/var/lib/docker/containers/ecf9b1dbbb3e36dc5f4074193839c84e416c4d70fcbcb1f5021c65145093df38/hostname"
+    containerInspection.HostnamePath == "/var/lib/docker/containers/b14eba0942ad1323db4ebc6bf5f9f420a87f2e9820437c5c0fc55261fbb68fd5/hostname"
     and:
     containerInspection.Config.Cmd == ["true"]
     and:
     containerInspection.Config.Image == "inspect_container"
     and:
-    containerInspection.Image == "a9eb172552348a9a49180694790b33a1097f546456d041b6e82e4d7716ddb721"
+    containerInspection.Image == "e72ac664f4f0c6a061ac4ef332557a70d69b0c624b6add35f1c181ff7fff2287"
     and:
-    containerInspection.Id == "ecf9b1dbbb3e36dc5f4074193839c84e416c4d70fcbcb1f5021c65145093df38"
+    containerInspection.Id == "b14eba0942ad1323db4ebc6bf5f9f420a87f2e9820437c5c0fc55261fbb68fd5"
   }
 
   @Betamax(tape = 'list images', match = [MatchRule.method, MatchRule.path, MatchRule.query])
@@ -287,7 +287,7 @@ class DockerClientImplSpec extends Specification {
     ["Created"    : 1371157430,
      "Id"         : "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158",
      "ParentId"   : "",
-     "RepoTags"   : ["scratch:latest", "gesellix/test:latest"],
+     "RepoTags": ["scratch:latest"],
      "Size"       : 0,
      "VirtualSize": 0] in images
   }
@@ -298,36 +298,36 @@ class DockerClientImplSpec extends Specification {
     def images = dockerClient.images([all: true])
 
     then:
-    [ParentId   : "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158",
-     Created    : 1401926735,
-     Id         : "42eed7f1bf2ac3f1610c5e616d2ab1ee9c7290234240388d6297bc0f32c34229",
-     VirtualSize: 0,
-     RepoTags   : ["<none>:<none>"],
-     Size       : 0] in images
-
-    and:
-    [ParentId   : "42eed7f1bf2ac3f1610c5e616d2ab1ee9c7290234240388d6297bc0f32c34229",
-     Created    : 1401926735,
-     Id         : "120e218dd395ec314e7b6249f39d2853911b3d6def6ea164ae05722649f34b16",
-     VirtualSize: 2433303,
-     RepoTags   : ["<none>:<none>"],
-     Size       : 2433303] in images
-
-    and:
-    [ParentId   : "120e218dd395ec314e7b6249f39d2853911b3d6def6ea164ae05722649f34b16",
-     Created    : 1401926735,
-     Id         : "a9eb172552348a9a49180694790b33a1097f546456d041b6e82e4d7716ddb721",
-     VirtualSize: 2433303,
+    [Created    : 1412196368,
+     Id         : "e72ac664f4f0c6a061ac4ef332557a70d69b0c624b6add35f1c181ff7fff2287",
+     ParentId   : "e433a6c5b276a31aa38bf6eaba9cd1cfd69ea33f706ed72b3f20bafde5cd8644",
      RepoTags   : ["busybox:latest"],
-     Size       : 0] in images
+     Size       : 0,
+     VirtualSize: 2433303] in images
 
     and:
-    [ParentId   : "",
-     Created    : 1371157430,
+    [Created    : 1412196368,
+     Id         : "e433a6c5b276a31aa38bf6eaba9cd1cfd69ea33f706ed72b3f20bafde5cd8644",
+     ParentId   : "df7546f9f060a2268024c8a230d8639878585defcc1bc6f79d2728a13957871b",
+     RepoTags   : ["<none>:<none>"],
+     Size       : 2433303,
+     VirtualSize: 2433303] in images
+
+    and:
+    [Created    : 1412196367,
+     Id         : "df7546f9f060a2268024c8a230d8639878585defcc1bc6f79d2728a13957871b",
+     ParentId   : "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158",
+     RepoTags   : ["<none>:<none>"],
+     Size       : 0,
+     VirtualSize: 0] in images
+
+    and:
+    [Created    : 1371157430,
      Id         : "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158",
-     VirtualSize: 0,
+     ParentId   : "",
      RepoTags   : ["scratch:latest"],
-     Size       : 0] in images
+     Size       : 0,
+     VirtualSize: 0] in images
   }
 
   @Betamax(tape = 'list images filtered', match = [MatchRule.method, MatchRule.path, MatchRule.query])
@@ -352,7 +352,7 @@ class DockerClientImplSpec extends Specification {
     def containerInfo = dockerClient.createContainer(containerConfig)
 
     then:
-    containerInfo.Id == "eb8e04b15e4c11e5af13f088569d5c3c0a47f0cc4949cb241811cdbf14700636"
+    containerInfo.Id == "e58171747f59c785745141079100863d46743ec2282d33c1f2ca81f046519abe"
   }
 
   @Betamax(tape = 'create container with name', match = [MatchRule.method, MatchRule.path, MatchRule.query])
@@ -366,7 +366,7 @@ class DockerClientImplSpec extends Specification {
     def containerInfo = dockerClient.createContainer(containerConfig, [name: "example"])
 
     then:
-    containerInfo.Id == "0627bb9e7b28213923379abfe3d1b5fbe7647849572ad88b298264f2d2a8cd48"
+    containerInfo.Id == "2b8a9ab55e14c30b6d78bfcbf89145f4c25d648842f4c76cc1921cc940d66766"
   }
 
   @Betamax(tape = 'start container', match = [MatchRule.method, MatchRule.path])

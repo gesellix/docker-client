@@ -1,7 +1,7 @@
 !tape
 name: rm image with existing container
 interactions:
-- recorded: 2014-07-28T20:34:45.135Z
+- recorded: 2014-10-20T20:04:08.446Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
@@ -14,16 +14,14 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 28 Jul 2014 20:34:39 GMT
+      Date: Mon, 20 Oct 2014 20:04:08 GMT
       X-Betamax: PLAY
-    body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
-      progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
-      :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
-      a9eb17255234\"}"
-- recorded: 2014-07-28T20:34:45.157Z
+    body: "{\"status\":\"The image you are pulling has been verified\",\"id\":\"busybox:latest\"}\r\n{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"df7546f9f060\"}{\"\
+      status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e433a6c5b276\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e72ac664f4f0\"}{\"status\":\"Status: Image is up to date for busybox:latest\"}\r\n"
+- recorded: 2014-10-20T20:04:08.532Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/a9eb17255234/tag?repo=an_image_with_existing_container&tag=&force=0
+    uri: http://172.17.42.1:4243/images/e72ac664f4f0/tag?repo=an_image_with_existing_container&tag=&force=false
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -33,30 +31,30 @@ interactions:
     status: 201
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Mon, 28 Jul 2014 20:34:43 GMT
+      Date: Mon, 20 Oct 2014 20:04:08 GMT
     body: ''
-- recorded: 2014-07-28T20:34:45.274Z
+- recorded: 2014-10-20T20:04:08.674Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=another-example-name
     headers:
       Accept: '*/*'
-      Content-Length: '294'
+      Content-Length: '66'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
-    body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["true"],"Image":"an_image_with_existing_container:latest","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":[]}'
+    body: '{"Cmd":["true"],"Image":"an_image_with_existing_container:latest"}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Mon, 28 Jul 2014 20:34:43 GMT
+      Date: Mon, 20 Oct 2014 20:04:08 GMT
     body: |
-      {"Id":"d541b78d37148dc25f21e04acb07a4af30fc95dd9c534614ec20218064a51a54","Warnings":null}
-- recorded: 2014-07-28T20:34:45.530Z
+      {"Id":"39d1732cb59af0b0179f7f071e9dbcc9b8763fc03cab3b47658419de0d15dc7e","Warnings":null}
+- recorded: 2014-10-20T20:04:08.777Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/d541b78d37148dc25f21e04acb07a4af30fc95dd9c534614ec20218064a51a54/start
+    uri: http://172.17.42.1:4243/containers/39d1732cb59af0b0179f7f071e9dbcc9b8763fc03cab3b47658419de0d15dc7e/start
     headers:
       Accept: '*/*'
       Content-Length: '2'
@@ -67,9 +65,8 @@ interactions:
   response:
     status: 204
     headers:
-      Content-Type: text/plain; charset=utf-8
-      Date: Mon, 28 Jul 2014 20:34:43 GMT
-- recorded: 2014-07-28T20:34:45.574Z
+      Date: Mon, 20 Oct 2014 20:04:08 GMT
+- recorded: 2014-10-20T20:04:08.847Z
   request:
     method: DELETE
     uri: http://172.17.42.1:4243/images/an_image_with_existing_container:latest
@@ -81,7 +78,7 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 28 Jul 2014 20:34:43 GMT
+      Date: Mon, 20 Oct 2014 20:04:08 GMT
     body: |-
       [{"Untagged":"an_image_with_existing_container:latest"}
       ]

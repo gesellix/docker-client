@@ -1,7 +1,7 @@
 !tape
 name: list containers
 interactions:
-- recorded: 2014-07-28T21:06:23.254Z
+- recorded: 2014-10-20T19:35:02.009Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
@@ -14,15 +14,13 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 28 Jul 2014 21:06:17 GMT
-    body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"status\":\"Pulling image (latest) from busybox\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling image (latest) from busybox, endpoint: https://cdn-registry-1.docker.io/v1/\",\"\
-      progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\"\
-      :{},\"id\":\"42eed7f1bf2a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"120e218dd395\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"a9eb17255234\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"\
-      a9eb17255234\"}"
-- recorded: 2014-07-28T21:06:23.379Z
+      Date: Mon, 20 Oct 2014 19:35:01 GMT
+    body: "{\"status\":\"The image you are pulling has been verified\",\"id\":\"busybox:latest\"}\r\n{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"df7546f9f060\"}{\"\
+      status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e433a6c5b276\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e72ac664f4f0\"}{\"status\":\"Status: Image is up to date for busybox:latest\"}\r\n"
+- recorded: 2014-10-20T19:35:02.085Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/a9eb17255234/tag?repo=list_containers&tag=&force=0
+    uri: http://172.17.42.1:4243/images/e72ac664f4f0/tag?repo=list_containers&tag=&force=false
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -32,30 +30,30 @@ interactions:
     status: 201
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Mon, 28 Jul 2014 21:06:21 GMT
+      Date: Mon, 20 Oct 2014 19:35:02 GMT
     body: ''
-- recorded: 2014-07-28T21:06:23.570Z
+- recorded: 2014-10-20T19:35:02.169Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=
     headers:
       Accept: '*/*'
-      Content-Length: '270'
+      Content-Length: '42'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
-    body: '{"Hostname":"","User":"","Memory":0,"MemorySwap":0,"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Cmd":["true"],"Image":"list_containers","Volumes":[],"WorkingDir":"","DisableNetwork":false,"ExposedPorts":[]}'
+    body: '{"Cmd":["true"],"Image":"list_containers"}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Mon, 28 Jul 2014 21:06:21 GMT
+      Date: Mon, 20 Oct 2014 19:35:02 GMT
     body: |
-      {"Id":"791b022d8ec3bb6b03b6e9a5d94afa105c330ab1d6485cd21d8cc893bde7fa6f","Warnings":null}
-- recorded: 2014-07-28T21:06:23.859Z
+      {"Id":"0900eb1d8e8d7ac298f07e8f1a7c42a86aeb0deeac1f80723eb062ff5dc53728","Warnings":null}
+- recorded: 2014-10-20T19:35:02.281Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/791b022d8ec3bb6b03b6e9a5d94afa105c330ab1d6485cd21d8cc893bde7fa6f/start
+    uri: http://172.17.42.1:4243/containers/0900eb1d8e8d7ac298f07e8f1a7c42a86aeb0deeac1f80723eb062ff5dc53728/start
     headers:
       Accept: '*/*'
       Content-Length: '2'
@@ -66,9 +64,8 @@ interactions:
   response:
     status: 204
     headers:
-      Content-Type: text/plain; charset=utf-8
-      Date: Mon, 28 Jul 2014 21:06:22 GMT
-- recorded: 2014-07-28T21:06:23.905Z
+      Date: Mon, 20 Oct 2014 19:35:02 GMT
+- recorded: 2014-10-20T19:35:02.314Z
   request:
     method: GET
     uri: http://172.17.42.1:4243/containers/json?all=true&size=false
@@ -80,7 +77,7 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 28 Jul 2014 21:06:22 GMT
+      Date: Mon, 20 Oct 2014 19:35:02 GMT
     body: |-
-      [{"Command":"true","Created":1404683249,"Id":"70a1534434ec4ee0708bdfccef5c38ceee28f9023a0b1ef42c788cfc2db13428","Image":"busybox:latest","Names":["/berserk_colden"],"Ports":[],"Status":"Up Less than a second"}
+      [{"Command":"true","Created":1413833702,"Id":"0900eb1d8e8d7ac298f07e8f1a7c42a86aeb0deeac1f80723eb062ff5dc53728","Image":"busybox:latest","Names":["/tender_hawking"],"Ports":[],"Status":"Up Less than a second"}
       ]

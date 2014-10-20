@@ -179,7 +179,8 @@ class DockerClientImpl implements DockerClient {
     }
     def lastResponseDetail = responseHandler.lastResponseDetail
     logger.info "${lastResponseDetail}"
-    return lastResponseDetail.id
+    def lastChunkWithId = responseHandler.responseChunks.findAll { it.id }.last()
+    return lastChunkWithId.id
   }
 
   @Override
@@ -307,9 +308,12 @@ class DockerClientImpl implements DockerClient {
 
   static class ChunkedResponseHandler {
 
+    def jsonSlurper = new JsonSlurper()
+
     def success
     def statusLine
     def completeResponse
+    def responseChunks = []
 
     def handleResponse(HttpResponseDecorator response) {
       logger.info "response: $response.statusLine"
@@ -334,6 +338,23 @@ class DockerClientImpl implements DockerClient {
         new InputStreamReader(response.entity?.content).each { chunk ->
           logger.debug("received chunk: '${chunk}'")
           completeResponse += chunk
+          if (chunk.contains("}{")) {
+            responseChunks.addAll(chunk.split("\\}\\{").collect {
+              it = it.startsWith("{") ? it : "{${it}".toString()
+              it = it.endsWith("}") ? it : "${it}}".toString()
+              logger.trace("splitted chunk: '${it}'")
+              jsonSlurper.parseText(it)
+            })
+          }
+          else {
+            logger.trace("kept chunk: '${chunk}'")
+            if (chunk.startsWith("{") && chunk.endsWith("}")) {
+              responseChunks << jsonSlurper.parseText(chunk)
+            }
+            else {
+              responseChunks << chunk
+            }
+          }
         }
       }
       return completeResponse
@@ -344,10 +365,10 @@ class DockerClientImpl implements DockerClient {
         return completeResponse ?: statusLine
       }
 
-      if (completeResponse) {
-        logger.debug("find last detail in: '${completeResponse}'")
-        def lastResponseDetail = completeResponse.substring(completeResponse.lastIndexOf("}{") + 1)
-        return new JsonSlurper().parseText(lastResponseDetail)
+      if (responseChunks) {
+        logger.debug("find last detail in: '${responseChunks}'")
+        def lastResponseDetail = responseChunks.last()
+        return lastResponseDetail
       }
       else {
         return ""
