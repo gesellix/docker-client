@@ -23,22 +23,27 @@ class DockerClientImpl implements DockerClient {
 
   def getDelegate() {
     if (!delegate) {
-      SocketFactoryService socketFactoryService = SocketFactoryService.getInstance()
-      SocketFactory schemeSocketFactory = socketFactoryService.getSchemeSocketFactory(dockerHost[0..dockerHost.indexOf(':') - 1])
-      if (schemeSocketFactory) {
-        dockerHost = schemeSocketFactory.sanitize(dockerHost)
-      }
-      this.delegate = new RESTClient(dockerHost)
-      if (schemeSocketFactory) {
-        schemeSocketFactory.configure(delegate.client, dockerHost)
-      }
-      this.delegate.with {
-        handler.failure = new MethodClosure(responseHandler, "handleFailure")
-        handler.success = new MethodClosure(responseHandler, "handleResponse")
-      }
-      logger.info "using docker at '${dockerHost}'"
+      this.delegate = createDockerClient(dockerHost)
     }
     return delegate
+  }
+
+  def createDockerClient(String dockerHost) {
+    SocketFactoryService socketFactoryService = SocketFactoryService.getInstance()
+    SocketFactory schemeSocketFactory = socketFactoryService.getSchemeSocketFactory(dockerHost)
+    if (schemeSocketFactory) {
+      dockerHost = schemeSocketFactory.sanitize(dockerHost)
+    }
+    def restClient = new RESTClient(dockerHost)
+    if (schemeSocketFactory) {
+      schemeSocketFactory.configure(restClient.client, dockerHost)
+    }
+    restClient.with {
+      handler.failure = new MethodClosure(responseHandler, "handleFailure")
+      handler.success = new MethodClosure(responseHandler, "handleResponse")
+    }
+    logger.info "using docker at '${dockerHost}'"
+    return restClient
   }
 
   @Override
@@ -345,13 +350,11 @@ class DockerClientImpl implements DockerClient {
               logger.trace("splitted chunk: '${it}'")
               jsonSlurper.parseText(it)
             })
-          }
-          else {
+          } else {
             logger.trace("kept chunk: '${chunk}'")
             if (chunk.startsWith("{") && chunk.endsWith("}")) {
               responseChunks << jsonSlurper.parseText(chunk)
-            }
-            else {
+            } else {
               responseChunks << chunk
             }
           }
@@ -369,8 +372,7 @@ class DockerClientImpl implements DockerClient {
         logger.debug("find last detail in: '${responseChunks}'")
         def lastResponseDetail = responseChunks.last()
         return lastResponseDetail
-      }
-      else {
+      } else {
         return ""
       }
     }
