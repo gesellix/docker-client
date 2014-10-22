@@ -77,7 +77,7 @@ dependencies {
 
   compile 'org.slf4j:slf4j-api:1.7.7'
 
-  compile 'de.gesellix:docker-socket-factory:2014-10-21T21-18-46'
+  compile 'de.gesellix:docker-socket-factory:2014-10-22T18-56-22'
 
   testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
   testCompile 'co.freeside:betamax:1.1.2'
