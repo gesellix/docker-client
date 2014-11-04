@@ -6,11 +6,10 @@ import groovyx.net.http.ContentType
 import groovyx.net.http.HttpResponseDecorator
 import groovyx.net.http.RESTClient
 import org.apache.commons.io.IOUtils
+import org.apache.http.client.HttpClient
 import org.codehaus.groovy.runtime.MethodClosure
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import socketfactory.SocketFactoryService
-import socketfactory.spi.SocketFactory
 
 class DockerClientImpl implements DockerClient {
 
@@ -29,14 +28,12 @@ class DockerClientImpl implements DockerClient {
   }
 
   def createDockerClient(String dockerHost) {
-    SocketFactoryService socketFactoryService = SocketFactoryService.getInstance()
-    SocketFactory schemeSocketFactory = socketFactoryService.getSchemeSocketFactory(dockerHost)
-    if (schemeSocketFactory) {
-      dockerHost = schemeSocketFactory.sanitize(dockerHost)
-    }
-    def restClient = new RESTClient(dockerHost)
-    if (schemeSocketFactory) {
-      schemeSocketFactory.configure(restClient.client, dockerHost)
+    def restClient = new RESTClient(dockerHost) {
+      @Override
+      HttpClient getClient() {
+        def httpClient = DockerHttpClientFactory.createOldHttpClient(dockerHost)
+        return httpClient
+      }
     }
     restClient.with {
       handler.failure = new MethodClosure(responseHandler, "handleFailure")
