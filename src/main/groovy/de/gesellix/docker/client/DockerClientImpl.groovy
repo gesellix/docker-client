@@ -29,10 +29,15 @@ class DockerClientImpl implements DockerClient {
 
   def createDockerClient(String dockerHost) {
     def restClient = new RESTClient(dockerHost) {
+
+      private client
+
       @Override
       HttpClient getClient() {
-        def httpClient = DockerHttpClientFactory.createOldHttpClient(dockerHost)
-        return httpClient
+        if (client == null) {
+          this.client = DockerHttpClientFactory.createOldHttpClient(dockerHost)
+        }
+        return this.client
       }
     }
     restClient.with {
@@ -347,11 +352,13 @@ class DockerClientImpl implements DockerClient {
               logger.trace("splitted chunk: '${it}'")
               jsonSlurper.parseText(it)
             })
-          } else {
+          }
+          else {
             logger.trace("kept chunk: '${chunk}'")
             if (chunk.startsWith("{") && chunk.endsWith("}")) {
               responseChunks << jsonSlurper.parseText(chunk)
-            } else {
+            }
+            else {
               responseChunks << chunk
             }
           }
@@ -369,7 +376,8 @@ class DockerClientImpl implements DockerClient {
         logger.debug("find last detail in: '${responseChunks}'")
         def lastResponseDetail = responseChunks.last()
         return lastResponseDetail
-      } else {
+      }
+      else {
         return ""
       }
     }

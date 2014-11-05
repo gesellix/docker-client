@@ -32,7 +32,8 @@ class DockerHttpClientFactory {
           .build()
 
       connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry)
-    } else {
+    }
+    else {
       connectionManager = new PoolingHttpClientConnectionManager()
     }
 
@@ -63,7 +64,8 @@ class DockerHttpClientFactory {
       schemeRegistry.register(new Scheme(scheme, uri.port, schemeSocketFactory))
 
       connectionManager = new PoolingClientConnectionManager(schemeRegistry)
-    } else {
+    }
+    else {
       connectionManager = new PoolingClientConnectionManager()
     }
 
