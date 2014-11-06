@@ -16,60 +16,76 @@ import socketfactory.spi.SocketFactorySpi
 
 class DockerHttpClientFactory {
 
-  def static createHttpClient(dockerHost) {
-    HttpClientConnectionManager connectionManager
+  def sanitizedUri
+  def SocketFactorySpi schemeSocketFactory
 
-    SocketFactorySpi schemeSocketFactory = getMatchingSocketFactory(dockerHost)
-    if (schemeSocketFactory) {
-      dockerHost = schemeSocketFactory.sanitize(dockerHost)
-      schemeSocketFactory.configureFor(dockerHost)
+  DockerHttpClientFactory(dockerHost) {
+    prepareSanitizedUri(dockerHost)
+  }
 
-      def uri = new URI(dockerHost)
-      def scheme = uri.scheme
-
-      Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.create()
-          .register(scheme, schemeSocketFactory)
-          .build()
-
-      connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry)
+  def prepareSanitizedUri(dockerHost) {
+    if (sanitizedUri == null) {
+      schemeSocketFactory = getMatchingSocketFactory(dockerHost)
+      if (schemeSocketFactory) {
+        sanitizedUri = schemeSocketFactory.sanitize(dockerHost)
+        schemeSocketFactory.configureFor(sanitizedUri)
+      }
+      else {
+        sanitizedUri = dockerHost
+      }
     }
-    else {
-      connectionManager = new PoolingHttpClientConnectionManager()
-    }
+  }
 
+  static def SocketFactorySpi getMatchingSocketFactory(dockerHost) {
+    SocketFactoryService socketFactoryService = SocketFactoryService.getInstance()
+    return socketFactoryService.getSchemeSocketFactory(dockerHost) as SocketFactorySpi
+  }
+
+  def createHttpClient() {
+    HttpClientConnectionManager connectionManager = createConnectionManager()
     def newHttpClient = HttpClientBuilder.create()
         .setConnectionManager(connectionManager)
         .build()
     return newHttpClient
   }
 
-  def static SocketFactorySpi getMatchingSocketFactory(dockerHost) {
-    SocketFactoryService socketFactoryService = SocketFactoryService.getInstance()
-    return socketFactoryService.getSchemeSocketFactory(dockerHost)
+  def createConnectionManager() {
+    if (schemeSocketFactory) {
+      def uri = new URI(sanitizedUri as String)
+      def scheme = uri.scheme
+
+      Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.create()
+          .register(scheme, schemeSocketFactory)
+          .build()
+
+      new PoolingHttpClientConnectionManager(socketFactoryRegistry)
+    }
+    else {
+      new PoolingHttpClientConnectionManager()
+    }
   }
 
   @Deprecated
-  def static createOldHttpClient(dockerHost) {
-    ClientConnectionManager connectionManager
-
-    SocketFactorySpi schemeSocketFactory = getMatchingSocketFactory(dockerHost)
-    if (schemeSocketFactory) {
-      dockerHost = schemeSocketFactory.sanitize(dockerHost)
-      schemeSocketFactory.configureFor(dockerHost)
-
-      def uri = new URI(dockerHost)
-      def scheme = uri.scheme
-
-      def schemeRegistry = SchemeRegistryFactory.createSystemDefault()
-      schemeRegistry.register(new Scheme(scheme, uri.port, schemeSocketFactory))
-
-      connectionManager = new PoolingClientConnectionManager(schemeRegistry)
-    }
-    else {
-      connectionManager = new PoolingClientConnectionManager()
-    }
-
+  def createOldHttpClient() {
+    ClientConnectionManager connectionManager = createOldConnectionManager()
     def httpClient = new DefaultHttpClient(connectionManager);
     return httpClient
+  }
+
+  @Deprecated
+  def createOldConnectionManager() {
+    if (schemeSocketFactory) {
+      def uri = new URI(sanitizedUri as String)
+      def scheme = uri.scheme
+      def port = 49999
+
+      def schemeRegistry = SchemeRegistryFactory.createSystemDefault()
+      schemeRegistry.register(new Scheme(scheme, port, schemeSocketFactory))
+
+      return new PoolingClientConnectionManager(schemeRegistry)
+    }
+    else {
+      return new PoolingClientConnectionManager()
+    }
   }
 }

@@ -28,6 +28,8 @@ class DockerClientImpl implements DockerClient {
   }
 
   def createDockerClient(String dockerHost) {
+    def httpClientFactory = new DockerHttpClientFactory(dockerHost)
+    dockerHost = httpClientFactory.sanitizedUri
     def restClient = new RESTClient(dockerHost) {
 
       private client
@@ -35,7 +37,7 @@ class DockerClientImpl implements DockerClient {
       @Override
       HttpClient getClient() {
         if (client == null) {
-          this.client = DockerHttpClientFactory.createOldHttpClient(dockerHost)
+          this.client = httpClientFactory.createOldHttpClient()
         }
         return this.client
       }
