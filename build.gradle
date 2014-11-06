@@ -10,9 +10,9 @@ buildscript {
   }
 
   dependencies {
-    classpath 'net.saliman:gradle-cobertura-plugin:2.2.4'
-    classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.0.0'
-    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.5'
+    classpath 'net.saliman:gradle-cobertura-plugin:2.2.5'
+    classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.0.1'
+    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.6'
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.5-beta-5'
   }
 }
@@ -28,7 +28,7 @@ apply plugin: 'groovy'
 apply plugin: 'idea'
 
 apply plugin: 'jacoco'
-apply plugin: 'cobertura'
+apply plugin: 'net.saliman.cobertura'
 apply plugin: 'com.github.kt3k.coveralls'
 
 apply plugin: 'maven'
@@ -53,9 +53,10 @@ ext {
 }
 
 def dependencyVersions = [
-    'commons-io:commons-io': '2.4',
+    'commons-io:commons-io'                                : '2.4',
     'commons-lang:commons-lang'                            : '2.6',
     'commons-logging:commons-logging'                      : '1.1.3',
+    'org.apache.commons:commons-compress'                  : '1.9',
     'org.apache.httpcomponents:httpclient'                 : '4.3',
     'org.apache.httpcomponents:httpmime'                   : '4.3',
     'org.codehaus.groovy:groovy-all'                       : '2.3.6',
@@ -72,7 +73,7 @@ dependencies {
   compile 'org.codehaus.groovy:groovy-all:2.3.6'
   compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
 
-  compile 'org.apache.commons:commons-compress:1.8.1'
+  compile 'org.apache.commons:commons-compress:1.9'
   compile 'commons-io:commons-io:2.4'
 
   compile 'org.slf4j:slf4j-api:1.7.7'
