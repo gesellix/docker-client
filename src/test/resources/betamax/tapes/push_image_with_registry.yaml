@@ -10,6 +10,7 @@ interactions:
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 200
     headers:
@@ -27,6 +28,7 @@ interactions:
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 201
     headers:
@@ -42,6 +44,7 @@ interactions:
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 201
     headers:
@@ -57,6 +60,7 @@ interactions:
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
       X-Registry-Auth: eyJ1c2VybmFtZSI6Imdlc2VsbGl4IiwicGFzc3dvcmQiOiIteWV0LWFub3RoZXItcGFzc3dvcmQtIiwiZW1haWwiOiJ0b2JpYXNAZ2VzZWxsaXguZGUiLCJzZXJ2ZXJhZGRyZXNzIjoiaHR0cHM6Ly9pbmRleC5kb2NrZXIuaW8vdjEvIn0=
   response:
     status: 200
