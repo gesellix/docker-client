@@ -2,9 +2,7 @@ import java.text.SimpleDateFormat
 
 buildscript {
   repositories {
-    maven { url 'http://kt3k.github.io/repository/maven/release' }
-    maven { url "https://github.com/ben-manes/gradle-versions-plugin/raw/mvnrepo" }
-    maven { url 'http://jcenter.bintray.com' }
+    jcenter()
     mavenLocal()
     mavenCentral()
   }
@@ -13,7 +11,7 @@ buildscript {
     classpath 'net.saliman:gradle-cobertura-plugin:2.2.5'
     classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.0.1'
     classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.6'
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.5-beta-5'
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.5'
   }
 }
 
@@ -35,7 +33,7 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
-apply plugin: 'versions'
+apply plugin: 'com.github.ben-manes.versions'
 
 group = 'de.gesellix'
 
