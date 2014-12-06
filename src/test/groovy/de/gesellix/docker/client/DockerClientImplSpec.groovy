@@ -41,22 +41,22 @@ class DockerClientImplSpec extends Specification {
 
     then:
     info == [
-        Containers        : 6,
+        Containers        : 1,
         Debug             : 1,
         Driver            : "aufs",
         DriverStatus      : [
             ["Root Dir", "/var/lib/docker/aufs"],
-            ["Dirs", "231"]],
+            ["Dirs", "138"]],
         ExecutionDriver   : "native-0.2",
-        Images            : 219,
+        Images            : 136,
         IndexServerAddress: "https://index.docker.io/v1/",
         InitPath          : "/usr/bin/docker",
         InitSha1          : "",
         IPv4Forwarding    : 1,
         NEventsListener   : 0,
-        NFd               : 19,
-        NGoroutines       : 24,
-        KernelVersion     : "3.13.0-38-generic",
+        NFd               : 16,
+        NGoroutines       : 16,
+        KernelVersion     : "3.13.0-41-generic",
         MemoryLimit       : 1,
         OperatingSystem   : "Ubuntu 14.04.1 LTS",
         SwapLimit         : 0]
@@ -71,11 +71,11 @@ class DockerClientImplSpec extends Specification {
     version == [
         ApiVersion   : "1.15",
         Arch         : "amd64",
-        GitCommit    : "c78088f",
+        GitCommit    : "39fa2fa",
         GoVersion    : "go1.3.3",
-        KernelVersion: "3.13.0-38-generic",
+        KernelVersion: "3.13.0-41-generic",
         Os           : "linux",
-        Version      : "1.3.0"]
+        Version      : "1.3.2"]
   }
 
   @Betamax(tape = 'auth', match = [MatchRule.method, MatchRule.path])
@@ -110,7 +110,7 @@ class DockerClientImplSpec extends Specification {
     def buildResult = dockerClient.build(buildContext)
 
     then:
-    buildResult == "41cd82e420b4"
+    buildResult == "6f8c064827e0"
   }
 
   @Betamax(tape = 'build image with unknown base image', match = [MatchRule.method, MatchRule.path])
@@ -243,10 +243,10 @@ class DockerClientImplSpec extends Specification {
 
     then:
     ["Command": "true",
-     "Created": 1413833702,
-     "Id"     : "0900eb1d8e8d7ac298f07e8f1a7c42a86aeb0deeac1f80723eb062ff5dc53728",
+     "Created": 1417856859,
+     "Id"     : "58f8ef5ba7664908343ce4dae6afda8dd02c5f1e24371fafaf22d4c902785a12",
      "Image"  : "busybox:latest",
-     "Names"  : ["/tender_hawking"],
+     "Names"  : ["/insane_wilson"],
      "Ports"  : [],
      "Status" : "Up Less than a second"] in containers
   }
@@ -267,7 +267,7 @@ class DockerClientImplSpec extends Specification {
     def containerInspection = dockerClient.inspectContainer(containerId)
 
     then:
-    containerInspection.HostnamePath == "/var/lib/docker/containers/b14eba0942ad1323db4ebc6bf5f9f420a87f2e9820437c5c0fc55261fbb68fd5/hostname"
+    containerInspection.HostnamePath == "/var/lib/docker/containers/0f645d50932b06cb464bf8b34c440291d1b764009d654aeb4d0353484603b218/hostname"
     and:
     containerInspection.Config.Cmd == ["true"]
     and:
@@ -275,7 +275,7 @@ class DockerClientImplSpec extends Specification {
     and:
     containerInspection.Image == "e72ac664f4f0c6a061ac4ef332557a70d69b0c624b6add35f1c181ff7fff2287"
     and:
-    containerInspection.Id == "b14eba0942ad1323db4ebc6bf5f9f420a87f2e9820437c5c0fc55261fbb68fd5"
+    containerInspection.Id == "0f645d50932b06cb464bf8b34c440291d1b764009d654aeb4d0353484603b218"
   }
 
   @Betamax(tape = 'list images', match = [MatchRule.method, MatchRule.path, MatchRule.query])
@@ -352,7 +352,7 @@ class DockerClientImplSpec extends Specification {
     def containerInfo = dockerClient.createContainer(containerConfig)
 
     then:
-    containerInfo.Id == "e58171747f59c785745141079100863d46743ec2282d33c1f2ca81f046519abe"
+    containerInfo.Id == "86e08f80c8841790c56532ec0aabfe56df28fc28a4f05bc38523148036898e47"
   }
 
   @Betamax(tape = 'create container with name', match = [MatchRule.method, MatchRule.path, MatchRule.query])
@@ -366,7 +366,7 @@ class DockerClientImplSpec extends Specification {
     def containerInfo = dockerClient.createContainer(containerConfig, [name: "example"])
 
     then:
-    containerInfo.Id == "2b8a9ab55e14c30b6d78bfcbf89145f4c25d648842f4c76cc1921cc940d66766"
+    containerInfo.Id == "961e79d5d926249189ba91da7dcb6c099a05ab0c6d1ba6f8744e0c01056fb977"
   }
 
   @Betamax(tape = 'start container', match = [MatchRule.method, MatchRule.path])

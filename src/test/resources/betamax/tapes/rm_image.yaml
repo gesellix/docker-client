@@ -1,7 +1,7 @@
 !tape
 name: rm image
 interactions:
-- recorded: 2014-10-20T20:03:48.464Z
+- recorded: 2014-12-06T09:07:57.570Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=scratch&tag=latest&registry=
@@ -14,11 +14,11 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 20 Oct 2014 20:03:46 GMT
+      Date: Sat, 06 Dec 2014 09:07:55 GMT
     body: "{\"status\":\"Pulling repository scratch\"}\r\n{\"status\":\"Pulling image (latest) from scratch\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling image (latest) from scratch, endpoint: https://registry-1.docker.io/v1/\",\"progressDetail\"\
       :{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"\
       id\":\"511136ea3c5a\"}{\"status\":\"Status: Image is up to date for scratch:latest\"}\r\n"
-- recorded: 2014-10-20T20:03:48.539Z
+- recorded: 2014-12-06T09:07:57.586Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/511136ea3c5a/tag?repo=an_image_to_be_deleted&tag=&force=false
@@ -31,9 +31,9 @@ interactions:
     status: 201
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Mon, 20 Oct 2014 20:03:48 GMT
+      Date: Sat, 06 Dec 2014 09:07:57 GMT
     body: ''
-- recorded: 2014-10-20T20:03:48.589Z
+- recorded: 2014-12-06T09:07:57.638Z
   request:
     method: DELETE
     uri: http://172.17.42.1:4243/images/an_image_to_be_deleted
@@ -45,7 +45,7 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 20 Oct 2014 20:03:48 GMT
+      Date: Sat, 06 Dec 2014 09:07:57 GMT
     body: |-
       [{"Untagged":"an_image_to_be_deleted:latest"}
       ]

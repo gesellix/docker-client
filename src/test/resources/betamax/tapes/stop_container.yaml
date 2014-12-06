@@ -1,7 +1,7 @@
 !tape
 name: stop container
 interactions:
-- recorded: 2014-10-20T20:00:09.324Z
+- recorded: 2014-12-06T09:07:51.435Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
@@ -14,10 +14,10 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 20 Oct 2014 20:00:09 GMT
+      Date: Sat, 06 Dec 2014 09:07:51 GMT
     body: "{\"status\":\"The image you are pulling has been verified\",\"id\":\"busybox:latest\"}\r\n{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"df7546f9f060\"}{\"\
       status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e433a6c5b276\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e72ac664f4f0\"}{\"status\":\"Status: Image is up to date for busybox:latest\"}\r\n"
-- recorded: 2014-10-20T20:00:09.487Z
+- recorded: 2014-12-06T09:07:51.473Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=
@@ -32,13 +32,13 @@ interactions:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Mon, 20 Oct 2014 20:00:09 GMT
+      Date: Sat, 06 Dec 2014 09:07:51 GMT
     body: |
-      {"Id":"103e493c97c198c2fbd0488180f3410e467c3990b262a1757e4ea973a96b7489","Warnings":null}
-- recorded: 2014-10-20T20:00:09.598Z
+      {"Id":"46bf58b9de6ec2257e532be9a89c1b02d70c85d8d8614a49ca8ee12c6d9e7592","Warnings":null}
+- recorded: 2014-12-06T09:07:51.568Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/103e493c97c198c2fbd0488180f3410e467c3990b262a1757e4ea973a96b7489/start
+    uri: http://172.17.42.1:4243/containers/46bf58b9de6ec2257e532be9a89c1b02d70c85d8d8614a49ca8ee12c6d9e7592/start
     headers:
       Accept: '*/*'
       Content-Length: '2'
@@ -49,11 +49,11 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Mon, 20 Oct 2014 20:00:09 GMT
-- recorded: 2014-10-20T20:00:09.680Z
+      Date: Sat, 06 Dec 2014 09:07:51 GMT
+- recorded: 2014-12-06T09:07:51.630Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/103e493c97c198c2fbd0488180f3410e467c3990b262a1757e4ea973a96b7489/stop
+    uri: http://172.17.42.1:4243/containers/46bf58b9de6ec2257e532be9a89c1b02d70c85d8d8614a49ca8ee12c6d9e7592/stop
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -62,4 +62,4 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Mon, 20 Oct 2014 20:00:09 GMT
+      Date: Sat, 06 Dec 2014 09:07:51 GMT

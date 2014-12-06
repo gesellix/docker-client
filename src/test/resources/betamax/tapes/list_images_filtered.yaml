@@ -1,7 +1,7 @@
 !tape
 name: list images filtered
 interactions:
-- recorded: 2014-10-20T19:54:23.098Z
+- recorded: 2014-12-06T09:07:42.796Z
   request:
     method: GET
     uri: http://172.17.42.1:4243/images/json?filters=%7B%22dangling%22%3A%5B%22true%22%5D%7D
@@ -13,7 +13,7 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 20 Oct 2014 19:54:23 GMT
+      Date: Sat, 06 Dec 2014 09:07:42 GMT
     body: |-
-      [{"Created":1413829208,"Id":"41cd82e420b46b6f46dca951c46b51513b65b7a08bf36382d57f06577119cdf2","ParentId":"b3a650649d6385cde0e307904f70df9890cb69b959c7628ccfabcf87653aa2b2","RepoTags":["\u003cnone\u003e:\u003cnone\u003e"],"Size":12,"VirtualSize":120852572}
+      [{"Created":1417856822,"Id":"6f8c064827e031dbd0a9cc7e71ce07ddd9856fa033949074110ab426bf4622cf","ParentId":"594216b4088e996573f76a42864ada4422062c5abb885bdc282896646023259b","RepoTags":["\u003cnone\u003e:\u003cnone\u003e"],"Size":12,"VirtualSize":120852572}
       ]

@@ -1,7 +1,7 @@
 !tape
 name: rm container
 interactions:
-- recorded: 2014-10-20T20:01:11.659Z
+- recorded: 2014-12-06T09:07:54.076Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
@@ -14,10 +14,10 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 20 Oct 2014 20:01:11 GMT
+      Date: Sat, 06 Dec 2014 09:07:54 GMT
     body: "{\"status\":\"The image you are pulling has been verified\",\"id\":\"busybox:latest\"}\r\n{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"df7546f9f060\"}{\"\
       status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e433a6c5b276\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e72ac664f4f0\"}{\"status\":\"Status: Image is up to date for busybox:latest\"}\r\n"
-- recorded: 2014-10-20T20:01:11.794Z
+- recorded: 2014-12-06T09:07:54.132Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=
@@ -32,13 +32,13 @@ interactions:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Mon, 20 Oct 2014 20:01:11 GMT
+      Date: Sat, 06 Dec 2014 09:07:54 GMT
     body: |
-      {"Id":"bac4d4821eb0df2a5d8636e268f8903c6a55f94d0bbf3e83e633567815286653","Warnings":null}
-- recorded: 2014-10-20T20:01:11.810Z
+      {"Id":"ac0ed48c23020b4a05df858321167d391cc13d570b092c3f43aaa5b799ebe87f","Warnings":null}
+- recorded: 2014-12-06T09:07:54.148Z
   request:
     method: DELETE
-    uri: http://172.17.42.1:4243/containers/bac4d4821eb0df2a5d8636e268f8903c6a55f94d0bbf3e83e633567815286653
+    uri: http://172.17.42.1:4243/containers/ac0ed48c23020b4a05df858321167d391cc13d570b092c3f43aaa5b799ebe87f
     headers:
       Accept: '*/*'
       Host: 172.17.42.1:4243
@@ -46,4 +46,4 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Mon, 20 Oct 2014 20:01:11 GMT
+      Date: Sat, 06 Dec 2014 09:07:54 GMT

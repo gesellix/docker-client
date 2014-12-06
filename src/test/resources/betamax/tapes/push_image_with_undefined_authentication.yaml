@@ -1,7 +1,7 @@
 !tape
 name: push image with undefined authentication
 interactions:
-- recorded: 2014-10-20T19:24:32.218Z
+- recorded: 2014-12-06T09:07:26.243Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=scratch&tag=&registry=
@@ -15,11 +15,11 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 20 Oct 2014 19:24:29 GMT
+      Date: Sat, 06 Dec 2014 09:07:24 GMT
     body: "{\"status\":\"Pulling repository scratch\"}\r\n{\"status\":\"Pulling image (latest) from scratch\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling image (latest) from scratch, endpoint: https://registry-1.docker.io/v1/\",\"progressDetail\"\
       :{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"\
       id\":\"511136ea3c5a\"}{\"status\":\"Status: Image is up to date for scratch\"}\r\n"
-- recorded: 2014-10-20T19:24:32.296Z
+- recorded: 2014-12-06T09:07:26.264Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/511136ea3c5a/tag?repo=gesellix%2Ftest&tag=&force=false
@@ -33,9 +33,9 @@ interactions:
     status: 201
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Mon, 20 Oct 2014 19:24:32 GMT
+      Date: Sat, 06 Dec 2014 09:07:26 GMT
     body: ''
-- recorded: 2014-10-20T19:24:32.311Z
+- recorded: 2014-12-06T09:07:26.276Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/gesellix/test/tag?repo=localhost%3A5000%2Fgesellix%2Ftest&tag=&force=false
@@ -49,9 +49,9 @@ interactions:
     status: 201
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Mon, 20 Oct 2014 19:24:32 GMT
+      Date: Sat, 06 Dec 2014 09:07:26 GMT
     body: ''
-- recorded: 2014-10-20T19:24:34.359Z
+- recorded: 2014-12-06T09:07:28.318Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/localhost:5000/gesellix/test/push?registry=localhost%3A5000&tag=
@@ -66,6 +66,6 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Mon, 20 Oct 2014 19:24:34 GMT
+      Date: Sat, 06 Dec 2014 09:07:28 GMT
     body: "{\"status\":\"The push refers to a repository [localhost:5000/gesellix/test] (len: 1)\"}\r\n{\"status\":\"Sending image list\"}\r\n{\"status\":\"Pushing repository localhost:5000/gesellix/test (1 tags)\"}\r\n{\"status\":\"Image 511136ea3c5a already\
       \ pushed, skipping\"}\r\n{\"status\":\"Pushing tag for rev [511136ea3c5a] on {http://localhost:5000/v1/repositories/gesellix/test/tags/latest}\"}\r\n"

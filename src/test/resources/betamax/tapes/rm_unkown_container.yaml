@@ -1,7 +1,7 @@
 !tape
 name: rm unkown container
 interactions:
-- recorded: 2014-10-20T20:01:33.768Z
+- recorded: 2014-12-06T09:07:54.685Z
   request:
     method: DELETE
     uri: http://172.17.42.1:4243/containers/a_not_so_random_id
@@ -13,6 +13,6 @@ interactions:
     status: 404
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Mon, 20 Oct 2014 20:01:33 GMT
+      Date: Sat, 06 Dec 2014 09:07:54 GMT
     body: |
       No such container: a_not_so_random_id
