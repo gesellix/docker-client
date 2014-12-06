@@ -10,8 +10,8 @@ buildscript {
   dependencies {
     classpath 'net.saliman:gradle-cobertura-plugin:2.2.5'
     classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.0.1'
-    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.6'
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.5'
+    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.0'
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.6'
   }
 }
 
