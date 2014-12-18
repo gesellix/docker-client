@@ -171,7 +171,7 @@ class DockerClientImpl implements DockerClient {
 
   @Override
   def pull(imageName, tag = "", registry = "") {
-    logger.info "pull image '${imageName}'..."
+    logger.info "pull image '${imageName}:${tag}'..."
 
     def actualImageName = imageName
     if (registry) {
@@ -182,12 +182,11 @@ class DockerClientImpl implements DockerClient {
                         query: [fromImage: actualImageName,
                                 tag      : tag,
                                 registry : registry]])
-
-    if (!responseHandler.success) {
-      throw new DockerClientException(new IllegalStateException("pull failed."), responseHandler.lastResponseDetail)
-    }
     def lastResponseDetail = responseHandler.lastResponseDetail
     logger.info "${lastResponseDetail}"
+    if (!responseHandler.success || lastResponseDetail?.error) {
+      throw new DockerClientException(new IllegalStateException("pull failed."), lastResponseDetail)
+    }
     def lastChunkWithId = responseHandler.responseChunks.findAll { it.id }.last()
     return lastChunkWithId.id
   }
@@ -200,10 +199,29 @@ class DockerClientImpl implements DockerClient {
     getDelegate().post([path              : "/containers/create".toString(),
                         query             : query,
                         body              : actualContainerConfig,
-                        requestContentType: ContentType.JSON]) { response, reader ->
-      logger.info "${response.statusLine}"
-      return reader
+                        requestContentType: ContentType.JSON])
+
+    if (!responseHandler.success) {
+      if (responseHandler.statusLine?.statusCode == 404) {
+        def repoAndTag = parseRepositoryTag(containerConfig.Image)
+        logger.warn "going to pull ${repoAndTag.repo}:${repoAndTag.tag}..."
+        pull(repoAndTag.repo, repoAndTag.tag)
+        // retry...
+        getDelegate().post([path              : "/containers/create".toString(),
+                            query             : query,
+                            body              : actualContainerConfig,
+                            requestContentType: ContentType.JSON])
+        if (!responseHandler.success) {
+          throw new DockerClientException(new IllegalStateException("create container failed."), [
+              statusCode    : responseHandler.statusLine?.statusCode,
+              responseDetail: responseHandler.lastResponseDetail])
+        }
+      }
     }
+
+    def lastResponseDetail = responseHandler.lastResponseDetail
+    logger.info "${lastResponseDetail}"
+    return lastResponseDetail
   }
 
   @Override
@@ -238,8 +256,6 @@ class DockerClientImpl implements DockerClient {
 */
     def containerConfigWithImageName = [:] + containerConfig
     containerConfigWithImageName.Image = fromImage + (tag ? ":$tag" : "")
-
-    pull(fromImage, tag)
 
     def containerInfo = createContainer(containerConfigWithImageName, [name: name])
     def result = startContainer(containerInfo.Id, hostConfig)
@@ -361,7 +377,7 @@ class DockerClientImpl implements DockerClient {
               responseChunks << jsonSlurper.parseText(chunk)
             }
             else {
-              responseChunks << chunk
+              responseChunks << ['plain': chunk]
             }
           }
         }

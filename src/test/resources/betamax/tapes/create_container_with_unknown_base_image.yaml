@@ -1,0 +1,54 @@
+!tape
+name: create container with unknown base image
+interactions:
+- recorded: 2014-12-18T20:16:42.454Z
+  request:
+    method: DELETE
+    uri: http://172.17.42.1:4243/containers/example
+    headers:
+      Accept: '*/*'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 404
+    headers:
+      Content-Type: text/plain; charset=utf-8
+      Date: Thu, 18 Dec 2014 20:16:42 GMT
+    body: |
+      No such container: example
+- recorded: 2014-12-18T20:16:42.577Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/create?name=example
+    headers:
+      Accept: '*/*'
+      Content-Length: '41'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+    body: '{"Cmd":["true"],"Image":"busybox:unkown"}'
+  response:
+    status: 404
+    headers:
+      Content-Type: text/plain; charset=utf-8
+      Date: Thu, 18 Dec 2014 20:16:42 GMT
+    body: |
+      No such image: busybox:unkown (tag: unkown)
+- recorded: 2014-12-18T20:16:44.734Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=unkown&registry=
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Thu, 18 Dec 2014 20:16:43 GMT
+    body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"errorDetail\":{\"message\":\"Tag unkown not found in repository busybox\"},\"error\":\"Tag unkown not found in repository busybox\"}\r\n"

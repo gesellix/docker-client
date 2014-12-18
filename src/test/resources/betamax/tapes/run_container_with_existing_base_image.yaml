@@ -1,0 +1,85 @@
+!tape
+name: run container with existing base image
+interactions:
+- recorded: 2014-12-18T20:00:23.971Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/create?name=
+    headers:
+      Accept: '*/*'
+      Content-Length: '61'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+    body: '{"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"busybox:latest"}'
+  response:
+    status: 201
+    headers:
+      Content-Type: application/json
+      Date: Thu, 18 Dec 2014 20:00:23 GMT
+      X-Betamax: PLAY
+    body: |
+      {"Id":"d7c1304986677dcbcfdf558e58d7538ace939d02f5fb7d9a6a8216a3c0b8e10f","Warnings":null}
+- recorded: 2014-12-18T20:00:24.069Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/d7c1304986677dcbcfdf558e58d7538ace939d02f5fb7d9a6a8216a3c0b8e10f/start
+    headers:
+      Accept: '*/*'
+      Content-Length: '2'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+    body: '{}'
+  response:
+    status: 204
+    headers:
+      Date: Thu, 18 Dec 2014 20:00:24 GMT
+      X-Betamax: PLAY
+- recorded: 2014-12-18T20:00:24.134Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/d7c1304986677dcbcfdf558e58d7538ace939d02f5fb7d9a6a8216a3c0b8e10f/stop
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+  response:
+    status: 204
+    headers:
+      Date: Thu, 18 Dec 2014 20:00:24 GMT
+      X-Betamax: PLAY
+- recorded: 2014-12-18T20:38:48.152Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/d7c1304986677dcbcfdf558e58d7538ace939d02f5fb7d9a6a8216a3c0b8e10f/wait
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 404
+    headers:
+      Content-Type: text/plain; charset=utf-8
+      Date: Thu, 18 Dec 2014 20:38:48 GMT
+    body: |
+      wait: No such container: d7c1304986677dcbcfdf558e58d7538ace939d02f5fb7d9a6a8216a3c0b8e10f
+- recorded: 2014-12-18T20:38:48.165Z
+  request:
+    method: DELETE
+    uri: http://172.17.42.1:4243/containers/d7c1304986677dcbcfdf558e58d7538ace939d02f5fb7d9a6a8216a3c0b8e10f
+    headers:
+      Accept: '*/*'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 404
+    headers:
+      Content-Type: text/plain; charset=utf-8
+      Date: Thu, 18 Dec 2014 20:38:48 GMT
+    body: |
+      No such container: d7c1304986677dcbcfdf558e58d7538ace939d02f5fb7d9a6a8216a3c0b8e10f

@@ -287,7 +287,7 @@ class DockerClientImplSpec extends Specification {
     ["Created"    : 1371157430,
      "Id"         : "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158",
      "ParentId"   : "",
-     "RepoTags": ["scratch:latest"],
+     "RepoTags"   : ["scratch:latest"],
      "Size"       : 0,
      "VirtualSize": 0] in images
   }
@@ -358,6 +358,7 @@ class DockerClientImplSpec extends Specification {
   @Betamax(tape = 'create container with name', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "create container with name"() {
     given:
+    dockerClient.rm("example")
     def imageId = dockerClient.pull("busybox", "latest")
     def containerConfig = ["Cmd"  : ["true"],
                            "Image": imageId]
@@ -366,7 +367,24 @@ class DockerClientImplSpec extends Specification {
     def containerInfo = dockerClient.createContainer(containerConfig, [name: "example"])
 
     then:
-    containerInfo.Id == "961e79d5d926249189ba91da7dcb6c099a05ab0c6d1ba6f8744e0c01056fb977"
+    containerInfo.Id == "68bcb493ea471e7aa44fbbec86cee9820ade9ba7b0c7dc63528dee863f9f5dd0"
+  }
+
+  @Betamax(tape = 'create container with unknown base image', match = [MatchRule.method, MatchRule.path, MatchRule.query])
+  def "create container with unknown base image"() {
+    given:
+    dockerClient.rm("example")
+    def containerConfig = ["Cmd"  : ["true"],
+                           "Image": "busybox:unkown"]
+
+    when:
+    dockerClient.createContainer(containerConfig, [name: "example"])
+
+    then:
+    DockerClientException ex = thrown()
+    ex.cause.message == 'pull failed.'
+    ex.detail == [error      : "Tag unkown not found in repository busybox",
+                  errorDetail: [message: "Tag unkown not found in repository busybox"]]
   }
 
   @Betamax(tape = 'start container', match = [MatchRule.method, MatchRule.path])
@@ -384,8 +402,8 @@ class DockerClientImplSpec extends Specification {
     startContainerResult == 204
   }
 
-  @Betamax(tape = 'run container', match = [MatchRule.method, MatchRule.path, MatchRule.query])
-  def "run container"() {
+  @Betamax(tape = 'run container with existing base image', match = [MatchRule.method, MatchRule.path, MatchRule.query])
+  def "run container with existing base image"() {
     given:
     def imageName = "busybox"
     def tag = "latest"
@@ -401,6 +419,8 @@ class DockerClientImplSpec extends Specification {
 
     cleanup:
     dockerClient.stop(containerStatus.container.Id)
+    dockerClient.wait(containerStatus.container.Id)
+    dockerClient.rm(containerStatus.container.Id)
   }
 
   @Betamax(tape = 'run container with PortBindings', match = [MatchRule.method, MatchRule.path, MatchRule.query])
