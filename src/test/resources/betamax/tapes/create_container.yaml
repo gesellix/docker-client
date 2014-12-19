@@ -1,7 +1,7 @@
 !tape
 name: create container
 interactions:
-- recorded: 2014-12-06T09:07:43.886Z
+- recorded: 2014-12-18T20:49:10.797Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
@@ -10,14 +10,15 @@ interactions:
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sat, 06 Dec 2014 09:07:43 GMT
+      Date: Thu, 18 Dec 2014 20:49:10 GMT
     body: "{\"status\":\"The image you are pulling has been verified\",\"id\":\"busybox:latest\"}\r\n{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"df7546f9f060\"}{\"\
       status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e433a6c5b276\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e72ac664f4f0\"}{\"status\":\"Status: Image is up to date for busybox:latest\"}\r\n"
-- recorded: 2014-12-06T09:07:43.930Z
+- recorded: 2014-12-18T20:49:10.861Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=
@@ -27,11 +28,12 @@ interactions:
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
     body: '{"Cmd":["true"],"Image":"e72ac664f4f0"}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Sat, 06 Dec 2014 09:07:43 GMT
+      Date: Thu, 18 Dec 2014 20:49:10 GMT
     body: |
-      {"Id":"86e08f80c8841790c56532ec0aabfe56df28fc28a4f05bc38523148036898e47","Warnings":null}
+      {"Id":"0e5b9cdeadf2f8231dc56f2b490841a9831981bf182a17880d90e1f54a61affd","Warnings":null}

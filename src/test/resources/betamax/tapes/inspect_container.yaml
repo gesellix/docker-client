@@ -1,7 +1,7 @@
 !tape
 name: inspect container
 interactions:
-- recorded: 2014-12-06T09:07:40.696Z
+- recorded: 2014-12-18T21:29:05.349Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
@@ -10,14 +10,15 @@ interactions:
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sat, 06 Dec 2014 09:07:40 GMT
+      Date: Thu, 18 Dec 2014 21:29:05 GMT
     body: "{\"status\":\"The image you are pulling has been verified\",\"id\":\"busybox:latest\"}\r\n{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"df7546f9f060\"}{\"\
       status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e433a6c5b276\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e72ac664f4f0\"}{\"status\":\"Status: Image is up to date for busybox:latest\"}\r\n"
-- recorded: 2014-12-06T09:07:40.713Z
+- recorded: 2014-12-18T21:29:05.369Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/e72ac664f4f0/tag?repo=inspect_container&tag=&force=false
@@ -26,13 +27,14 @@ interactions:
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 201
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Sat, 06 Dec 2014 09:07:40 GMT
+      Date: Thu, 18 Dec 2014 21:29:05 GMT
     body: ''
-- recorded: 2014-12-06T09:07:40.762Z
+- recorded: 2014-12-18T21:29:05.446Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=
@@ -42,41 +44,105 @@ interactions:
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
     body: '{"Cmd":["true"],"Image":"inspect_container"}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Sat, 06 Dec 2014 09:07:40 GMT
+      Date: Thu, 18 Dec 2014 21:29:05 GMT
     body: |
-      {"Id":"0f645d50932b06cb464bf8b34c440291d1b764009d654aeb4d0353484603b218","Warnings":null}
-- recorded: 2014-12-06T09:07:40.872Z
+      {"Id":"99b2bde755668a7c9a99422fb371a0a72c5d2baf218330aa4489469c4bf8325b","Warnings":null}
+- recorded: 2014-12-18T21:29:05.559Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/0f645d50932b06cb464bf8b34c440291d1b764009d654aeb4d0353484603b218/start
+    uri: http://172.17.42.1:4243/containers/99b2bde755668a7c9a99422fb371a0a72c5d2baf218330aa4489469c4bf8325b/start
     headers:
       Accept: '*/*'
       Content-Length: '24'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
     body: '{"PublishAllPorts":true}'
   response:
     status: 204
     headers:
-      Date: Sat, 06 Dec 2014 09:07:40 GMT
-- recorded: 2014-12-06T09:07:40.891Z
+      Date: Thu, 18 Dec 2014 21:29:05 GMT
+- recorded: 2014-12-18T21:29:05.582Z
   request:
     method: GET
-    uri: http://172.17.42.1:4243/containers/0f645d50932b06cb464bf8b34c440291d1b764009d654aeb4d0353484603b218/json
+    uri: http://172.17.42.1:4243/containers/99b2bde755668a7c9a99422fb371a0a72c5d2baf218330aa4489469c4bf8325b/json
     headers:
       Accept: '*/*'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sat, 06 Dec 2014 09:07:40 GMT
+      Date: Thu, 18 Dec 2014 21:29:05 GMT
     body: |
-      {"AppArmorProfile":"","Args":[],"Config":{"AttachStderr":false,"AttachStdin":false,"AttachStdout":false,"Cmd":["true"],"CpuShares":0,"Cpuset":"","Domainname":"","Entrypoint":null,"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"ExposedPorts":null,"Hostname":"0f645d50932b","Image":"inspect_container","Memory":0,"MemorySwap":0,"NetworkDisabled":false,"OnBuild":null,"OpenStdin":false,"PortSpecs":null,"StdinOnce":false,"Tty":false,"User":"","Volumes":null,"WorkingDir":""},"Created":"2014-12-06T09:07:40.728993664Z","Driver":"aufs","ExecDriver":"native-0.2","HostConfig":{"Binds":null,"CapAdd":null,"CapDrop":null,"ContainerIDFile":"","Devices":null,"Dns":null,"DnsSearch":null,"ExtraHosts":null,"Links":null,"LxcConf":null,"NetworkMode":"","PortBindings":null,"Privileged":false,"PublishAllPorts":true,"RestartPolicy":{"MaximumRetryCount":0,"Name":""},"SecurityOpt":null,"VolumesFrom":null},"HostnamePath":"/var/lib/docker/containers/0f645d50932b06cb464bf8b34c440291d1b764009d654aeb4d0353484603b218/hostname","HostsPath":"/var/lib/docker/containers/0f645d50932b06cb464bf8b34c440291d1b764009d654aeb4d0353484603b218/hosts","Id":"0f645d50932b06cb464bf8b34c440291d1b764009d654aeb4d0353484603b218","Image":"e72ac664f4f0c6a061ac4ef332557a70d69b0c624b6add35f1c181ff7fff2287","MountLabel":"","Name":"/high_newton","NetworkSettings":{"Bridge":"docker0","Gateway":"172.17.42.1","IPAddress":"172.17.0.5","IPPrefixLen":16,"MacAddress":"02:42:ac:11:00:05","PortMapping":null,"Ports":{}},"Path":"true","ProcessLabel":"","ResolvConfPath":"/var/lib/docker/containers/0f645d50932b06cb464bf8b34c440291d1b764009d654aeb4d0353484603b218/resolv.conf","State":{"ExitCode":0,"FinishedAt":"0001-01-01T00:00:00Z","Paused":false,"Pid":10100,"Restarting":false,"Running":true,"StartedAt":"2014-12-06T09:07:40.869293891Z"},"Volumes":{},"VolumesRW":{}}
+      {"AppArmorProfile":"","Args":[],"Config":{"AttachStderr":false,"AttachStdin":false,"AttachStdout":false,"Cmd":["true"],"CpuShares":0,"Cpuset":"","Domainname":"","Entrypoint":null,"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"ExposedPorts":null,"Hostname":"99b2bde75566","Image":"inspect_container","MacAddress":"","Memory":0,"MemorySwap":0,"NetworkDisabled":false,"OnBuild":null,"OpenStdin":false,"PortSpecs":null,"StdinOnce":false,"Tty":false,"User":"","Volumes":null,"WorkingDir":""},"Created":"2014-12-18T21:29:05.393177928Z","Driver":"aufs","ExecDriver":"native-0.2","HostConfig":{"Binds":null,"CapAdd":null,"CapDrop":null,"ContainerIDFile":"","Devices":null,"Dns":null,"DnsSearch":null,"ExtraHosts":null,"IpcMode":"","Links":null,"LxcConf":null,"NetworkMode":"","PortBindings":null,"Privileged":false,"PublishAllPorts":true,"RestartPolicy":{"MaximumRetryCount":0,"Name":""},"SecurityOpt":null,"VolumesFrom":null},"HostnamePath":"/var/lib/docker/containers/99b2bde755668a7c9a99422fb371a0a72c5d2baf218330aa4489469c4bf8325b/hostname","HostsPath":"/var/lib/docker/containers/99b2bde755668a7c9a99422fb371a0a72c5d2baf218330aa4489469c4bf8325b/hosts","Id":"99b2bde755668a7c9a99422fb371a0a72c5d2baf218330aa4489469c4bf8325b","Image":"e72ac664f4f0c6a061ac4ef332557a70d69b0c624b6add35f1c181ff7fff2287","MountLabel":"","Name":"/cranky_almeida","NetworkSettings":{"Bridge":"docker0","Gateway":"172.17.42.1","IPAddress":"172.17.0.18","IPPrefixLen":16,"MacAddress":"02:42:ac:11:00:12","PortMapping":null,"Ports":{}},"Path":"true","ProcessLabel":"","ResolvConfPath":"/var/lib/docker/containers/99b2bde755668a7c9a99422fb371a0a72c5d2baf218330aa4489469c4bf8325b/resolv.conf","State":{"Error":"","ExitCode":0,"FinishedAt":"0001-01-01T00:00:00Z","OOMKilled":false,"Paused":false,"Pid":30270,"Restarting":false,"Running":true,"StartedAt":"2014-12-18T21:29:05.555338503Z"},"Volumes":{},"VolumesRW":{}}
+- recorded: 2014-12-18T21:29:05.646Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/99b2bde755668a7c9a99422fb371a0a72c5d2baf218330aa4489469c4bf8325b/stop
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 204
+    headers:
+      Date: Thu, 18 Dec 2014 21:29:05 GMT
+- recorded: 2014-12-18T21:29:05.664Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/99b2bde755668a7c9a99422fb371a0a72c5d2baf218330aa4489469c4bf8325b/wait
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Thu, 18 Dec 2014 21:29:05 GMT
+    body: |
+      {"StatusCode":0}
+- recorded: 2014-12-18T21:29:05.687Z
+  request:
+    method: DELETE
+    uri: http://172.17.42.1:4243/containers/99b2bde755668a7c9a99422fb371a0a72c5d2baf218330aa4489469c4bf8325b
+    headers:
+      Accept: '*/*'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 204
+    headers:
+      Date: Thu, 18 Dec 2014 21:29:05 GMT
+- recorded: 2014-12-18T21:29:05.739Z
+  request:
+    method: DELETE
+    uri: http://172.17.42.1:4243/images/inspect_container
+    headers:
+      Accept: '*/*'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Thu, 18 Dec 2014 21:29:05 GMT
+    body: |-
+      [{"Untagged":"inspect_container:latest"}
+      ]

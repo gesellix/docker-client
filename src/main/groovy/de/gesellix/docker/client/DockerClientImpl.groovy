@@ -103,13 +103,13 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def tag(imageId, repository) {
+  def tag(imageId, repository, force = false) {
     logger.info "tag image"
     def repoAndTag = parseRepositoryTag(repository)
     getDelegate().post([path : "/images/${imageId}/tag".toString(),
                         query: [repo : repoAndTag.repo,
                                 tag  : repoAndTag.tag,
-                                force: false]]) { response ->
+                                force: force]]) { response ->
       logger.info "${response.statusLine}"
       return response.statusLine.statusCode
     }
@@ -122,7 +122,7 @@ class DockerClientImpl implements DockerClient {
     def actualImageName = imageName
     if (registry) {
       actualImageName = "$registry/$imageName".toString()
-      tag(imageName, actualImageName)
+      tag(imageName, actualImageName, true)
     }
     def repoAndTag = parseRepositoryTag(actualImageName)
 

@@ -1,7 +1,7 @@
 !tape
 name: pull image from private registry
 interactions:
-- recorded: 2014-12-06T09:07:34.151Z
+- recorded: 2014-12-18T20:49:00.996Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=scratch&tag=&registry=
@@ -10,15 +10,17 @@ interactions:
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sat, 06 Dec 2014 09:07:32 GMT
+      Date: Thu, 18 Dec 2014 20:48:59 GMT
+      X-Betamax: PLAY
     body: "{\"status\":\"Pulling repository scratch\"}\r\n{\"status\":\"Pulling image (latest) from scratch\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling image (latest) from scratch, endpoint: https://registry-1.docker.io/v1/\",\"progressDetail\"\
       :{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"\
       id\":\"511136ea3c5a\"}{\"status\":\"Status: Image is up to date for scratch\"}\r\n"
-- recorded: 2014-12-06T09:07:34.169Z
+- recorded: 2014-12-18T20:49:01.016Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/scratch/tag?repo=localhost%3A5000%2Fscratch&tag=&force=false
@@ -27,13 +29,14 @@ interactions:
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 201
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Sat, 06 Dec 2014 09:07:34 GMT
+      Date: Thu, 18 Dec 2014 20:49:01 GMT
     body: ''
-- recorded: 2014-12-06T09:07:36.221Z
+- recorded: 2014-12-18T20:49:03.061Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/localhost:5000/scratch/push?registry=localhost%3A5000&tag=
@@ -42,15 +45,17 @@ interactions:
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
       X-Registry-Auth: .
   response:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sat, 06 Dec 2014 09:07:36 GMT
+      Date: Thu, 18 Dec 2014 20:49:03 GMT
+      X-Betamax: PLAY
     body: "{\"status\":\"The push refers to a repository [localhost:5000/scratch] (len: 1)\"}\r\n{\"status\":\"Sending image list\"}\r\n{\"status\":\"Pushing repository localhost:5000/scratch (1 tags)\"}\r\n{\"status\":\"Image 511136ea3c5a already pushed, skipping\"\
       }\r\n{\"status\":\"Pushing tag for rev [511136ea3c5a] on {http://localhost:5000/v1/repositories/scratch/tags/latest}\"}\r\n"
-- recorded: 2014-12-06T09:07:38.264Z
+- recorded: 2014-12-18T20:49:05.103Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=localhost%3A5000%2Fscratch&tag=&registry=localhost%3A5000
@@ -59,11 +64,29 @@ interactions:
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sat, 06 Dec 2014 09:07:38 GMT
+      Date: Thu, 18 Dec 2014 20:49:05 GMT
+      X-Betamax: PLAY
     body: "{\"status\":\"Pulling repository localhost:5000/scratch\"}\r\n{\"status\":\"Pulling image (latest) from localhost:5000/scratch\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling image (latest) from localhost:5000/scratch, endpoint:\
       \ http://localhost:5000/v1/\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\"\
       :\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Status: Image is up to date for localhost:5000/scratch\"}\r\n"
+- recorded: 2014-12-19T07:25:07.587Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/images/scratch/tag?repo=localhost%3A5000%2Fscratch&tag=&force=true
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 201
+    headers:
+      Content-Type: text/plain; charset=utf-8
+      Date: Fri, 19 Dec 2014 07:25:07 GMT
+    body: ''

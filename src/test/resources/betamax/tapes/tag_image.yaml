@@ -1,7 +1,7 @@
 !tape
 name: tag image
 interactions:
-- recorded: 2014-12-06T09:07:08.353Z
+- recorded: 2014-12-18T20:48:40.993Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=scratch&tag=&registry=
@@ -10,15 +10,16 @@ interactions:
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sat, 06 Dec 2014 09:07:06 GMT
+      Date: Thu, 18 Dec 2014 20:48:39 GMT
     body: "{\"status\":\"Pulling repository scratch\"}\r\n{\"status\":\"Pulling image (latest) from scratch\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling image (latest) from scratch, endpoint: https://registry-1.docker.io/v1/\",\"progressDetail\"\
       :{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"\
       id\":\"511136ea3c5a\"}{\"status\":\"Status: Image is up to date for scratch\"}\r\n"
-- recorded: 2014-12-06T09:07:08.391Z
+- recorded: 2014-12-18T20:48:41.035Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/511136ea3c5a/tag?repo=yetAnotherTag&tag=&force=false
@@ -27,9 +28,10 @@ interactions:
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 201
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Sat, 06 Dec 2014 09:07:08 GMT
+      Date: Thu, 18 Dec 2014 20:48:41 GMT
     body: ''

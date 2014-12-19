@@ -40,26 +40,30 @@ class DockerClientImplSpec extends Specification {
     def info = dockerClient.info()
 
     then:
-    info == [
-        Containers        : 1,
-        Debug             : 1,
-        Driver            : "aufs",
-        DriverStatus      : [
-            ["Root Dir", "/var/lib/docker/aufs"],
-            ["Dirs", "138"]],
-        ExecutionDriver   : "native-0.2",
-        Images            : 136,
-        IndexServerAddress: "https://index.docker.io/v1/",
-        InitPath          : "/usr/bin/docker",
-        InitSha1          : "",
-        IPv4Forwarding    : 1,
-        NEventsListener   : 0,
-        NFd               : 16,
-        NGoroutines       : 16,
-        KernelVersion     : "3.13.0-41-generic",
-        MemoryLimit       : 1,
-        OperatingSystem   : "Ubuntu 14.04.1 LTS",
-        SwapLimit         : 0]
+    info.Containers == 2
+    info.Debug == 1
+    info.Driver == "aufs"
+    info.DriverStatus == [
+        ["Root Dir", "/var/lib/docker/aufs"],
+        ["Dirs", "127"]]
+    info.ExecutionDriver == "native-0.2"
+    info.ID == "4C3F:A25Q:NBWE:P7OC:YP45:GIOR:HBTQ:BFJ7:CGYE:2YDE:5BXO:ICTB"
+    info.Images == 123
+    info.IndexServerAddress == "https://index.docker.io/v1/"
+    info.InitPath == "/usr/bin/docker"
+    info.InitSha1 == ""
+    info.IPv4Forwarding == 1
+    info.Labels == null
+    info.MemTotal == 16262012928
+    info.MemoryLimit == 1
+    info.Name == "gesellix-r2"
+    info.NCPU == 8
+    info.NEventsListener == 0
+    info.NFd == 19
+    info.NGoroutines == 27
+    info.KernelVersion == "3.13.0-43-generic"
+    info.OperatingSystem == "Ubuntu 14.04.1 LTS"
+    info.SwapLimit == 0
   }
 
   @Betamax(tape = 'version', match = [MatchRule.method, MatchRule.path])
@@ -69,13 +73,13 @@ class DockerClientImplSpec extends Specification {
 
     then:
     version == [
-        ApiVersion   : "1.15",
+        ApiVersion   : "1.16",
         Arch         : "amd64",
-        GitCommit    : "39fa2fa",
+        GitCommit    : "5bc2ff8",
         GoVersion    : "go1.3.3",
-        KernelVersion: "3.13.0-41-generic",
+        KernelVersion: "3.13.0-43-generic",
         Os           : "linux",
-        Version      : "1.3.2"]
+        Version      : "1.4.1"]
   }
 
   @Betamax(tape = 'auth', match = [MatchRule.method, MatchRule.path])
@@ -92,6 +96,10 @@ class DockerClientImplSpec extends Specification {
 
   def encodeAuthConfig() {
     given:
+    def authDetails = ["username"     : "gesellix",
+                       "password"     : "-yet-another-password-",
+                       "email"        : "tobias@gesellix.de",
+                       "serveraddress": "https://index.docker.io/v1/"]
     def authPlain = authDetails
 
     when:
@@ -110,7 +118,7 @@ class DockerClientImplSpec extends Specification {
     def buildResult = dockerClient.build(buildContext)
 
     then:
-    buildResult == "6f8c064827e0"
+    buildResult == "d4b25cd3fe1d"
   }
 
   @Betamax(tape = 'build image with unknown base image', match = [MatchRule.method, MatchRule.path])
@@ -124,7 +132,8 @@ class DockerClientImplSpec extends Specification {
     then:
     DockerClientException ex = thrown()
     ex.cause.message == 'build failed'
-    ex.detail == [errorDetail: [message: "Error: image missing/image not found"], error: "Error: image missing/image not found"]
+    ex.detail.errorDetail == [message: "Error: image missing/image:latest not found"]
+    ex.detail.error == "Error: image missing/image:latest not found"
   }
 
   @Betamax(tape = 'tag image', match = [MatchRule.method, MatchRule.path])
@@ -145,8 +154,8 @@ class DockerClientImplSpec extends Specification {
     given:
     def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
     def imageId = dockerClient.pull("scratch")
-    def imageName = "gesellix/test"
-    dockerClient.tag(imageId, imageName)
+    def imageName = "gesellix/test:latest"
+    dockerClient.tag(imageId, imageName, true)
 
     when:
     def pushResult = dockerClient.push(imageName, authBase64Encoded)
@@ -160,8 +169,8 @@ class DockerClientImplSpec extends Specification {
     given:
     def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
     def imageId = dockerClient.pull("scratch")
-    def imageName = "gesellix/test"
-    dockerClient.tag(imageId, imageName)
+    def imageName = "gesellix/test:latest"
+    dockerClient.tag(imageId, imageName, true)
 
     when:
     def pushResult = dockerClient.push(imageName, authBase64Encoded, "localhost:5000")
@@ -174,8 +183,8 @@ class DockerClientImplSpec extends Specification {
   def "push image with undefined authentication"() {
     given:
     def imageId = dockerClient.pull("scratch")
-    def imageName = "gesellix/test"
-    dockerClient.tag(imageId, imageName)
+    def imageName = "gesellix/test:latest"
+    dockerClient.tag(imageId, imageName, true)
 
     when:
     def pushResult = dockerClient.push(imageName, null, "localhost:5000")
@@ -243,10 +252,10 @@ class DockerClientImplSpec extends Specification {
 
     then:
     ["Command": "true",
-     "Created": 1417856859,
-     "Id"     : "58f8ef5ba7664908343ce4dae6afda8dd02c5f1e24371fafaf22d4c902785a12",
+     "Created": 1418935746,
+     "Id"     : "114561349c0b7e4bad86c7e6c2696dc621b7469fe78c5e68e6e3f20c11cb622e",
      "Image"  : "busybox:latest",
-     "Names"  : ["/insane_wilson"],
+     "Names"  : ["/goofy_yalow"],
      "Ports"  : [],
      "Status" : "Up Less than a second"] in containers
   }
@@ -267,7 +276,7 @@ class DockerClientImplSpec extends Specification {
     def containerInspection = dockerClient.inspectContainer(containerId)
 
     then:
-    containerInspection.HostnamePath == "/var/lib/docker/containers/0f645d50932b06cb464bf8b34c440291d1b764009d654aeb4d0353484603b218/hostname"
+    containerInspection.HostnamePath == "/var/lib/docker/containers/99b2bde755668a7c9a99422fb371a0a72c5d2baf218330aa4489469c4bf8325b/hostname"
     and:
     containerInspection.Config.Cmd == ["true"]
     and:
@@ -275,7 +284,13 @@ class DockerClientImplSpec extends Specification {
     and:
     containerInspection.Image == "e72ac664f4f0c6a061ac4ef332557a70d69b0c624b6add35f1c181ff7fff2287"
     and:
-    containerInspection.Id == "0f645d50932b06cb464bf8b34c440291d1b764009d654aeb4d0353484603b218"
+    containerInspection.Id == "99b2bde755668a7c9a99422fb371a0a72c5d2baf218330aa4489469c4bf8325b"
+
+    cleanup:
+    dockerClient.stop(containerId)
+    dockerClient.wait(containerId)
+    dockerClient.rm(containerId)
+    dockerClient.rmi(imageName)
   }
 
   @Betamax(tape = 'list images', match = [MatchRule.method, MatchRule.path, MatchRule.query])
@@ -352,7 +367,7 @@ class DockerClientImplSpec extends Specification {
     def containerInfo = dockerClient.createContainer(containerConfig)
 
     then:
-    containerInfo.Id == "86e08f80c8841790c56532ec0aabfe56df28fc28a4f05bc38523148036898e47"
+    containerInfo.Id == "0e5b9cdeadf2f8231dc56f2b490841a9831981bf182a17880d90e1f54a61affd"
   }
 
   @Betamax(tape = 'create container with name', match = [MatchRule.method, MatchRule.path, MatchRule.query])
@@ -367,7 +382,7 @@ class DockerClientImplSpec extends Specification {
     def containerInfo = dockerClient.createContainer(containerConfig, [name: "example"])
 
     then:
-    containerInfo.Id == "68bcb493ea471e7aa44fbbec86cee9820ade9ba7b0c7dc63528dee863f9f5dd0"
+    containerInfo.Id == "696687a9650f3e009c34074e8773e1f17cb15b8ed9c4401a944d63eff550727b"
   }
 
   @Betamax(tape = 'create container with unknown base image', match = [MatchRule.method, MatchRule.path, MatchRule.query])

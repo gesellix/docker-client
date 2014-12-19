@@ -1,23 +1,7 @@
 !tape
 name: stop container
 interactions:
-- recorded: 2014-12-06T09:07:51.435Z
-  request:
-    method: POST
-    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
-    headers:
-      Accept: '*/*'
-      Content-Length: '0'
-      Host: 172.17.42.1:4243
-      Proxy-Connection: Keep-Alive
-  response:
-    status: 200
-    headers:
-      Content-Type: application/json
-      Date: Sat, 06 Dec 2014 09:07:51 GMT
-    body: "{\"status\":\"The image you are pulling has been verified\",\"id\":\"busybox:latest\"}\r\n{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"df7546f9f060\"}{\"\
-      status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e433a6c5b276\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e72ac664f4f0\"}{\"status\":\"Status: Image is up to date for busybox:latest\"}\r\n"
-- recorded: 2014-12-06T09:07:51.473Z
+- recorded: 2014-12-18T20:49:18.720Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=
@@ -27,39 +11,42 @@ interactions:
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
     body: '{"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"busybox:latest"}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Sat, 06 Dec 2014 09:07:51 GMT
+      Date: Thu, 18 Dec 2014 20:49:18 GMT
     body: |
-      {"Id":"46bf58b9de6ec2257e532be9a89c1b02d70c85d8d8614a49ca8ee12c6d9e7592","Warnings":null}
-- recorded: 2014-12-06T09:07:51.568Z
+      {"Id":"516d85a5880049c76eee9ee7cf69e00954342723fa99535f40ecb74c1905468e","Warnings":null}
+- recorded: 2014-12-18T20:49:18.811Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/46bf58b9de6ec2257e532be9a89c1b02d70c85d8d8614a49ca8ee12c6d9e7592/start
+    uri: http://172.17.42.1:4243/containers/516d85a5880049c76eee9ee7cf69e00954342723fa99535f40ecb74c1905468e/start
     headers:
       Accept: '*/*'
       Content-Length: '2'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
     body: '{}'
   response:
     status: 204
     headers:
-      Date: Sat, 06 Dec 2014 09:07:51 GMT
-- recorded: 2014-12-06T09:07:51.630Z
+      Date: Thu, 18 Dec 2014 20:49:18 GMT
+- recorded: 2014-12-18T20:49:18.882Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/46bf58b9de6ec2257e532be9a89c1b02d70c85d8d8614a49ca8ee12c6d9e7592/stop
+    uri: http://172.17.42.1:4243/containers/516d85a5880049c76eee9ee7cf69e00954342723fa99535f40ecb74c1905468e/stop
     headers:
       Accept: '*/*'
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 204
     headers:
-      Date: Sat, 06 Dec 2014 09:07:51 GMT
+      Date: Thu, 18 Dec 2014 20:49:18 GMT

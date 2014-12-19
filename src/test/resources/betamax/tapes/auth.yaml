@@ -1,21 +1,22 @@
 !tape
 name: auth
 interactions:
-- recorded: 2014-12-06T09:07:01.883Z
+- recorded: 2014-12-18T20:56:48.797Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/auth
     headers:
       Accept: '*/*'
-      Content-Length: '134'
+      Content-Length: '123'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
     body: '{"username":"gesellix","password":"-yet-another-password-","email":"tobias@gesellix.de","serveraddress":"https://index.docker.io/v1/"}'
   response:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sat, 06 Dec 2014 09:07:01 GMT
+      Date: Thu, 18 Dec 2014 20:56:48 GMT
     body: |
       {"Status":"Login Succeeded"}

@@ -1,7 +1,7 @@
 !tape
 name: rm image
 interactions:
-- recorded: 2014-12-06T09:07:57.570Z
+- recorded: 2014-12-18T20:49:24.837Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=scratch&tag=latest&registry=
@@ -10,15 +10,16 @@ interactions:
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sat, 06 Dec 2014 09:07:55 GMT
+      Date: Thu, 18 Dec 2014 20:49:22 GMT
     body: "{\"status\":\"Pulling repository scratch\"}\r\n{\"status\":\"Pulling image (latest) from scratch\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling image (latest) from scratch, endpoint: https://registry-1.docker.io/v1/\",\"progressDetail\"\
       :{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"\
       id\":\"511136ea3c5a\"}{\"status\":\"Status: Image is up to date for scratch:latest\"}\r\n"
-- recorded: 2014-12-06T09:07:57.586Z
+- recorded: 2014-12-18T20:49:24.852Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/511136ea3c5a/tag?repo=an_image_to_be_deleted&tag=&force=false
@@ -27,13 +28,14 @@ interactions:
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 201
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Sat, 06 Dec 2014 09:07:57 GMT
+      Date: Thu, 18 Dec 2014 20:49:24 GMT
     body: ''
-- recorded: 2014-12-06T09:07:57.638Z
+- recorded: 2014-12-18T20:49:24.895Z
   request:
     method: DELETE
     uri: http://172.17.42.1:4243/images/an_image_to_be_deleted
@@ -41,11 +43,12 @@ interactions:
       Accept: '*/*'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sat, 06 Dec 2014 09:07:57 GMT
+      Date: Thu, 18 Dec 2014 20:49:24 GMT
     body: |-
       [{"Untagged":"an_image_to_be_deleted:latest"}
       ]

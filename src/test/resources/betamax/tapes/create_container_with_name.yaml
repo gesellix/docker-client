@@ -1,7 +1,7 @@
 !tape
 name: create container with name
 interactions:
-- recorded: 2014-12-18T20:00:19.093Z
+- recorded: 2014-12-18T20:49:11.404Z
   request:
     method: DELETE
     uri: http://172.17.42.1:4243/containers/example
@@ -9,14 +9,15 @@ interactions:
       Accept: '*/*'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 404
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Thu, 18 Dec 2014 20:00:19 GMT
+      Date: Thu, 18 Dec 2014 20:49:11 GMT
     body: |
       No such container: example
-- recorded: 2014-12-18T20:00:20.034Z
+- recorded: 2014-12-18T20:49:11.973Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
@@ -25,14 +26,15 @@ interactions:
       Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Thu, 18 Dec 2014 20:00:20 GMT
+      Date: Thu, 18 Dec 2014 20:49:11 GMT
     body: "{\"status\":\"The image you are pulling has been verified\",\"id\":\"busybox:latest\"}\r\n{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"df7546f9f060\"}{\"\
       status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e433a6c5b276\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e72ac664f4f0\"}{\"status\":\"Status: Image is up to date for busybox:latest\"}\r\n"
-- recorded: 2014-12-18T20:00:20.106Z
+- recorded: 2014-12-18T20:49:12.034Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=example
@@ -42,11 +44,12 @@ interactions:
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
     body: '{"Cmd":["true"],"Image":"e72ac664f4f0"}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Thu, 18 Dec 2014 20:00:20 GMT
+      Date: Thu, 18 Dec 2014 20:49:12 GMT
     body: |
-      {"Id":"68bcb493ea471e7aa44fbbec86cee9820ade9ba7b0c7dc63528dee863f9f5dd0","Warnings":null}
+      {"Id":"696687a9650f3e009c34074e8773e1f17cb15b8ed9c4401a944d63eff550727b","Warnings":null}

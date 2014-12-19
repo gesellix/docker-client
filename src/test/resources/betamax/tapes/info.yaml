@@ -1,7 +1,7 @@
 !tape
 name: info
 interactions:
-- recorded: 2014-12-06T09:06:58.437Z
+- recorded: 2014-12-18T20:48:31.229Z
   request:
     method: GET
     uri: http://172.17.42.1:4243/info
@@ -9,11 +9,12 @@ interactions:
       Accept: '*/*'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sat, 06 Dec 2014 09:06:58 GMT
+      Date: Thu, 18 Dec 2014 20:48:31 GMT
       Job-Name: info
     body: |
-      {"Containers":1,"Debug":1,"Driver":"aufs","DriverStatus":[["Root Dir","/var/lib/docker/aufs"],["Dirs","138"]],"ExecutionDriver":"native-0.2","IPv4Forwarding":1,"Images":136,"IndexServerAddress":"https://index.docker.io/v1/","InitPath":"/usr/bin/docker","InitSha1":"","KernelVersion":"3.13.0-41-generic","MemoryLimit":1,"NEventsListener":0,"NFd":16,"NGoroutines":16,"OperatingSystem":"Ubuntu 14.04.1 LTS","SwapLimit":0}
+      {"Containers":2,"Debug":1,"DockerRootDir":"/var/lib/docker","Driver":"aufs","DriverStatus":[["Root Dir","/var/lib/docker/aufs"],["Dirs","127"]],"ExecutionDriver":"native-0.2","ID":"4C3F:A25Q:NBWE:P7OC:YP45:GIOR:HBTQ:BFJ7:CGYE:2YDE:5BXO:ICTB","IPv4Forwarding":1,"Images":123,"IndexServerAddress":"https://index.docker.io/v1/","InitPath":"/usr/bin/docker","InitSha1":"","KernelVersion":"3.13.0-43-generic","Labels":null,"MemTotal":16262012928,"MemoryLimit":1,"NCPU":8,"NEventsListener":0,"NFd":19,"NGoroutines":27,"Name":"gesellix-r2","OperatingSystem":"Ubuntu 14.04.1 LTS","SwapLimit":0}

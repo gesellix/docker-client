@@ -1,7 +1,7 @@
 !tape
 name: list images filtered
 interactions:
-- recorded: 2014-12-06T09:07:42.796Z
+- recorded: 2014-12-18T20:49:09.654Z
   request:
     method: GET
     uri: http://172.17.42.1:4243/images/json?filters=%7B%22dangling%22%3A%5B%22true%22%5D%7D
@@ -9,11 +9,12 @@ interactions:
       Accept: '*/*'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sat, 06 Dec 2014 09:07:42 GMT
+      Date: Thu, 18 Dec 2014 20:49:09 GMT
     body: |-
-      [{"Created":1417856822,"Id":"6f8c064827e031dbd0a9cc7e71ce07ddd9856fa033949074110ab426bf4622cf","ParentId":"594216b4088e996573f76a42864ada4422062c5abb885bdc282896646023259b","RepoTags":["\u003cnone\u003e:\u003cnone\u003e"],"Size":12,"VirtualSize":120852572}
+      [{"Created":1418935715,"Id":"d4b25cd3fe1de785e3e2a5ee50921b324b770aa1522092092c878256a8c81cb0","ParentId":"54ad8c1c9f739f53b608bbe1295115d5fc31795c726ecaf893583ffc3cf8a02a","RepoTags":["\u003cnone\u003e:\u003cnone\u003e"],"Size":12,"VirtualSize":120852572}
       ]

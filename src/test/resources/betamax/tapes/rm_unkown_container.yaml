@@ -1,7 +1,7 @@
 !tape
 name: rm unkown container
 interactions:
-- recorded: 2014-12-06T09:07:54.685Z
+- recorded: 2014-12-18T20:49:21.332Z
   request:
     method: DELETE
     uri: http://172.17.42.1:4243/containers/a_not_so_random_id
@@ -9,10 +9,11 @@ interactions:
       Accept: '*/*'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
   response:
     status: 404
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Sat, 06 Dec 2014 09:07:54 GMT
+      Date: Thu, 18 Dec 2014 20:49:21 GMT
     body: |
       No such container: a_not_so_random_id
