@@ -61,4 +61,8 @@ interface DockerClient {
   def rm(containerId)
 
   def rmi(imageId)
+
+  def createExec(containerId, execConfig)
+
+  def startExec(execId, execConfig)
 }

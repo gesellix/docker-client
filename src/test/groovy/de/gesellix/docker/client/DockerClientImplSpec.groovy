@@ -594,4 +594,30 @@ class DockerClientImplSpec extends Specification {
     then:
     rmImageResult == 200
   }
+
+  @Betamax(tape = 'exec create', match = [MatchRule.method, MatchRule.path, MatchRule.body])
+  def "exec create"() {
+    given:
+    def imageName = "busybox"
+    def tag = "latest"
+    def cmds = ["sh", "-c", "ping 127.0.0.1"]
+    def containerConfig = ["Cmd": cmds]
+    def hostConfig = [:]
+    def name = "create-exec"
+    def containerStatus = dockerClient.run(imageName, containerConfig, hostConfig, tag, name)
+
+    when:
+    def execConfig = ["Cmd": [
+        'echo "hello exec!"'
+    ]]
+    def execCreateResult = dockerClient.createExec(containerStatus.container.Id, execConfig)
+
+    then:
+    execCreateResult?.Id =~ "[0-9a-f]+"
+
+    cleanup:
+    dockerClient.stop(name)
+    dockerClient.wait(name)
+    dockerClient.rm(name)
+  }
 }

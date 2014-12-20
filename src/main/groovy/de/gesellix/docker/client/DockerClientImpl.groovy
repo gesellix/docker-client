@@ -331,6 +331,52 @@ class DockerClientImpl implements DockerClient {
     }
   }
 
+  @Override
+  def createExec(containerId, execConfig) {
+    logger.info "create exec on container ${containerId}..."
+
+    getDelegate().post([path              : "/containers/${containerId}/exec".toString(),
+                        body              : execConfig,
+                        requestContentType: ContentType.JSON])
+
+
+    if (responseHandler.statusLine?.statusCode == 404) {
+      throw new DockerClientException(new IllegalStateException("no such container ${containerId}"), [
+          statusCode    : responseHandler.statusLine?.statusCode,
+          responseDetail: responseHandler.lastResponseDetail])
+    }
+    if (!responseHandler.success) {
+      logger.error("create exec with container ${containerId} failed.")
+    }
+
+    def lastResponseDetail = responseHandler.lastResponseDetail
+    logger.info "${lastResponseDetail}"
+    return lastResponseDetail
+  }
+
+  @Override
+  def startExec(execId, execConfig) {
+    logger.info "start exec with id ${execId}..."
+
+    getDelegate().post([path              : "/exec/${execId}/start".toString(),
+                        body              : execConfig,
+                        requestContentType: ContentType.JSON])
+
+
+    if (responseHandler.statusLine?.statusCode == 404) {
+      throw new DockerClientException(new IllegalStateException("no such exec ${execId}"), [
+          statusCode    : responseHandler.statusLine?.statusCode,
+          responseDetail: responseHandler.lastResponseDetail])
+    }
+    if (!responseHandler.success) {
+      logger.error("start exec ${execId} failed.")
+    }
+
+    def lastResponseDetail = responseHandler.lastResponseDetail
+    logger.info "${lastResponseDetail}"
+    return lastResponseDetail
+  }
+
   static class ChunkedResponseHandler {
 
     def jsonSlurper = new JsonSlurper()

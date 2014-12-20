@@ -1,0 +1,101 @@
+!tape
+name: exec create
+interactions:
+- recorded: 2014-12-20T13:53:33.556Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/create?name=create-exec
+    headers:
+      Accept: '*/*'
+      Content-Length: '61'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+    body: '{"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"busybox:latest"}'
+  response:
+    status: 201
+    headers:
+      Content-Type: application/json
+      Date: Sat, 20 Dec 2014 13:53:33 GMT
+    body: |
+      {"Id":"20c8c150e0666bbe76c59e9f521bf96e04b219139823827fec875d16b632bd8d","Warnings":null}
+- recorded: 2014-12-20T13:53:33.732Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/20c8c150e0666bbe76c59e9f521bf96e04b219139823827fec875d16b632bd8d/start
+    headers:
+      Accept: '*/*'
+      Content-Length: '2'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+    body: '{}'
+  response:
+    status: 204
+    headers:
+      Date: Sat, 20 Dec 2014 13:53:33 GMT
+- recorded: 2014-12-20T13:53:33.754Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/20c8c150e0666bbe76c59e9f521bf96e04b219139823827fec875d16b632bd8d/exec
+    headers:
+      Accept: '*/*'
+      Content-Length: '32'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+    body: '{"Cmd":["echo \"hello exec!\""]}'
+  response:
+    status: 201
+    headers:
+      Content-Type: application/json
+      Date: Sat, 20 Dec 2014 13:53:33 GMT
+    body: |
+      {"Id":"b2be16cab49c7157b30b45e29f47fd5278cfe46f8746dc690650f3df00ec4e30"}
+- recorded: 2014-12-20T13:53:33.833Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/create-exec/stop
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 204
+    headers:
+      Date: Sat, 20 Dec 2014 13:53:33 GMT
+- recorded: 2014-12-20T13:53:33.854Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/create-exec/wait
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Sat, 20 Dec 2014 13:53:33 GMT
+    body: |
+      {"StatusCode":-1}
+- recorded: 2014-12-20T13:53:33.882Z
+  request:
+    method: DELETE
+    uri: http://172.17.42.1:4243/containers/create-exec
+    headers:
+      Accept: '*/*'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 204
+    headers:
+      Date: Sat, 20 Dec 2014 13:53:33 GMT
