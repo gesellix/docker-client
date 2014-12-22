@@ -403,10 +403,21 @@ class DockerClientImpl implements DockerClient {
       return response
     }
 
+    def isDockerRawStream(response) {
+      return ((HttpResponseDecorator) response).getHeaders("Content-Type").find {
+        ((org.apache.http.message.BufferedHeader) it).value == "application/vnd.docker.raw-stream"
+      }
+    }
+
     def readResponseBody(HttpResponseDecorator response) {
       def completeResponse = ""
       if (response.entity) {
-        new InputStreamReader(response.entity?.content).each { chunk ->
+        def content = response.entity?.content
+        if (isDockerRawStream(response)) {
+          logger.warn("TODO: collect raw stream")
+        }
+
+        new InputStreamReader(content).each { chunk ->
           logger.debug("received chunk: '${chunk}'")
           completeResponse += chunk
           if (chunk.contains("}{")) {
