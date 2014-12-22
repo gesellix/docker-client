@@ -8,6 +8,7 @@ import co.freeside.betamax.tape.yaml.OrderedPropertyComparator
 import co.freeside.betamax.tape.yaml.TapePropertyUtils
 import org.junit.Rule
 import org.yaml.snakeyaml.introspector.Property
+import spock.lang.Ignore
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -614,6 +615,41 @@ class DockerClientImplSpec extends Specification {
 
     then:
     execCreateResult?.Id =~ "[0-9a-f]+"
+
+    cleanup:
+    dockerClient.stop(name)
+    dockerClient.wait(name)
+    dockerClient.rm(name)
+  }
+
+//  @Betamax(tape = 'exec start', match = [MatchRule.method, MatchRule.path, MatchRule.body])
+  @Ignore
+  def "exec start"() {
+    given:
+    def imageName = "busybox"
+    def tag = "latest"
+    def cmds = ["sh", "-c", "ping 127.0.0.1"]
+    def containerConfig = ["Cmd": cmds]
+    def hostConfig = [:]
+    def name = "start-exec"
+    dockerClient.rm(name)
+    def containerStatus = dockerClient.run(imageName, containerConfig, hostConfig, tag, name)
+    def execConfig = [
+//        "Cmd": [
+//            'cat /etc/hostname'
+//        ]
+        "Cmd": [
+            'echo "hello exec!" > /test.txt',
+            'cat /test.txt'
+        ]
+    ]
+    def execCreateResult = dockerClient.createExec(containerStatus.container.Id, execConfig)
+
+    when:
+    def execStream = dockerClient.startExec(execCreateResult.Id, [:])
+
+    then:
+    execStream
 
     cleanup:
     dockerClient.stop(name)
