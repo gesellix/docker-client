@@ -1,0 +1,119 @@
+!tape
+name: exec start
+interactions:
+- recorded: 2014-12-27T12:01:22.722Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/create?name=start-exec
+    headers:
+      Accept: '*/*'
+      Content-Length: '61'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+    body: '{"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"busybox:latest"}'
+  response:
+    status: 201
+    headers:
+      Content-Type: application/json
+      Date: Sat, 27 Dec 2014 12:01:22 GMT
+    body: |
+      {"Id":"8f8f01b7602501c9cf251162ff9390d1fce67b821b5dc65b73d6338b71fff4f7","Warnings":null}
+- recorded: 2014-12-27T12:01:22.905Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/8f8f01b7602501c9cf251162ff9390d1fce67b821b5dc65b73d6338b71fff4f7/start
+    headers:
+      Accept: '*/*'
+      Content-Length: '2'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+    body: '{}'
+  response:
+    status: 204
+    headers:
+      Date: Sat, 27 Dec 2014 12:01:22 GMT
+- recorded: 2014-12-27T12:01:22.918Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/8f8f01b7602501c9cf251162ff9390d1fce67b821b5dc65b73d6338b71fff4f7/exec
+    headers:
+      Accept: '*/*'
+      Content-Length: '99'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+    body: '{"AttachStdin":false,"AttachStdout":true,"AttachStderr":true,"Tty":false,"Cmd":["ls","-lisah","/"]}'
+  response:
+    status: 201
+    headers:
+      Content-Type: application/json
+      Date: Sat, 27 Dec 2014 12:01:22 GMT
+    body: |
+      {"Id":"43e1e510668964a3431e311e9f7d5c4dbff842c6f55d68cc57ea41aa08fc13b3"}
+- recorded: 2014-12-27T12:01:22.942Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/exec/43e1e510668964a3431e311e9f7d5c4dbff842c6f55d68cc57ea41aa08fc13b3/start
+    headers:
+      Accept: '*/*'
+      Content-Length: '28'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+    body: '{"Detach":false,"Tty":false}'
+  response:
+    status: 200
+    headers:
+      Content-Type: application/vnd.docker.raw-stream
+    body: !!binary |-
+      AQAAAAAABpp0b3RhbCA1NgogICAgICAyICAgICAgNCBkcnd4ci14ci14ICAgMjkgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBEZWMgMjcgMTI6MDEgLgogICAgICAyICAgICAgNCBkcnd4ci14ci14ICAgMjkgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBEZWMgMjcgMTI6MDEgLi4KICAgICA0NyAgICAgIDAgLXJ3eHIteHIteCAgICAxIHJvb3QgICAgIHJvb3QgICAgICAgICAgIDAgRGVjIDI3IDEyOjAxIC5kb2NrZXJlbnYKICAgICA0OCAgICAgIDAgLXJ3eHIteHIteCAgICAxIHJvb3QgICAgIHJvb3QgICAgICAgICAgIDAgRGVjIDI3IDEyOjAxIC5kb2NrZXJpbml0CiAgICAgMjQgICAgICA0IGRyd3hyd3hyLXggICAgMiByb290ICAgICByb290ICAgICAgICA0LjBLIE1heSAyMiAgMjAxNCBiaW4KIDI5MzI4MCAgICAgIDAgZHJ3eHIteHIteCAgICA1IHJvb3QgICAgIHJvb3QgICAgICAgICAzNjAgRGVjIDI3IDEyOjAxIGRldgogICAgIDE0ICAgICAgNCBkcnd4ci14ci14ICAgIDYgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBEZWMgMjcgMTI6MDEgZXRjCiAgICAgNTUgICAgICA0IGRyd3hyd3hyLXggICAgNCByb290ICAgICByb290ICAgICAgICA0LjBLIE1heSAyMiAgMjAxNCBob21lCiAgICAgMjcgICAgICA0IGRyd3hyd3hyLXggICAgMiByb290ICAgICByb290ICAgICAgICA0LjBLIE1heSAyMiAgMjAxNCBsaWIKICAgICA1MiAgICAgIDAgbHJ3eHJ3eHJ3eCAgICAxIHJvb3QgICAgIHJvb3QgICAgICAgICAgIDMgTWF5IDIyICAyMDE0IGxpYjY0IC0+IGxpYgogICAgIDUzICAgICAgMCBscnd4cnd4cnd4ICAgIDEgcm9vdCAgICAgcm9vdCAgICAgICAgICAxMSBNYXkgMjIgIDIwMTQgbGludXhyYyAtPiBiaW4vYnVzeWJveAogICAgIDU3ICAgICAgNCBkcnd4cnd4ci14ICAgIDIgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBGZWIgMjcgIDIwMTQgbWVkaWEKICAgICA1NCAgICAgIDQgZHJ3eHJ3eHIteCAgICAyIHJvb3QgICAgIHJvb3QgICAgICAgIDQuMEsgRmViIDI3ICAyMDE0IG1udAogICAgIDU4ICAgICAgNCBkcnd4cnd4ci14ICAgIDIgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBGZWIgMjcgIDIwMTQgb3B0CiAgICAgIDEgICAgICAwIGRyLXhyLXhyLXggIDM1OCByb290ICAgICByb290ICAgICAgICAgICAwIERlYyAyNyAxMjowMSBwcm9jCiAgICAgNTYgICAgICA0IGRyd3gtLS0tLS0gICAgMiByb290ICAgICByb290ICAgICAgICA0LjBLIEZlYiAyNyAgMjAxNCByb290CiAgICAgNTEgICAgICAwIGxyd3hyd3hyd3ggICAgMSByb290ICAgICByb290ICAgICAgICAgICAzIEZlYiAyNyAgMjAxNCBydW4gLT4gdG1wCiAgICAgMjMgICAgICA0IGRyd3hyLXhyLXggICAgMiByb290ICAgICByb290ICAgICAgICA0LjBLIE1heSAyMiAgMjAxNCBzYmluCiAgICAgIDEgICAgICAwIGRyLXhyLXhyLXggICAxMyByb290ICAgICByb290ICAgICAgICAgICAwIERlYyAyNyAxMjowMSBzeXMKICAgICA1MCAgICAgIDQgZHJ3eHJ3eHJ3dCAgICAzIHJvb3QgICAgIHJvb3QgICAgICAgIDQuMEsgTWF5IDIyICAyMDE0IHRtcAogICAgIDIwICAgICAgNCBkcnd4cnd4ci14ICAgIDYgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBNYXkgMjIgIDIwMTQgdXNyCiAgICAgNDkgICAgICA0IGRyd3hyd3hyLXggICAgNCByb290ICAgICByb290ICAgICAgICA0LjBLIE1heSAyMiAgMjAxNCB2YXIK
+- recorded: 2014-12-27T12:01:23.059Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/start-exec/stop
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 204
+    headers:
+      Date: Sat, 27 Dec 2014 12:01:23 GMT
+- recorded: 2014-12-27T12:01:23.080Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/start-exec/wait
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Sat, 27 Dec 2014 12:01:23 GMT
+    body: |
+      {"StatusCode":-1}
+- recorded: 2014-12-27T12:01:23.106Z
+  request:
+    method: DELETE
+    uri: http://172.17.42.1:4243/containers/start-exec
+    headers:
+      Accept: '*/*'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 204
+    headers:
+      Date: Sat, 27 Dec 2014 12:01:23 GMT

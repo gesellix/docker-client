@@ -69,3 +69,20 @@ interactions:
       Date: Fri, 19 Dec 2014 07:26:33 GMT
     body: "{\"status\":\"The push refers to a repository [localhost:5000/gesellix/test] (len: 1)\"}\r\n{\"status\":\"Sending image list\"}\r\n{\"status\":\"Pushing repository localhost:5000/gesellix/test (1 tags)\"}\r\n{\"status\":\"Image 511136ea3c5a already\
       \ pushed, skipping\"}\r\n{\"status\":\"Pushing tag for rev [511136ea3c5a] on {http://localhost:5000/v1/repositories/gesellix/test/tags/latest}\"}\r\n"
+- recorded: 2014-12-27T11:57:41.159Z
+  request:
+    method: DELETE
+    uri: http://172.17.42.1:4243/images/gesellix/test:latest
+    headers:
+      Accept: '*/*'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Sat, 27 Dec 2014 11:57:41 GMT
+    body: |-
+      [{"Untagged":"gesellix/test:latest"}
+      ]

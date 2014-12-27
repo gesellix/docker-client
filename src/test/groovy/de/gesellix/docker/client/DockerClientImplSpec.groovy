@@ -8,7 +8,6 @@ import co.freeside.betamax.tape.yaml.OrderedPropertyComparator
 import co.freeside.betamax.tape.yaml.TapePropertyUtils
 import org.junit.Rule
 import org.yaml.snakeyaml.introspector.Property
-import spock.lang.Ignore
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -148,6 +147,9 @@ class DockerClientImplSpec extends Specification {
 
     then:
     buildResult == 201
+
+    cleanup:
+    dockerClient.rmi(imageName)
   }
 
   @Betamax(tape = 'push image', match = [MatchRule.method, MatchRule.path, MatchRule.query, MatchRule.headers])
@@ -163,6 +165,9 @@ class DockerClientImplSpec extends Specification {
 
     then:
     pushResult.status == "Pushing tag for rev [511136ea3c5a] on {https://cdn-registry-1.docker.io/v1/repositories/gesellix/test/tags/latest}"
+
+    cleanup:
+    dockerClient.rmi(imageName)
   }
 
   @Betamax(tape = 'push image with registry', match = [MatchRule.method, MatchRule.path, MatchRule.query, MatchRule.headers])
@@ -178,6 +183,9 @@ class DockerClientImplSpec extends Specification {
 
     then:
     pushResult.status == "Pushing tag for rev [511136ea3c5a] on {http://localhost:5000/v1/repositories/gesellix/test/tags/latest}"
+
+    cleanup:
+    dockerClient.rmi(imageName)
   }
 
   @Betamax(tape = 'push image with undefined authentication', match = [MatchRule.method, MatchRule.path, MatchRule.query, MatchRule.headers])
@@ -192,6 +200,9 @@ class DockerClientImplSpec extends Specification {
 
     then:
     pushResult.status == "Pushing tag for rev [511136ea3c5a] on {http://localhost:5000/v1/repositories/gesellix/test/tags/latest}"
+
+    cleanup:
+    dockerClient.rmi(imageName)
   }
 
   @Unroll
@@ -622,8 +633,7 @@ class DockerClientImplSpec extends Specification {
     dockerClient.rm(name)
   }
 
-//  @Betamax(tape = 'exec start', match = [MatchRule.method, MatchRule.path, MatchRule.body])
-  @Ignore
+  @Betamax(tape = 'exec start', match = [MatchRule.method, MatchRule.path, MatchRule.body])
   def "exec start"() {
     given:
     def imageName = "busybox"
@@ -632,24 +642,28 @@ class DockerClientImplSpec extends Specification {
     def containerConfig = ["Cmd": cmds]
     def hostConfig = [:]
     def name = "start-exec"
-    dockerClient.rm(name)
     def containerStatus = dockerClient.run(imageName, containerConfig, hostConfig, tag, name)
-    def execConfig = [
-//        "Cmd": [
-//            'cat /etc/hostname'
-//        ]
-        "Cmd": [
-            'echo "hello exec!" > /test.txt',
-            'cat /test.txt'
-        ]
-    ]
-    def execCreateResult = dockerClient.createExec(containerStatus.container.Id, execConfig)
+    def containerId = containerStatus.container.Id
+    def execCreateConfig = [
+        "AttachStdin" : false,
+        "AttachStdout": true,
+        "AttachStderr": true,
+        "Tty"         : false,
+        "Cmd"         : [
+            "ls", "-lisah", "/"
+        ]]
+
+    def execCreateResult = dockerClient.createExec(containerId, execCreateConfig)
+    def execId = execCreateResult.Id
 
     when:
-    def execStream = dockerClient.startExec(execCreateResult.Id, [:])
+    def execStartConfig = [
+        "Detach": false,
+        "Tty"   : false]
+    def execStream = dockerClient.startExec(execId, execStartConfig)
 
     then:
-    execStream
+    execStream != null
 
     cleanup:
     dockerClient.stop(name)

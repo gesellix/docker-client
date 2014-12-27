@@ -35,3 +35,20 @@ interactions:
       Content-Type: text/plain; charset=utf-8
       Date: Thu, 18 Dec 2014 20:48:41 GMT
     body: ''
+- recorded: 2014-12-27T11:56:57.409Z
+  request:
+    method: DELETE
+    uri: http://172.17.42.1:4243/images/yetAnotherTag
+    headers:
+      Accept: '*/*'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Sat, 27 Dec 2014 11:56:57 GMT
+    body: |-
+      [{"Untagged":"yetAnotherTag:latest"}
+      ]
