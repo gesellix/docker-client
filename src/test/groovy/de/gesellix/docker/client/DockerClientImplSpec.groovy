@@ -62,7 +62,7 @@ class DockerClientImplSpec extends Specification {
     dockerClient.info()
 
     then:
-    1 * delegateMock.get([path: "/info"], _ as Closure)
+    1 * delegateMock.get([path: "/info"])
   }
 
   def "version"() {
@@ -70,10 +70,10 @@ class DockerClientImplSpec extends Specification {
     dockerClient.version()
 
     then:
-    1 * delegateMock.get([path: "/version"], _ as Closure)
+    1 * delegateMock.get([path: "/version"])
   }
 
-  def "auth"() {
+  def "login"() {
     def authDetails = [:]
     when:
     dockerClient.auth(authDetails)
@@ -81,7 +81,7 @@ class DockerClientImplSpec extends Specification {
     then:
     1 * delegateMock.post([path              : "/auth",
                            body              : authDetails,
-                           requestContentType: ContentType.JSON], _ as Closure)
+                           requestContentType: ContentType.JSON])
   }
 
   def "build with defaults"() {
@@ -125,7 +125,7 @@ class DockerClientImplSpec extends Specification {
     1 * delegateMock.post([path : "/images/an-image/tag",
                            query: [repo : "registry:port/username/image-name",
                                    tag  : "a-tag",
-                                   force: false]], _ as Closure)
+                                   force: false]])
   }
 
   def "tag with force == true"() {
@@ -136,7 +136,7 @@ class DockerClientImplSpec extends Specification {
     1 * delegateMock.post([path : "/images/an-image/tag",
                            query: [repo : "registry:port/username/image-name",
                                    tag  : "a-tag",
-                                   force: true]], _ as Closure)
+                                   force: true]])
   }
 
   def "push with defaults"() {
@@ -169,7 +169,7 @@ class DockerClientImplSpec extends Specification {
     1 * delegateMock.post([path : "/images/an-image/tag",
                            query: [repo : "registry:port/an-image",
                                    tag  : "",
-                                   force: true]], _ as Closure)
+                                   force: true]])
     then:
     1 * delegateMock.post([path   : "/images/registry:port/an-image/push",
                            query  : [registry: "registry:port",
@@ -224,7 +224,7 @@ class DockerClientImplSpec extends Specification {
     dockerClient.stop("a-container")
 
     then:
-    1 * delegateMock.post([path: "/containers/a-container/stop"], _ as Closure)
+    1 * delegateMock.post([path: "/containers/a-container/stop"])
   }
 
   def "wait container"() {
@@ -344,7 +344,7 @@ class DockerClientImplSpec extends Specification {
     then:
     1 * delegateMock.post([path              : "/containers/a-container/start",
                            body              : [:],
-                           requestContentType: ContentType.JSON], _ as Closure)
+                           requestContentType: ContentType.JSON])
   }
 
   def "run container with defaults"() {

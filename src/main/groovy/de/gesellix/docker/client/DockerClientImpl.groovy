@@ -13,7 +13,7 @@ class DockerClientImpl implements DockerClient {
 
   private static Logger logger = LoggerFactory.getLogger(DockerClientImpl)
 
-  def responseHandler = new ChunkedResponseHandler()
+  def responseHandler = new DockerResponseHandler()
 
   def dockerHost = "http://127.0.0.1:2375/"
   def delegate
@@ -42,7 +42,7 @@ class DockerClientImpl implements DockerClient {
     }
     restClient.with {
       handler.failure = new MethodClosure(responseHandler, "handleFailure")
-      handler.success = new MethodClosure(responseHandler, "handleResponse")
+      handler.success = new MethodClosure(responseHandler, "handleSuccess")
     }
     logger.info "using docker at '${dockerHost}'"
     return restClient
@@ -50,43 +50,37 @@ class DockerClientImpl implements DockerClient {
 
   @Override
   def info() {
-    logger.info "get system info"
-    getDelegate().get([path: "/info"]) { response, reader ->
-      logger.info "${response.statusLine}"
-      return reader
-    }
+    logger.info "docker info"
+    getDelegate().get([path: "/info"])
+    return responseHandler.lastResponseDetail
   }
 
   @Override
   def version() {
-    logger.info "get docker version"
-    getDelegate().get([path: "/version"]) { response, reader ->
-      logger.info "${response.statusLine}"
-      return reader
-    }
+    logger.info "docker version"
+    getDelegate().get([path: "/version"])
+    return responseHandler.lastResponseDetail
   }
 
   @Override
   def auth(def authDetails) {
-    logger.info "auth..."
+    logger.info "docker login"
     getDelegate().post([path              : "/auth",
                         body              : authDetails,
-                        requestContentType: ContentType.JSON
-    ]) { response ->
-      logger.info "${response.statusLine}"
-      return response.statusLine.statusCode
-    }
+                        requestContentType: ContentType.JSON])
+    return responseHandler.statusLine.statusCode
+//    return responseHandler.lastResponseDetail
   }
 
   @Override
   def encodeAuthConfig(def authConfig) {
-    logger.info "encodeAuthConfig..."
+    logger.debug "encode authConfig"
     return new JsonBuilder(authConfig).toString().bytes.encodeBase64().toString()
   }
 
   @Override
   def build(InputStream buildContext, query = ["rm": true]) {
-    logger.info "build image..."
+    logger.info "docker build"
     getDelegate().post([path              : "/build",
                         query             : query,
                         body              : IOUtils.toByteArray(buildContext),
@@ -101,20 +95,19 @@ class DockerClientImpl implements DockerClient {
 
   @Override
   def tag(imageId, repository, force = false) {
-    logger.info "tag image"
+    logger.info "docker tag"
     def repoAndTag = parseRepositoryTag(repository)
     getDelegate().post([path : "/images/${imageId}/tag".toString(),
                         query: [repo : repoAndTag.repo,
                                 tag  : repoAndTag.tag,
-                                force: force]]) { response ->
-      logger.info "${response.statusLine}"
-      return response.statusLine.statusCode
-    }
+                                force: force]])
+    return responseHandler.statusLine.statusCode
+//    return responseHandler.lastResponseDetail
   }
 
   @Override
   def push(imageName, authBase64Encoded = ".", registry = "") {
-    logger.info "push image '${imageName}'"
+    logger.info "docker push '${imageName}'"
 
     def actualImageName = imageName
     if (registry) {
@@ -127,9 +120,7 @@ class DockerClientImpl implements DockerClient {
                         query  : [registry: registry,
                                   tag     : repoAndTag.tag],
                         headers: ["X-Registry-Auth": authBase64Encoded ?: "."]])
-
-    def lastResponseDetail = responseHandler.lastResponseDetail
-    return lastResponseDetail
+    return responseHandler.lastResponseDetail
   }
 
   @Override
@@ -167,7 +158,7 @@ class DockerClientImpl implements DockerClient {
 
   @Override
   def pull(imageName, tag = "", registry = "") {
-    logger.info "pull image '${imageName}:${tag}'..."
+    logger.info "docker pull '${imageName}:${tag}'"
 
     def actualImageName = imageName
     if (registry) {
@@ -188,7 +179,7 @@ class DockerClientImpl implements DockerClient {
 
   @Override
   def createContainer(containerConfig, query = [name: ""]) {
-    logger.info "create container..."
+    logger.info "docker create"
     def actualContainerConfig = [:] + containerConfig
 
     getDelegate().post([path              : "/containers/create".toString(),
@@ -213,27 +204,24 @@ class DockerClientImpl implements DockerClient {
         }
       }
     }
-
-    def lastResponseDetail = responseHandler.lastResponseDetail
-    return lastResponseDetail
+    return responseHandler.lastResponseDetail
   }
 
   @Override
   def startContainer(containerId, hostConfig = [:]) {
-    logger.info "start container..."
+    logger.info "docker start"
     def actualHostConfig = [:] + hostConfig
 
     getDelegate().post([path              : "/containers/${containerId}/start".toString(),
                         body              : actualHostConfig,
-                        requestContentType: ContentType.JSON]) { response, reader ->
-      logger.info "${response.statusLine}"
-      return response.statusLine.statusCode
-    }
+                        requestContentType: ContentType.JSON])
+    return responseHandler.statusLine.statusCode
+//    return responseHandler.lastResponseDetail
   }
 
   @Override
   def run(fromImage, containerConfig, hostConfig, tag = "", name = "") {
-    logger.info "run container"
+    logger.info "docker run"
 /*
     http://docs.docker.com/reference/api/docker_remote_api_v1.13/#31-inside-docker-run
 
@@ -261,16 +249,15 @@ class DockerClientImpl implements DockerClient {
 
   @Override
   def stop(containerId) {
-    logger.info "stop container"
-    getDelegate().post([path: "/containers/${containerId}/stop".toString()]) { response ->
-      logger.info "${response.statusLine}"
-      return response.statusLine.statusCode
-    }
+    logger.info "docker stop"
+    getDelegate().post([path: "/containers/${containerId}/stop".toString()])
+    return responseHandler.statusLine.statusCode
+//    return responseHandler.lastResponseDetail
   }
 
   @Override
   def wait(containerId) {
-    logger.info "wait container"
+    logger.info "docker wait"
     getDelegate().post([path: "/containers/${containerId}/wait".toString()]) { response, reader ->
       logger.info "${response.statusLine}"
       return [status  : response.statusLine,
@@ -280,23 +267,23 @@ class DockerClientImpl implements DockerClient {
 
   @Override
   def rm(containerId) {
-    logger.info "rm container"
-    def response = getDelegate().delete([path: "/containers/${containerId}".toString()])
-    logger.info "${response.statusLine}"
-    return response.statusLine.statusCode
+    logger.info "docker rm"
+    getDelegate().delete([path: "/containers/${containerId}".toString()])
+    return responseHandler.statusLine.statusCode
+//    return responseHandler.lastResponseDetail
   }
 
   @Override
   def rmi(imageId) {
-    logger.info "rm image"
-    def response = getDelegate().delete([path: "/images/${imageId}".toString()])
-    logger.info "${response.statusLine}"
-    return response.statusLine.statusCode
+    logger.info "docker rmi"
+    getDelegate().delete([path: "/images/${imageId}".toString()])
+    return responseHandler.statusLine.statusCode
+//    return responseHandler.lastResponseDetail
   }
 
   @Override
   def ps() {
-    logger.info "list containers"
+    logger.info "docker ps"
     getDelegate().get([path : "/containers/json",
                        query: [all : true,
                                size: false]]) { response, reader ->
@@ -307,7 +294,7 @@ class DockerClientImpl implements DockerClient {
 
   @Override
   def inspectContainer(containerId) {
-    logger.info "inspect container"
+    logger.info "docker inspect"
     getDelegate().get([path: "/containers/${containerId}/json"]) { response, reader ->
       logger.info "${response.statusLine}"
       return reader
@@ -317,7 +304,7 @@ class DockerClientImpl implements DockerClient {
   @Override
   def images(query = [all    : false,
                       filters: [:]]) {
-    logger.info "list images"
+    logger.info "docker images"
     getDelegate().get([path : "/images/json",
                        query: query]) { response, reader ->
       logger.info "${response.statusLine}"
@@ -327,7 +314,7 @@ class DockerClientImpl implements DockerClient {
 
   @Override
   def createExec(containerId, execConfig) {
-    logger.info "create exec on container ${containerId}..."
+    logger.info "docker create exec on '${containerId}'"
 
     getDelegate().post([path              : "/containers/${containerId}/exec".toString(),
                         body              : execConfig,
@@ -342,14 +329,12 @@ class DockerClientImpl implements DockerClient {
     if (!responseHandler.success) {
       logger.error("create exec with container ${containerId} failed.")
     }
-
-    def lastResponseDetail = responseHandler.lastResponseDetail
-    return lastResponseDetail
+    return responseHandler.lastResponseDetail
   }
 
   @Override
   def startExec(execId, execConfig) {
-    logger.info "start exec with id ${execId}..."
+    logger.info "docker start exec '${execId}'"
 
     getDelegate().post([path              : "/exec/${execId}/start".toString(),
                         body              : execConfig,
@@ -364,8 +349,27 @@ class DockerClientImpl implements DockerClient {
     if (!responseHandler.success) {
       logger.error("start exec ${execId} failed.")
     }
+    return responseHandler.lastResponseDetail
+  }
 
-    def lastResponseDetail = responseHandler.lastResponseDetail
-    return lastResponseDetail
+  @Override
+  def exec(containerId, command, execConfig = [
+      "Detach"     : false,
+      "AttachStdin": false,
+      "Tty"        : false]) {
+    logger.info "docker exec '${containerId}'"
+
+    def actualExecConfig = [
+        "AttachStdin" : execConfig.AttachStdin ?: false,
+        "AttachStdout": true,
+        "AttachStderr": true,
+        "Detach"      : execConfig.Detach ?: false,
+        "Tty"         : execConfig.Tty ?: false,
+        "Cmd"         : command]
+
+    logger.info "docker exec '${containerId}'"
+    def execCreateResult = createExec(containerId, actualExecConfig)
+    def execId = execCreateResult.Id
+    return startExec(execId, actualExecConfig)
   }
 }
