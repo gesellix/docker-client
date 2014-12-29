@@ -4,7 +4,7 @@ import spock.lang.Ignore
 import spock.lang.Specification
 
 @Ignore("only for explorative testing")
-class DockerClientImplIntegrationTest extends Specification {
+class DockerClientImplExplorationTest extends Specification {
 
   DockerClient dockerClient
 

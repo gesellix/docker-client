@@ -1,9 +1,7 @@
 package de.gesellix.docker.client
 
 import groovy.json.JsonBuilder
-import groovy.json.JsonSlurper
 import groovyx.net.http.ContentType
-import groovyx.net.http.HttpResponseDecorator
 import groovyx.net.http.RESTClient
 import org.apache.commons.io.IOUtils
 import org.apache.http.client.HttpClient
@@ -95,7 +93,6 @@ class DockerClientImpl implements DockerClient {
                         requestContentType: ContentType.BINARY])
 
     def lastResponseDetail = responseHandler.lastResponseDetail
-    logger.info "${lastResponseDetail}"
     if (!responseHandler.success || lastResponseDetail?.error) {
       throw new DockerClientException(new IllegalStateException("build failed"), lastResponseDetail)
     }
@@ -132,7 +129,6 @@ class DockerClientImpl implements DockerClient {
                         headers: ["X-Registry-Auth": authBase64Encoded ?: "."]])
 
     def lastResponseDetail = responseHandler.lastResponseDetail
-    logger.info "${lastResponseDetail}"
     return lastResponseDetail
   }
 
@@ -183,7 +179,6 @@ class DockerClientImpl implements DockerClient {
                                 tag      : tag,
                                 registry : registry]])
     def lastResponseDetail = responseHandler.lastResponseDetail
-    logger.info "${lastResponseDetail}"
     if (!responseHandler.success || lastResponseDetail?.error) {
       throw new DockerClientException(new IllegalStateException("pull failed."), lastResponseDetail)
     }
@@ -220,7 +215,6 @@ class DockerClientImpl implements DockerClient {
     }
 
     def lastResponseDetail = responseHandler.lastResponseDetail
-    logger.info "${lastResponseDetail}"
     return lastResponseDetail
   }
 
@@ -350,7 +344,6 @@ class DockerClientImpl implements DockerClient {
     }
 
     def lastResponseDetail = responseHandler.lastResponseDetail
-    logger.info "${lastResponseDetail}"
     return lastResponseDetail
   }
 
@@ -373,88 +366,6 @@ class DockerClientImpl implements DockerClient {
     }
 
     def lastResponseDetail = responseHandler.lastResponseDetail
-    logger.info "${lastResponseDetail}"
     return lastResponseDetail
-  }
-
-  static class ChunkedResponseHandler {
-
-    def jsonSlurper = new JsonSlurper()
-
-    def success
-    def statusLine
-    def completeResponse
-    def responseChunks = []
-
-    def handleResponse(HttpResponseDecorator response) {
-      logger.info "response: $response.statusLine"
-      handle(response)
-    }
-
-    def handleFailure(HttpResponseDecorator response) {
-      logger.error "failure: $response.statusLine"
-      handle(response)
-    }
-
-    def handle(HttpResponseDecorator response) {
-      success = response.success
-      statusLine = response.statusLine
-      completeResponse = readResponseBody(response)
-      return response
-    }
-
-    def isDockerRawStream(response) {
-      return ((HttpResponseDecorator) response).getHeaders("Content-Type").find {
-        ((org.apache.http.message.BufferedHeader) it).value == "application/vnd.docker.raw-stream"
-      }
-    }
-
-    def readResponseBody(HttpResponseDecorator response) {
-      def completeResponse = ""
-      if (response.entity) {
-        def content = response.entity?.content
-        if (isDockerRawStream(response)) {
-          logger.warn("TODO: collect raw stream")
-        }
-
-        new InputStreamReader(content).each { chunk ->
-          logger.debug("received chunk: '${chunk}'")
-          completeResponse += chunk
-          if (chunk.contains("}{")) {
-            responseChunks.addAll(chunk.split("\\}\\{").collect {
-              it = it.startsWith("{") ? it : "{${it}".toString()
-              it = it.endsWith("}") ? it : "${it}}".toString()
-              logger.trace("splitted chunk: '${it}'")
-              jsonSlurper.parseText(it)
-            })
-          }
-          else {
-            logger.trace("kept chunk: '${chunk}'")
-            if (chunk.startsWith("{") && chunk.endsWith("}")) {
-              responseChunks << jsonSlurper.parseText(chunk)
-            }
-            else {
-              responseChunks << ['plain': chunk]
-            }
-          }
-        }
-      }
-      return completeResponse
-    }
-
-    def getLastResponseDetail() {
-      if (!success) {
-        return completeResponse ?: statusLine
-      }
-
-      if (responseChunks) {
-        logger.debug("find last detail in: '${responseChunks}'")
-        def lastResponseDetail = responseChunks.last()
-        return lastResponseDetail
-      }
-      else {
-        return ""
-      }
-    }
   }
 }
