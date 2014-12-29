@@ -16,7 +16,7 @@ class DockerResponseHandler {
   def success
   def statusLine
   def completeResponse
-  def responseChunks = []
+  def chunks = []
 
   def handleSuccess(HttpResponseDecorator response) {
     logger.info "success: $response.statusLine"
@@ -48,21 +48,28 @@ class DockerResponseHandler {
     return completeResponse
   }
 
-  def getLastResponseDetail() {
-    def lastResponseDetail
-    if (!success) {
-      lastResponseDetail = completeResponse ?: statusLine
+  def ensureSuccessfulResponse(Throwable context) {
+    if (!success || lastChunk?.error) {
+      throw new DockerClientException(context, lastChunk);
     }
-    else if (responseChunks) {
-      logger.debug("find last detail in: '${responseChunks}'")
-      lastResponseDetail = responseChunks.last()
+  }
+
+  def getLastChunk() {
+    def lastChunk
+    if (!success) {
+      logger.warn("failed request")
+      lastChunk = completeResponse ?: statusLine
+    }
+    else if (chunks) {
+      logger.debug("find last chunk in: '${chunks}'")
+      lastChunk = chunks.last()
     }
     else {
-      lastResponseDetail = ""
+      lastChunk = ""
     }
 
-    logger.info "${lastResponseDetail}"
-    return lastResponseDetail
+    logger.info "${lastChunk}"
+    return lastChunk
   }
 
   def getContentType(response) {
@@ -96,15 +103,15 @@ class DockerResponseHandler {
     def content = response.entity.content
     def text = content.text
     text = text.replaceAll("\\}[\n\r]*\\{", "},{")
-    def json = jsonSlurper.parseText("[$text]")
-    responseChunks.addAll(json)
+    def parsedJson = jsonSlurper.parseText("[$text]")
+    chunks.addAll(parsedJson)
     return text
   }
 
   def readText(response) {
     def content = response.entity.content
     def text = content.text
-    responseChunks << ['plain': text]
+    chunks << ['plain': text]
     return text
   }
 

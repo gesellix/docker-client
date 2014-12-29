@@ -115,7 +115,7 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     then:
     DockerClientException ex = thrown()
-    ex.cause.message == 'build failed'
+    ex.cause.message == 'docker build failed'
     ex.detail.errorDetail == [message: "Error: image missing/image:latest not found"]
     ex.detail.error == "Error: image missing/image:latest not found"
   }
@@ -372,7 +372,7 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     then:
     DockerClientException ex = thrown()
-    ex.cause.message == 'pull failed.'
+    ex.cause.message == 'docker pull failed'
     ex.detail == [error      : "Tag unkown not found in repository busybox",
                   errorDetail: [message: "Tag unkown not found in repository busybox"]]
   }

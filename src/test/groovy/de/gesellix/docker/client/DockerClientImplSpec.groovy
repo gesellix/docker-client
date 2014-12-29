@@ -12,16 +12,11 @@ class DockerClientImplSpec extends Specification {
 
   def setup() {
     dockerClient.createDockerClient(_) >> delegateMock
-    dockerClient.responseHandler = new Object() {
-
-      def success = true
-      def lastResponseDetail = []
-      def responseChunks = []
-      def statusLine = [:]
-    }
+    dockerClient.responseHandler = Spy(DockerResponseHandler)
+    dockerClient.responseHandler.chunks = []
   }
 
-  def encodeAuthConfig() {
+  def "encode authConfig"() {
     given:
     def authDetails = ["username"     : "gesellix",
                        "password"     : "-yet-another-password-",
@@ -58,6 +53,10 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "info"() {
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+
     when:
     dockerClient.info()
 
@@ -66,6 +65,10 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "version"() {
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+
     when:
     dockerClient.version()
 
@@ -75,6 +78,9 @@ class DockerClientImplSpec extends Specification {
 
   def "login"() {
     def authDetails = [:]
+    given:
+    dockerClient.responseHandler.statusLine >> [:]
+
     when:
     dockerClient.auth(authDetails)
 
@@ -87,8 +93,9 @@ class DockerClientImplSpec extends Specification {
   def "build with defaults"() {
     def buildContext = new ByteArrayInputStream([42] as byte[])
     given:
-    dockerClient.responseHandler.lastResponseDetail = [error : false,
-                                                       stream: ""]
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [error : false,
+                                            stream: ""]
 
     when:
     dockerClient.build(buildContext)
@@ -104,8 +111,9 @@ class DockerClientImplSpec extends Specification {
     def buildContext = new ByteArrayInputStream([42] as byte[])
     def query = ["rm": false]
     given:
-    dockerClient.responseHandler.lastResponseDetail = [error : false,
-                                                       stream: ""]
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [error : false,
+                                            stream: ""]
 
     when:
     dockerClient.build(buildContext, query)
@@ -118,6 +126,9 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "tag with defaults"() {
+    given:
+    dockerClient.responseHandler.statusLine >> [:]
+
     when:
     dockerClient.tag("an-image", "registry:port/username/image-name:a-tag")
 
@@ -129,6 +140,9 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "tag with force == true"() {
+    given:
+    dockerClient.responseHandler.statusLine >> [:]
+
     when:
     dockerClient.tag("an-image", "registry:port/username/image-name:a-tag", true)
 
@@ -140,6 +154,10 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "push with defaults"() {
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+
     when:
     dockerClient.push("an-image")
 
@@ -151,6 +169,10 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "push with auth"() {
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+
     when:
     dockerClient.push("an-image:a-tag", "some-base64-encoded-auth")
 
@@ -162,6 +184,11 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "push with registry"() {
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+    dockerClient.responseHandler.statusLine >> [:]
+
     when:
     dockerClient.push("an-image", ".", "registry:port")
 
@@ -179,7 +206,8 @@ class DockerClientImplSpec extends Specification {
 
   def "pull with defaults"() {
     given:
-    dockerClient.responseHandler.responseChunks = [[id: "image-id"]]
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks = [[id: "image-id"]]
 
     when:
     dockerClient.pull("an-image")
@@ -193,7 +221,8 @@ class DockerClientImplSpec extends Specification {
 
   def "pull with tag"() {
     given:
-    dockerClient.responseHandler.responseChunks = [[id: "image-id"]]
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks = [[id: "image-id"]]
 
     when:
     dockerClient.pull("an-image", "a-tag")
@@ -207,7 +236,8 @@ class DockerClientImplSpec extends Specification {
 
   def "pull with registry"() {
     given:
-    dockerClient.responseHandler.responseChunks = [[id: "image-id"]]
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks = [[id: "image-id"]]
 
     when:
     dockerClient.pull("an-image", "", "registry:port")
@@ -220,6 +250,9 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "stop container"() {
+    given:
+    dockerClient.responseHandler.statusLine >> [:]
+
     when:
     dockerClient.stop("a-container")
 
@@ -228,14 +261,21 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "wait container"() {
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+
     when:
     dockerClient.wait("a-container")
 
     then:
-    1 * delegateMock.post([path: "/containers/a-container/wait"], _ as Closure)
+    1 * delegateMock.post([path: "/containers/a-container/wait"])
   }
 
   def "rm container"() {
+    given:
+    dockerClient.responseHandler.statusLine >> [:]
+
     when:
     dockerClient.rm("a-container")
 
@@ -244,45 +284,64 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "ps containers"() {
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+
     when:
     dockerClient.ps()
 
     then:
     1 * delegateMock.get([path : "/containers/json",
                           query: [all : true,
-                                  size: false]], _ as Closure)
+                                  size: false]])
   }
 
   def "inspect container"() {
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+
     when:
     dockerClient.inspectContainer("a-container")
 
     then:
-    1 * delegateMock.get([path: "/containers/a-container/json"], _ as Closure)
+    1 * delegateMock.get([path: "/containers/a-container/json"])
   }
 
   def "images with defaults"() {
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+
     when:
     dockerClient.images()
 
     then:
     1 * delegateMock.get([path : "/images/json",
                           query: [all    : false,
-                                  filters: [:]]], _ as Closure)
+                                  filters: [:]]])
   }
 
   def "images with query"() {
     def query = [all    : true,
                  filters: ["dangling": true]]
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+
     when:
     dockerClient.images(query)
 
     then:
     1 * delegateMock.get([path : "/images/json",
-                          query: query], _ as Closure)
+                          query: query])
   }
 
   def "rmi image"() {
+    given:
+    dockerClient.responseHandler.statusLine >> [:]
+
     when:
     dockerClient.rmi("an-image")
 
@@ -292,6 +351,10 @@ class DockerClientImplSpec extends Specification {
 
   def "create exec"() {
     def execCreateConfig = [:]
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+
     when:
     dockerClient.createExec("a-container", execCreateConfig)
 
@@ -303,6 +366,10 @@ class DockerClientImplSpec extends Specification {
 
   def "start exec"() {
     def execStartConfig = [:]
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+
     when:
     dockerClient.startExec("an-exec", execStartConfig)
 
@@ -314,6 +381,10 @@ class DockerClientImplSpec extends Specification {
 
   def "create container with defaults"() {
     def containerConfig = [Cmd: "true"]
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+
     when:
     dockerClient.createContainer(containerConfig)
 
@@ -327,6 +398,10 @@ class DockerClientImplSpec extends Specification {
   def "create container with query"() {
     def containerConfig = [Cmd: "true"]
     def query = [name: "foo"]
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+
     when:
     dockerClient.createContainer(containerConfig, query)
 
@@ -338,6 +413,9 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "start container"() {
+    given:
+    dockerClient.responseHandler.statusLine >> [:]
+
     when:
     dockerClient.startContainer("a-container")
 
@@ -348,6 +426,9 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "run container with defaults"() {
+    given:
+    dockerClient.responseHandler.statusLine >> [:]
+
     when:
     dockerClient.run("an-image", [:], [:])
 
