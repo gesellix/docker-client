@@ -29,6 +29,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     }
 
     def defaultDockerHost = System.env.DOCKER_HOST?.replaceFirst("tcp://", "http://")
+    //defaultDockerHost = "http://172.17.42.1:4243/"
     dockerClient = new DockerClientImpl(dockerHost: defaultDockerHost ?: "http://172.17.42.1:4243/")
     BetamaxRoutePlanner.configure(dockerClient.delegate.client)
   }

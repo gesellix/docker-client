@@ -17,7 +17,7 @@ class BuildContextBuilderTest extends Specification {
 
     then:
     def collectedEntryNames = collectEntryNames(targetFile)
-    collectedEntryNames.sort() == ["subdirectory/", "subdirectory/payload.txt", "Dockerfile", "script.sh"].sort()
+    collectedEntryNames.sort() == ["subdirectory/payload.txt", "Dockerfile", "script.sh"].sort()
   }
 
   def "test archiveTarFilesRecursively keeps executable flag"() {
@@ -45,7 +45,7 @@ class BuildContextBuilderTest extends Specification {
 
     then:
     def collectedEntryNames = collectEntryNames(targetFile)
-    collectedEntryNames.sort() == ["subdirectory/", "subdirectory/payload.txt", "Dockerfile", "script.sh"].sort()
+    collectedEntryNames.sort() == ["subdirectory/payload.txt", "Dockerfile", "script.sh"].sort()
 
     // TODO cannot be deleted while the Gradle daemon is running?
 //    cleanup:
@@ -76,19 +76,12 @@ class BuildContextBuilderTest extends Specification {
     throw new FileNotFoundException(filename)
   }
 
-  def "test ignoreFile"() {
-    when:
-    def ignoreFile = BuildContextBuilder.ignoreFile([".git"], ".git/refs/remotes/")
-    then:
-    ignoreFile == true
-  }
-
   def "test relativize"() {
     when:
     def relativized = BuildContextBuilder.relativize(new File("./base/dir"), new File("./base/dir/with/sub/dir"))
 
     then:
-    relativized == "with/sub/dir"
+    relativized == new File("with/sub/dir").toPath().toString()
   }
 
   def "test copyFile"() {
