@@ -3,6 +3,7 @@ package de.gesellix.docker.client
 import java.nio.file.FileSystems
 
 class GlobsMatcher {
+
   def matchers
 
   GlobsMatcher(globs) {
