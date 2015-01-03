@@ -380,6 +380,33 @@ class DockerClientImplSpec extends Specification {
                            requestContentType: ContentType.JSON])
   }
 
+  def "exec"() {
+    def execConfig = [:]
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+
+    when:
+    dockerClient.exec("container-id", ["command", "line"], execConfig)
+
+    then:
+    1 * dockerClient.createExec("container-id", [
+        "AttachStdin" : false,
+        "AttachStdout": true,
+        "AttachStderr": true,
+        "Detach"      : false,
+        "Tty"         : false,
+        "Cmd"         : ["command", "line"]]) >> [Id: "exec-id"]
+    then:
+    1 * dockerClient.startExec("exec-id", [
+        "AttachStdin" : false,
+        "AttachStdout": true,
+        "AttachStderr": true,
+        "Detach"      : false,
+        "Tty"         : false,
+        "Cmd"         : ["command", "line"]])
+  }
+
   def "create container with defaults"() {
     def containerConfig = [Cmd: "true"]
     given:

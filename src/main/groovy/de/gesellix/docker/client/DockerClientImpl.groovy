@@ -337,7 +337,7 @@ class DockerClientImpl implements DockerClient {
       "Detach"     : false,
       "AttachStdin": false,
       "Tty"        : false]) {
-    logger.info "docker exec '${containerId}'"
+    logger.info "docker exec '${containerId}' '${command}'"
 
     def actualExecConfig = [
         "AttachStdin" : execConfig.AttachStdin ?: false,
@@ -347,7 +347,6 @@ class DockerClientImpl implements DockerClient {
         "Tty"         : execConfig.Tty ?: false,
         "Cmd"         : command]
 
-    logger.info "docker exec '${containerId}'"
     def execCreateResult = createExec(containerId, actualExecConfig)
     def execId = execCreateResult.Id
     return startExec(execId, actualExecConfig)
