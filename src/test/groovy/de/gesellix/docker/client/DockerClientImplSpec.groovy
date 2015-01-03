@@ -2,6 +2,7 @@ package de.gesellix.docker.client
 
 import groovyx.net.http.ContentType
 import groovyx.net.http.RESTClient
+import org.apache.http.StatusLine
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -79,7 +80,7 @@ class DockerClientImplSpec extends Specification {
   def "login"() {
     def authDetails = [:]
     given:
-    dockerClient.responseHandler.statusLine >> [:]
+    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
 
     when:
     dockerClient.auth(authDetails)
@@ -127,7 +128,7 @@ class DockerClientImplSpec extends Specification {
 
   def "tag with defaults"() {
     given:
-    dockerClient.responseHandler.statusLine >> [:]
+    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
 
     when:
     dockerClient.tag("an-image", "registry:port/username/image-name:a-tag")
@@ -141,7 +142,7 @@ class DockerClientImplSpec extends Specification {
 
   def "tag with force == true"() {
     given:
-    dockerClient.responseHandler.statusLine >> [:]
+    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
 
     when:
     dockerClient.tag("an-image", "registry:port/username/image-name:a-tag", true)
@@ -187,7 +188,7 @@ class DockerClientImplSpec extends Specification {
     given:
     dockerClient.responseHandler.success = true
     dockerClient.responseHandler.chunks << [:]
-    dockerClient.responseHandler.statusLine >> [:]
+    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
 
     when:
     dockerClient.push("an-image", ".", "registry:port")
@@ -251,7 +252,7 @@ class DockerClientImplSpec extends Specification {
 
   def "stop container"() {
     given:
-    dockerClient.responseHandler.statusLine >> [:]
+    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
 
     when:
     dockerClient.stop("a-container")
@@ -274,7 +275,7 @@ class DockerClientImplSpec extends Specification {
 
   def "rm container"() {
     given:
-    dockerClient.responseHandler.statusLine >> [:]
+    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
 
     when:
     dockerClient.rm("a-container")
@@ -340,7 +341,7 @@ class DockerClientImplSpec extends Specification {
 
   def "rmi image"() {
     given:
-    dockerClient.responseHandler.statusLine >> [:]
+    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
 
     when:
     dockerClient.rmi("an-image")
@@ -414,7 +415,7 @@ class DockerClientImplSpec extends Specification {
 
   def "start container"() {
     given:
-    dockerClient.responseHandler.statusLine >> [:]
+    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
 
     when:
     dockerClient.startContainer("a-container")
@@ -427,7 +428,7 @@ class DockerClientImplSpec extends Specification {
 
   def "run container with defaults"() {
     given:
-    dockerClient.responseHandler.statusLine >> [:]
+    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
 
     when:
     dockerClient.run("an-image", [:], [:])
