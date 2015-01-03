@@ -3,6 +3,8 @@ package de.gesellix.docker.client
 import groovy.json.JsonSlurper
 import groovyx.net.http.ContentType
 import groovyx.net.http.HttpResponseDecorator
+import org.apache.http.HttpResponse
+import org.apache.http.StatusLine
 import org.codehaus.groovy.runtime.MethodClosure
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -13,10 +15,10 @@ class DockerResponseHandler {
 
   def jsonSlurper = new JsonSlurper()
 
-  def success
-  def statusLine
-  def completeResponse
-  def chunks = []
+  boolean success
+  StatusLine statusLine
+  String completeResponse
+  List<Map<String, String>> chunks = []
 
   def handleSuccess(HttpResponseDecorator response) {
     logger.info "success: $response.statusLine"
@@ -28,14 +30,14 @@ class DockerResponseHandler {
     handle(response)
   }
 
-  def handle(HttpResponseDecorator response) {
+  HttpResponse handle(HttpResponseDecorator response) {
     success = response.success
     statusLine = response.statusLine
     completeResponse = readResponseBody(response)
     return response
   }
 
-  def readResponseBody(HttpResponseDecorator response) {
+  String readResponseBody(HttpResponseDecorator response) {
     def completeResponse = ""
     if (response.entity) {
       def contentType = getContentType(response)
@@ -72,7 +74,7 @@ class DockerResponseHandler {
     return lastChunk
   }
 
-  def getContentType(response) {
+  String getContentType(response) {
 //    def contentTypeHeaders = response.headers."Content-Type"
     def contentTypeHeaders = ((HttpResponseDecorator) response).getHeaders("Content-Type")
     if (contentTypeHeaders.length == 0) {
@@ -89,7 +91,7 @@ class DockerResponseHandler {
     }
   }
 
-  def contentTypeReaders() {
+  Map<String, Closure> contentTypeReaders() {
     return [
         "application/vnd.docker.raw-stream": new MethodClosure(this, "readRawDockerStream"),
         "application/json"                 : new MethodClosure(this, "readJson"),
@@ -99,23 +101,23 @@ class DockerResponseHandler {
     ]
   }
 
-  def readJson(response) {
+  String readJson(response) {
     def content = response.entity.content
     def text = content.text
     text = "[${text.replaceAll("\\}[\n\r]*\\{", "},{")}]"
-    def parsedJson = jsonSlurper.parseText(text)
+    List<Map<String, String>> parsedJson = jsonSlurper.parseText(text)
     chunks.addAll(parsedJson)
     return text
   }
 
-  def readText(response) {
+  String readText(response) {
     def content = response.entity.content
     def text = content.text
     chunks << ['plain': text]
     return text
   }
 
-  def readRawDockerStream(response) {
+  String readRawDockerStream(response) {
     logger.warn("TODO: collect raw stream")
     return readText(response)
   }
