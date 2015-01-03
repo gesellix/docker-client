@@ -111,6 +111,45 @@ class DockerResponseHandlerSpec extends Specification {
     1 * responseHandler.readText(responseDecorator)
   }
 
+  def "readText reads plain text chunks"() {
+    when:
+    def result = responseHandler.readText(responseDecorator)
+    then:
+    1 * entity.content >> new ByteArrayInputStream("some plain text".bytes)
+    and:
+    1 * responseBase.getEntity() >> entity
+    and:
+    responseHandler.chunks == [[plain: "some plain text"]]
+    and:
+    result == "some plain text"
+  }
+
+  def "readJson reads single json chunk"() {
+    when:
+    def result = responseHandler.readJson(responseDecorator)
+    then:
+    1 * entity.content >> new ByteArrayInputStream("{\"key1\":\"value1\"}".bytes)
+    and:
+    1 * responseBase.getEntity() >> entity
+    and:
+    responseHandler.chunks == [[key1: "value1"]]
+    and:
+    result == "[{\"key1\":\"value1\"}]"
+  }
+
+  def "readJson reads multiple json chunks"() {
+    when:
+    def result = responseHandler.readJson(responseDecorator)
+    then:
+    1 * entity.content >> new ByteArrayInputStream("{\"key\":\"value\"}\n{\"key2\":\"valueX\"}".bytes)
+    and:
+    1 * responseBase.getEntity() >> entity
+    and:
+    responseHandler.chunks == [[key: "value"], [key2: "valueX"]]
+    and:
+    result == "[{\"key\":\"value\"},{\"key2\":\"valueX\"}]"
+  }
+
   def httpStatusWith(int statusCode) {
     return new BasicStatusLine(HttpVersion.HTTP_1_1, statusCode, "-> ${statusCode}")
   }

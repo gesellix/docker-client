@@ -102,8 +102,8 @@ class DockerResponseHandler {
   def readJson(response) {
     def content = response.entity.content
     def text = content.text
-    text = text.replaceAll("\\}[\n\r]*\\{", "},{")
-    def parsedJson = jsonSlurper.parseText("[$text]")
+    text = "[${text.replaceAll("\\}[\n\r]*\\{", "},{")}]"
+    def parsedJson = jsonSlurper.parseText(text)
     chunks.addAll(parsedJson)
     return text
   }
