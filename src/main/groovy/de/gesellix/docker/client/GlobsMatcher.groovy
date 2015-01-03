@@ -1,22 +1,23 @@
 package de.gesellix.docker.client
 
 import java.nio.file.FileSystems
+import java.nio.file.PathMatcher
 
 class GlobsMatcher {
 
-  def matchers
+  Map<String, PathMatcher> matchers
 
   GlobsMatcher(globs) {
     def fileSystem = FileSystems.getDefault()
-    matchers = globs.collect {
-      fileSystem.getPathMatcher("glob:$it")
+    matchers = globs.collectEntries {
+      ["glob:$it": fileSystem.getPathMatcher("glob:$it")]
     }
   }
 
   def matches(File base, File path) {
     def relativePath = base.toPath().relativize(path.toPath())
-    def result = matchers.find {
-      it.matches(relativePath)
+    def result = matchers.find { key, matcher ->
+      matcher.matches(relativePath) ? key : null
     }
     return result
   }

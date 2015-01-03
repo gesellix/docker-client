@@ -1,13 +1,12 @@
 package de.gesellix.docker.client
 
-import groovy.io.FileType
 import org.apache.commons.io.IOUtils
 
 class DockerignoreFileFilter {
 
-  def globsMatcher
+  GlobsMatcher globsMatcher
 
-  DockerignoreFileFilter(File base, additionalExcludes) {
+  DockerignoreFileFilter(File base, additionalExcludes = []) {
     def dockerignore = getDockerignorePatterns(base)
     dockerignore += ".dockerignore"
     additionalExcludes.each {
@@ -31,11 +30,14 @@ class DockerignoreFileFilter {
   def collectFiles(File base) {
     def files = []
 
-    base.eachFileRecurse(FileType.FILES, {
+    base.eachFileRecurse {
       if (!globsMatcher.matches(base, it)) {
         files << it
       }
-    })
-    return files
+    }
+
+    return files.findAll {
+      it.isFile()
+    }
   }
 }
