@@ -5,6 +5,7 @@ import groovyx.net.http.HttpResponseDecorator
 import org.apache.http.*
 import org.apache.http.message.BasicHeader
 import org.apache.http.message.BasicStatusLine
+import org.codehaus.groovy.runtime.MethodClosure
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -21,6 +22,9 @@ class DockerResponseHandlerSpec extends Specification {
   def setup() {
     responseBase = Mock(HttpResponse)
     _ * responseBase.statusLine >> httpStatusWith(HttpServletResponse.SC_OK)
+    _ * responseBase.getHeaders("Content-Type") >> contentTypeHeader(ContentType.ANY.toString())
+    _ * responseBase.entity >> entity
+    _ * entity.content >> new ByteArrayInputStream()
     responseDecorator = new HttpResponseDecorator(responseBase, null)
   }
 
@@ -61,6 +65,42 @@ class DockerResponseHandlerSpec extends Specification {
     1 * responseHandler.readResponseBody(responseDecorator) >> "complete response"
     and:
     responseHandler.completeResponse == "complete response"
+  }
+
+  def "readResponseBody returns empty response when entity is empty"() {
+    when:
+    def result = responseHandler.readResponseBody(responseDecorator)
+    then:
+    1 * responseBase.entity >> null
+    and:
+    result == ""
+  }
+
+  def "readResponseBody uses contentType reader when entity is not empty"() {
+    given:
+    def contentTypeReaders = ["test/example": new MethodClosure(new TestReader("expected result"), "read")]
+    when:
+    def result = responseHandler.readResponseBody(responseDecorator)
+    then:
+    1 * responseHandler.getContentType(responseDecorator) >> "test/example"
+    and:
+    1 * responseHandler.contentTypeReaders() >> contentTypeReaders
+    and:
+    result == "expected result"
+  }
+
+  def "readResponseBody throws Exception when contentType reader cannot be determined"() {
+    given:
+    def contentTypeReaders = ["test/example": new MethodClosure(new TestReader("expected result"), "read")]
+    when:
+    responseHandler.readResponseBody(responseDecorator)
+    then:
+    1 * responseHandler.getContentType(responseDecorator) >> "test/unknown"
+    and:
+    1 * responseHandler.contentTypeReaders() >> contentTypeReaders
+    and:
+    def exc = thrown(IllegalStateException)
+    exc.message == "no reader for 'test/unknown' found."
   }
 
   @Unroll
@@ -106,8 +146,6 @@ class DockerResponseHandlerSpec extends Specification {
     then:
     1 * entity.content >> new ByteArrayInputStream()
     and:
-    1 * responseBase.getEntity() >> entity
-    and:
     1 * responseHandler.readText(responseDecorator)
   }
 
@@ -116,8 +154,6 @@ class DockerResponseHandlerSpec extends Specification {
     def result = responseHandler.readText(responseDecorator)
     then:
     1 * entity.content >> new ByteArrayInputStream("some plain text".bytes)
-    and:
-    1 * responseBase.getEntity() >> entity
     and:
     responseHandler.chunks == [[plain: "some plain text"]]
     and:
@@ -130,8 +166,6 @@ class DockerResponseHandlerSpec extends Specification {
     then:
     1 * entity.content >> new ByteArrayInputStream("{\"key1\":\"value1\"}".bytes)
     and:
-    1 * responseBase.getEntity() >> entity
-    and:
     responseHandler.chunks == [[key1: "value1"]]
     and:
     result == "[{\"key1\":\"value1\"}]"
@@ -142,8 +176,6 @@ class DockerResponseHandlerSpec extends Specification {
     def result = responseHandler.readJson(responseDecorator)
     then:
     1 * entity.content >> new ByteArrayInputStream("{\"key\":\"value\"}\n{\"key2\":\"valueX\"}".bytes)
-    and:
-    1 * responseBase.getEntity() >> entity
     and:
     responseHandler.chunks == [[key: "value"], [key2: "valueX"]]
     and:
@@ -156,5 +188,18 @@ class DockerResponseHandlerSpec extends Specification {
 
   def contentTypeHeader(String value) {
     return new BasicHeader("Content-Type", value)
+  }
+
+  static class TestReader {
+
+    private Object expectedResult
+
+    TestReader(expectedResult) {
+      this.expectedResult = expectedResult
+    }
+
+    def read(response) {
+      return expectedResult
+    }
   }
 }
