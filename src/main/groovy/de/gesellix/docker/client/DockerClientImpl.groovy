@@ -381,12 +381,10 @@ class DockerClientImpl implements DockerClient {
     def stream = new TarArchiveInputStream(new BufferedInputStream(new ByteArrayInputStream(tarContent)))
 
     TarArchiveEntry entry = stream.nextTarEntry
-    assert entry
     logger.debug("entry size: ${entry.size}")
 
     def entryName = entry.name
     logger.debug("entry name: ${entryName}")
-    assert filename == entryName
 
     byte[] content = new byte[(int) entry.size]
     logger.debug("going to read ${content.length} bytes")
