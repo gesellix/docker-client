@@ -1,0 +1,151 @@
+!tape
+name: copy
+interactions:
+- recorded: 2015-01-04T12:42:56.010Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Sun, 04 Jan 2015 12:42:55 GMT
+    body: "{\"status\":\"The image you are pulling has been verified\",\"id\":\"busybox:latest\"}\r\n{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"df7546f9f060\"}{\"\
+      status\":\"Already exists\",\"progressDetail\":{},\"id\":\"ea13149945cb\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"4986bf8c1536\"}{\"status\":\"Status: Image is up to date for busybox:latest\"}\r\n"
+- recorded: 2015-01-04T12:42:56.091Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/images/4986bf8c1536/tag?repo=copy_container&tag=&force=false
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 201
+    headers:
+      Content-Type: text/plain; charset=utf-8
+      Date: Sun, 04 Jan 2015 12:42:56 GMT
+    body: ''
+- recorded: 2015-01-04T12:42:56.221Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/create?name=
+    headers:
+      Accept: '*/*'
+      Content-Length: '92'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+    body: '{"Cmd":["sh","-c","echo -n -e ''to be or\nnot to be'' > /file1.txt"],"Image":"copy_container"}'
+  response:
+    status: 201
+    headers:
+      Content-Type: application/json
+      Date: Sun, 04 Jan 2015 12:42:56 GMT
+    body: |
+      {"Id":"94315efc30d791f8ac730ace40c2b25ce76cc1f302a64b04737f47182b7e68bb","Warnings":null}
+- recorded: 2015-01-04T12:42:56.318Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/94315efc30d791f8ac730ace40c2b25ce76cc1f302a64b04737f47182b7e68bb/start
+    headers:
+      Accept: '*/*'
+      Content-Length: '2'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+    body: '{}'
+  response:
+    status: 204
+    headers:
+      Date: Sun, 04 Jan 2015 12:42:56 GMT
+- recorded: 2015-01-04T12:42:56.340Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/94315efc30d791f8ac730ace40c2b25ce76cc1f302a64b04737f47182b7e68bb/copy
+    headers:
+      Accept: '*/*'
+      Content-Length: '25'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+    body: '{"Resource":"/file1.txt"}'
+  response:
+    status: 200
+    headers:
+      Content-Type: application/x-tar
+      Date: Sun, 04 Jan 2015 12:42:56 GMT
+    body: !!binary |-
+      ZmlsZTEudHh0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAxMDA2NDQAMDAwMDAwMAAwMDAwMDAwADAwMDAwMDAwMDIyADEyNDUyMjMyNTIwADAxMDc3NQAgMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB1c3RhcgAwMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMDAwMDAwADAwMDAwMDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB0byBiZSBvcgpub3QgdG8gYmUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+- recorded: 2015-01-04T12:42:56.420Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/94315efc30d791f8ac730ace40c2b25ce76cc1f302a64b04737f47182b7e68bb/stop
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 304
+    headers:
+      Date: Sun, 04 Jan 2015 12:42:56 GMT
+- recorded: 2015-01-04T12:42:56.436Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/94315efc30d791f8ac730ace40c2b25ce76cc1f302a64b04737f47182b7e68bb/wait
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Sun, 04 Jan 2015 12:42:56 GMT
+    body: |
+      {"StatusCode":0}
+- recorded: 2015-01-04T12:42:56.466Z
+  request:
+    method: DELETE
+    uri: http://172.17.42.1:4243/containers/94315efc30d791f8ac730ace40c2b25ce76cc1f302a64b04737f47182b7e68bb
+    headers:
+      Accept: '*/*'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 204
+    headers:
+      Date: Sun, 04 Jan 2015 12:42:56 GMT
+- recorded: 2015-01-04T12:42:56.521Z
+  request:
+    method: DELETE
+    uri: http://172.17.42.1:4243/images/copy_container
+    headers:
+      Accept: '*/*'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+      Date: Sun, 04 Jan 2015 12:42:56 GMT
+    body: |-
+      [{"Untagged":"copy_container:latest"}
+      ]

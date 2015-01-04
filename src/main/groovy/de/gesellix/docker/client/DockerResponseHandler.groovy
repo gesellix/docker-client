@@ -3,6 +3,7 @@ package de.gesellix.docker.client
 import groovy.json.JsonSlurper
 import groovyx.net.http.ContentType
 import groovyx.net.http.HttpResponseDecorator
+import org.apache.commons.io.IOUtils
 import org.apache.http.HttpResponse
 import org.apache.http.StatusLine
 import org.codehaus.groovy.runtime.MethodClosure
@@ -61,16 +62,22 @@ class DockerResponseHandler {
     if (!success) {
       logger.warn("failed request")
       lastChunk = completeResponse ?: statusLine
+      logger.info "${lastChunk}"
     }
     else if (chunks) {
       logger.debug("find last chunk in: '${chunks}'")
       lastChunk = chunks.last()
+      if (lastChunk.raw) {
+        logger.debug "${lastChunk}"
+      }
+      else {
+        logger.info "${lastChunk}"
+      }
     }
     else {
       lastChunk = ""
+      logger.info "${lastChunk}"
     }
-
-    logger.info "${lastChunk}"
     return lastChunk
   }
 
@@ -94,6 +101,7 @@ class DockerResponseHandler {
   Map<String, Closure> contentTypeReaders() {
     return [
         "application/vnd.docker.raw-stream": new MethodClosure(this, "readRawDockerStream"),
+        "application/x-tar"                : new MethodClosure(this, "readTarStream"),
         "application/json"                 : new MethodClosure(this, "readJson"),
         "text/plain"                       : new MethodClosure(this, "readText"),
         "text/html"                        : new MethodClosure(this, "readText"),
@@ -117,8 +125,16 @@ class DockerResponseHandler {
     return text
   }
 
+  String readTarStream(response) {
+    logger.warn("TODO: stream tar response")
+    def content = response.entity.content
+    byte[] bytes = IOUtils.toByteArray(content as InputStream)
+    chunks << ['raw': bytes]
+    return bytes
+  }
+
   String readRawDockerStream(response) {
-    logger.warn("TODO: collect raw stream")
+    logger.warn("TODO: stream raw response")
     return readText(response)
   }
 }

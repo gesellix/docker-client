@@ -3,6 +3,8 @@ package de.gesellix.docker.client
 import groovy.json.JsonBuilder
 import groovyx.net.http.ContentType
 import groovyx.net.http.RESTClient
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.io.IOUtils
 import org.apache.http.client.HttpClient
 import org.codehaus.groovy.runtime.MethodClosure
@@ -350,5 +352,48 @@ class DockerClientImpl implements DockerClient {
     def execCreateResult = createExec(containerId, actualExecConfig)
     def execId = execCreateResult.Id
     return startExec(execId, actualExecConfig)
+  }
+
+  @Override
+  def copyFile(containerId, String filename) {
+    logger.info "copy '${filename}' from '${containerId}'"
+
+    def fileAsTar = copy(containerId, [Resource: filename])
+    return extractSingleTarEntry(fileAsTar as byte[], filename)
+  }
+
+  @Override
+  def copy(containerId, resourceBody) {
+    logger.info "docker cp ${containerId} ${resourceBody}"
+
+    getDelegate().post([path              : "/containers/${containerId}/copy".toString(),
+                        body              : resourceBody,
+                        requestContentType: ContentType.JSON])
+
+    if (responseHandler.statusLine?.statusCode == 404) {
+      logger.error("no such container ${containerId}")
+    }
+    responseHandler.ensureSuccessfulResponse(new IllegalStateException("docker cp failed"))
+    return responseHandler.lastChunk.raw
+  }
+
+  def extractSingleTarEntry(byte[] tarContent, String filename) {
+    def stream = new TarArchiveInputStream(new BufferedInputStream(new ByteArrayInputStream(tarContent)))
+
+    TarArchiveEntry entry = stream.nextTarEntry
+    assert entry
+    logger.debug("entry size: ${entry.size}")
+
+    def entryName = entry.name
+    logger.debug("entry name: ${entryName}")
+    assert filename == entryName
+
+    byte[] content = new byte[(int) entry.size]
+    logger.debug("going to read ${content.length} bytes")
+
+    stream.read(content, 0, content.length)
+    IOUtils.closeQuietly(stream)
+
+    return content
   }
 }

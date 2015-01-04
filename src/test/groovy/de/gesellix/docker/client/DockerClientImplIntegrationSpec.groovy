@@ -634,4 +634,30 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.wait(name)
     dockerClient.rm(name)
   }
+
+  @Betamax(tape = 'copy', match = [MatchRule.method, MatchRule.path])
+  def "copy"() {
+    given:
+    def imageId = dockerClient.pull("busybox", "latest")
+    def imageName = "copy_container"
+    def containerConfig = ["Cmd"  : ["sh", "-c", "echo -n -e 'to be or\nnot to be' > /file1.txt"],
+                           "Image": "copy_container"]
+    dockerClient.tag(imageId, imageName)
+    def containerInfo = dockerClient.run(imageName, containerConfig, [:])
+    def containerId = containerInfo.container.Id
+
+    when:
+    def tarContent = dockerClient.copy(containerId, [Resource: "/file1.txt"])
+
+    then:
+    def fileContent = dockerClient.extractSingleTarEntry(tarContent as byte[], "file1.txt")
+    and:
+    fileContent == "to be or\nnot to be".bytes
+
+    cleanup:
+    dockerClient.stop(containerId)
+    dockerClient.wait(containerId)
+    dockerClient.rm(containerId)
+    dockerClient.rmi(imageName)
+  }
 }

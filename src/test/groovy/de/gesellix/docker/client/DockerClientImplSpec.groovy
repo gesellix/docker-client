@@ -466,4 +466,40 @@ class DockerClientImplSpec extends Specification {
     then:
     1 * dockerClient.startContainer("container-id", [:])
   }
+
+  def "copy from container"() {
+    given:
+    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [raw: "tar".bytes]
+
+    when:
+    def result = dockerClient.copy("a-container", [Resource: "/file.txt"])
+
+    then:
+    1 * delegateMock.post([path              : "/containers/a-container/copy",
+                           body              : [Resource: "/file.txt"],
+                           requestContentType: ContentType.JSON]) >> new ByteArrayInputStream()
+    and:
+    result == "tar".bytes
+  }
+
+  def "copy file from container"() {
+    given:
+    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [raw: "file-content".bytes]
+
+    when:
+    def result = dockerClient.copyFile("a-container", "/file.txt")
+
+    then:
+    1 * delegateMock.post([path              : "/containers/a-container/copy",
+                           body              : [Resource: "/file.txt"],
+                           requestContentType: ContentType.JSON]) >> new ByteArrayInputStream()
+    and:
+    1 * dockerClient.extractSingleTarEntry(_ as byte[], "/file.txt") >> "file-content".bytes
+    and:
+    result == "file-content".bytes
+  }
 }
