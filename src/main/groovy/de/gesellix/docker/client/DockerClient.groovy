@@ -46,13 +46,11 @@ interface DockerClient {
 
   def startContainer(containerId)
 
-  def startContainer(containerId, hostConfig)
+  def run(fromImage, containerConfig)
 
-  def run(fromImage, containerConfig, hostConfig)
+  def run(fromImage, containerConfig, tag)
 
-  def run(fromImage, containerConfig, hostConfig, tag)
-
-  def run(fromImage, containerConfig, hostConfig, tag, name)
+  def run(fromImage, containerConfig, tag, name)
 
   def stop(containerId)
 

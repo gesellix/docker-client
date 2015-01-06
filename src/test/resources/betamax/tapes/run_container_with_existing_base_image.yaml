@@ -1,7 +1,7 @@
 !tape
 name: run container with existing base image
 interactions:
-- recorded: 2014-12-18T20:49:16.294Z
+- recorded: 2015-01-06T17:51:45.815Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=
@@ -17,29 +17,13 @@ interactions:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Thu, 18 Dec 2014 20:49:16 GMT
+      Date: Tue, 06 Jan 2015 17:51:45 GMT
     body: |
-      {"Id":"d6b593fd74e631bf51ade862226f7269f682929e7e994d04140a12fcea603513","Warnings":null}
-- recorded: 2014-12-18T20:49:16.399Z
+      {"Id":"f13388fe7ecffd80fb5ccb51e151067e6939998b4f8f409a1e656bd2bd9b4a6a","Warnings":null}
+- recorded: 2015-01-06T17:51:45.905Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/d6b593fd74e631bf51ade862226f7269f682929e7e994d04140a12fcea603513/start
-    headers:
-      Accept: '*/*'
-      Content-Length: '2'
-      Content-Type: application/json
-      Host: 172.17.42.1:4243
-      Proxy-Connection: Keep-Alive
-      User-Agent: Apache-HttpClient/4.3 (java 1.5)
-    body: '{}'
-  response:
-    status: 204
-    headers:
-      Date: Thu, 18 Dec 2014 20:49:16 GMT
-- recorded: 2014-12-18T20:49:16.490Z
-  request:
-    method: POST
-    uri: http://172.17.42.1:4243/containers/d6b593fd74e631bf51ade862226f7269f682929e7e994d04140a12fcea603513/stop
+    uri: http://172.17.42.1:4243/containers/f13388fe7ecffd80fb5ccb51e151067e6939998b4f8f409a1e656bd2bd9b4a6a/start
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -49,11 +33,25 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Thu, 18 Dec 2014 20:49:16 GMT
-- recorded: 2014-12-18T20:49:16.504Z
+      Date: Tue, 06 Jan 2015 17:51:45 GMT
+- recorded: 2015-01-06T17:51:45.973Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/d6b593fd74e631bf51ade862226f7269f682929e7e994d04140a12fcea603513/wait
+    uri: http://172.17.42.1:4243/containers/f13388fe7ecffd80fb5ccb51e151067e6939998b4f8f409a1e656bd2bd9b4a6a/stop
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 204
+    headers:
+      Date: Tue, 06 Jan 2015 17:51:45 GMT
+- recorded: 2015-01-06T17:51:45.988Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/f13388fe7ecffd80fb5ccb51e151067e6939998b4f8f409a1e656bd2bd9b4a6a/wait
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -64,13 +62,13 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Thu, 18 Dec 2014 20:49:16 GMT
+      Date: Tue, 06 Jan 2015 17:51:45 GMT
     body: |
       {"StatusCode":-1}
-- recorded: 2014-12-18T20:49:16.521Z
+- recorded: 2015-01-06T17:51:46.006Z
   request:
     method: DELETE
-    uri: http://172.17.42.1:4243/containers/d6b593fd74e631bf51ade862226f7269f682929e7e994d04140a12fcea603513
+    uri: http://172.17.42.1:4243/containers/f13388fe7ecffd80fb5ccb51e151067e6939998b4f8f409a1e656bd2bd9b4a6a
     headers:
       Accept: '*/*'
       Host: 172.17.42.1:4243
@@ -79,4 +77,4 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Thu, 18 Dec 2014 20:49:16 GMT
+      Date: Tue, 06 Jan 2015 17:51:46 GMT

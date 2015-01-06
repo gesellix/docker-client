@@ -206,19 +206,16 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def startContainer(containerId, hostConfig = [:]) {
+  def startContainer(containerId) {
     logger.info "docker start"
-    def actualHostConfig = [:] + hostConfig
-
     getDelegate().post([path              : "/containers/${containerId}/start".toString(),
-                        body              : actualHostConfig,
                         requestContentType: ContentType.JSON])
     return responseHandler.statusLine.statusCode
 //    return responseHandler.lastChunk
   }
 
   @Override
-  def run(fromImage, containerConfig, hostConfig, tag = "", name = "") {
+  def run(fromImage, containerConfig, tag = "", name = "") {
     logger.info "docker run"
 /*
     http://docs.docker.com/reference/api/docker_remote_api_v1.13/#31-inside-docker-run
@@ -238,7 +235,7 @@ class DockerClientImpl implements DockerClient {
     containerConfigWithImageName.Image = fromImage + (tag ? ":$tag" : "")
 
     def containerInfo = createContainer(containerConfigWithImageName, [name: name])
-    def result = startContainer(containerInfo.Id, hostConfig)
+    def result = startContainer(containerInfo.Id)
     return [
         container: containerInfo,
         status   : result

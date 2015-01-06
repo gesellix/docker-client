@@ -1,7 +1,7 @@
 !tape
 name: rm image with existing container
 interactions:
-- recorded: 2014-12-18T20:49:26.529Z
+- recorded: 2015-01-06T18:03:31.278Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
@@ -15,13 +15,13 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Thu, 18 Dec 2014 20:49:26 GMT
+      Date: Tue, 06 Jan 2015 18:03:31 GMT
     body: "{\"status\":\"The image you are pulling has been verified\",\"id\":\"busybox:latest\"}\r\n{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"df7546f9f060\"}{\"\
-      status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e433a6c5b276\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e72ac664f4f0\"}{\"status\":\"Status: Image is up to date for busybox:latest\"}\r\n"
-- recorded: 2014-12-18T20:49:26.544Z
+      status\":\"Already exists\",\"progressDetail\":{},\"id\":\"ea13149945cb\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"4986bf8c1536\"}{\"status\":\"Status: Image is up to date for busybox:latest\"}\r\n"
+- recorded: 2015-01-06T18:03:31.345Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/e72ac664f4f0/tag?repo=an_image_with_existing_container&tag=&force=false
+    uri: http://172.17.42.1:4243/images/4986bf8c1536/tag?repo=an_image_with_existing_container&tag=&force=true
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -32,9 +32,25 @@ interactions:
     status: 201
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Thu, 18 Dec 2014 20:49:26 GMT
+      Date: Tue, 06 Jan 2015 18:03:31 GMT
     body: ''
-- recorded: 2014-12-18T20:49:26.620Z
+- recorded: 2015-01-06T18:03:31.358Z
+  request:
+    method: DELETE
+    uri: http://172.17.42.1:4243/containers/another-example-name
+    headers:
+      Accept: '*/*'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 404
+    headers:
+      Content-Type: text/plain; charset=utf-8
+      Date: Tue, 06 Jan 2015 18:03:31 GMT
+    body: |
+      No such container: another-example-name
+- recorded: 2015-01-06T18:03:31.491Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=another-example-name
@@ -50,26 +66,24 @@ interactions:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Thu, 18 Dec 2014 20:49:26 GMT
+      Date: Tue, 06 Jan 2015 18:03:31 GMT
     body: |
-      {"Id":"4b7d1ffe4eeba4fed086ebff9f1801ae89cc0af04c3e35bd0c4a0198552392d4","Warnings":null}
-- recorded: 2014-12-18T20:49:26.716Z
+      {"Id":"988227b5a9c0902008b87ca4f7fa33eae653c1b9d537a3c8a837759966b77516","Warnings":null}
+- recorded: 2015-01-06T18:03:31.621Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/4b7d1ffe4eeba4fed086ebff9f1801ae89cc0af04c3e35bd0c4a0198552392d4/start
+    uri: http://172.17.42.1:4243/containers/988227b5a9c0902008b87ca4f7fa33eae653c1b9d537a3c8a837759966b77516/start
     headers:
       Accept: '*/*'
-      Content-Length: '2'
-      Content-Type: application/json
+      Content-Length: '0'
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
       User-Agent: Apache-HttpClient/4.3 (java 1.5)
-    body: '{}'
   response:
     status: 204
     headers:
-      Date: Thu, 18 Dec 2014 20:49:26 GMT
-- recorded: 2014-12-18T20:49:26.752Z
+      Date: Tue, 06 Jan 2015 18:03:31 GMT
+- recorded: 2015-01-06T18:03:31.671Z
   request:
     method: DELETE
     uri: http://172.17.42.1:4243/images/an_image_with_existing_container:latest
@@ -82,7 +96,7 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Thu, 18 Dec 2014 20:49:26 GMT
+      Date: Tue, 06 Jan 2015 18:03:31 GMT
     body: |-
       [{"Untagged":"an_image_with_existing_container:latest"}
       ]

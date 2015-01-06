@@ -1,7 +1,7 @@
 !tape
 name: stop container
 interactions:
-- recorded: 2014-12-18T20:49:18.720Z
+- recorded: 2015-01-06T17:51:48.206Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=
@@ -17,29 +17,13 @@ interactions:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Thu, 18 Dec 2014 20:49:18 GMT
+      Date: Tue, 06 Jan 2015 17:51:48 GMT
     body: |
-      {"Id":"516d85a5880049c76eee9ee7cf69e00954342723fa99535f40ecb74c1905468e","Warnings":null}
-- recorded: 2014-12-18T20:49:18.811Z
+      {"Id":"c88f03ae2efb82212fcb571d75c9e86963db571430ac15e87cf491bd03fc56a3","Warnings":null}
+- recorded: 2015-01-06T17:51:48.301Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/516d85a5880049c76eee9ee7cf69e00954342723fa99535f40ecb74c1905468e/start
-    headers:
-      Accept: '*/*'
-      Content-Length: '2'
-      Content-Type: application/json
-      Host: 172.17.42.1:4243
-      Proxy-Connection: Keep-Alive
-      User-Agent: Apache-HttpClient/4.3 (java 1.5)
-    body: '{}'
-  response:
-    status: 204
-    headers:
-      Date: Thu, 18 Dec 2014 20:49:18 GMT
-- recorded: 2014-12-18T20:49:18.882Z
-  request:
-    method: POST
-    uri: http://172.17.42.1:4243/containers/516d85a5880049c76eee9ee7cf69e00954342723fa99535f40ecb74c1905468e/stop
+    uri: http://172.17.42.1:4243/containers/c88f03ae2efb82212fcb571d75c9e86963db571430ac15e87cf491bd03fc56a3/start
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -49,4 +33,18 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Thu, 18 Dec 2014 20:49:18 GMT
+      Date: Tue, 06 Jan 2015 17:51:48 GMT
+- recorded: 2015-01-06T17:51:48.377Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/c88f03ae2efb82212fcb571d75c9e86963db571430ac15e87cf491bd03fc56a3/stop
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 204
+    headers:
+      Date: Tue, 06 Jan 2015 17:51:48 GMT

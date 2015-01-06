@@ -241,26 +241,26 @@ class DockerClientImplIntegrationSpec extends Specification {
     given:
     def imageId = dockerClient.pull("busybox", "latest")
     def imageName = "inspect_container"
-    def containerConfig = ["Cmd"  : ["true"],
-                           "Image": "inspect_container"]
-    def hostConfig = ["PublishAllPorts": true]
-    dockerClient.tag(imageId, imageName)
+    def containerConfig = ["Cmd"       : ["true"],
+                           "Image"     : "inspect_container",
+                           "HostConfig": ["PublishAllPorts": true]]
+    dockerClient.tag(imageId, imageName, true)
     def containerId = dockerClient.createContainer(containerConfig).Id
-    dockerClient.startContainer(containerId, hostConfig)
+    dockerClient.startContainer(containerId)
 
     when:
     def containerInspection = dockerClient.inspectContainer(containerId)
 
     then:
-    containerInspection.HostnamePath == "/var/lib/docker/containers/99b2bde755668a7c9a99422fb371a0a72c5d2baf218330aa4489469c4bf8325b/hostname"
+    containerInspection.HostnamePath == "/var/lib/docker/containers/8df1cd9509743fcdf66376bd9ce864cf2c6d81b37e07764adfedc8298d2cd78a/hostname"
     and:
     containerInspection.Config.Cmd == ["true"]
     and:
     containerInspection.Config.Image == "inspect_container"
     and:
-    containerInspection.Image == "e72ac664f4f0c6a061ac4ef332557a70d69b0c624b6add35f1c181ff7fff2287"
+    containerInspection.Image == "4986bf8c15363d1c5d15512d5266f8777bfba4974ac56e3270e7760f6f0a8125"
     and:
-    containerInspection.Id == "99b2bde755668a7c9a99422fb371a0a72c5d2baf218330aa4489469c4bf8325b"
+    containerInspection.Id == "8df1cd9509743fcdf66376bd9ce864cf2c6d81b37e07764adfedc8298d2cd78a"
 
     cleanup:
     dockerClient.stop(containerId)
@@ -400,10 +400,9 @@ class DockerClientImplIntegrationSpec extends Specification {
     def tag = "latest"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def containerConfig = ["Cmd": cmds]
-    def hostConfig = [:]
 
     when:
-    def containerStatus = dockerClient.run(imageName, containerConfig, hostConfig, tag)
+    def containerStatus = dockerClient.run(imageName, containerConfig, tag)
 
     then:
     containerStatus.status == 204
@@ -421,15 +420,15 @@ class DockerClientImplIntegrationSpec extends Specification {
     def tag = "latest"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def containerConfig = ["Cmd"       : cmds,
-                           ExposedPorts: ["4711/tcp": [:]]]
-    def hostConfig = ["PortBindings": [
-        "4711/tcp": [
-            ["HostIp"  : "0.0.0.0",
-             "HostPort": "4712"]]
-    ]]
+                           ExposedPorts: ["4711/tcp": [:]],
+                           "HostConfig": ["PortBindings": [
+                               "4711/tcp": [
+                                   ["HostIp"  : "0.0.0.0",
+                                    "HostPort": "4712"]]
+                           ]]]
 
     when:
-    def containerStatus = dockerClient.run(imageName, containerConfig, hostConfig, tag)
+    def containerStatus = dockerClient.run(imageName, containerConfig, tag)
 
     then:
     containerStatus.status == 204
@@ -453,11 +452,10 @@ class DockerClientImplIntegrationSpec extends Specification {
     def tag = "latest"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def containerConfig = ["Cmd": cmds]
-    def hostConfig = [:]
     def name = "example-name"
 
     when:
-    def containerStatus = dockerClient.run(imageName, containerConfig, hostConfig, tag, name)
+    def containerStatus = dockerClient.run(imageName, containerConfig, tag, name)
 
     then:
     containerStatus.status == 204
@@ -477,8 +475,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def tag = "latest"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def containerConfig = ["Cmd": cmds]
-    def hostConfig = [:]
-    def containerStatus = dockerClient.run(imageName, containerConfig, hostConfig, tag)
+    def containerStatus = dockerClient.run(imageName, containerConfig, tag)
 
     when:
     def result = dockerClient.stop(containerStatus.container.Id)
@@ -494,8 +491,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def tag = "latest"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def containerConfig = ["Cmd": cmds]
-    def hostConfig = [:]
-    def containerStatus = dockerClient.run(imageName, containerConfig, hostConfig, tag)
+    def containerStatus = dockerClient.run(imageName, containerConfig, tag)
     dockerClient.stop(containerStatus.container.Id)
 
     when:
@@ -557,12 +553,13 @@ class DockerClientImplIntegrationSpec extends Specification {
   def "rm image with existing container"() {
     given:
     def imageId = dockerClient.pull("busybox", "latest")
-    dockerClient.tag(imageId, "an_image_with_existing_container")
+    dockerClient.tag(imageId, "an_image_with_existing_container", true)
 
     def containerConfig = ["Cmd": ["true"]]
     def tag = "latest"
     def name = "another-example-name"
-    dockerClient.run("an_image_with_existing_container", containerConfig, [:], tag, name)
+    dockerClient.rm(name)
+    dockerClient.run("an_image_with_existing_container", containerConfig, tag, name)
 
     when:
     def rmImageResult = dockerClient.rmi("an_image_with_existing_container:latest")
@@ -578,9 +575,8 @@ class DockerClientImplIntegrationSpec extends Specification {
     def tag = "latest"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def containerConfig = ["Cmd": cmds]
-    def hostConfig = [:]
     def name = "create-exec"
-    def containerStatus = dockerClient.run(imageName, containerConfig, hostConfig, tag, name)
+    def containerStatus = dockerClient.run(imageName, containerConfig, tag, name)
 
     when:
     def execConfig = ["Cmd": [
@@ -604,9 +600,8 @@ class DockerClientImplIntegrationSpec extends Specification {
     def tag = "latest"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def containerConfig = ["Cmd": cmds]
-    def hostConfig = [:]
     def name = "start-exec"
-    def containerStatus = dockerClient.run(imageName, containerConfig, hostConfig, tag, name)
+    def containerStatus = dockerClient.run(imageName, containerConfig, tag, name)
     def containerId = containerStatus.container.Id
     def execCreateConfig = [
         "AttachStdin" : false,

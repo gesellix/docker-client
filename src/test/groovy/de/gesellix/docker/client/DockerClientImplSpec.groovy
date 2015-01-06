@@ -449,7 +449,6 @@ class DockerClientImplSpec extends Specification {
 
     then:
     1 * delegateMock.post([path              : "/containers/a-container/start",
-                           body              : [:],
                            requestContentType: ContentType.JSON])
   }
 
@@ -458,13 +457,13 @@ class DockerClientImplSpec extends Specification {
     dockerClient.responseHandler.statusLine >> Mock(StatusLine)
 
     when:
-    dockerClient.run("an-image", [:], [:])
+    dockerClient.run("an-image", [:])
 
     then:
     1 * dockerClient.createContainer(["Image": "an-image"], [name: ""]) >> [Id: "container-id"]
 
     then:
-    1 * dockerClient.startContainer("container-id", [:])
+    1 * dockerClient.startContainer("container-id")
   }
 
   def "copy from container"() {
