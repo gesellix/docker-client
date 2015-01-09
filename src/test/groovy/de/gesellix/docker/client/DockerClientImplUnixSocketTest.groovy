@@ -13,7 +13,8 @@ class DockerClientImplUnixSocketTest extends Specification {
   DockerClient dockerClient
 
   def setup() {
-    if (!defaultDockerSocket.exists()) {
+    if (true || !defaultDockerSocket.exists()) {
+      runDummyDaemon = true
       socketFile = new File(new File(System.getProperty("java.io.tmpdir")), "unixsocket-dummy.sock")
       socketFile.deleteOnExit()
     }
@@ -23,7 +24,7 @@ class DockerClientImplUnixSocketTest extends Specification {
 
   def "info via unix socket"() {
     given:
-    def responseBody = '{"Containers":2,"Images":42}'
+    def responseBody = '{"a-key":42,"another-key":4711}'
     def expectedResponse = [
         "HTTP/1.1 200 OK",
         "Content-Type: application/json",
@@ -47,8 +48,9 @@ class DockerClientImplUnixSocketTest extends Specification {
     def info = dockerClient.info()
 
     then:
-    info.Images >= 0
-    info.Containers >= 0
+//    info.Images >= 0
+//    info.Containers >= 0
+    info == ["a-key": 42, "another-key": 4711]
 
     cleanup:
     testserver?.stop()
