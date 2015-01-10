@@ -16,15 +16,15 @@ repositories {
 }
 ```
 
-Then, you need to add the dependency:
+Then, you need to add the dependency, but please ensure to use the [latest version](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion):
 
 ```
 dependencies {
-  compile 'de.gesellix:docker-client:2014-09-20T22-32-56'
+  compile 'de.gesellix:docker-client:2015-01-06T18-07-59'
 }
 ```
 
-The tests in `DockerClientImplSpec` should give you an idea how to use the docker-client.
+The tests in `DockerClientImplSpec` and `DockerClientImplIntegrationSpec` should give you an idea how to use the docker-client.
 
 ## Usage with Gradle-Docker-Plugin
 
