@@ -106,6 +106,10 @@ class DockerClientImplSpec extends Specification {
                            query             : ["rm": true],
                            body              : [42],
                            requestContentType: ContentType.BINARY])
+    and:
+    dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[0]?.message == "docker build failed"
+    }
   }
 
   def "build with query"() {
@@ -124,6 +128,10 @@ class DockerClientImplSpec extends Specification {
                            query             : ["rm": false],
                            body              : [42],
                            requestContentType: ContentType.BINARY])
+    and:
+    dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[0]?.message == "docker build failed"
+    }
   }
 
   def "tag with defaults"() {
@@ -218,6 +226,10 @@ class DockerClientImplSpec extends Specification {
                            query: [fromImage: "an-image",
                                    tag      : "",
                                    registry : ""]])
+    and:
+    dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[0]?.message == "docker pull failed"
+    }
   }
 
   def "pull with tag"() {
@@ -233,6 +245,10 @@ class DockerClientImplSpec extends Specification {
                            query: [fromImage: "an-image",
                                    tag      : "a-tag",
                                    registry : ""]])
+    and:
+    dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[0]?.message == "docker pull failed"
+    }
   }
 
   def "pull with registry"() {
@@ -248,6 +264,10 @@ class DockerClientImplSpec extends Specification {
                            query: [fromImage: "registry:port/an-image",
                                    tag      : "",
                                    registry : "registry:port"]])
+    and:
+    dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[0]?.message == "docker pull failed"
+    }
   }
 
   def "stop container"() {
@@ -363,6 +383,10 @@ class DockerClientImplSpec extends Specification {
     1 * delegateMock.post([path              : "/containers/a-container/exec",
                            body              : execCreateConfig,
                            requestContentType: ContentType.JSON])
+    and:
+    dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[0]?.message == "docker exec create failed"
+    }
   }
 
   def "start exec"() {
@@ -378,6 +402,10 @@ class DockerClientImplSpec extends Specification {
     1 * delegateMock.post([path              : "/exec/an-exec/start",
                            body              : execStartConfig,
                            requestContentType: ContentType.JSON])
+    and:
+    dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[0]?.message == "docker exec start failed"
+    }
   }
 
   def "exec"() {
