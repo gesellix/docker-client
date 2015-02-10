@@ -1,7 +1,7 @@
 !tape
 name: create container with unknown base image
 interactions:
-- recorded: 2014-12-18T20:49:12.578Z
+- recorded: 2015-02-10T22:53:38.079Z
   request:
     method: DELETE
     uri: http://172.17.42.1:4243/containers/example
@@ -13,30 +13,30 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Thu, 18 Dec 2014 20:49:12 GMT
-- recorded: 2014-12-18T20:49:12.591Z
+      Date: Tue, 10 Feb 2015 22:53:38 GMT
+- recorded: 2015-02-10T22:53:38.094Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=example
     headers:
       Accept: '*/*'
-      Content-Length: '41'
+      Content-Length: '66'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
       User-Agent: Apache-HttpClient/4.3 (java 1.5)
-    body: '{"Cmd":["true"],"Image":"busybox:unkown"}'
+    body: '{"Cmd":["true"],"Image":"gesellix/docker-client-testimage:unkown"}'
   response:
     status: 404
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Thu, 18 Dec 2014 20:49:12 GMT
+      Date: Tue, 10 Feb 2015 22:53:38 GMT
     body: |
-      No such image: busybox:unkown (tag: unkown)
-- recorded: 2014-12-18T20:49:14.447Z
+      No such image: gesellix/docker-client-testimage:unkown (tag: unkown)
+- recorded: 2015-02-10T22:53:39.219Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=unkown&registry=
+    uri: http://172.17.42.1:4243/images/create?fromImage=gesellix%2Fdocker-client-testimage&tag=unkown&registry=
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -47,5 +47,6 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Thu, 18 Dec 2014 20:49:13 GMT
-    body: "{\"status\":\"Pulling repository busybox\"}\r\n{\"errorDetail\":{\"message\":\"Tag unkown not found in repository busybox\"},\"error\":\"Tag unkown not found in repository busybox\"}\r\n"
+      Date: Tue, 10 Feb 2015 22:53:38 GMT
+    body: "{\"status\":\"Pulling repository gesellix/docker-client-testimage\"}\r\n{\"errorDetail\":{\"message\":\"Tag unkown not found in repository gesellix/docker-client-testimage\"},\"error\":\"Tag unkown not found in repository gesellix/docker-client-testimage\"\
+      }\r\n"

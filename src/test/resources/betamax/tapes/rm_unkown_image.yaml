@@ -1,7 +1,7 @@
 !tape
 name: rm unkown image
 interactions:
-- recorded: 2014-12-18T20:49:25.434Z
+- recorded: 2015-02-10T22:38:10.541Z
   request:
     method: DELETE
     uri: http://172.17.42.1:4243/images/an_unkown_image
@@ -14,6 +14,6 @@ interactions:
     status: 404
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Thu, 18 Dec 2014 20:49:25 GMT
+      Date: Tue, 10 Feb 2015 22:38:10 GMT
     body: |
       No such image: an_unkown_image

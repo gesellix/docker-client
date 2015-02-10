@@ -1,10 +1,10 @@
 !tape
 name: tag image
 interactions:
-- recorded: 2014-12-18T20:48:40.993Z
+- recorded: 2015-02-10T22:34:54.194Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/create?fromImage=scratch&tag=&registry=
+    uri: http://172.17.42.1:4243/images/create?fromImage=gesellix%2Fdocker-client-testimage&tag=latest&registry=
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -15,14 +15,19 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Thu, 18 Dec 2014 20:48:39 GMT
-    body: "{\"status\":\"Pulling repository scratch\"}\r\n{\"status\":\"Pulling image (latest) from scratch\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling image (latest) from scratch, endpoint: https://registry-1.docker.io/v1/\",\"progressDetail\"\
-      :{},\"id\":\"511136ea3c5a\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"\
-      id\":\"511136ea3c5a\"}{\"status\":\"Status: Image is up to date for scratch\"}\r\n"
-- recorded: 2014-12-18T20:48:41.035Z
+      Date: Tue, 10 Feb 2015 22:34:48 GMT
+    body: "{\"status\":\"Pulling repository gesellix/docker-client-testimage\"}\r\n{\"status\":\"Pulling image (latest) from gesellix/docker-client-testimage\",\"progressDetail\":{},\"id\":\"3eb19b6d9332\"}{\"status\":\"Pulling image (latest) from gesellix/docker-client-testimage,\
+      \ endpoint: https://registry-1.docker.io/v1/\",\"progressDetail\":{},\"id\":\"3eb19b6d9332\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"3eb19b6d9332\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"\
+      }{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"df7546f9f060\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"ea13149945cb\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"4986bf8c1536\"}{\"status\"\
+      :\"Pulling metadata\",\"progressDetail\":{},\"id\":\"3cac76e73e2b\"}{\"status\":\"Pulling fs layer\",\"progressDetail\":{},\"id\":\"3cac76e73e2b\"}{\"status\":\"Downloading\",\"progressDetail\":{\"current\":139,\"total\":139,\"start\":1423607692},\"progress\"\
+      :\"[==================================================\\u003e]    139 B/139 B\",\"id\":\"3cac76e73e2b\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"3cac76e73e2b\"}{\"status\":\"Pulling metadata\",\"progressDetail\":{},\"id\":\"3eb19b6d9332\"\
+      }{\"status\":\"Pulling fs layer\",\"progressDetail\":{},\"id\":\"3eb19b6d9332\"}{\"status\":\"Downloading\",\"progressDetail\":{\"current\":32,\"total\":32,\"start\":1423607694},\"progress\":\"[==================================================\\u003e]\
+      \     32 B/32 B\",\"id\":\"3eb19b6d9332\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"3eb19b6d9332\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"3eb19b6d9332\"}{\"status\":\"Status: Downloaded newer image for gesellix/docker-client-testimage:latest\"\
+      }\r\n"
+- recorded: 2015-02-10T22:34:54.225Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/511136ea3c5a/tag?repo=yetAnotherTag&tag=&force=false
+    uri: http://172.17.42.1:4243/images/3eb19b6d9332/tag?repo=yetAnotherTag&tag=&force=false
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -33,9 +38,9 @@ interactions:
     status: 201
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Thu, 18 Dec 2014 20:48:41 GMT
+      Date: Tue, 10 Feb 2015 22:34:54 GMT
     body: ''
-- recorded: 2014-12-27T11:56:57.409Z
+- recorded: 2015-02-10T22:34:54.291Z
   request:
     method: DELETE
     uri: http://172.17.42.1:4243/images/yetAnotherTag
@@ -48,7 +53,7 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Sat, 27 Dec 2014 11:56:57 GMT
+      Date: Tue, 10 Feb 2015 22:34:54 GMT
     body: |-
       [{"Untagged":"yetAnotherTag:latest"}
       ]

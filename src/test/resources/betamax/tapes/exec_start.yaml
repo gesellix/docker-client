@@ -1,29 +1,29 @@
 !tape
 name: exec start
 interactions:
-- recorded: 2015-01-06T17:49:19.414Z
+- recorded: 2015-02-10T22:38:14.426Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=start-exec
     headers:
       Accept: '*/*'
-      Content-Length: '61'
+      Content-Length: '86'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
       User-Agent: Apache-HttpClient/4.3 (java 1.5)
-    body: '{"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"busybox:latest"}'
+    body: '{"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"gesellix/docker-client-testimage:latest"}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Tue, 06 Jan 2015 17:49:19 GMT
+      Date: Tue, 10 Feb 2015 22:38:14 GMT
     body: |
-      {"Id":"7e4863e65de1ebfb0622554dd8cdf2517689b8509c6bc03e1ad11510fb4cf1f3","Warnings":null}
-- recorded: 2015-01-06T17:49:19.517Z
+      {"Id":"9b99c5af5930d1d61cbde3c6993c7b7bcccfd595d25537f4de5b7d26af9c725f","Warnings":null}
+- recorded: 2015-02-10T22:38:14.514Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/7e4863e65de1ebfb0622554dd8cdf2517689b8509c6bc03e1ad11510fb4cf1f3/start
+    uri: http://172.17.42.1:4243/containers/9b99c5af5930d1d61cbde3c6993c7b7bcccfd595d25537f4de5b7d26af9c725f/start
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -33,11 +33,11 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Tue, 06 Jan 2015 17:49:19 GMT
-- recorded: 2015-01-06T17:49:19.531Z
+      Date: Tue, 10 Feb 2015 22:38:14 GMT
+- recorded: 2015-02-10T22:38:14.534Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/7e4863e65de1ebfb0622554dd8cdf2517689b8509c6bc03e1ad11510fb4cf1f3/exec
+    uri: http://172.17.42.1:4243/containers/9b99c5af5930d1d61cbde3c6993c7b7bcccfd595d25537f4de5b7d26af9c725f/exec
     headers:
       Accept: '*/*'
       Content-Length: '99'
@@ -50,13 +50,13 @@ interactions:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Tue, 06 Jan 2015 17:49:19 GMT
+      Date: Tue, 10 Feb 2015 22:38:14 GMT
     body: |
-      {"Id":"c8647996cc07f865883f0ae7ddca478f62b11cb263a86bd12071ed0d537a807e"}
-- recorded: 2015-01-06T17:49:19.574Z
+      {"Id":"c38ee9b130903fbbe6c3d4db5b327b6b7555fdf2e0273dc89a8ec5ca946e2b57"}
+- recorded: 2015-02-10T22:38:14.571Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/exec/c8647996cc07f865883f0ae7ddca478f62b11cb263a86bd12071ed0d537a807e/start
+    uri: http://172.17.42.1:4243/exec/c38ee9b130903fbbe6c3d4db5b327b6b7555fdf2e0273dc89a8ec5ca946e2b57/start
     headers:
       Accept: '*/*'
       Content-Length: '28'
@@ -70,8 +70,8 @@ interactions:
     headers:
       Content-Type: application/vnd.docker.raw-stream
     body: !!binary |-
-      AQAAAAAABpp0b3RhbCA1NgogICAgICAyICAgICAgNCBkcnd4ci14ci14ICAgMjUgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBKYW4gIDYgMTc6NDkgLgogICAgICAyICAgICAgNCBkcnd4ci14ci14ICAgMjUgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBKYW4gIDYgMTc6NDkgLi4KICAgICA0NyAgICAgIDAgLXJ3eHIteHIteCAgICAxIHJvb3QgICAgIHJvb3QgICAgICAgICAgIDAgSmFuICA2IDE3OjQ5IC5kb2NrZXJlbnYKICAgICA0OCAgICAgIDAgLXJ3eHIteHIteCAgICAxIHJvb3QgICAgIHJvb3QgICAgICAgICAgIDAgSmFuICA2IDE3OjQ5IC5kb2NrZXJpbml0CiAgICAgMjQgICAgICA0IGRyd3hyd3hyLXggICAgMiByb290ICAgICByb290ICAgICAgICA0LjBLIE1heSAyMiAgMjAxNCBiaW4KIDE0MjA3MiAgICAgIDAgZHJ3eHIteHIteCAgICA1IHJvb3QgICAgIHJvb3QgICAgICAgICAzNjAgSmFuICA2IDE3OjQ5IGRldgogICAgIDE0ICAgICAgNCBkcnd4ci14ci14ICAgIDYgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBKYW4gIDYgMTc6NDkgZXRjCiAgICAgNTUgICAgICA0IGRyd3hyd3hyLXggICAgNCByb290ICAgICByb290ICAgICAgICA0LjBLIE1heSAyMiAgMjAxNCBob21lCiAgICAgMjcgICAgICA0IGRyd3hyd3hyLXggICAgMiByb290ICAgICByb290ICAgICAgICA0LjBLIE1heSAyMiAgMjAxNCBsaWIKICAgICA1MiAgICAgIDAgbHJ3eHJ3eHJ3eCAgICAxIHJvb3QgICAgIHJvb3QgICAgICAgICAgIDMgTWF5IDIyICAyMDE0IGxpYjY0IC0+IGxpYgogICAgIDUzICAgICAgMCBscnd4cnd4cnd4ICAgIDEgcm9vdCAgICAgcm9vdCAgICAgICAgICAxMSBNYXkgMjIgIDIwMTQgbGludXhyYyAtPiBiaW4vYnVzeWJveAogICAgIDU3ICAgICAgNCBkcnd4cnd4ci14ICAgIDIgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBGZWIgMjcgIDIwMTQgbWVkaWEKICAgICA1NCAgICAgIDQgZHJ3eHJ3eHIteCAgICAyIHJvb3QgICAgIHJvb3QgICAgICAgIDQuMEsgRmViIDI3ICAyMDE0IG1udAogICAgIDU4ICAgICAgNCBkcnd4cnd4ci14ICAgIDIgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBGZWIgMjcgIDIwMTQgb3B0CiAgICAgIDEgICAgICAwIGRyLXhyLXhyLXggIDM1NyByb290ICAgICByb290ICAgICAgICAgICAwIEphbiAgNiAxNzo0OSBwcm9jCiAgICAgNTYgICAgICA0IGRyd3gtLS0tLS0gICAgMiByb290ICAgICByb290ICAgICAgICA0LjBLIEZlYiAyNyAgMjAxNCByb290CiAgICAgNTEgICAgICAwIGxyd3hyd3hyd3ggICAgMSByb290ICAgICByb290ICAgICAgICAgICAzIEZlYiAyNyAgMjAxNCBydW4gLT4gdG1wCiAgICAgMjMgICAgICA0IGRyd3hyLXhyLXggICAgMiByb290ICAgICByb290ICAgICAgICA0LjBLIE1heSAyMiAgMjAxNCBzYmluCiAgICAgIDEgICAgICAwIGRyLXhyLXhyLXggICAxMyByb290ICAgICByb290ICAgICAgICAgICAwIEphbiAgNiAxNzo0OSBzeXMKICAgICA1MCAgICAgIDQgZHJ3eHJ3eHJ3dCAgICAzIHJvb3QgICAgIHJvb3QgICAgICAgIDQuMEsgTWF5IDIyICAyMDE0IHRtcAogICAgIDIwICAgICAgNCBkcnd4cnd4ci14ICAgIDYgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBNYXkgMjIgIDIwMTQgdXNyCiAgICAgNDkgICAgICA0IGRyd3hyd3hyLXggICAgNCByb290ICAgICByb290ICAgICAgICA0LjBLIE1heSAyMiAgMjAxNCB2YXIK
-- recorded: 2015-01-06T17:49:19.661Z
+      AQAAAAAABux0b3RhbCA2MAogICAgICAyICAgICAgNCBkcnd4ci14ci14ICAgMjUgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBGZWIgMTAgMjI6MzggLgogICAgICAyICAgICAgNCBkcnd4ci14ci14ICAgMjUgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBGZWIgMTAgMjI6MzggLi4KICAgICAzNSAgICAgIDAgLXJ3eHIteHIteCAgICAxIHJvb3QgICAgIHJvb3QgICAgICAgICAgIDAgRmViIDEwIDIyOjM4IC5kb2NrZXJlbnYKICAgICAzNiAgICAgIDAgLXJ3eHIteHIteCAgICAxIHJvb3QgICAgIHJvb3QgICAgICAgICAgIDAgRmViIDEwIDIyOjM4IC5kb2NrZXJpbml0CiAgICAgMjQgICAgICA0IGRyd3hyd3hyLXggICAgMiByb290ICAgICByb290ICAgICAgICA0LjBLIE1heSAyMiAgMjAxNCBiaW4KIDQzNjEwOSAgICAgIDAgZHJ3eHIteHIteCAgICA1IHJvb3QgICAgIHJvb3QgICAgICAgICAzNjAgRmViIDEwIDIyOjM4IGRldgogICAgIDE0ICAgICAgNCBkcnd4ci14ci14ICAgIDYgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBGZWIgMTAgMjI6MzggZXRjCiAgICAgMzcgICAgICA0IC1ydy1yLS1yLS0gICAgMSByb290ICAgICByb290ICAgICAgICAgIDE5IEZlYiAxMCAyMjozMSBnYXR0YWNhLnR4dAogICAgIDQ0ICAgICAgNCBkcnd4cnd4ci14ICAgIDQgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBNYXkgMjIgIDIwMTQgaG9tZQogICAgIDI3ICAgICAgNCBkcnd4cnd4ci14ICAgIDIgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBNYXkgMjIgIDIwMTQgbGliCiAgICAgNDEgICAgICAwIGxyd3hyd3hyd3ggICAgMSByb290ICAgICByb290ICAgICAgICAgICAzIE1heSAyMiAgMjAxNCBsaWI2NCAtPiBsaWIKICAgICA0MiAgICAgIDAgbHJ3eHJ3eHJ3eCAgICAxIHJvb3QgICAgIHJvb3QgICAgICAgICAgMTEgTWF5IDIyICAyMDE0IGxpbnV4cmMgLT4gYmluL2J1c3lib3gKICAgICA0NiAgICAgIDQgZHJ3eHJ3eHIteCAgICAyIHJvb3QgICAgIHJvb3QgICAgICAgIDQuMEsgRmViIDI3ICAyMDE0IG1lZGlhCiAgICAgNDMgICAgICA0IGRyd3hyd3hyLXggICAgMiByb290ICAgICByb290ICAgICAgICA0LjBLIEZlYiAyNyAgMjAxNCBtbnQKICAgICA0NyAgICAgIDQgZHJ3eHJ3eHIteCAgICAyIHJvb3QgICAgIHJvb3QgICAgICAgIDQuMEsgRmViIDI3ICAyMDE0IG9wdAogICAgICAxICAgICAgMCBkci14ci14ci14ICAzNzYgcm9vdCAgICAgcm9vdCAgICAgICAgICAgMCBGZWIgMTAgMjI6MzggcHJvYwogICAgIDQ1ICAgICAgNCBkcnd4LS0tLS0tICAgIDIgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBGZWIgMjcgIDIwMTQgcm9vdAogICAgIDQwICAgICAgMCBscnd4cnd4cnd4ICAgIDEgcm9vdCAgICAgcm9vdCAgICAgICAgICAgMyBGZWIgMjcgIDIwMTQgcnVuIC0+IHRtcAogICAgIDIzICAgICAgNCBkcnd4ci14ci14ICAgIDIgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBNYXkgMjIgIDIwMTQgc2JpbgogICAgICAxICAgICAgMCBkci14ci14ci14ICAgMTMgcm9vdCAgICAgcm9vdCAgICAgICAgICAgMCBGZWIgMTAgMjI6Mzggc3lzCiAgICAgMzkgICAgICA0IGRyd3hyd3hyd3QgICAgMyByb290ICAgICByb290ICAgICAgICA0LjBLIE1heSAyMiAgMjAxNCB0bXAKICAgICAyMCAgICAgIDQgZHJ3eHJ3eHIteCAgICA2IHJvb3QgICAgIHJvb3QgICAgICAgIDQuMEsgTWF5IDIyICAyMDE0IHVzcgogICAgIDM4ICAgICAgNCBkcnd4cnd4ci14ICAgIDQgcm9vdCAgICAgcm9vdCAgICAgICAgNC4wSyBNYXkgMjIgIDIwMTQgdmFyCg==
+- recorded: 2015-02-10T22:38:14.650Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/start-exec/stop
@@ -84,8 +84,8 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Tue, 06 Jan 2015 17:49:19 GMT
-- recorded: 2015-01-06T17:49:19.677Z
+      Date: Tue, 10 Feb 2015 22:38:14 GMT
+- recorded: 2015-02-10T22:38:14.661Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/start-exec/wait
@@ -99,10 +99,10 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Tue, 06 Jan 2015 17:49:19 GMT
+      Date: Tue, 10 Feb 2015 22:38:14 GMT
     body: |
-      {"StatusCode":-1}
-- recorded: 2015-01-06T17:49:19.695Z
+      {"StatusCode":137}
+- recorded: 2015-02-10T22:38:14.681Z
   request:
     method: DELETE
     uri: http://172.17.42.1:4243/containers/start-exec
@@ -114,4 +114,4 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Tue, 06 Jan 2015 17:49:19 GMT
+      Date: Tue, 10 Feb 2015 22:38:14 GMT

@@ -529,4 +529,16 @@ class DockerClientImplSpec extends Specification {
     and:
     result == "file-content".bytes
   }
+
+  def "rename container"() {
+    given:
+    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
+
+    when:
+    dockerClient.rename("an-old-container", "a-new-container-name")
+
+    then:
+    1 * delegateMock.post([path : "/containers/an-old-container/rename",
+                           query: [name: "a-new-container-name"]]) >> [statusLine: [:]]
+  }
 }

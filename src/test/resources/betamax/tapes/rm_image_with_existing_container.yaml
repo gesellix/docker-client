@@ -1,10 +1,10 @@
 !tape
 name: rm image with existing container
 interactions:
-- recorded: 2015-01-06T18:03:31.278Z
+- recorded: 2015-02-10T22:38:12.782Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
+    uri: http://172.17.42.1:4243/images/create?fromImage=gesellix%2Fdocker-client-testimage&tag=latest&registry=
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -15,13 +15,16 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Tue, 06 Jan 2015 18:03:31 GMT
-    body: "{\"status\":\"The image you are pulling has been verified\",\"id\":\"busybox:latest\"}\r\n{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"df7546f9f060\"}{\"\
-      status\":\"Already exists\",\"progressDetail\":{},\"id\":\"ea13149945cb\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"4986bf8c1536\"}{\"status\":\"Status: Image is up to date for busybox:latest\"}\r\n"
-- recorded: 2015-01-06T18:03:31.345Z
+      Date: Tue, 10 Feb 2015 22:38:11 GMT
+    body: "{\"status\":\"Pulling repository gesellix/docker-client-testimage\"}\r\n{\"status\":\"Pulling image (latest) from gesellix/docker-client-testimage\",\"progressDetail\":{},\"id\":\"3eb19b6d9332\"}{\"status\":\"Pulling image (latest) from gesellix/docker-client-testimage,\
+      \ endpoint: https://registry-1.docker.io/v1/\",\"progressDetail\":{},\"id\":\"3eb19b6d9332\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"3eb19b6d9332\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"\
+      }{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"df7546f9f060\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"ea13149945cb\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"4986bf8c1536\"}{\"status\"\
+      :\"Download complete\",\"progressDetail\":{},\"id\":\"3cac76e73e2b\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"3eb19b6d9332\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"3eb19b6d9332\"}{\"status\":\"Status: Image\
+      \ is up to date for gesellix/docker-client-testimage:latest\"}\r\n"
+- recorded: 2015-02-10T22:38:12.804Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/4986bf8c1536/tag?repo=an_image_with_existing_container&tag=&force=true
+    uri: http://172.17.42.1:4243/images/3eb19b6d9332/tag?repo=an_image_with_existing_container&tag=&force=true
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -32,9 +35,9 @@ interactions:
     status: 201
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Tue, 06 Jan 2015 18:03:31 GMT
+      Date: Tue, 10 Feb 2015 22:38:12 GMT
     body: ''
-- recorded: 2015-01-06T18:03:31.358Z
+- recorded: 2015-02-10T22:38:12.816Z
   request:
     method: DELETE
     uri: http://172.17.42.1:4243/containers/another-example-name
@@ -47,10 +50,10 @@ interactions:
     status: 404
     headers:
       Content-Type: text/plain; charset=utf-8
-      Date: Tue, 06 Jan 2015 18:03:31 GMT
+      Date: Tue, 10 Feb 2015 22:38:12 GMT
     body: |
       No such container: another-example-name
-- recorded: 2015-01-06T18:03:31.491Z
+- recorded: 2015-02-10T22:38:12.874Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=another-example-name
@@ -66,13 +69,13 @@ interactions:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Tue, 06 Jan 2015 18:03:31 GMT
+      Date: Tue, 10 Feb 2015 22:38:12 GMT
     body: |
-      {"Id":"988227b5a9c0902008b87ca4f7fa33eae653c1b9d537a3c8a837759966b77516","Warnings":null}
-- recorded: 2015-01-06T18:03:31.621Z
+      {"Id":"3c2c429472c18171a1705701f69dc83c64f861e0554bc38b34459fe09b8b0b3c","Warnings":null}
+- recorded: 2015-02-10T22:38:12.958Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/988227b5a9c0902008b87ca4f7fa33eae653c1b9d537a3c8a837759966b77516/start
+    uri: http://172.17.42.1:4243/containers/3c2c429472c18171a1705701f69dc83c64f861e0554bc38b34459fe09b8b0b3c/start
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -82,8 +85,8 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Tue, 06 Jan 2015 18:03:31 GMT
-- recorded: 2015-01-06T18:03:31.671Z
+      Date: Tue, 10 Feb 2015 22:38:12 GMT
+- recorded: 2015-02-10T22:38:13.026Z
   request:
     method: DELETE
     uri: http://172.17.42.1:4243/images/an_image_with_existing_container:latest
@@ -96,7 +99,7 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Tue, 06 Jan 2015 18:03:31 GMT
+      Date: Tue, 10 Feb 2015 22:38:13 GMT
     body: |-
       [{"Untagged":"an_image_with_existing_container:latest"}
       ]

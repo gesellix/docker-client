@@ -120,6 +120,7 @@ class DockerClientImpl implements DockerClient {
                         query  : [registry: registry,
                                   tag     : repoAndTag.tag],
                         headers: ["X-Registry-Auth": authBase64Encoded ?: "."]])
+    responseHandler.ensureSuccessfulResponse(new IllegalStateException("docker push failed"))
     return responseHandler.lastChunk
   }
 
@@ -372,6 +373,14 @@ class DockerClientImpl implements DockerClient {
     }
     responseHandler.ensureSuccessfulResponse(new IllegalStateException("docker cp failed"))
     return responseHandler.lastChunk.raw
+  }
+
+  @Override
+  def rename(containerId, newName) {
+    logger.info "docker rename"
+    getDelegate().post([path : "/containers/${containerId}/rename".toString(),
+                        query: [name: newName]])
+    return responseHandler.statusLine.statusCode
   }
 
   def extractSingleTarEntry(byte[] tarContent, String filename) {

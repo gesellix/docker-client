@@ -1,29 +1,29 @@
 !tape
 name: run container with name
 interactions:
-- recorded: 2015-01-06T17:51:47.426Z
+- recorded: 2015-02-10T22:38:02.830Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=example-name
     headers:
       Accept: '*/*'
-      Content-Length: '61'
+      Content-Length: '86'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
       User-Agent: Apache-HttpClient/4.3 (java 1.5)
-    body: '{"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"busybox:latest"}'
+    body: '{"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"gesellix/docker-client-testimage:latest"}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Tue, 06 Jan 2015 17:51:47 GMT
+      Date: Tue, 10 Feb 2015 22:38:02 GMT
     body: |
-      {"Id":"1393a8e846412e4d272812319ec420419bb98a307868a6f56e2e4cdd9345706a","Warnings":null}
-- recorded: 2015-01-06T17:51:47.532Z
+      {"Id":"6b40e2874da0826b370c93b71a818d5f9698a50dba965df32c14a5cad69c195b","Warnings":null}
+- recorded: 2015-02-10T22:38:02.930Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/1393a8e846412e4d272812319ec420419bb98a307868a6f56e2e4cdd9345706a/start
+    uri: http://172.17.42.1:4243/containers/6b40e2874da0826b370c93b71a818d5f9698a50dba965df32c14a5cad69c195b/start
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -33,8 +33,8 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Tue, 06 Jan 2015 17:51:47 GMT
-- recorded: 2015-01-06T17:51:47.547Z
+      Date: Tue, 10 Feb 2015 22:38:02 GMT
+- recorded: 2015-02-10T22:38:02.944Z
   request:
     method: GET
     uri: http://172.17.42.1:4243/containers/json?all=true&size=false
@@ -47,14 +47,14 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Tue, 06 Jan 2015 17:51:47 GMT
+      Date: Tue, 10 Feb 2015 22:38:02 GMT
     body: |-
-      [{"Command":"sh -c 'ping 127.0.0.1'","Created":1420566707,"Id":"1393a8e846412e4d272812319ec420419bb98a307868a6f56e2e4cdd9345706a","Image":"busybox:latest","Names":["/example-name"],"Ports":[],"Status":"Up Less than a second"}
+      [{"Command":"sh -c 'ping 127.0.0.1'","Created":1423607882,"Id":"6b40e2874da0826b370c93b71a818d5f9698a50dba965df32c14a5cad69c195b","Image":"gesellix/docker-client-testimage:latest","Names":["/example-name"],"Ports":[],"Status":"Up Less than a second"}
       ]
-- recorded: 2015-01-06T17:51:47.621Z
+- recorded: 2015-02-10T22:38:03.029Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/1393a8e846412e4d272812319ec420419bb98a307868a6f56e2e4cdd9345706a/stop
+    uri: http://172.17.42.1:4243/containers/6b40e2874da0826b370c93b71a818d5f9698a50dba965df32c14a5cad69c195b/stop
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -64,4 +64,4 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Tue, 06 Jan 2015 17:51:47 GMT
+      Date: Tue, 10 Feb 2015 22:38:03 GMT

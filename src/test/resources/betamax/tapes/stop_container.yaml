@@ -1,29 +1,29 @@
 !tape
 name: stop container
 interactions:
-- recorded: 2015-01-06T17:51:48.206Z
+- recorded: 2015-02-10T22:38:03.674Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=
     headers:
       Accept: '*/*'
-      Content-Length: '61'
+      Content-Length: '86'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
       User-Agent: Apache-HttpClient/4.3 (java 1.5)
-    body: '{"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"busybox:latest"}'
+    body: '{"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"gesellix/docker-client-testimage:latest"}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Tue, 06 Jan 2015 17:51:48 GMT
+      Date: Tue, 10 Feb 2015 22:38:03 GMT
     body: |
-      {"Id":"c88f03ae2efb82212fcb571d75c9e86963db571430ac15e87cf491bd03fc56a3","Warnings":null}
-- recorded: 2015-01-06T17:51:48.301Z
+      {"Id":"11c284e220133b4cd8933b78584bc20631c0fd4d461803b09d6361b6ef0e14d0","Warnings":null}
+- recorded: 2015-02-10T22:38:03.787Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/c88f03ae2efb82212fcb571d75c9e86963db571430ac15e87cf491bd03fc56a3/start
+    uri: http://172.17.42.1:4243/containers/11c284e220133b4cd8933b78584bc20631c0fd4d461803b09d6361b6ef0e14d0/start
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -33,11 +33,11 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Tue, 06 Jan 2015 17:51:48 GMT
-- recorded: 2015-01-06T17:51:48.377Z
+      Date: Tue, 10 Feb 2015 22:38:03 GMT
+- recorded: 2015-02-10T22:38:03.874Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/c88f03ae2efb82212fcb571d75c9e86963db571430ac15e87cf491bd03fc56a3/stop
+    uri: http://172.17.42.1:4243/containers/11c284e220133b4cd8933b78584bc20631c0fd4d461803b09d6361b6ef0e14d0/stop
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -47,4 +47,4 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Tue, 06 Jan 2015 17:51:48 GMT
+      Date: Tue, 10 Feb 2015 22:38:03 GMT

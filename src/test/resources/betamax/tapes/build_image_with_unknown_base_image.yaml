@@ -1,7 +1,7 @@
 !tape
 name: build image with unknown base image
 interactions:
-- recorded: 2014-12-18T20:48:37.794Z
+- recorded: 2015-02-10T22:34:48.021Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/build?rm=true
@@ -18,6 +18,6 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Thu, 18 Dec 2014 20:48:35 GMT
+      Date: Tue, 10 Feb 2015 22:34:43 GMT
     body: "{\"stream\":\"Step 0 : FROM localhost:5000/missing/image\\n\"}\r\n{\"status\":\"Pulling repository localhost:5000/missing/image\"}\r\n{\"errorDetail\":{\"message\":\"Error: image missing/image:latest not found\"},\"error\":\"Error: image missing/image:latest\
       \ not found\"}\r\n"

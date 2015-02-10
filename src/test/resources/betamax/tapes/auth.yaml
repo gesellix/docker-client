@@ -1,7 +1,7 @@
 !tape
 name: auth
 interactions:
-- recorded: 2014-12-18T20:56:48.797Z
+- recorded: 2015-02-10T22:00:33.401Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/auth
@@ -17,6 +17,6 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Thu, 18 Dec 2014 20:56:48 GMT
+      Date: Tue, 10 Feb 2015 22:00:33 GMT
     body: |
       {"Status":"Login Succeeded"}

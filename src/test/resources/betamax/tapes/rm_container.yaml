@@ -1,10 +1,10 @@
 !tape
 name: rm container
 interactions:
-- recorded: 2014-12-18T20:49:20.725Z
+- recorded: 2015-02-10T22:38:07.013Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/images/create?fromImage=busybox&tag=latest&registry=
+    uri: http://172.17.42.1:4243/images/create?fromImage=gesellix%2Fdocker-client-testimage&tag=latest&registry=
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -15,10 +15,13 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Thu, 18 Dec 2014 20:49:20 GMT
-    body: "{\"status\":\"The image you are pulling has been verified\",\"id\":\"busybox:latest\"}\r\n{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"df7546f9f060\"}{\"\
-      status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e433a6c5b276\"}{\"status\":\"Already exists\",\"progressDetail\":{},\"id\":\"e72ac664f4f0\"}{\"status\":\"Status: Image is up to date for busybox:latest\"}\r\n"
-- recorded: 2014-12-18T20:49:20.782Z
+      Date: Tue, 10 Feb 2015 22:38:05 GMT
+    body: "{\"status\":\"Pulling repository gesellix/docker-client-testimage\"}\r\n{\"status\":\"Pulling image (latest) from gesellix/docker-client-testimage\",\"progressDetail\":{},\"id\":\"3eb19b6d9332\"}{\"status\":\"Pulling image (latest) from gesellix/docker-client-testimage,\
+      \ endpoint: https://registry-1.docker.io/v1/\",\"progressDetail\":{},\"id\":\"3eb19b6d9332\"}{\"status\":\"Pulling dependent layers\",\"progressDetail\":{},\"id\":\"3eb19b6d9332\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"511136ea3c5a\"\
+      }{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"df7546f9f060\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"ea13149945cb\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"4986bf8c1536\"}{\"status\"\
+      :\"Download complete\",\"progressDetail\":{},\"id\":\"3cac76e73e2b\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"3eb19b6d9332\"}{\"status\":\"Download complete\",\"progressDetail\":{},\"id\":\"3eb19b6d9332\"}{\"status\":\"Status: Image\
+      \ is up to date for gesellix/docker-client-testimage:latest\"}\r\n"
+- recorded: 2015-02-10T22:38:07.070Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=
@@ -29,18 +32,18 @@ interactions:
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
       User-Agent: Apache-HttpClient/4.3 (java 1.5)
-    body: '{"Cmd":["true"],"Image":"e72ac664f4f0"}'
+    body: '{"Cmd":["true"],"Image":"3eb19b6d9332"}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Thu, 18 Dec 2014 20:49:20 GMT
+      Date: Tue, 10 Feb 2015 22:38:07 GMT
     body: |
-      {"Id":"c7706b2ab22565f12b7691b00321f1ed041aa1945787db846cf32ed2a025a53d","Warnings":null}
-- recorded: 2014-12-18T20:49:20.798Z
+      {"Id":"d253278991e63b4d1db20d18a5e6791e368628333183762efa81bd4e2ee3d9f8","Warnings":null}
+- recorded: 2015-02-10T22:38:07.089Z
   request:
     method: DELETE
-    uri: http://172.17.42.1:4243/containers/c7706b2ab22565f12b7691b00321f1ed041aa1945787db846cf32ed2a025a53d
+    uri: http://172.17.42.1:4243/containers/d253278991e63b4d1db20d18a5e6791e368628333183762efa81bd4e2ee3d9f8
     headers:
       Accept: '*/*'
       Host: 172.17.42.1:4243
@@ -49,4 +52,4 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Thu, 18 Dec 2014 20:49:20 GMT
+      Date: Tue, 10 Feb 2015 22:38:07 GMT

@@ -1,7 +1,7 @@
 !tape
 name: build image
 interactions:
-- recorded: 2014-12-18T20:48:35.194Z
+- recorded: 2015-02-10T22:34:43.315Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/build?rm=true
@@ -18,7 +18,7 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Thu, 18 Dec 2014 20:48:34 GMT
-    body: "{\"stream\":\"Step 0 : FROM debian:jessie\\n\"}\r\n{\"stream\":\" ---\\u003e 4bd7c3e53dc0\\n\"}\r\n{\"stream\":\"Step 1 : MAINTAINER Tobias Gesellchen \\u003ctobias@gesellix.de\\u003e\\n\"}\r\n{\"stream\":\" ---\\u003e Running in e571a25ccc55\\n\"\
-      }\r\n{\"stream\":\" ---\\u003e 54ad8c1c9f73\\n\"}\r\n{\"stream\":\"Removing intermediate container e571a25ccc55\\n\"}\r\n{\"stream\":\"Step 2 : ADD payload.txt /payload.txt\\n\"}\r\n{\"stream\":\" ---\\u003e d4b25cd3fe1d\\n\"}\r\n{\"stream\":\"Removing\
-      \ intermediate container 773b462556db\\n\"}\r\n{\"stream\":\"Successfully built d4b25cd3fe1d\\n\"}\r\n"
+      Date: Tue, 10 Feb 2015 22:34:43 GMT
+    body: "{\"stream\":\"Step 0 : FROM debian:jessie\\n\"}\r\n{\"stream\":\" ---\\u003e 4bd7c3e53dc0\\n\"}\r\n{\"stream\":\"Step 1 : MAINTAINER Tobias Gesellchen \\u003ctobias@gesellix.de\\u003e\\n\"}\r\n{\"stream\":\" ---\\u003e Running in 581b9211a54f\\n\"\
+      }\r\n{\"stream\":\" ---\\u003e 9f8b36bce6a4\\n\"}\r\n{\"stream\":\"Removing intermediate container 581b9211a54f\\n\"}\r\n{\"stream\":\"Step 2 : ADD payload.txt /payload.txt\\n\"}\r\n{\"stream\":\" ---\\u003e bb85e57675ec\\n\"}\r\n{\"stream\":\"Removing\
+      \ intermediate container 8c18240baa17\\n\"}\r\n{\"stream\":\"Successfully built bb85e57675ec\\n\"}\r\n"

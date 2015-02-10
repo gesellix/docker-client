@@ -71,4 +71,6 @@ interface DockerClient {
   def copy(containerId, requestBody)
 
   def copyFile(containerId, String filename)
+
+  def rename(containerId, newName)
 }

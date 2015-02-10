@@ -1,29 +1,29 @@
 !tape
 name: run container with existing base image
 interactions:
-- recorded: 2015-01-06T17:51:45.815Z
+- recorded: 2015-02-10T22:38:01.207Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=
     headers:
       Accept: '*/*'
-      Content-Length: '61'
+      Content-Length: '86'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
       User-Agent: Apache-HttpClient/4.3 (java 1.5)
-    body: '{"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"busybox:latest"}'
+    body: '{"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"gesellix/docker-client-testimage:latest"}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Tue, 06 Jan 2015 17:51:45 GMT
+      Date: Tue, 10 Feb 2015 22:38:01 GMT
     body: |
-      {"Id":"f13388fe7ecffd80fb5ccb51e151067e6939998b4f8f409a1e656bd2bd9b4a6a","Warnings":null}
-- recorded: 2015-01-06T17:51:45.905Z
+      {"Id":"3a0032fc12a098bc2d728ec7b7dd521d7202d28b553b806f6bba466431013632","Warnings":null}
+- recorded: 2015-02-10T22:38:01.310Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/f13388fe7ecffd80fb5ccb51e151067e6939998b4f8f409a1e656bd2bd9b4a6a/start
+    uri: http://172.17.42.1:4243/containers/3a0032fc12a098bc2d728ec7b7dd521d7202d28b553b806f6bba466431013632/start
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -33,11 +33,11 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Tue, 06 Jan 2015 17:51:45 GMT
-- recorded: 2015-01-06T17:51:45.973Z
+      Date: Tue, 10 Feb 2015 22:38:01 GMT
+- recorded: 2015-02-10T22:38:01.390Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/f13388fe7ecffd80fb5ccb51e151067e6939998b4f8f409a1e656bd2bd9b4a6a/stop
+    uri: http://172.17.42.1:4243/containers/3a0032fc12a098bc2d728ec7b7dd521d7202d28b553b806f6bba466431013632/stop
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -47,11 +47,11 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Tue, 06 Jan 2015 17:51:45 GMT
-- recorded: 2015-01-06T17:51:45.988Z
+      Date: Tue, 10 Feb 2015 22:38:01 GMT
+- recorded: 2015-02-10T22:38:01.402Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/f13388fe7ecffd80fb5ccb51e151067e6939998b4f8f409a1e656bd2bd9b4a6a/wait
+    uri: http://172.17.42.1:4243/containers/3a0032fc12a098bc2d728ec7b7dd521d7202d28b553b806f6bba466431013632/wait
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -62,13 +62,13 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Tue, 06 Jan 2015 17:51:45 GMT
+      Date: Tue, 10 Feb 2015 22:38:01 GMT
     body: |
-      {"StatusCode":-1}
-- recorded: 2015-01-06T17:51:46.006Z
+      {"StatusCode":137}
+- recorded: 2015-02-10T22:38:01.422Z
   request:
     method: DELETE
-    uri: http://172.17.42.1:4243/containers/f13388fe7ecffd80fb5ccb51e151067e6939998b4f8f409a1e656bd2bd9b4a6a
+    uri: http://172.17.42.1:4243/containers/3a0032fc12a098bc2d728ec7b7dd521d7202d28b553b806f6bba466431013632
     headers:
       Accept: '*/*'
       Host: 172.17.42.1:4243
@@ -77,4 +77,4 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Tue, 06 Jan 2015 17:51:46 GMT
+      Date: Tue, 10 Feb 2015 22:38:01 GMT

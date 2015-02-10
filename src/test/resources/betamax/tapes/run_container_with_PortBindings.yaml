@@ -1,29 +1,29 @@
 !tape
 name: run container with PortBindings
 interactions:
-- recorded: 2015-01-06T17:51:46.592Z
+- recorded: 2015-02-10T22:38:02.026Z
   request:
     method: POST
     uri: http://172.17.42.1:4243/containers/create?name=
     headers:
       Accept: '*/*'
-      Content-Length: '176'
+      Content-Length: '201'
       Content-Type: application/json
       Host: 172.17.42.1:4243
       Proxy-Connection: Keep-Alive
       User-Agent: Apache-HttpClient/4.3 (java 1.5)
-    body: '{"Cmd":["sh","-c","ping 127.0.0.1"],"ExposedPorts":{"4711/tcp":{}},"HostConfig":{"PortBindings":{"4711/tcp":[{"HostIp":"0.0.0.0","HostPort":"4712"}]}},"Image":"busybox:latest"}'
+    body: '{"Cmd":["sh","-c","ping 127.0.0.1"],"ExposedPorts":{"4711/tcp":{}},"HostConfig":{"PortBindings":{"4711/tcp":[{"HostIp":"0.0.0.0","HostPort":"4712"}]}},"Image":"gesellix/docker-client-testimage:latest"}'
   response:
     status: 201
     headers:
       Content-Type: application/json
-      Date: Tue, 06 Jan 2015 17:51:46 GMT
+      Date: Tue, 10 Feb 2015 22:38:02 GMT
     body: |
-      {"Id":"891d8a229470791fba1d12bf34631c3688b88b2bd3ddbf383783009996613331","Warnings":null}
-- recorded: 2015-01-06T17:51:46.708Z
+      {"Id":"d4c7e6bdccf077077005edc1d103cff118c00c18a88f4bdd51c3637ca946392a","Warnings":null}
+- recorded: 2015-02-10T22:38:02.165Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/891d8a229470791fba1d12bf34631c3688b88b2bd3ddbf383783009996613331/start
+    uri: http://172.17.42.1:4243/containers/d4c7e6bdccf077077005edc1d103cff118c00c18a88f4bdd51c3637ca946392a/start
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -33,11 +33,11 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Tue, 06 Jan 2015 17:51:46 GMT
-- recorded: 2015-01-06T17:51:46.722Z
+      Date: Tue, 10 Feb 2015 22:38:02 GMT
+- recorded: 2015-02-10T22:38:02.172Z
   request:
     method: GET
-    uri: http://172.17.42.1:4243/containers/891d8a229470791fba1d12bf34631c3688b88b2bd3ddbf383783009996613331/json
+    uri: http://172.17.42.1:4243/containers/d4c7e6bdccf077077005edc1d103cff118c00c18a88f4bdd51c3637ca946392a/json
     headers:
       Accept: '*/*'
       Host: 172.17.42.1:4243
@@ -47,14 +47,14 @@ interactions:
     status: 200
     headers:
       Content-Type: application/json
-      Date: Tue, 06 Jan 2015 17:51:46 GMT
+      Date: Tue, 10 Feb 2015 22:38:02 GMT
       X-Betamax: PLAY
     body: |
-      {"AppArmorProfile":"","Args":["-c","ping 127.0.0.1"],"Config":{"AttachStderr":false,"AttachStdin":false,"AttachStdout":false,"Cmd":["sh","-c","ping 127.0.0.1"],"CpuShares":0,"Cpuset":"","Domainname":"","Entrypoint":null,"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"ExposedPorts":{"4711/tcp":{}},"Hostname":"891d8a229470","Image":"busybox:latest","MacAddress":"","Memory":0,"MemorySwap":0,"NetworkDisabled":false,"OnBuild":null,"OpenStdin":false,"PortSpecs":null,"StdinOnce":false,"Tty":false,"User":"","Volumes":null,"WorkingDir":""},"Created":"2015-01-06T17:51:46.549196303Z","Driver":"aufs","ExecDriver":"native-0.2","HostConfig":{"Binds":null,"CapAdd":null,"CapDrop":null,"ContainerIDFile":"","Devices":null,"Dns":null,"DnsSearch":null,"ExtraHosts":null,"IpcMode":"","Links":null,"LxcConf":null,"NetworkMode":"","PortBindings":{"4711/tcp":[{"HostIp":"0.0.0.0","HostPort":"4712"}]},"Privileged":false,"PublishAllPorts":false,"RestartPolicy":{"MaximumRetryCount":0,"Name":""},"SecurityOpt":null,"VolumesFrom":null},"HostnamePath":"/var/lib/docker/containers/891d8a229470791fba1d12bf34631c3688b88b2bd3ddbf383783009996613331/hostname","HostsPath":"/var/lib/docker/containers/891d8a229470791fba1d12bf34631c3688b88b2bd3ddbf383783009996613331/hosts","Id":"891d8a229470791fba1d12bf34631c3688b88b2bd3ddbf383783009996613331","Image":"4986bf8c15363d1c5d15512d5266f8777bfba4974ac56e3270e7760f6f0a8125","MountLabel":"","Name":"/compassionate_newton","NetworkSettings":{"Bridge":"docker0","Gateway":"172.17.42.1","IPAddress":"172.17.0.6","IPPrefixLen":16,"MacAddress":"02:42:ac:11:00:06","PortMapping":null,"Ports":{"4711/tcp":[{"HostIp":"0.0.0.0","HostPort":"4712"}]}},"Path":"sh","ProcessLabel":"","ResolvConfPath":"/var/lib/docker/containers/891d8a229470791fba1d12bf34631c3688b88b2bd3ddbf383783009996613331/resolv.conf","State":{"Error":"","ExitCode":0,"FinishedAt":"0001-01-01T00:00:00Z","OOMKilled":false,"Paused":false,"Pid":8815,"Restarting":false,"Running":true,"StartedAt":"2015-01-06T17:51:46.702661306Z"},"Volumes":{},"VolumesRW":{}}
-- recorded: 2015-01-06T17:51:46.825Z
+      {"AppArmorProfile":"","Args":["-c","ping 127.0.0.1"],"Config":{"AttachStderr":false,"AttachStdin":false,"AttachStdout":false,"Cmd":["sh","-c","ping 127.0.0.1"],"CpuShares":0,"Cpuset":"","Domainname":"","Entrypoint":null,"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"ExposedPorts":{"4711/tcp":{}},"Hostname":"d4c7e6bdccf0","Image":"gesellix/docker-client-testimage:latest","MacAddress":"","Memory":0,"MemorySwap":0,"NetworkDisabled":false,"OnBuild":null,"OpenStdin":false,"PortSpecs":null,"StdinOnce":false,"Tty":false,"User":"","Volumes":null,"WorkingDir":""},"Created":"2015-02-10T22:38:01.965718122Z","Driver":"aufs","ExecDriver":"native-0.2","ExecIDs":null,"HostConfig":{"Binds":null,"CapAdd":null,"CapDrop":null,"ContainerIDFile":"","Devices":null,"Dns":null,"DnsSearch":null,"ExtraHosts":null,"IpcMode":"","Links":null,"LxcConf":null,"NetworkMode":"","PidMode":"","PortBindings":{"4711/tcp":[{"HostIp":"0.0.0.0","HostPort":"4712"}]},"Privileged":false,"PublishAllPorts":false,"ReadonlyRootfs":false,"RestartPolicy":{"MaximumRetryCount":0,"Name":""},"SecurityOpt":null,"VolumesFrom":null},"HostnamePath":"/var/lib/docker/containers/d4c7e6bdccf077077005edc1d103cff118c00c18a88f4bdd51c3637ca946392a/hostname","HostsPath":"/var/lib/docker/containers/d4c7e6bdccf077077005edc1d103cff118c00c18a88f4bdd51c3637ca946392a/hosts","Id":"d4c7e6bdccf077077005edc1d103cff118c00c18a88f4bdd51c3637ca946392a","Image":"3eb19b6d933247ab513993b2b9ed43a44f0432580e6f4f974bb2071ea968b494","MountLabel":"","Name":"/romantic_yonath","NetworkSettings":{"Bridge":"docker0","Gateway":"172.17.42.1","GlobalIPv6Address":"","GlobalIPv6PrefixLen":0,"IPAddress":"172.17.0.22","IPPrefixLen":16,"IPv6Gateway":"","LinkLocalIPv6Address":"fe80::42:acff:fe11:16","LinkLocalIPv6PrefixLen":64,"MacAddress":"02:42:ac:11:00:16","PortMapping":null,"Ports":{"4711/tcp":[{"HostIp":"0.0.0.0","HostPort":"4712"}]}},"Path":"sh","ProcessLabel":"","ResolvConfPath":"/var/lib/docker/containers/d4c7e6bdccf077077005edc1d103cff118c00c18a88f4bdd51c3637ca946392a/resolv.conf","RestartCount":0,"State":{"Error":"","ExitCode":0,"FinishedAt":"0001-01-01T00:00:00Z","OOMKilled":false,"Paused":false,"Pid":17817,"Restarting":false,"Running":true,"StartedAt":"2015-02-10T22:38:02.162736106Z"},"Volumes":{},"VolumesRW":{}}
+- recorded: 2015-02-10T22:38:02.250Z
   request:
     method: POST
-    uri: http://172.17.42.1:4243/containers/891d8a229470791fba1d12bf34631c3688b88b2bd3ddbf383783009996613331/stop
+    uri: http://172.17.42.1:4243/containers/d4c7e6bdccf077077005edc1d103cff118c00c18a88f4bdd51c3637ca946392a/stop
     headers:
       Accept: '*/*'
       Content-Length: '0'
@@ -64,4 +64,4 @@ interactions:
   response:
     status: 204
     headers:
-      Date: Tue, 06 Jan 2015 17:51:46 GMT
+      Date: Tue, 10 Feb 2015 22:38:02 GMT

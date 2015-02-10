@@ -45,10 +45,11 @@ class DockerClientImplIntegrationSpec extends Specification {
     info.Driver == "aufs"
     info.DriverStatus == [
         ["Root Dir", "/var/lib/docker/aufs"],
-        ["Dirs", "127"]]
+        ["Backing Filesystem", "extfs"],
+        ["Dirs", "218"]]
     info.ExecutionDriver == "native-0.2"
     info.ID == "4C3F:A25Q:NBWE:P7OC:YP45:GIOR:HBTQ:BFJ7:CGYE:2YDE:5BXO:ICTB"
-    info.Images == 123
+    info.Images == 214
     info.IndexServerAddress == "https://index.docker.io/v1/"
     info.InitPath == "/usr/bin/docker"
     info.InitSha1 == ""
@@ -59,10 +60,19 @@ class DockerClientImplIntegrationSpec extends Specification {
     info.Name == "gesellix-r2"
     info.NCPU == 8
     info.NEventsListener == 0
-    info.NFd == 19
-    info.NGoroutines == 27
-    info.KernelVersion == "3.13.0-43-generic"
-    info.OperatingSystem == "Ubuntu 14.04.1 LTS"
+    info.NFd == 31
+    info.NGoroutines == 38
+    info.KernelVersion == "3.13.0-45-generic"
+    info.OperatingSystem == "Ubuntu 14.04.2 LTS"
+    info.RegistryConfig == [
+        "IndexConfigs"         : [
+            "docker.io": ["Mirrors" : null,
+                          "Name"    : "docker.io",
+                          "Official": true,
+                          "Secure"  : true]
+        ],
+        "InsecureRegistryCIDRs": ["127.0.0.0/8"]
+    ]
     info.SwapLimit == 0
   }
 
@@ -73,13 +83,13 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     then:
     version == [
-        ApiVersion   : "1.16",
+        ApiVersion   : "1.17",
         Arch         : "amd64",
-        GitCommit    : "5bc2ff8",
-        GoVersion    : "go1.3.3",
-        KernelVersion: "3.13.0-43-generic",
+        GitCommit    : "a8a31ef",
+        GoVersion    : "go1.4.1",
+        KernelVersion: "3.13.0-45-generic",
         Os           : "linux",
-        Version      : "1.4.1"]
+        Version      : "1.5.0"]
   }
 
   @Betamax(tape = 'auth', match = [MatchRule.method, MatchRule.path])
@@ -103,7 +113,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def buildResult = dockerClient.build(buildContext)
 
     then:
-    buildResult == "d4b25cd3fe1d"
+    buildResult == "bb85e57675ec"
   }
 
   @Betamax(tape = 'build image with unknown base image', match = [MatchRule.method, MatchRule.path])
@@ -124,7 +134,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   @Betamax(tape = 'tag image', match = [MatchRule.method, MatchRule.path])
   def "tag image"() {
     given:
-    def imageId = dockerClient.pull("scratch")
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def imageName = "yetAnotherTag"
 
     when:
@@ -141,7 +151,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   def "push image"() {
     given:
     def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
-    def imageId = dockerClient.pull("scratch")
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def imageName = "gesellix/test:latest"
     dockerClient.tag(imageId, imageName, true)
 
@@ -149,7 +159,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def pushResult = dockerClient.push(imageName, authBase64Encoded)
 
     then:
-    pushResult.status == "Pushing tag for rev [511136ea3c5a] on {https://cdn-registry-1.docker.io/v1/repositories/gesellix/test/tags/latest}"
+    pushResult.status == "Pushing tag for rev [3eb19b6d9332] on {https://cdn-registry-1.docker.io/v1/repositories/gesellix/test/tags/latest}"
 
     cleanup:
     dockerClient.rmi(imageName)
@@ -159,7 +169,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   def "push image with registry"() {
     given:
     def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
-    def imageId = dockerClient.pull("scratch")
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def imageName = "gesellix/test:latest"
     dockerClient.tag(imageId, imageName, true)
 
@@ -167,7 +177,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def pushResult = dockerClient.push(imageName, authBase64Encoded, "localhost:5000")
 
     then:
-    pushResult.status == "Pushing tag for rev [511136ea3c5a] on {http://localhost:5000/v1/repositories/gesellix/test/tags/latest}"
+    pushResult.status == "Pushing tag for rev [3eb19b6d9332] on {http://localhost:5000/v1/repositories/gesellix/test/tags/latest}"
 
     cleanup:
     dockerClient.rmi(imageName)
@@ -176,7 +186,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   @Betamax(tape = 'push image with undefined authentication', match = [MatchRule.method, MatchRule.path, MatchRule.query, MatchRule.headers])
   def "push image with undefined authentication"() {
     given:
-    def imageId = dockerClient.pull("scratch")
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def imageName = "gesellix/test:latest"
     dockerClient.tag(imageId, imageName, true)
 
@@ -184,7 +194,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def pushResult = dockerClient.push(imageName, null, "localhost:5000")
 
     then:
-    pushResult.status == "Pushing tag for rev [511136ea3c5a] on {http://localhost:5000/v1/repositories/gesellix/test/tags/latest}"
+    pushResult.status == "Pushing tag for rev [3eb19b6d9332] on {http://localhost:5000/v1/repositories/gesellix/test/tags/latest}"
 
     cleanup:
     dockerClient.rmi(imageName)
@@ -193,31 +203,31 @@ class DockerClientImplIntegrationSpec extends Specification {
   @Betamax(tape = 'pull image', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "pull image"() {
     when:
-    def imageId = dockerClient.pull("scratch")
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
 
     then:
-    imageId == "511136ea3c5a"
+    imageId == "3eb19b6d9332"
   }
 
   @Betamax(tape = 'pull image from private registry', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "pull image from private registry"() {
     given:
-    dockerClient.pull("scratch")
-    dockerClient.push("scratch", "", "localhost:5000")
+    dockerClient.pull("gesellix/docker-client-testimage", "latest")
+    dockerClient.push("gesellix/docker-client-testimage:latest", "", "localhost:5000")
 
     when:
-    def imageId = dockerClient.pull("scratch", "", "localhost:5000")
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest", "localhost:5000")
 
     then:
-    imageId == "511136ea3c5a"
+    imageId == "3eb19b6d9332"
   }
 
   @Betamax(tape = 'list containers', match = [MatchRule.method, MatchRule.path])
   def "list containers"() {
     given:
-    def imageId = dockerClient.pull("busybox", "latest")
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def imageName = "list_containers"
-    dockerClient.tag(imageId, imageName)
+    dockerClient.tag(imageId, imageName, true)
     def containerConfig = ["Cmd"  : ["true"],
                            "Image": imageName]
     def containerId = dockerClient.createContainer(containerConfig).Id
@@ -228,10 +238,10 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     then:
     ["Command": "true",
-     "Created": 1418935746,
-     "Id"     : "114561349c0b7e4bad86c7e6c2696dc621b7469fe78c5e68e6e3f20c11cb622e",
-     "Image"  : "busybox:latest",
-     "Names"  : ["/goofy_yalow"],
+     "Created": 1423611158,
+     "Id"     : "0ab1ccc1a8aae3c15538173a2367be6236622f82ad2c52b7702f1cc5d342d677",
+     "Image"  : "gesellix/docker-client-testimage:latest",
+     "Names"  : ["/elegant_ptolemy"],
      "Ports"  : [],
      "Status" : "Up Less than a second"] in containers
   }
@@ -239,7 +249,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   @Betamax(tape = 'inspect container', match = [MatchRule.method, MatchRule.path])
   def "inspect container"() {
     given:
-    def imageId = dockerClient.pull("busybox", "latest")
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def imageName = "inspect_container"
     def containerConfig = ["Cmd"       : ["true"],
                            "Image"     : "inspect_container",
@@ -252,15 +262,15 @@ class DockerClientImplIntegrationSpec extends Specification {
     def containerInspection = dockerClient.inspectContainer(containerId)
 
     then:
-    containerInspection.HostnamePath == "/var/lib/docker/containers/8df1cd9509743fcdf66376bd9ce864cf2c6d81b37e07764adfedc8298d2cd78a/hostname"
+    containerInspection.HostnamePath == "/var/lib/docker/containers/453297c16c71322adf0452d0bdacbcf9af8e0e4bb6213167f437d7143ed7aa81/hostname"
     and:
     containerInspection.Config.Cmd == ["true"]
     and:
     containerInspection.Config.Image == "inspect_container"
     and:
-    containerInspection.Image == "4986bf8c15363d1c5d15512d5266f8777bfba4974ac56e3270e7760f6f0a8125"
+    containerInspection.Image == "3eb19b6d933247ab513993b2b9ed43a44f0432580e6f4f974bb2071ea968b494"
     and:
-    containerInspection.Id == "8df1cd9509743fcdf66376bd9ce864cf2c6d81b37e07764adfedc8298d2cd78a"
+    containerInspection.Id == "453297c16c71322adf0452d0bdacbcf9af8e0e4bb6213167f437d7143ed7aa81"
 
     cleanup:
     dockerClient.stop(containerId)
@@ -289,36 +299,15 @@ class DockerClientImplIntegrationSpec extends Specification {
     def images = dockerClient.images([all: true])
 
     then:
-    [Created    : 1412196368,
-     Id         : "e72ac664f4f0c6a061ac4ef332557a70d69b0c624b6add35f1c181ff7fff2287",
-     ParentId   : "e433a6c5b276a31aa38bf6eaba9cd1cfd69ea33f706ed72b3f20bafde5cd8644",
-     RepoTags   : ["busybox:latest"],
-     Size       : 0,
-     VirtualSize: 2433303] in images
-
-    and:
-    [Created    : 1412196368,
-     Id         : "e433a6c5b276a31aa38bf6eaba9cd1cfd69ea33f706ed72b3f20bafde5cd8644",
-     ParentId   : "df7546f9f060a2268024c8a230d8639878585defcc1bc6f79d2728a13957871b",
-     RepoTags   : ["<none>:<none>"],
-     Size       : 2433303,
-     VirtualSize: 2433303] in images
-
-    and:
-    [Created    : 1412196367,
-     Id         : "df7546f9f060a2268024c8a230d8639878585defcc1bc6f79d2728a13957871b",
-     ParentId   : "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158",
-     RepoTags   : ["<none>:<none>"],
-     Size       : 0,
-     VirtualSize: 0] in images
-
-    and:
-    [Created    : 1371157430,
-     Id         : "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158",
-     ParentId   : "",
-     RepoTags   : ["scratch:latest"],
-     Size       : 0,
-     VirtualSize: 0] in images
+    def imageIds = images.collect { image -> image.Id }
+    imageIds.containsAll([
+        "3eb19b6d933247ab513993b2b9ed43a44f0432580e6f4f974bb2071ea968b494",
+        "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc",
+        "4986bf8c15363d1c5d15512d5266f8777bfba4974ac56e3270e7760f6f0a8125",
+        "ea13149945cb6b1e746bf28032f02e9b5a793523481a0a18645fc77ad53c4ea2",
+        "df7546f9f060a2268024c8a230d8639878585defcc1bc6f79d2728a13957871b",
+        "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158"
+    ])
   }
 
   @Betamax(tape = 'list images filtered', match = [MatchRule.method, MatchRule.path, MatchRule.query])
@@ -335,7 +324,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   @Betamax(tape = 'create container', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "create container"() {
     given:
-    def imageId = dockerClient.pull("busybox", "latest")
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def containerConfig = ["Cmd"  : ["true"],
                            "Image": imageId]
 
@@ -343,14 +332,14 @@ class DockerClientImplIntegrationSpec extends Specification {
     def containerInfo = dockerClient.createContainer(containerConfig)
 
     then:
-    containerInfo.Id == "0e5b9cdeadf2f8231dc56f2b490841a9831981bf182a17880d90e1f54a61affd"
+    containerInfo.Id == "266e22e3e4d53041a811135f13bff8935b64b1dec7fb6c005ce4f00eca0013a1"
   }
 
   @Betamax(tape = 'create container with name', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "create container with name"() {
     given:
     dockerClient.rm("example")
-    def imageId = dockerClient.pull("busybox", "latest")
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def containerConfig = ["Cmd"  : ["true"],
                            "Image": imageId]
 
@@ -358,7 +347,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def containerInfo = dockerClient.createContainer(containerConfig, [name: "example"])
 
     then:
-    containerInfo.Id == "696687a9650f3e009c34074e8773e1f17cb15b8ed9c4401a944d63eff550727b"
+    containerInfo.Id == "c7da7719091fd3d2f3737e681baa8be593feacce4d08ca4f40c0d15feb5acf65"
   }
 
   @Betamax(tape = 'create container with unknown base image', match = [MatchRule.method, MatchRule.path, MatchRule.query])
@@ -366,7 +355,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     given:
     dockerClient.rm("example")
     def containerConfig = ["Cmd"  : ["true"],
-                           "Image": "busybox:unkown"]
+                           "Image": "gesellix/docker-client-testimage:unkown"]
 
     when:
     dockerClient.createContainer(containerConfig, [name: "example"])
@@ -374,14 +363,14 @@ class DockerClientImplIntegrationSpec extends Specification {
     then:
     DockerClientException ex = thrown()
     ex.cause.message == 'docker pull failed'
-    ex.detail == [error      : "Tag unkown not found in repository busybox",
-                  errorDetail: [message: "Tag unkown not found in repository busybox"]]
+    ex.detail == [error      : "Tag unkown not found in repository gesellix/docker-client-testimage",
+                  errorDetail: [message: "Tag unkown not found in repository gesellix/docker-client-testimage"]]
   }
 
   @Betamax(tape = 'start container', match = [MatchRule.method, MatchRule.path])
   def "start container"() {
     given:
-    def imageId = dockerClient.pull("busybox", "latest")
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def containerConfig = ["Cmd"  : ["true"],
                            "Image": imageId]
     def containerId = dockerClient.createContainer(containerConfig).Id
@@ -396,7 +385,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   @Betamax(tape = 'run container with existing base image', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "run container with existing base image"() {
     given:
-    def imageName = "busybox"
+    def imageName = "gesellix/docker-client-testimage"
     def tag = "latest"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def containerConfig = ["Cmd": cmds]
@@ -416,7 +405,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   @Betamax(tape = 'run container with PortBindings', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "run container with PortBindings"() {
     given:
-    def imageName = "busybox"
+    def imageName = "gesellix/docker-client-testimage"
     def tag = "latest"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def containerConfig = ["Cmd"       : cmds,
@@ -448,7 +437,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   @Betamax(tape = 'run container with name', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "run container with name"() {
     given:
-    def imageName = "busybox"
+    def imageName = "gesellix/docker-client-testimage"
     def tag = "latest"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def containerConfig = ["Cmd": cmds]
@@ -471,7 +460,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   @Betamax(tape = 'stop container', match = [MatchRule.method, MatchRule.path])
   def "stop container"() {
     given:
-    def imageName = "busybox"
+    def imageName = "gesellix/docker-client-testimage"
     def tag = "latest"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def containerConfig = ["Cmd": cmds]
@@ -487,7 +476,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   @Betamax(tape = 'wait container', match = [MatchRule.method, MatchRule.path])
   def "wait container"() {
     given:
-    def imageName = "busybox"
+    def imageName = "gesellix/docker-client-testimage"
     def tag = "latest"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def containerConfig = ["Cmd": cmds]
@@ -500,13 +489,13 @@ class DockerClientImplIntegrationSpec extends Specification {
     then:
     result.status.statusCode == 200
     and:
-    result.response.StatusCode == -1
+    result.response.StatusCode == 137
   }
 
   @Betamax(tape = 'rm container', match = [MatchRule.method, MatchRule.path])
   def "rm container"() {
     given:
-    def imageId = dockerClient.pull("busybox", "latest")
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def containerConfig = ["Cmd"  : ["true"],
                            "Image": imageId]
     def containerId = dockerClient.createContainer(containerConfig).Id
@@ -530,7 +519,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   @Betamax(tape = 'rm image', match = [MatchRule.method, MatchRule.path])
   def "rm image"() {
     given:
-    def imageId = dockerClient.pull("scratch", "latest")
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     dockerClient.tag(imageId, "an_image_to_be_deleted")
 
     when:
@@ -552,7 +541,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   @Betamax(tape = 'rm image with existing container', match = [MatchRule.method, MatchRule.path])
   def "rm image with existing container"() {
     given:
-    def imageId = dockerClient.pull("busybox", "latest")
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     dockerClient.tag(imageId, "an_image_with_existing_container", true)
 
     def containerConfig = ["Cmd": ["true"]]
@@ -571,7 +560,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   @Betamax(tape = 'exec create', match = [MatchRule.method, MatchRule.path, MatchRule.body])
   def "exec create"() {
     given:
-    def imageName = "busybox"
+    def imageName = "gesellix/docker-client-testimage"
     def tag = "latest"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def containerConfig = ["Cmd": cmds]
@@ -596,7 +585,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   @Betamax(tape = 'exec start', match = [MatchRule.method, MatchRule.path, MatchRule.body])
   def "exec start"() {
     given:
-    def imageName = "busybox"
+    def imageName = "gesellix/docker-client-testimage"
     def tag = "latest"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def containerConfig = ["Cmd": cmds]
@@ -633,7 +622,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   @Betamax(tape = 'copy', match = [MatchRule.method, MatchRule.path])
   def "copy"() {
     given:
-    def imageId = dockerClient.pull("busybox", "latest")
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def imageName = "copy_container"
     def containerConfig = ["Cmd"  : ["sh", "-c", "echo -n -e 'to be or\nnot to be' > /file1.txt"],
                            "Image": "copy_container"]
@@ -654,5 +643,24 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.wait(containerId)
     dockerClient.rm(containerId)
     dockerClient.rmi(imageName)
+  }
+
+  @Betamax(tape = 'rename', match = [MatchRule.method, MatchRule.path])
+  def "rename"() {
+    given:
+    dockerClient.rm("a_wonderful_new_name")
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
+    def containerConfig = ["Cmd"  : ["true"],
+                           "Image": imageId]
+    def containerId = dockerClient.createContainer(containerConfig).Id
+
+    when:
+    def renameContainerResult = dockerClient.rename(containerId, "a_wonderful_new_name")
+
+    then:
+    renameContainerResult == 204
+
+    cleanup:
+    dockerClient.rm("a_wonderful_new_name")
   }
 }
