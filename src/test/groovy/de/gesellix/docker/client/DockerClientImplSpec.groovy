@@ -3,6 +3,7 @@ package de.gesellix.docker.client
 import groovyx.net.http.ContentType
 import groovyx.net.http.RESTClient
 import org.apache.http.StatusLine
+import org.slf4j.Logger
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -51,6 +52,15 @@ class DockerClientImplSpec extends Specification {
     "url:5000/repo"           || "url:5000/repo" | ""
     "url:5000/repo:tag"       || "url:5000/repo" | "tag"
     "url:5000/user/image:tag" || "url:5000/user/image" | "tag"
+  }
+
+  def "shouldn't allow repository tag ending with a ':'"() {
+    when:
+    dockerClient.parseRepositoryTag("scratch:")
+
+    then:
+    def exc = thrown(DockerClientException)
+    exc.cause.message == "'scratch:' should not end with a ':'"
   }
 
   def "info"() {
@@ -389,6 +399,22 @@ class DockerClientImplSpec extends Specification {
     }
   }
 
+  def "create exec with missing container"() {
+    def execCreateConfig = [:]
+    given:
+    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
+    dockerClient.responseHandler.statusLine.statusCode >> 404
+    dockerClient.logger = Mock(Logger)
+
+    when:
+    dockerClient.createExec("a-missing-container", execCreateConfig)
+
+    then:
+    1 * dockerClient.logger.error("no such container 'a-missing-container'")
+    and:
+    thrown(DockerClientException)
+  }
+
   def "start exec"() {
     def execStartConfig = [:]
     given:
@@ -406,6 +432,22 @@ class DockerClientImplSpec extends Specification {
     dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
       assert arguments[0]?.message == "docker exec start failed"
     }
+  }
+
+  def "start exec with missing exec"() {
+    def execStartConfig = [:]
+    given:
+    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
+    dockerClient.responseHandler.statusLine.statusCode >> 404
+    dockerClient.logger = Mock(Logger)
+
+    when:
+    dockerClient.startExec("a-missing-exec", execStartConfig)
+
+    then:
+    1 * dockerClient.logger.error("no such exec 'a-missing-exec'")
+    and:
+    thrown(DockerClientException)
   }
 
   def "exec"() {

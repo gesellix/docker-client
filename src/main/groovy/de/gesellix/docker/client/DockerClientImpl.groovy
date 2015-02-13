@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory
 
 class DockerClientImpl implements DockerClient {
 
-  private static Logger logger = LoggerFactory.getLogger(DockerClientImpl)
+  def Logger logger = LoggerFactory.getLogger(DockerClientImpl)
 
   def responseHandler = new DockerResponseHandler()
 
@@ -310,7 +310,7 @@ class DockerClientImpl implements DockerClient {
 
 
     if (responseHandler.statusLine?.statusCode == 404) {
-      logger.error("no such container ${containerId}")
+      logger.error("no such container '${containerId}'")
     }
     responseHandler.ensureSuccessfulResponse(new IllegalStateException("docker exec create failed"))
     return responseHandler.lastChunk
@@ -326,7 +326,7 @@ class DockerClientImpl implements DockerClient {
 
 
     if (responseHandler.statusLine?.statusCode == 404) {
-      logger.error("no such exec ${execId}")
+      logger.error("no such exec '${execId}'")
     }
     responseHandler.ensureSuccessfulResponse(new IllegalStateException("docker exec start failed"))
     return responseHandler.lastChunk
