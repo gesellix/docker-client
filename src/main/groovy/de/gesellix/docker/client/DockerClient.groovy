@@ -68,7 +68,7 @@ interface DockerClient {
 
   def exec(containerId, command, execConfig)
 
-  def copy(containerId, requestBody)
+  def copy(containerId, resourceBody)
 
   def copyFile(containerId, String filename)
 
