@@ -2,6 +2,13 @@
 
 *current feature set based on the [Docker Remote API v1.17](https://docs.docker.com/reference/api/docker_remote_api_v1.17/)*
 
+This project tends to support most api endpoints, but only if there's an actual use case. If you're missing a feature, please file
+a new issue or a pull request and we'll add it as soon as the private free time allows.
+If you're looking for a more feature complete, yet slightly bigger Java based Docker library, check out the project at
+[Java Docker API Client](https://github.com/docker-java/docker-java).
+
+Current api coverage (20/44): ![Remote API Coverage Status](http://progressed.io/bar/45)
+
 ## Containers
 
 * [x] `docker ps`: List containers
@@ -12,7 +19,7 @@
 * [ ] `docker diff <container>`: Inspect changes on a container's filesystem
 * [ ] `docker export <container>`: Export a container
 * [ ] `docker stats <container>`: Get container stats based on resource usage
-* [ ] **`?`**: Resize a container TTY
+* [ ] Resize a container TTY
 * [x] `docker start <container>`: Start a container
 * [x] `docker stop <container>`: Stop a container
 * [ ] `docker restart <container>`: Restart a container
@@ -21,7 +28,7 @@
 * [ ] `docker pause <container>`: Pause a container
 * [ ] `docker unpause <container>`: Unpause a container
 * [ ] `docker attach <container>`: Attach to a container
-* [ ] **`?`**: Attach to a container (websocket)
+* [ ] Attach to a container (websocket)
 * [x] `docker wait <container>`: Wait a container
 * [x] `docker rm <container>`: Remove a container
 * [x] `docker cp <container>:<path> <hostpath>`: Copy files or folders from a container
