@@ -34,6 +34,16 @@ class DockerClientImplIntegrationSpec extends Specification {
     BetamaxRoutePlanner.configure(dockerClient.delegate.client)
   }
 
+  @Betamax(tape = 'ping', match = [MatchRule.method, MatchRule.path])
+  def ping() {
+    when:
+    def ping = dockerClient.ping()
+
+    then:
+    ping.status.statusCode == 200
+    ping.response == [plain: "OK"]
+  }
+
   @Betamax(tape = 'info', match = [MatchRule.method, MatchRule.path])
   def info() {
     when:

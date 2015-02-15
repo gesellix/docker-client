@@ -2,6 +2,8 @@ package de.gesellix.docker.client
 
 interface DockerClient {
 
+  def ping()
+
   def info()
 
   def version()

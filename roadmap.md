@@ -2,7 +2,7 @@
 
 *feature set based on the [Docker Remote API v1.17](https://docs.docker.com/reference/api/docker_remote_api_v1.17/)*
 
-Current api coverage (20/44): ![Remote API Coverage Status](http://progressed.io/bar/45)
+Current api coverage (21/44): ![Remote API Coverage Status](http://progressed.io/bar/48)
 
 This project tends to support most api endpoints, but only if there's an actual use case. If you're missing a feature, please file
 a [new issue](https://github.com/gesellix-docker/docker-client/issues) or a [pull request](https://github.com/gesellix-docker/docker-client/pulls) 
@@ -51,7 +51,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] Check auth configuration
 * [x] `docker info`: Display system-wide information
 * [x] `docker version`: Show the docker version information
-* [ ] Ping the docker server
+* [x] Ping the docker server
 * [ ] `docker commit <container>`: Create a new image from a container's changes
 * [ ] `docker events`: Monitor Docker's events
 * [ ] `docker save <image>`: Get a tarball containing all images in a repository

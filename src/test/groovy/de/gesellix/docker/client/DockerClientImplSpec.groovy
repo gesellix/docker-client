@@ -63,6 +63,18 @@ class DockerClientImplSpec extends Specification {
     exc.cause.message == "'scratch:' should not end with a ':'"
   }
 
+  def "ping"() {
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [plain: "OK"]
+
+    when:
+    dockerClient.ping()
+
+    then:
+    1 * delegateMock.get([path: "/_ping"])
+  }
+
   def "info"() {
     given:
     dockerClient.responseHandler.success = true

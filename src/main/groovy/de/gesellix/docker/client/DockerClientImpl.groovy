@@ -51,6 +51,14 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
+  def ping() {
+    logger.info "docker ping"
+    getDelegate().get([path: "/_ping"])
+    return [status  : responseHandler.statusLine,
+            response: responseHandler.lastChunk]
+  }
+
+  @Override
   def info() {
     logger.info "docker info"
     getDelegate().get([path: "/info"])
