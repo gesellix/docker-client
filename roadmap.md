@@ -41,16 +41,16 @@
 
 ## Misc
 
-* [ ] Check auth configuration
-* [ ] `docker info`: Display system-wide information
-* [ ] `docker version`: Show the docker version information
+* [x] Check auth configuration
+* [x] `docker info`: Display system-wide information
+* [x] `docker version`: Show the docker version information
 * [ ] Ping the docker server
 * [ ] `docker commit <container>`: Create a new image from a container's changes
 * [ ] `docker events`: Monitor Docker's events
 * [ ] `docker save <image>`: Get a tarball containing all images in a repository
 * [ ] `docker save <image> [<image> ...]`: Get a tarball containing all images.
 * [ ] `docker load`: Load a tarball with a set of images and tags into docker
-* [ ] Exec Create
-* [ ] Exec Start (`docker exec <container> <command>`)
+* [x] Exec Create
+* [x] Exec Start (`docker exec <container> <command>`)
 * [ ] Exec Resize
 * [ ] Exec Inspect
