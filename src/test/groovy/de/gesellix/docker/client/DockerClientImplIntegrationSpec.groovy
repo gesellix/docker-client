@@ -467,6 +467,22 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.stop(containerStatus.container.Id)
   }
 
+  @Betamax(tape = 'restart container', match = [MatchRule.method, MatchRule.path])
+  def "restart container"() {
+    given:
+    def imageName = "gesellix/docker-client-testimage"
+    def tag = "latest"
+    def cmds = ["sh", "-c", "ping 127.0.0.1"]
+    def containerConfig = ["Cmd": cmds]
+    def containerStatus = dockerClient.run(imageName, containerConfig, tag)
+
+    when:
+    def result = dockerClient.restart(containerStatus.container.Id)
+
+    then:
+    result.status.statusCode == 204
+  }
+
   @Betamax(tape = 'stop container', match = [MatchRule.method, MatchRule.path])
   def "stop container"() {
     given:
@@ -481,6 +497,22 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     then:
     result == 204
+  }
+
+  @Betamax(tape = 'kill container', match = [MatchRule.method, MatchRule.path])
+  def "kill container"() {
+    given:
+    def imageName = "gesellix/docker-client-testimage"
+    def tag = "latest"
+    def cmds = ["sh", "-c", "ping 127.0.0.1"]
+    def containerConfig = ["Cmd": cmds]
+    def containerStatus = dockerClient.run(imageName, containerConfig, tag)
+
+    when:
+    def result = dockerClient.kill(containerStatus.container.Id)
+
+    then:
+    result.status.statusCode == 204
   }
 
   @Betamax(tape = 'wait container', match = [MatchRule.method, MatchRule.path])
@@ -500,6 +532,39 @@ class DockerClientImplIntegrationSpec extends Specification {
     result.status.statusCode == 200
     and:
     result.response.StatusCode == 137
+  }
+
+  @Betamax(tape = 'pause container', match = [MatchRule.method, MatchRule.path])
+  def "pause container"() {
+    given:
+    def imageName = "gesellix/docker-client-testimage"
+    def tag = "latest"
+    def cmds = ["sh", "-c", "ping 127.0.0.1"]
+    def containerConfig = ["Cmd": cmds]
+    def containerStatus = dockerClient.run(imageName, containerConfig, tag)
+
+    when:
+    def result = dockerClient.pause(containerStatus.container.Id)
+
+    then:
+    result.status.statusCode == 204
+  }
+
+  @Betamax(tape = 'unpause container', match = [MatchRule.method, MatchRule.path])
+  def "unpause container"() {
+    given:
+    def imageName = "gesellix/docker-client-testimage"
+    def tag = "latest"
+    def cmds = ["sh", "-c", "ping 127.0.0.1"]
+    def containerConfig = ["Cmd": cmds]
+    def containerStatus = dockerClient.run(imageName, containerConfig, tag)
+    dockerClient.pause(containerStatus.container.Id)
+
+    when:
+    def result = dockerClient.unpause(containerStatus.container.Id)
+
+    then:
+    result.status.statusCode == 204
   }
 
   @Betamax(tape = 'rm container', match = [MatchRule.method, MatchRule.path])

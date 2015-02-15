@@ -1,0 +1,50 @@
+!tape
+name: kill container
+interactions:
+- recorded: 2015-02-15T18:54:33.859Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/create?name=
+    headers:
+      Accept: '*/*'
+      Content-Length: '86'
+      Content-Type: application/json
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+    body: '{"Cmd":["sh","-c","ping 127.0.0.1"],"Image":"gesellix/docker-client-testimage:latest"}'
+  response:
+    status: 201
+    headers:
+      Content-Type: application/json
+      Date: Sun, 15 Feb 2015 18:54:33 GMT
+    body: |
+      {"Id":"dc597e11088736f3c751648d4e9637db88657d77c2ff36cacbdd4aef1179b59a","Warnings":null}
+- recorded: 2015-02-15T18:54:33.950Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/dc597e11088736f3c751648d4e9637db88657d77c2ff36cacbdd4aef1179b59a/start
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 204
+    headers:
+      Date: Sun, 15 Feb 2015 18:54:33 GMT
+- recorded: 2015-02-15T18:54:34.046Z
+  request:
+    method: POST
+    uri: http://172.17.42.1:4243/containers/dc597e11088736f3c751648d4e9637db88657d77c2ff36cacbdd4aef1179b59a/kill
+    headers:
+      Accept: '*/*'
+      Content-Length: '0'
+      Host: 172.17.42.1:4243
+      Proxy-Connection: Keep-Alive
+      User-Agent: Apache-HttpClient/4.3 (java 1.5)
+  response:
+    status: 204
+    headers:
+      Date: Sun, 15 Feb 2015 18:54:34 GMT

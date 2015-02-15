@@ -252,6 +252,15 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
+  def restart(containerId) {
+    logger.info "docker restart"
+    getDelegate().post([path : "/containers/${containerId}/restart".toString(),
+                        query: [t: 10]])
+    return [status  : responseHandler.statusLine,
+            response: responseHandler.lastChunk]
+  }
+
+  @Override
   def stop(containerId) {
     logger.info "docker stop"
     getDelegate().post([path: "/containers/${containerId}/stop".toString()])
@@ -260,9 +269,33 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
+  def kill(containerId) {
+    logger.info "docker kill"
+    getDelegate().post([path: "/containers/${containerId}/kill".toString()])
+    return [status  : responseHandler.statusLine,
+            response: responseHandler.lastChunk]
+  }
+
+  @Override
   def wait(containerId) {
     logger.info "docker wait"
     getDelegate().post([path: "/containers/${containerId}/wait".toString()])
+    return [status  : responseHandler.statusLine,
+            response: responseHandler.lastChunk]
+  }
+
+  @Override
+  def pause(containerId) {
+    logger.info "docker pause"
+    getDelegate().post([path: "/containers/${containerId}/pause".toString()])
+    return [status  : responseHandler.statusLine,
+            response: responseHandler.lastChunk]
+  }
+
+  @Override
+  def unpause(containerId) {
+    logger.info "docker unpause"
+    getDelegate().post([path: "/containers/${containerId}/unpause".toString()])
     return [status  : responseHandler.statusLine,
             response: responseHandler.lastChunk]
   }

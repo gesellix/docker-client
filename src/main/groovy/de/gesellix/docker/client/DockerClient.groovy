@@ -54,9 +54,17 @@ interface DockerClient {
 
   def run(fromImage, containerConfig, tag, name)
 
+  def restart(containerId)
+
   def stop(containerId)
 
+  def kill(containerId)
+
   def wait(containerId)
+
+  def pause(containerId)
+
+  def unpause(containerId)
 
   def rm(containerId)
 

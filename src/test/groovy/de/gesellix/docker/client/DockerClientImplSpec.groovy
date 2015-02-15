@@ -292,6 +292,18 @@ class DockerClientImplSpec extends Specification {
     }
   }
 
+  def "restart container"() {
+    given:
+    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
+
+    when:
+    dockerClient.restart("a-container")
+
+    then:
+    1 * delegateMock.post([path : "/containers/a-container/restart",
+                           query: [t: 10]])
+  }
+
   def "stop container"() {
     given:
     dockerClient.responseHandler.statusLine >> Mock(StatusLine)
@@ -301,6 +313,17 @@ class DockerClientImplSpec extends Specification {
 
     then:
     1 * delegateMock.post([path: "/containers/a-container/stop"])
+  }
+
+  def "kill container"() {
+    given:
+    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
+
+    when:
+    dockerClient.kill("a-container")
+
+    then:
+    1 * delegateMock.post([path: "/containers/a-container/kill"])
   }
 
   def "wait container"() {
@@ -313,6 +336,28 @@ class DockerClientImplSpec extends Specification {
 
     then:
     1 * delegateMock.post([path: "/containers/a-container/wait"])
+  }
+
+  def "pause container"() {
+    given:
+    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
+
+    when:
+    dockerClient.pause("a-container")
+
+    then:
+    1 * delegateMock.post([path: "/containers/a-container/pause"])
+  }
+
+  def "unpause container"() {
+    given:
+    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
+
+    when:
+    dockerClient.unpause("a-container")
+
+    then:
+    1 * delegateMock.post([path: "/containers/a-container/unpause"])
   }
 
   def "rm container"() {
