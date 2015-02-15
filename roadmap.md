@@ -1,13 +1,13 @@
 # Supported Features
 
-*current feature set based on the [Docker Remote API v1.17](https://docs.docker.com/reference/api/docker_remote_api_v1.17/)*
-
-This project tends to support most api endpoints, but only if there's an actual use case. If you're missing a feature, please file
-a new issue or a pull request and we'll add it as soon as the private free time allows.
-If you're looking for a more feature complete, yet slightly bigger Java based Docker library, check out the project at
-[Java Docker API Client](https://github.com/docker-java/docker-java).
+*feature set based on the [Docker Remote API v1.17](https://docs.docker.com/reference/api/docker_remote_api_v1.17/)*
 
 Current api coverage (20/44): ![Remote API Coverage Status](http://progressed.io/bar/45)
+
+This project tends to support most api endpoints, but only if there's an actual use case. If you're missing a feature, please file
+a [new issue](https://github.com/gesellix-docker/docker-client/issues) or a [pull request](https://github.com/gesellix-docker/docker-client/pulls) 
+and we'll add it as soon as the private free time allows. If you're looking for a more feature complete Java based Docker library, 
+check out the project at [Java Docker API Client](https://github.com/docker-java/docker-java).
 
 ## Containers
 
