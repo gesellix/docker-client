@@ -333,6 +333,13 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
+  def diff(containerId) {
+    logger.info "docker diff"
+    getDelegate().get([path: "/containers/${containerId}/changes"])
+    return responseHandler.lastChunk
+  }
+
+  @Override
   def inspectImage(imageId) {
     logger.info "docker inspect image"
     getDelegate().get([path: "/images/${imageId}/json"])

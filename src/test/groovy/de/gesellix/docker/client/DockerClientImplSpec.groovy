@@ -397,6 +397,18 @@ class DockerClientImplSpec extends Specification {
     1 * delegateMock.get([path: "/containers/a-container/json"])
   }
 
+  def "diff"() {
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+
+    when:
+    dockerClient.diff("a-container")
+
+    then:
+    1 * delegateMock.get([path: "/containers/a-container/changes"])
+  }
+
   def "inspect image"() {
     given:
     dockerClient.responseHandler.success = true

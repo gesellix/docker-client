@@ -38,6 +38,8 @@ interface DockerClient {
 
   def inspectContainer(containerId)
 
+  def diff(containerId)
+
   def inspectImage(imageId)
 
   def history(imageId)

@@ -2,7 +2,7 @@
 
 *feature set based on the [Docker Remote API v1.17](https://docs.docker.com/reference/api/docker_remote_api_v1.17/)*
 
-Current api coverage (28/44): ![Remote API Coverage Status](http://progressed.io/bar/64)
+Current api coverage (29/44): ![Remote API Coverage Status](http://progressed.io/bar/66)
 
 This project tends to support most api endpoints, but only if there's an actual use case. If you're missing a feature, please file
 a [new issue](https://github.com/gesellix-docker/docker-client/issues) or a [pull request](https://github.com/gesellix-docker/docker-client/pulls) 
@@ -16,7 +16,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker inspect <container>`: Inspect a container
 * [ ] `docker top <container>`: List processes running inside a container
 * [ ] `docker logs <container>`: Get container logs
-* [ ] `docker diff <container>`: Inspect changes on a container's filesystem
+* [x] `docker diff <container>`: Inspect changes on a container's filesystem
 * [ ] `docker export <container>`: Export a container
 * [ ] `docker stats <container>`: Get container stats based on resource usage
 * [ ] Resize a container TTY

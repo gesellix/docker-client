@@ -289,6 +289,28 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.rmi(imageName)
   }
 
+  @Betamax(tape = 'diff', match = [MatchRule.method, MatchRule.path])
+  def "diff"() {
+    given:
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
+    def containerConfig = ["Cmd"  : ["/bin/sh", "-c", "echo 'hallo' > /change.txt"],
+                           "Image": imageId]
+    def containerId = dockerClient.run(imageId, containerConfig).container.Id
+    dockerClient.stop(containerId)
+
+    when:
+    def changes = dockerClient.diff(containerId)
+
+    then:
+    changes == [
+        [Kind: 1, Path: "/change.txt"]
+    ]
+
+    cleanup:
+    dockerClient.wait(containerId)
+    dockerClient.rm(containerId)
+  }
+
   @Betamax(tape = 'inspect image', match = [MatchRule.method, MatchRule.path])
   def "inspect image"() {
     given:
