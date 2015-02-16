@@ -2,7 +2,7 @@
 
 *feature set based on the [Docker Remote API v1.17](https://docs.docker.com/reference/api/docker_remote_api_v1.17/)*
 
-Current api coverage (25/44): ![Remote API Coverage Status](http://progressed.io/bar/57)
+Current api coverage (26/44): ![Remote API Coverage Status](http://progressed.io/bar/59)
 
 This project tends to support most api endpoints, but only if there's an actual use case. If you're missing a feature, please file
 a [new issue](https://github.com/gesellix-docker/docker-client/issues) or a [pull request](https://github.com/gesellix-docker/docker-client/pulls) 
