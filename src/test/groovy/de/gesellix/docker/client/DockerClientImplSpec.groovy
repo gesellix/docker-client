@@ -397,6 +397,18 @@ class DockerClientImplSpec extends Specification {
     1 * delegateMock.get([path: "/containers/a-container/json"])
   }
 
+  def "inspect image"() {
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+
+    when:
+    dockerClient.inspectImage("an-image")
+
+    then:
+    1 * delegateMock.get([path: "/images/an-image/json"])
+  }
+
   def "images with defaults"() {
     given:
     dockerClient.responseHandler.success = true

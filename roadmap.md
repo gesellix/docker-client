@@ -39,7 +39,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker build`: Build image from a Dockerfile
 * [x] `docker pull`: Create an image (from the registry)
 * [ ] `docker import`: Create an image (by import)
-* [ ] `docker inspect <image>`: Inspect an image
+* [x] `docker inspect <image>`: Inspect an image
 * [ ] `docker history <image>`: Get the history of an image
 * [x] `docker push <image>`: Push an image on the registry
 * [x] `docker tag <image> <repository>`: Tag an image into a repository

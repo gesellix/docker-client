@@ -289,6 +289,79 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.rmi(imageName)
   }
 
+  @Betamax(tape = 'inspect image', match = [MatchRule.method, MatchRule.path])
+  def "inspect image"() {
+    given:
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
+
+    when:
+    def imageInspection = dockerClient.inspectImage(imageId)
+
+    then:
+    imageInspection == [
+        Architecture   : "amd64",
+        Author         : "",
+        Comment        : "",
+        Config         : [
+            AttachStderr   : false,
+            AttachStdin    : false,
+            AttachStdout   : false,
+            Cmd            : ["cat", "/gattaca.txt"],
+            CpuShares      : 0,
+            Cpuset         : "",
+            Domainname     : "",
+            Entrypoint     : null,
+            Env            : ["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],
+            ExposedPorts   : null,
+            Hostname       : "7f674915980d",
+            Image          : "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc",
+            MacAddress     : "",
+            Memory         : 0,
+            MemorySwap     : 0,
+            NetworkDisabled: false,
+            OnBuild        : [],
+            OpenStdin      : false,
+            PortSpecs      : null,
+            StdinOnce      : false,
+            Tty            : false, User: "",
+            Volumes        : null,
+            WorkingDir     : ""],
+        Container      : "c0c18082a03537cda7a61792e50501303051b84a90849765aa0793f69ce169b3",
+        ContainerConfig: [
+            AttachStderr   : false,
+            AttachStdin    : false,
+            AttachStdout   : false,
+            Cmd            : ["/bin/sh", "-c", "#(nop) CMD [cat /gattaca.txt]"],
+            CpuShares      : 0,
+            Cpuset         : "",
+            Domainname     : "",
+            Entrypoint     : null,
+            Env            : ["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],
+            ExposedPorts   : null,
+            Hostname       : "7f674915980d",
+            Image          : "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc",
+            MacAddress     : "",
+            Memory         : 0,
+            MemorySwap     : 0,
+            NetworkDisabled: false,
+            OnBuild        : [],
+            OpenStdin      : false,
+            PortSpecs      : null,
+            StdinOnce      : false,
+            Tty            : false,
+            User           : "",
+            Volumes        : null,
+            WorkingDir     : ""],
+        Created        : "2015-02-10T22:31:18.294569606Z",
+        DockerVersion  : "1.4.1",
+        Id             : "3eb19b6d933247ab513993b2b9ed43a44f0432580e6f4f974bb2071ea968b494",
+        Os             : "linux",
+        Parent         : "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc",
+        Size           : 0,
+        VirtualSize    : 2433322
+    ]
+  }
+
   @Betamax(tape = 'list images', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "list images"() {
     when:

@@ -327,8 +327,15 @@ class DockerClientImpl implements DockerClient {
 
   @Override
   def inspectContainer(containerId) {
-    logger.info "docker inspect"
+    logger.info "docker inspect container"
     getDelegate().get([path: "/containers/${containerId}/json"])
+    return responseHandler.lastChunk
+  }
+
+  @Override
+  def inspectImage(imageId) {
+    logger.info "docker inspect image"
+    getDelegate().get([path: "/images/${imageId}/json"])
     return responseHandler.lastChunk
   }
 

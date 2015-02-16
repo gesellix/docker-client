@@ -38,6 +38,8 @@ interface DockerClient {
 
   def inspectContainer(containerId)
 
+  def inspectImage(imageId)
+
   def images()
 
   def images(query)
