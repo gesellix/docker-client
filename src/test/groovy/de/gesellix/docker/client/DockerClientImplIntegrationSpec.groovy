@@ -298,67 +298,55 @@ class DockerClientImplIntegrationSpec extends Specification {
     def imageInspection = dockerClient.inspectImage(imageId)
 
     then:
-    imageInspection == [
-        Architecture   : "amd64",
-        Author         : "",
-        Comment        : "",
-        Config         : [
-            AttachStderr   : false,
-            AttachStdin    : false,
-            AttachStdout   : false,
-            Cmd            : ["cat", "/gattaca.txt"],
-            CpuShares      : 0,
-            Cpuset         : "",
-            Domainname     : "",
-            Entrypoint     : null,
-            Env            : ["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],
-            ExposedPorts   : null,
-            Hostname       : "7f674915980d",
-            Image          : "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc",
-            MacAddress     : "",
-            Memory         : 0,
-            MemorySwap     : 0,
-            NetworkDisabled: false,
-            OnBuild        : [],
-            OpenStdin      : false,
-            PortSpecs      : null,
-            StdinOnce      : false,
-            Tty            : false, User: "",
-            Volumes        : null,
-            WorkingDir     : ""],
-        Container      : "c0c18082a03537cda7a61792e50501303051b84a90849765aa0793f69ce169b3",
-        ContainerConfig: [
-            AttachStderr   : false,
-            AttachStdin    : false,
-            AttachStdout   : false,
-            Cmd            : ["/bin/sh", "-c", "#(nop) CMD [cat /gattaca.txt]"],
-            CpuShares      : 0,
-            Cpuset         : "",
-            Domainname     : "",
-            Entrypoint     : null,
-            Env            : ["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],
-            ExposedPorts   : null,
-            Hostname       : "7f674915980d",
-            Image          : "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc",
-            MacAddress     : "",
-            Memory         : 0,
-            MemorySwap     : 0,
-            NetworkDisabled: false,
-            OnBuild        : [],
-            OpenStdin      : false,
-            PortSpecs      : null,
-            StdinOnce      : false,
-            Tty            : false,
-            User           : "",
-            Volumes        : null,
-            WorkingDir     : ""],
-        Created        : "2015-02-10T22:31:18.294569606Z",
-        DockerVersion  : "1.4.1",
-        Id             : "3eb19b6d933247ab513993b2b9ed43a44f0432580e6f4f974bb2071ea968b494",
-        Os             : "linux",
-        Parent         : "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc",
-        Size           : 0,
-        VirtualSize    : 2433322
+    imageInspection.Config.Image == "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc"
+    and:
+    imageInspection.Id == "3eb19b6d933247ab513993b2b9ed43a44f0432580e6f4f974bb2071ea968b494"
+    and:
+    imageInspection.Parent == "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc"
+    and:
+    imageInspection.Container == "c0c18082a03537cda7a61792e50501303051b84a90849765aa0793f69ce169b3"
+  }
+
+  @Betamax(tape = 'history', match = [MatchRule.method, MatchRule.path])
+  def "history"() {
+    given:
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
+
+    when:
+    def history = dockerClient.history(imageId)
+
+    then:
+    history == [
+        ["Created"  : 1423607478,
+         "CreatedBy": "/bin/sh -c #(nop) CMD [cat /gattaca.txt]",
+         "Id"       : "3eb19b6d933247ab513993b2b9ed43a44f0432580e6f4f974bb2071ea968b494",
+         "Size"     : 0,
+         "Tags"     : ["example.com:5000/gesellix/example:latest", "gesellix/docker-client-testimage:latest"]],
+        ["Created"  : 1423607478,
+         "CreatedBy": "/bin/sh -c echo \"The wind caught it\" \u003e /gattaca.txt",
+         "Id"       : "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc",
+         "Size"     : 19,
+         "Tags"     : null],
+        ["Created"  : 1420064636,
+         "CreatedBy": "/bin/sh -c #(nop) CMD [/bin/sh]",
+         "Id"       : "4986bf8c15363d1c5d15512d5266f8777bfba4974ac56e3270e7760f6f0a8125",
+         "Size"     : 0,
+         "Tags"     : ["busybox:latest", "busybox:buildroot-2014.02"]],
+        ["Created"  : 1420064636,
+         "CreatedBy": "/bin/sh -c #(nop) ADD file:8cf517d90fe79547c474641cc1e6425850e04abbd8856718f7e4a184ea878538 in /",
+         "Id"       : "ea13149945cb6b1e746bf28032f02e9b5a793523481a0a18645fc77ad53c4ea2",
+         "Size"     : 2433303,
+         "Tags"     : null],
+        ["Created"  : 1412196367,
+         "CreatedBy": "/bin/sh -c #(nop) MAINTAINER Jérôme Petazzoni \u003cjerome@docker.com\u003e",
+         "Id"       : "df7546f9f060a2268024c8a230d8639878585defcc1bc6f79d2728a13957871b",
+         "Size"     : 0,
+         "Tags"     : null],
+        ["Created"  : 1371157430,
+         "CreatedBy": "",
+         "Id"       : "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158",
+         "Size"     : 0,
+         "Tags"     : ["scratch:latest"]]
     ]
   }
 
@@ -810,5 +798,20 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     cleanup:
     dockerClient.rm("a_wonderful_new_name")
+  }
+
+  @Betamax(tape = 'search', match = [MatchRule.method, MatchRule.path])
+  def "search"() {
+    when:
+    def searchResult = dockerClient.search("testimage")
+
+    then:
+    searchResult.contains([
+        description: "",
+        is_official: false,
+        is_trusted : true,
+        name       : "gesellix/docker-client-testimage",
+        star_count : 0
+    ])
   }
 }

@@ -2,7 +2,7 @@
 
 *feature set based on the [Docker Remote API v1.17](https://docs.docker.com/reference/api/docker_remote_api_v1.17/)*
 
-Current api coverage (26/44): ![Remote API Coverage Status](http://progressed.io/bar/59)
+Current api coverage (28/44): ![Remote API Coverage Status](http://progressed.io/bar/64)
 
 This project tends to support most api endpoints, but only if there's an actual use case. If you're missing a feature, please file
 a [new issue](https://github.com/gesellix-docker/docker-client/issues) or a [pull request](https://github.com/gesellix-docker/docker-client/pulls) 
@@ -40,11 +40,11 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker pull`: Create an image (from the registry)
 * [ ] `docker import`: Create an image (by import)
 * [x] `docker inspect <image>`: Inspect an image
-* [ ] `docker history <image>`: Get the history of an image
+* [x] `docker history <image>`: Get the history of an image
 * [x] `docker push <image>`: Push an image on the registry
 * [x] `docker tag <image> <repository>`: Tag an image into a repository
 * [x] `docker rmi <image>`: Remove an image
-* [ ] `docker search <term>`: Search images
+* [x] `docker search <term>`: Search images
 
 ## Misc
 

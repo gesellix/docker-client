@@ -340,6 +340,13 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
+  def history(imageId) {
+    logger.info "docker history"
+    getDelegate().get([path: "/images/${imageId}/history"])
+    return responseHandler.lastChunk
+  }
+
+  @Override
   def images(query = [all    : false,
                       filters: [:]]) {
     logger.info "docker images"
@@ -429,6 +436,14 @@ class DockerClientImpl implements DockerClient {
     getDelegate().post([path : "/containers/${containerId}/rename".toString(),
                         query: [name: newName]])
     return responseHandler.statusLine.statusCode
+  }
+
+  @Override
+  def search(term) {
+    logger.info "docker search"
+    getDelegate().get([path : "/images/search".toString(),
+                       query: [term: term]])
+    return responseHandler.lastChunk
   }
 
   def extractSingleTarEntry(byte[] tarContent, String filename) {

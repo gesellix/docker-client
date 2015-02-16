@@ -409,6 +409,18 @@ class DockerClientImplSpec extends Specification {
     1 * delegateMock.get([path: "/images/an-image/json"])
   }
 
+  def "history"() {
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+
+    when:
+    dockerClient.history("an-image")
+
+    then:
+    1 * delegateMock.get([path: "/images/an-image/history"])
+  }
+
   def "images with defaults"() {
     given:
     dockerClient.responseHandler.success = true
@@ -651,5 +663,18 @@ class DockerClientImplSpec extends Specification {
     then:
     1 * delegateMock.post([path : "/containers/an-old-container/rename",
                            query: [name: "a-new-container-name"]]) >> [statusLine: [:]]
+  }
+
+  def "search"() {
+    given:
+    dockerClient.responseHandler.success = true
+    dockerClient.responseHandler.chunks << [:]
+
+    when:
+    dockerClient.search("ubuntu")
+
+    then:
+    1 * delegateMock.get([path : "/images/search",
+                          query: [term: "ubuntu"]])
   }
 }

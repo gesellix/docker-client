@@ -40,6 +40,8 @@ interface DockerClient {
 
   def inspectImage(imageId)
 
+  def history(imageId)
+
   def images()
 
   def images(query)
@@ -85,4 +87,6 @@ interface DockerClient {
   def copyFile(containerId, String filename)
 
   def rename(containerId, newName)
+
+  def search(term)
 }
