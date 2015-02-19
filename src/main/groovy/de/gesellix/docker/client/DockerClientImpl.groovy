@@ -1,12 +1,12 @@
 package de.gesellix.docker.client
 
+import de.gesellix.socketfactory.httpclient.DockerHttpClientFactory
 import groovy.json.JsonBuilder
 import groovyx.net.http.ContentType
 import groovyx.net.http.RESTClient
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.io.IOUtils
-import org.apache.http.client.HttpClient
 import org.codehaus.groovy.runtime.MethodClosure
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -29,24 +29,12 @@ class DockerClientImpl implements DockerClient {
 
   def createDockerClient(String dockerHost) {
     def httpClientFactory = new DockerHttpClientFactory(dockerHost)
-    dockerHost = httpClientFactory.sanitizedUri
-    def restClient = new RESTClient(dockerHost) {
-
-      private client
-
-      @Override
-      HttpClient getClient() {
-        if (client == null) {
-          this.client = httpClientFactory.createOldHttpClient()
-        }
-        return this.client
-      }
-    }
+    def restClient = httpClientFactory.getRESTClient()
     restClient.with {
       handler.failure = new MethodClosure(responseHandler, "handleFailure")
       handler.success = new MethodClosure(responseHandler, "handleSuccess")
     }
-    logger.info "using docker at '${dockerHost}'"
+    logger.info "using docker at '${httpClientFactory.sanitizedUri}'"
     return restClient
   }
 

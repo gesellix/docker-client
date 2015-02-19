@@ -22,7 +22,7 @@ buildscript {
     classpath 'net.saliman:gradle-cobertura-plugin:2.2.6'
     classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.3.1'
     classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.1'
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.7'
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.8'
   }
 }
 
@@ -79,7 +79,7 @@ def dependencyVersions = [
     'org.apache.commons:commons-compress'                  : '1.9',
     'org.apache.httpcomponents:httpclient'                 : '4.3',
     'org.apache.httpcomponents:httpmime'                   : '4.3',
-    'org.codehaus.groovy:groovy-all'                       : '2.3.9',
+    'org.codehaus.groovy:groovy-all'                       : '2.4.1',
     'org.codehaus.groovy.modules.http-builder:http-builder': '0.7.1',
     'org.hamcrest:hamcrest-core'                           : '1.3',
     'org.slf4j:slf4j-api'                                  : '1.7.10',
@@ -90,7 +90,7 @@ def dependencyVersions = [
 ]
 
 dependencies {
-  compile 'org.codehaus.groovy:groovy-all:2.3.9'
+  compile 'org.codehaus.groovy:groovy-all:2.4.1'
   compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
 
   compile 'org.apache.commons:commons-compress:1.9'
@@ -98,7 +98,7 @@ dependencies {
 
   compile 'org.slf4j:slf4j-api:1.7.10'
 
-  compile 'de.gesellix:docker-socket-factory:2014-11-06T22-41-25'
+  compile 'de.gesellix:docker-socket-factory:2015-02-19T12-18-03'
 
   testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
   testCompile 'co.freeside:betamax:1.1.2'
