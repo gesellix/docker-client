@@ -1,5 +1,6 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.protocolhandler
 
+import de.gesellix.docker.client.DockerClientImpl
 import de.gesellix.socketfactory.https.KeyStoreUtil
 
 import javax.net.ssl.HttpsURLConnection
@@ -63,9 +64,10 @@ class RawDockerStreamReader {
       println "stream type: ${header.streamType}"
       def frameSize = header.frameSize
       def count = 0
-      while (frameSize >= 0) {
+      while (frameSize > 0) {
         print((char) dataInput.readByte())
         count++
+        frameSize--
       }
 
       max--
@@ -76,21 +78,5 @@ class RawDockerStreamReader {
 
     dataInput.close()
     stream.close()
-  }
-
-  static class RawDockerHeader {
-
-    def streamType
-    def frameSize
-
-    RawDockerHeader(DataInputStream dataInput) {
-      streamType = dataInput.readByte()
-      dataInput.readByte()
-      dataInput.readByte()
-      dataInput.readByte()
-
-      // http://stackoverflow.com/questions/13203426/convert-4-bytes-to-an-unsigned-32-bit-integer-and-storing-it-in-a-long
-      frameSize = dataInput.readInt()
-    }
   }
 }
