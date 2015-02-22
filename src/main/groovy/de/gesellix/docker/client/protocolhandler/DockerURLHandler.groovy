@@ -3,18 +3,22 @@ package de.gesellix.docker.client.protocolhandler
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import static java.lang.Boolean.FALSE
+
 class DockerURLHandler {
 
   Logger logger = LoggerFactory.getLogger(DockerURLHandler)
 
   String dockerHost
+  String dockerTlsVerify
   String dockerCertPath
-  int defaultDockerTlsPort = 2376
+  final int defaultDockerTlsPort = 2376
 
   URL dockerUrl
 
   DockerURLHandler() {
     this.dockerHost = System.getProperty("docker.host", System.env.DOCKER_HOST)
+    this.dockerTlsVerify = System.getProperty("docker.tlsverify", System.env.DOCKER_TLS_VERIFY)
     this.dockerCertPath = System.getProperty("docker.cert.path", System.env.DOCKER_CERT_PATH)
   }
 
@@ -36,7 +40,7 @@ class DockerURLHandler {
       case "https":
         break;
       case "tcp":
-        if (canTlsBeAssumed(new URL(dockerHost.replaceFirst("^${oldProtocol}://", "https://")))) {
+        if (shouldUseTls(new URL(dockerHost.replaceFirst("^${oldProtocol}://", "https://")))) {
           logger.info("assume 'https'")
           protocol = "https"
         }
@@ -56,9 +60,33 @@ class DockerURLHandler {
     return new URL(dockerHost.replaceFirst("^${oldProtocol}://", "${protocol}://"))
   }
 
-  def canTlsBeAssumed(candidateURL) {
-    def isTlsPort = candidateURL.port == defaultDockerTlsPort
+  def shouldUseTls(candidateURL) {
+    // explicitly disabled?
+    if (Boolean.valueOf(dockerTlsVerify) == FALSE || "0".equals(dockerTlsVerify)) {
+      return false
+    }
+
     def certsPathExists = dockerCertPath && new File(dockerCertPath).isDirectory()
-    return isTlsPort && certsPathExists
+    if (!certsPathExists) {
+      String userHome = System.properties['user.home']
+      if (new File(userHome, ".docker").isDirectory()) {
+        certsPathExists = true
+      }
+    }
+
+    // explicitly enabled?
+    def isTlsVerifyEnabled = "1".equals(dockerTlsVerify) || Boolean.valueOf(dockerTlsVerify)
+    if (isTlsVerifyEnabled) {
+      if (!certsPathExists) {
+        throw new IllegalStateException("tlsverify=${dockerTlsVerify}, but ${dockerCertPath} doesn't exist")
+      }
+      else {
+        return true
+      }
+    }
+
+    // make a guess if we could use tls, when it's neither explicitly enabled nor disabled
+    def isTlsPort = candidateURL.port == defaultDockerTlsPort
+    return certsPathExists && isTlsPort
   }
 }
