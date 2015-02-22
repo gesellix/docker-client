@@ -25,133 +25,107 @@ class LowLevelDockerClient {
   LowLevelDockerClient() {
   }
 
-  def getUrl() {
+  def getDockerBaseUrl() {
     if (!getDockerHostUrl()) {
       dockerHostUrl = new DockerURLHandler(dockerHost: getDockerHost()).getURL()
     }
     return dockerHostUrl
   }
 
-  def get(path, stream = false) {
-    def pingUrl = new URL("${getUrl()}${path}")
-    logger.info("GET ${pingUrl}")
+  def get(path) {
+    return request("GET", path)
+  }
+
+  def post(path) {
+    return request("POST", path)
+  }
+
+  def request(method, path) {
+    def pingUrl = new URL("${getDockerBaseUrl()}${path}")
+    logger.info("${method} ${pingUrl}")
 
     def connection = pingUrl.openConnection()
-//    logger.info("${pingUrl} -> ${connection.responseCode}")
-//    logger.info("${pingUrl} -> ${connection.headerFields}")
-//    logger.info("${pingUrl} -> ${connection.inputStream}")
+//    connection.setDoOutput(true)
+    connection.setRequestMethod(method)
 
-/*
-    def response = connection.inputStream
-    String contentType = connection.getHeaderField("Content-Type")
-    logger.info("Content-Type: ${contentType}")
-    String charset
-    for (String param : contentType.replace(" ", "").split(";")) {
+    def statusLine = connection.headerFields[null]
+    def headers = connection.headerFields.findAll { key, value ->
+      key != null
+    }.collectEntries { key, value ->
+      [key.toLowerCase(), value]
+    }
+    String contentType = headers['content-type'].first()
+
+    logger.debug("status: ${statusLine}")
+    logger.debug("header: ${headers}")
+    logger.debug("content-length: ${headers['content-length']}")
+    logger.debug("content-type: ${contentType}")
+
+    def response = [
+        statusLine: [
+            text: statusLine,
+            code: connection.responseCode
+        ],
+        headers   : headers,
+        stream    : connection.inputStream
+    ]
+
+    def contentHandler = contentHandlerFactory.createContentHandler(contentType)
+    if (contentHandler == null) {
+      logger.warn("couldn't find a specific ContentHandler for '${contentType}'.")
+      IOUtils.copy(response.stream, System.out)
+      println()
+    }
+    else {
+      switch (contentType) {
+        case "application/vnd.docker.raw-stream":
+          InputStream rawStream = contentHandler.getContent(connection) as RawInputStream
+          IOUtils.copy(rawStream, System.out)
+          println()
+          break;
+        case "application/json":
+          def body = contentHandler.getContent(connection)
+          println body
+          break;
+        case "text/html":
+          def body = contentHandler.getContent(connection)
+          println body
+          break;
+        case "text/plain":
+          def body = contentHandler.getContent(connection)
+          println body
+          break;
+        default:
+          IOUtils.copy(response.stream, System.out)
+          println()
+          break
+      }
+    }
+
+    return response
+  }
+
+  def getCharset(contentTypeHeader) {
+    String charset = "utf-8"
+    for (String param : contentTypeHeader.replace(" ", "").split(";")) {
       if (param.startsWith("charset=")) {
         charset = param.split("=", 2)[1]
         break
       }
     }
     logger.info("charset: ${charset}")
-    if (charset != null) {
-      BufferedReader reader = new BufferedReader(new InputStreamReader(response, charset))
-      for (String line; (line = reader.readLine()) != null;) {
-        logger.info("${pingUrl} -> ${line}")
-      }
-    }
-    else {
-      // It's likely binary content, use InputStream/OutputStream.
-      def outputStream = new ByteArrayOutputStream()
-      IOUtils.copy(connection.inputStream, outputStream)
-      logger.info("${pingUrl} -> ${new String(outputStream.toByteArray())}")
-    }
-*/
-
-    def statusLine = connection.headerFields[null]
-    def headers = connection.headerFields.findAll { key, value ->
-      key != null
-    }.collectEntries { key, value ->
-      [key.toLowerCase(), value]
-    }
-
-    logger.info("status: ${statusLine}")
-
-    def response = [
-        statusLine: [
-            text: statusLine,
-            code: connection.responseCode
-        ],
-        headers   : headers,
-        body      : stream ? connection.inputStream : connection.content
-    ]
-
-    logger.info("status: ${response.statusLine}")
-    logger.info("content-length: ${response.headers['content-length']}")
-    logger.info("content-type: ${response.headers['content-type']}")
-    if (stream) {
-      logger.info("body: ${IOUtils.toString(response.body as InputStream)}")
-    }
-    else {
-      logger.info("body: ${response.body}")
-    }
-
-    return response
-  }
-
-  def post(path, request = null, stream = false) {
-    def pingUrl = new URL("${getUrl()}${path}")
-    logger.info("POST ${pingUrl}")
-
-    def connection = pingUrl.openConnection()
-//    connection.setDoOutput(true)
-    connection.setRequestMethod("POST")
-
-    def statusLine = connection.headerFields[null]
-    def headers = connection.headerFields.findAll { key, value ->
-      key != null
-    }.collectEntries { key, value ->
-      [key.toLowerCase(), value]
-    }
-
-    logger.info("status: ${statusLine}")
-    logger.info("header: ${headers}")
-
-    def response = [
-        statusLine: [
-            text: statusLine,
-            code: connection.responseCode
-        ],
-        headers   : headers,
-        body      : stream ? connection.inputStream : connection.content
-    ]
-
-    logger.info("status: ${response.statusLine}")
-    logger.info("content-length: ${response.headers['content-length']}")
-    logger.info("content-type: ${response.headers['content-type']}")
-    if (stream) {
-      if (response.headers['content-type'].first() == "application/vnd.docker.raw-stream") {
-        def contentType = response.headers['content-type'].first() as String
-        InputStream rawStream = contentHandlerFactory.createContentHandler(contentType).getContent(connection)
-        IOUtils.copy(rawStream, System.out)
-      }
-      else {
-        logger.info("body: ${IOUtils.toString(response.body as InputStream)}")
-      }
-    }
-    else {
-      logger.info("body: ${response.body}")
-    }
-
-    return response
+    return charset
   }
 
   def test() {
-    logger.info "docker ping"
-    def response = get("/_ping")
-//    response = get("/version")
-//    response = get("/containers/json")
+    def response
+    response = get("/_ping")
+    response = get("/version")
+    response = get("/images/json")
+    response = get("/containers/json")
 //    response = get("/containers/test/json")
-    response = post("/containers/test/attach?logs=1&stream=1&stdout=1&stderr=0&tty=false", null, true)
+//    response = post("/containers/test/attach?logs=1&stream=1&stdout=1&stderr=0&tty=false")
+    response = post("/images/create?fromImage=gesellix%2Fdocker-client-testimage&tag=latest&registry=")
   }
 
   public static void main(String[] args) {
