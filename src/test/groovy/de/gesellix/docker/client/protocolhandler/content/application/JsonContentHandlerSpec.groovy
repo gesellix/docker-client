@@ -5,20 +5,36 @@ import spock.lang.Specification
 
 class JsonContentHandlerSpec extends Specification {
 
-  def "should delegate to the JsonSlurper"() {
+  def connection = Mock(URLConnection)
+  def jsonSlurper = Mock(JsonSlurper)
+  def jsonContentHandler
+
+  def setup() {
+    jsonContentHandler = new json(jsonSlurper: jsonSlurper)
+  }
+
+  def "should convert json chunks to an array of json chunks"() {
     given:
-    def jsonSlurper = Mock(JsonSlurper)
-    def connection = Mock(URLConnection)
-    def inputStream = Mock(InputStream)
-    def jsonContentHandler = new json(jsonSlurper: jsonSlurper)
+    def inputStream = new ByteArrayInputStream("{'key':'a-value'}\n{'2nd':'chunk'}".bytes)
+    connection.inputStream >> inputStream
 
     when:
+    jsonContentHandler.getContent(connection)
+
+    then:
+    1 * jsonSlurper.parse("[{'key':'a-value'},{'2nd':'chunk'}]".bytes) >> ["key": "a-value", "2nd": "chunk"]
+  }
+
+  def "should delegate to the JsonSlurper"() {
+    given:
+    def inputStream = new ByteArrayInputStream("{'key':'a-value'}".bytes)
     connection.inputStream >> inputStream
+    1 * jsonSlurper.parse(_) >> ["key": "a-value"]
+
+    when:
     def content = jsonContentHandler.getContent(connection)
 
     then:
-    1 * jsonSlurper.parse(inputStream) >> ["key": "a-value"]
-    and:
     content == ["key": "a-value"]
   }
 }
