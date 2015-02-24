@@ -62,7 +62,7 @@ class DockerURLHandler {
 
   def shouldUseTls(candidateURL) {
     // explicitly disabled?
-    if (Boolean.valueOf(dockerTlsVerify) == FALSE || "0".equals(dockerTlsVerify)) {
+    if ((dockerTlsVerify && Boolean.valueOf(dockerTlsVerify) == FALSE) || "0".equals(dockerTlsVerify)) {
       return false
     }
 
