@@ -25,7 +25,27 @@ class LowLevelDockerClient {
 
   def sslSocketFactory = null
 
+  public static void main(String[] args) {
+    def defaultDockerHost = System.env.DOCKER_HOST
+    def client = new LowLevelDockerClient(dockerHost: defaultDockerHost ?: "http://172.17.42.1:4243/")
+    client.test()
+  }
+
   LowLevelDockerClient() {
+  }
+
+  def test() {
+    def response
+    response = get("/_ping")
+    response = get("/version")
+    response = get("/info")
+    response = get("/images/json")
+    response = get("/containers/json")
+//    response = get("/containers/test/json")
+//    response = post("/containers/test/attach?logs=1&stream=1&stdout=1&stderr=0&tty=false")
+    response = post("/images/create?fromImage=gesellix%2Fdocker-client-testimage&tag=latest&registry=")
+    response = post([path : "/images/create",
+                     query: [fromImage: "gesellix/docker-client-testimage", tag: "latest", "registry": ""]])
   }
 
   def getDockerBaseUrl() {
@@ -35,19 +55,46 @@ class LowLevelDockerClient {
     return dockerHostUrl
   }
 
-  def get(path) {
-    return request("GET", path)
+  def ensureValidRequestConfig(config) {
+    def validConfig = config
+    if (config instanceof String) {
+      validConfig = [path: config]
+    }
+    if (!validConfig.path) {
+      throw new IllegalArgumentException("need a path")
+    }
+    return validConfig
   }
 
-  def post(path) {
-    return request("POST", path)
+  def queryToString(query) {
+//    Charset.forName("UTF-8")
+    def queryAsString = query.collect { key, value ->
+      "${URLEncoder.encode(key, "UTF-8")}=${URLEncoder.encode(value, "UTF-8")}"
+    }
+    return queryAsString.join("&")
   }
 
-  def request(method, path) {
-    def requestUrl = new URL("${getDockerBaseUrl()}${path}")
-    logger.info("${method} ${requestUrl}")
+  def get(requestConfig) {
+    def config = ensureValidRequestConfig(requestConfig)
+    config.method = "GET"
+    return request(config)
+  }
 
-    def connection = connect(method, requestUrl)
+  def post(requestConfig) {
+    def config = ensureValidRequestConfig(requestConfig)
+    config.method = "POST"
+    return request(config)
+  }
+
+  def request(config) {
+    if (!config || config == [:]) {
+      throw new IllegalArgumentException("expected a valid request config object")
+    }
+    config.query = (config.query) ? "?${queryToString(config.query)}" : ""
+    def requestUrl = new URL("${getDockerBaseUrl()}${config.path}${config.query}")
+    logger.info("${config.method} ${requestUrl}")
+
+    def connection = connect(config.method, requestUrl)
 //    connection.setDoOutput(true)
     // since we listen to a stream we disable the timeout
 //    connection.setConnectTimeout(0)
@@ -83,7 +130,8 @@ class LowLevelDockerClient {
       logger.warn("couldn't find a specific ContentHandler for '${contentType}'.")
       IOUtils.copy(response.stream, System.out)
       println()
-    } else {
+    }
+    else {
       switch (contentType) {
         case "application/vnd.docker.raw-stream":
           InputStream rawStream = contentHandler.getContent(connection) as RawInputStream
@@ -144,22 +192,5 @@ class LowLevelDockerClient {
     }
     logger.info("charset: ${charset}")
     return charset
-  }
-
-  def test() {
-    def response
-    response = get("/_ping")
-    response = get("/version")
-    response = get("/images/json")
-    response = get("/containers/json")
-//    response = get("/containers/test/json")
-//    response = post("/containers/test/attach?logs=1&stream=1&stdout=1&stderr=0&tty=false")
-    response = post("/images/create?fromImage=gesellix%2Fdocker-client-testimage&tag=latest&registry=")
-  }
-
-  public static void main(String[] args) {
-    def defaultDockerHost = System.env.DOCKER_HOST
-    def client = new LowLevelDockerClient(dockerHost: defaultDockerHost ?: "http://172.17.42.1:4243/")
-    client.test()
   }
 }
