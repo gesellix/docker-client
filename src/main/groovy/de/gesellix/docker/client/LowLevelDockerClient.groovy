@@ -1,5 +1,8 @@
-package de.gesellix.docker.client.protocolhandler
+package de.gesellix.docker.client
 
+import de.gesellix.docker.client.protocolhandler.DockerContentHandlerFactory
+import de.gesellix.docker.client.protocolhandler.DockerURLHandler
+import de.gesellix.docker.client.protocolhandler.RawInputStream
 import de.gesellix.socketfactory.https.KeyStoreUtil
 import org.apache.commons.io.IOUtils
 import org.slf4j.Logger
@@ -20,58 +23,16 @@ class LowLevelDockerClient {
 
   ContentHandlerFactory contentHandlerFactory = new DockerContentHandlerFactory()
 
-  def dockerHost = "http://127.0.0.1:2375/"
+  def dockerHost = "http://127.0.0.1:2375"
   URL dockerHostUrl
 
   def sslSocketFactory = null
-
-  public static void main(String[] args) {
-    def defaultDockerHost = System.env.DOCKER_HOST
-    def client = new LowLevelDockerClient(dockerHost: defaultDockerHost ?: "http://172.17.42.1:4243/")
-    client.test()
-  }
-
-  LowLevelDockerClient() {
-  }
-
-  def test() {
-    def response
-    response = get("/_ping")
-    response = get("/version")
-    response = get("/info")
-    response = get("/images/json")
-    response = get("/containers/json")
-//    response = get("/containers/test/json")
-//    response = post("/containers/test/attach?logs=1&stream=1&stdout=1&stderr=0&tty=false")
-    response = post("/images/create?fromImage=gesellix%2Fdocker-client-testimage&tag=latest&registry=")
-    response = post([path : "/images/create",
-                     query: [fromImage: "gesellix/docker-client-testimage", tag: "latest", "registry": ""]])
-  }
 
   def getDockerBaseUrl() {
     if (!getDockerHostUrl()) {
       dockerHostUrl = new DockerURLHandler(dockerHost: getDockerHost()).getURL()
     }
     return dockerHostUrl
-  }
-
-  def ensureValidRequestConfig(config) {
-    def validConfig = config
-    if (config instanceof String) {
-      validConfig = [path: config]
-    }
-    if (!validConfig.path) {
-      throw new IllegalArgumentException("need a path")
-    }
-    return validConfig
-  }
-
-  def queryToString(query) {
-//    Charset.forName("UTF-8")
-    def queryAsString = query.collect { key, value ->
-      "${URLEncoder.encode(key, "UTF-8")}=${URLEncoder.encode(value, "UTF-8")}"
-    }
-    return queryAsString.join("&")
   }
 
   def get(requestConfig) {
@@ -125,39 +86,95 @@ class LowLevelDockerClient {
         stream    : connection.inputStream
     ]
 
-    def contentHandler = contentHandlerFactory.createContentHandler(contentType)
+    def mimetype = contentType.replace(" ", "").split(";").first()
+    def contentHandler = contentHandlerFactory.createContentHandler(mimetype)
     if (contentHandler == null) {
       logger.warn("couldn't find a specific ContentHandler for '${contentType}'.")
       IOUtils.copy(response.stream, System.out)
       println()
     }
     else {
-      switch (contentType) {
+      switch (mimetype) {
         case "application/vnd.docker.raw-stream":
           InputStream rawStream = contentHandler.getContent(connection) as RawInputStream
-          IOUtils.copy(rawStream, System.out)
-          println()
+          if (config.outputStream) {
+            IOUtils.copy(rawStream as InputStream, config.outputStream as OutputStream)
+          }
+          else {
+            IOUtils.copy(rawStream, System.out)
+            println()
+            response.stream = null
+          }
           break;
         case "application/json":
           def body = contentHandler.getContent(connection)
-          println body
+          if (config.outputStream && body instanceof InputStream) {
+            IOUtils.copy(body as InputStream, config.outputStream as OutputStream)
+          }
+          else {
+            if (body instanceof InputStream) {
+              response.content = IOUtils.toString(body as InputStream)
+              response.stream = null
+            }
+            else {
+              response.content = body
+              response.stream = null
+            }
+          }
           break;
         case "text/html":
           def body = contentHandler.getContent(connection)
-          println body
+          if (config.outputStream && body instanceof InputStream) {
+            IOUtils.copy(body as InputStream, config.outputStream as OutputStream)
+          }
+          else {
+            response.content = IOUtils.toString(body as InputStream)
+            response.stream = null
+          }
           break;
         case "text/plain":
           def body = contentHandler.getContent(connection)
-          println body
+          if (config.outputStream && body instanceof InputStream) {
+            IOUtils.copy(body as InputStream, config.outputStream as OutputStream)
+          }
+          else {
+            response.content = IOUtils.toString(body as InputStream)
+            response.stream = null
+          }
           break;
         default:
-          IOUtils.copy(response.stream, System.out)
+          if (config.outputStream) {
+            IOUtils.copy(response.stream as InputStream, config.outputStream as OutputStream)
+          }
+          else {
+            response.content = IOUtils.toString(response.stream as InputStream)
+            response.stream = null
+          }
           println()
           break
       }
     }
 
     return response
+  }
+
+  def ensureValidRequestConfig(config) {
+    def validConfig = config
+    if (config instanceof String) {
+      validConfig = [path: config]
+    }
+    if (!validConfig.path) {
+      throw new IllegalArgumentException("need a path")
+    }
+    return validConfig
+  }
+
+  def queryToString(query) {
+//    Charset.forName("UTF-8")
+    def queryAsString = query.collect { key, value ->
+      "${URLEncoder.encode(key, "UTF-8")}=${URLEncoder.encode(value, "UTF-8")}"
+    }
+    return queryAsString.join("&")
   }
 
   def connect(method, URL requestUrl) {

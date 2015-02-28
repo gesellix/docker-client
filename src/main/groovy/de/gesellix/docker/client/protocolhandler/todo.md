@@ -1,7 +1,7 @@
 # wishlist :)
 
 * [x] plain http
-* [ ] tls/https
+* [x] tls/https
 * [ ] unix socket
 * [x] basic get 
 * [x] basic post 

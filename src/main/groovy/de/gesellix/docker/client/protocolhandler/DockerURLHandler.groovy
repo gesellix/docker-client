@@ -56,7 +56,7 @@ class DockerURLHandler {
         logger.warn("protocol '${protocol}' not supported")
         break;
     }
-    logger.info("selected protocol '${protocol}'")
+    logger.debug("selected protocol '${protocol}'")
     return new URL(dockerHost.replaceFirst("^${oldProtocol}://", "${protocol}://"))
   }
 
