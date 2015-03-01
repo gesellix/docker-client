@@ -59,6 +59,26 @@ apply plugin: 'com.github.ben-manes.versions'
 
 group = 'de.gesellix'
 
+idea {
+  module {
+    testSourceDirs += file('src/integrationTest/groovy')
+    testSourceDirs += file('src/integrationTest/resources')
+  }
+}
+
+sourceSets {
+  integrationTest {
+    compileClasspath += main.output + test.output
+    runtimeClasspath += main.output + test.output
+    groovy {
+      srcDir 'src/integrationTest/groovy'
+    }
+    resources {
+      srcDir 'src/integrationTest/resources'
+    }
+  }
+}
+
 task sourcesJar(type: Jar) {
   dependsOn classes
   classifier 'sources'
@@ -109,6 +129,11 @@ dependencies {
   testRuntime 'ch.qos.logback:logback-classic:1.1.2'
 }
 
+configurations {
+  integrationTestCompile.extendsFrom testCompile
+  integrationTestRuntime.extendsFrom testRuntime
+}
+
 configurations.all {
   resolutionStrategy {
     failOnVersionConflict()
@@ -120,6 +145,22 @@ test {
   // minimal way of providing a special environment variable for the EnvFileParserTest
   environment "A_KNOWN_VARIABLE", "my value"
 }
+
+task integrationTest(type: Test) {
+  group = 'verification'
+  description = 'Runs the integration tests.'
+  testClassesDir = sourceSets.integrationTest.output.classesDir
+  classpath = sourceSets.integrationTest.runtimeClasspath
+}
+integrationTest.mustRunAfter test
+check.dependsOn integrationTest
+
+task aggregateTestReports(type: TestReport) {
+  destinationDir = test.reports.html.destination
+  reportOn test, integrationTest
+}
+aggregateTestReports.mustRunAfter integrationTest
+check.dependsOn aggregateTestReports
 
 cobertura.coverageFormats = ['html', 'xml']
 
