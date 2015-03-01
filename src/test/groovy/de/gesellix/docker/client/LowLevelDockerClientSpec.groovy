@@ -21,7 +21,7 @@ class LowLevelDockerClientSpec extends Specification {
   def "dockerBaseUrl should support tls port"() {
     def client = new LowLevelDockerClient(dockerHost: "tcp://127.0.0.1:2376")
     expect:
-    client.dockerBaseUrl?.toString() == new URL("http://127.0.0.1:2376").toString()
+    client.dockerBaseUrl?.toString() == new URL("https://127.0.0.1:2376").toString()
   }
 
   def "dockerBaseUrl should support https protocol"() {
@@ -62,15 +62,16 @@ class LowLevelDockerClientSpec extends Specification {
 
   def "should parse application/json"() {
     def client = new LowLevelDockerClient(dockerHost: System.env.DOCKER_HOST)
-    expect:
-    client.get("/version").content == [
-        ["ApiVersion"   : "1.17",
-         "Arch"         : "amd64",
-         "GitCommit"    : "a8a31ef",
-         "GoVersion"    : "go1.4.1",
-         "KernelVersion": "3.13.0-46-generic",
-         "Os"           : "linux",
-         "Version"      : "1.5.0"]
-    ]
+    when:
+    def response = client.get("/version")
+    then:
+    def firstChunk = response.content.first()
+    firstChunk.ApiVersion == "1.17"
+    firstChunk.Arch == "amd64"
+    firstChunk.GitCommit == "a8a31ef"
+    firstChunk.GoVersion == "go1.4.1"
+    firstChunk.KernelVersion ==~ "3\\.\\d+\\.\\d+-\\w+"
+    firstChunk.Os == "linux"
+    firstChunk.Version == "1.5.0"
   }
 }
