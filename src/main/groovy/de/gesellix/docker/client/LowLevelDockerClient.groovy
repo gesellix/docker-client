@@ -4,6 +4,7 @@ import de.gesellix.docker.client.protocolhandler.DockerContentHandlerFactory
 import de.gesellix.docker.client.protocolhandler.DockerURLHandler
 import de.gesellix.docker.client.protocolhandler.RawInputStream
 import de.gesellix.socketfactory.https.KeyStoreUtil
+import groovy.json.JsonBuilder
 import org.apache.commons.io.IOUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -12,6 +13,7 @@ import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
+import java.nio.charset.Charset
 
 import static de.gesellix.socketfactory.https.KeyStoreUtil.getKEY_STORE_PASSWORD
 import static javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm
@@ -56,12 +58,39 @@ class LowLevelDockerClient {
     logger.info("${config.method} ${requestUrl}")
 
     def connection = connect(config.method, requestUrl)
-//    connection.setDoOutput(true)
+    connection.setUseCaches(false)
+
     // since we listen to a stream we disable the timeout
 //    connection.setConnectTimeout(0)
     // since we listen to a stream we disable the timeout
 //    connection.setReadTimeout(0)
-//    connection.setUseCaches(false)
+
+    if (config.body) {
+      byte[] postData
+      int postDataLength
+      switch (config.requestContentType) {
+        case "application/json":
+          def json = new JsonBuilder()
+          json config.body
+          def bodyAsString = json.toString()
+          postData = bodyAsString.getBytes(Charset.forName("UTF-8"))
+          postDataLength = postData.length
+          break;
+        default:
+          postData = config.body.toString().getBytes(Charset.forName("UTF-8"))
+          postDataLength = postData.length
+          break;
+      }
+
+      connection.setDoOutput(true)
+      connection.setDoInput(true)
+      connection.setInstanceFollowRedirects(false)
+
+      connection.setRequestProperty("Content-Type", config.requestContentType as String)
+      connection.setRequestProperty("charset", "utf-8")
+      connection.setRequestProperty("Content-Length", Integer.toString(postDataLength))
+      IOUtils.copy(new ByteArrayInputStream(postData), connection.getOutputStream())
+    }
 
     def statusLine = connection.headerFields[null]
     logger.debug("status: ${statusLine}")
