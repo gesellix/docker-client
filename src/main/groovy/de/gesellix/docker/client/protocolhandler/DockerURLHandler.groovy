@@ -63,15 +63,21 @@ class DockerURLHandler {
   def shouldUseTls(candidateURL) {
     // explicitly disabled?
     if ((dockerTlsVerify && Boolean.valueOf(dockerTlsVerify) == FALSE) || "0".equals(dockerTlsVerify)) {
+      logger.debug("dockerTlsVerify=${dockerTlsVerify}")
       return false
     }
 
     def certsPathExists = dockerCertPath && new File(dockerCertPath).isDirectory()
     if (!certsPathExists) {
       String userHome = System.properties['user.home']
-      if (new File(userHome, ".docker").isDirectory()) {
+      def defaultDockerCertPath = new File(userHome, ".docker")
+      if (defaultDockerCertPath.isDirectory()) {
+        logger.debug("dockerCertPath=${defaultDockerCertPath}")
         certsPathExists = true
       }
+    }
+    else {
+      logger.debug("dockerCertPath=${dockerCertPath}")
     }
 
     // explicitly enabled?
@@ -81,12 +87,14 @@ class DockerURLHandler {
         throw new IllegalStateException("tlsverify=${dockerTlsVerify}, but ${dockerCertPath} doesn't exist")
       }
       else {
+        logger.debug("certsPathExists=${certsPathExists}")
         return true
       }
     }
 
     // make a guess if we could use tls, when it's neither explicitly enabled nor disabled
     def isTlsPort = candidateURL.port == defaultDockerTlsPort
+    logger.debug("certsPathExists=${certsPathExists}, isTlsPort=${isTlsPort}")
     return certsPathExists && isTlsPort
   }
 }

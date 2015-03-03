@@ -22,8 +22,19 @@ class LowLevelDockerClientSpec extends Specification {
 
   def "dockerBaseUrl should support tls port"() {
     def client = new LowLevelDockerClient(dockerHost: "tcp://127.0.0.1:2376")
+    def tmpDockerCertPath = File.createTempDir()
+    given:
+    def oldDockerCertPath = System.setProperty("docker.cert.path", tmpDockerCertPath.absolutePath)
     expect:
     client.dockerBaseUrl?.toString() == new URL("https://127.0.0.1:2376").toString()
+    cleanup:
+    if (oldDockerCertPath) {
+      System.setProperty("docker.cert.path", oldDockerCertPath)
+    }
+    else {
+      System.clearProperty("docker.cert.path")
+    }
+    tmpDockerCertPath.delete()
   }
 
   def "dockerBaseUrl should support https protocol"() {
@@ -60,9 +71,9 @@ class LowLevelDockerClientSpec extends Specification {
                        "password"     : "-yet-another-password-",
                        "email"        : "tobias@gesellix.de",
                        "serveraddress": "https://index.docker.io/v1/"]
-    def request = [path              : "/auth",
-                   body              : authDetails,
-                   requestContentType: ContentType.JSON]
+    def request = [path       : "/auth",
+                   body       : authDetails,
+                   contentType: ContentType.JSON]
     when:
     def response = client.post(request)
     then:
@@ -89,7 +100,7 @@ class LowLevelDockerClientSpec extends Specification {
     firstChunk.Arch == "amd64"
     firstChunk.GitCommit == "a8a31ef"
     firstChunk.GoVersion == "go1.4.1"
-    firstChunk.KernelVersion ==~ "3\\.\\d+\\.\\d+-\\w+"
+    firstChunk.KernelVersion ==~ "3\\.\\d+\\.\\d+-.+"
     firstChunk.Os == "linux"
     firstChunk.Version == "1.5.0"
   }

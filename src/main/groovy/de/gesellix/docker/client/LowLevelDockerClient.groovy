@@ -53,12 +53,9 @@ class LowLevelDockerClient {
     if (!config || config == [:]) {
       throw new IllegalArgumentException("expected a valid request config object")
     }
-    config.query = (config.query) ? "?${queryToString(config.query)}" : ""
-    def requestUrl = new URL("${getDockerBaseUrl()}${config.path}${config.query}")
-    logger.info("${config.method} ${requestUrl}")
 
-    def connection = connect(config.method, requestUrl)
-    connection.setUseCaches(false)
+    def connection = openConnection(config)
+    configureConnection(connection, config)
 
     // since we listen to a stream we disable the timeout
 //    connection.setConnectTimeout(0)
@@ -68,7 +65,7 @@ class LowLevelDockerClient {
     if (config.body) {
       byte[] postData
       int postDataLength
-      switch (config.requestContentType) {
+      switch (config.contentType) {
         case "application/json":
           def json = new JsonBuilder()
           json config.body
@@ -86,7 +83,7 @@ class LowLevelDockerClient {
       connection.setDoInput(true)
       connection.setInstanceFollowRedirects(false)
 
-      connection.setRequestProperty("Content-Type", config.requestContentType as String)
+      connection.setRequestProperty("Content-Type", config.contentType as String)
       connection.setRequestProperty("charset", "utf-8")
       connection.setRequestProperty("Content-Length", Integer.toString(postDataLength))
       IOUtils.copy(new ByteArrayInputStream(postData), connection.getOutputStream())
@@ -206,10 +203,20 @@ class LowLevelDockerClient {
     return queryAsString.join("&")
   }
 
-  def connect(method, URL requestUrl) {
-    def connection = requestUrl.openConnection()
-    connection.setRequestMethod(method)
+  def openConnection(config) {
+    config.query = (config.query) ? "?${queryToString(config.query)}" : ""
+    def requestUrl = new URL("${getDockerBaseUrl()}${config.path}${config.query}")
+    logger.info("${config.method} ${requestUrl}")
+    return requestUrl.openConnection()
+  }
 
+  def configureConnection(connection, config) {
+    connection.setUseCaches(false)
+    connection.setRequestMethod(config.method)
+    configureSSL(connection)
+  }
+
+  def configureSSL(connection) {
     def dockerCertPath = System.getProperty("docker.cert.path", System.env.DOCKER_CERT_PATH)
     if (connection instanceof HttpsURLConnection) {
       if (!sslSocketFactory) {
@@ -224,8 +231,6 @@ class LowLevelDockerClient {
       }
       ((HttpsURLConnection) connection).setSSLSocketFactory(sslSocketFactory)
     }
-
-    return connection
   }
 
   def getCharset(contentTypeHeader) {
