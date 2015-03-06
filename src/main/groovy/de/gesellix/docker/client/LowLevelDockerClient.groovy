@@ -50,9 +50,7 @@ class LowLevelDockerClient {
   }
 
   def request(config) {
-    if (!config || config == [:]) {
-      throw new IllegalArgumentException("expected a valid request config object")
-    }
+    config = ensureValidRequestConfig(config)
 
     def connection = openConnection(config)
     configureConnection(connection, config)
@@ -191,7 +189,7 @@ class LowLevelDockerClient {
     }
     if (!validConfig?.path) {
       logger.error("bad request config: ${config}")
-      throw new IllegalArgumentException("need a path")
+      throw new IllegalArgumentException("bad request config")
     }
     return validConfig
   }

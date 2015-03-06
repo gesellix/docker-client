@@ -40,14 +40,24 @@ class LowLevelDockerClientSpec extends Specification {
     client.dockerBaseUrl?.toString() == new URL("https://127.0.0.1:2376").toString()
   }
 
-//  @Unroll
+  def "generic request with bad config: #requestConfig"() {
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    when:
+    client.request(requestConfig)
+    then:
+    def ex = thrown(RuntimeException)
+    ex.message == "bad request config"
+    where:
+    requestConfig << [null, [], [:], ["foo": "bar"]]
+  }
+
   def "#method request with bad config: #requestConfig"() {
     def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
     when:
     new MethodClosure(client, method).call(requestConfig)
     then:
     def ex = thrown(RuntimeException)
-    ex.message == "need a path"
+    ex.message == "bad request config"
     where:
     requestConfig  | method
     null           | "get"
@@ -58,5 +68,29 @@ class LowLevelDockerClientSpec extends Specification {
     [:]            | "post"
     ["foo": "bar"] | "get"
     ["foo": "bar"] | "post"
+  }
+
+  def "get request uses the GET method"() {
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    given:
+    client.metaClass.request = { config ->
+      config.method
+    }
+    when:
+    def method = client.get("/foo")
+    then:
+    method == "GET"
+  }
+
+  def "post request uses the POST method"() {
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    given:
+    client.metaClass.request = { config ->
+      config.method
+    }
+    when:
+    def method = client.post("/foo")
+    then:
+    method == "POST"
   }
 }
