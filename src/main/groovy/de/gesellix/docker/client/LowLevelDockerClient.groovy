@@ -189,7 +189,8 @@ class LowLevelDockerClient {
     if (config instanceof String) {
       validConfig = [path: config]
     }
-    if (!validConfig.path) {
+    if (!validConfig?.path) {
+      logger.error("bad request config: ${config}")
       throw new IllegalArgumentException("need a path")
     }
     return validConfig
