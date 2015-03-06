@@ -93,4 +93,23 @@ class LowLevelDockerClientSpec extends Specification {
     then:
     method == "POST"
   }
+
+  def "openConnection with path"() {
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    when:
+    def connection = client.openConnection([method: "GET",
+                                            path  : "/foo"])
+    then:
+    connection.URL == new URL("https://127.0.0.1:2376/foo")
+  }
+
+  def "openConnection with path and query"() {
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    when:
+    def connection = client.openConnection([method: "GET",
+                                            path  : "/bar",
+                                            query : [baz: "la/la", answer: 42]])
+    then:
+    connection.URL == new URL("https://127.0.0.1:2376/bar?baz=la%2Fla&answer=42")
+  }
 }
