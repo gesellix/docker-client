@@ -266,11 +266,10 @@ class LowLevelDockerClient {
 
   String getCharset(String contentTypeHeader) {
     String charset = "utf-8"
-    def matcher = Pattern.compile("[^;]+;\\s*charset=([^;]+);.*").matcher(contentTypeHeader)
+    def matcher = Pattern.compile("[^;]+;\\s*charset=([^;]+)(;[^;]*)*").matcher(contentTypeHeader)
     if (matcher.find()) {
       charset = matcher.group(1)
     }
-    logger.info("charset: '${charset}'")
     return charset
   }
 }

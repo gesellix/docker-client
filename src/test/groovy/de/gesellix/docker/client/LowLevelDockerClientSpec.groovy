@@ -43,6 +43,32 @@ class LowLevelDockerClientSpec extends Specification {
     client.dockerBaseUrl?.toString() == new URL("https://127.0.0.1:2376").toString()
   }
 
+  def "getMimeType"() {
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    expect:
+    client.getMimeType(contentType) == expectedMimeType
+    where:
+    contentType                         | expectedMimeType
+    "application/json"                  | "application/json"
+    "text/plain"                        | "text/plain"
+    "text/plain; charset=utf-8"         | "text/plain"
+    "text/html"                         | "text/html"
+    "application/vnd.docker.raw-stream" | "application/vnd.docker.raw-stream"
+  }
+
+  def "getCharset"() {
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    expect:
+    client.getCharset(contentType) == expectedCharset
+    where:
+    contentType                         | expectedCharset
+    "application/json"                  | "utf-8"
+    "text/plain"                        | "utf-8"
+    "text/plain; charset=ISO-8859-1"    | "ISO-8859-1"
+    "text/html"                         | "utf-8"
+    "application/vnd.docker.raw-stream" | "utf-8"
+  }
+
   def "generic request with bad config: #requestConfig"() {
     def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
     when:
