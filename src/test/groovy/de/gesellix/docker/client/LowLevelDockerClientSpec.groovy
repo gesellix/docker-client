@@ -199,9 +199,10 @@ class LowLevelDockerClientSpec extends Specification {
     def headerFields = [:]
     headerFields[null] = ["HTTP/1.1 200 OK"]
     headerFields["Content-Type"] = ["text/plain"]
+    headerFields["Content-Length"] = ["holy ship".length()]
     connectionMock.getHeaderFields() >> headerFields
     connectionMock.responseCode >> 200
-    connectionMock.inputStream >> new ByteArrayInputStream()
+    connectionMock.inputStream >> new ByteArrayInputStream("holy ship".bytes)
 
     when:
     def response = client.request([method: "HEADER",
@@ -209,11 +210,52 @@ class LowLevelDockerClientSpec extends Specification {
 
     then:
     response == [
-        statusLine: [
+        statusLine   : [
             text: ["HTTP/1.1 200 OK"],
             code: 200],
-        headers   : ['content-type': ["text/plain"]],
-        stream    : null,
-        content   : ""]
+        headers      : ['content-type'  : ["text/plain"],
+                        'content-length': [9]],
+        contentType  : "text/plain",
+        contentLength: 9,
+        stream       : null,
+        content      : "holy ship"]
+  }
+
+  def "request without request body and stdout stream"() {
+    given:
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    def connectionMock = Mock(HttpURLConnection)
+    client.metaClass.openConnection = {
+      connectionMock
+    }
+    def headerFields = [:]
+    headerFields[null] = ["HTTP/1.1 200 OK"]
+    headerFields["Content-Type"] = ["text/plain"]
+    headerFields["Content-Length"] = ["holy ship".length()]
+    connectionMock.getHeaderFields() >> headerFields
+    connectionMock.responseCode >> 200
+    def responseBody = new ByteArrayInputStream("holy ship".bytes)
+    connectionMock.inputStream >> responseBody
+    def stdout = new ByteArrayOutputStream()
+
+    when:
+    def response = client.request([method: "HEADER",
+                                   path  : "/a-resource",
+                                   stdout: stdout])
+
+    then:
+    stdout.toByteArray() == "holy ship".bytes
+    and:
+    responseBody.available() == 0
+    and:
+    response == [
+        statusLine   : [
+            text: ["HTTP/1.1 200 OK"],
+            code: 200],
+        headers      : ['content-type'  : ["text/plain"],
+                        'content-length': [9]],
+        contentType  : "text/plain",
+        contentLength: 9,
+        stream       : responseBody]
   }
 }

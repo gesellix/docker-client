@@ -107,95 +107,78 @@ class LowLevelDockerClient {
     }.collectEntries { key, value ->
       [key.toLowerCase(), value]
     }
-    String contentType = headers['content-type']?.first()
-    logger.debug("header: ${headers}")
+    def contentType = headers['content-type']?.first()
+    def contentLength = headers['content-length']?.first()
+    logger.debug("headers: ${headers}")
 
-    logger.debug("content-length: ${headers['content-length']}")
+    logger.debug("content-length: ${contentLength}")
     logger.debug("content-type: ${contentType}")
+    def mimetype = getMimeType(contentType)
+    logger.debug("mime type: ${mimetype}")
 
     def response = [
-        statusLine: [
+        statusLine   : [
             text: statusLine,
             code: connection.responseCode
         ],
-        headers   : headers,
-        stream    : connection.inputStream
+        headers      : headers,
+        contentType  : contentType,
+        contentLength: contentLength,
+        stream       : connection.inputStream
     ]
 
-    def mimetype = getMimeType(contentType)
-    logger.debug("mime type: ${mimetype}")
     def contentHandler = contentHandlerFactory.createContentHandler(mimetype)
     if (contentHandler == null) {
       logger.warn("couldn't find a specific ContentHandler for '${contentType}'. redirecting to stdout.")
-      if (config.stdout) {
-        IOUtils.copy(response.stream as InputStream, config.stdout as OutputStream)
-      }
-      else {
-        IOUtils.copy(response.stream as InputStream, System.out)
-        println()
-        response.stream = null
-      }
+      config.stdout = config.stdout ?: System.out
+      IOUtils.copy(response.stream as InputStream, config.stdout as OutputStream)
+      return response
     }
-    else {
-      switch (mimetype) {
-        case "application/vnd.docker.raw-stream":
-          InputStream rawStream = contentHandler.getContent(connection) as RawInputStream
+
+    def content = contentHandler.getContent(connection)
+
+    switch (mimetype) {
+      case "application/vnd.docker.raw-stream":
+        InputStream rawStream = content as RawInputStream
+        response.stream = rawStream
+        config.stdout = config.stdout ?: System.out
+        IOUtils.copy(rawStream as InputStream, config.stdout as OutputStream)
+        break;
+      case "application/json":
+      case "text/html":
+      case "text/plain":
+        if (content instanceof InputStream) {
+          if (config.stdout || !response.contentLength) {
+            config.stdout = config.stdout ?: System.out
+            IOUtils.copy(content as InputStream, config.stdout as OutputStream)
+          }
+          else {
+            response.content = IOUtils.toString(content as InputStream)
+            response.stream = null
+          }
+        }
+        else {
+          response.content = content
+          response.stream = null
+        }
+        break;
+      default:
+        if (content instanceof InputStream) {
+          logger.warn("couldn't handle mime type '${mimetype}'. redirecting to stdout.")
           if (config.stdout) {
-            IOUtils.copy(rawStream as InputStream, config.stdout as OutputStream)
+            IOUtils.copy(content as InputStream, config.stdout as OutputStream)
           }
           else {
-            IOUtils.copy(rawStream, System.out)
-            println()
-            response.stream = null
-          }
-          break;
-        case "application/json":
-          def body = contentHandler.getContent(connection)
-          if (config.stdout && body instanceof InputStream) {
-            IOUtils.copy(body as InputStream, config.stdout as OutputStream)
-          }
-          else {
-            if (body instanceof InputStream) {
-              response.content = IOUtils.toString(body as InputStream)
-              response.stream = null
-            }
-            else {
-              response.content = body
-              response.stream = null
-            }
-          }
-          break;
-        case "text/html":
-          def body = contentHandler.getContent(connection)
-          if (config.stdout && body instanceof InputStream) {
-            IOUtils.copy(body as InputStream, config.stdout as OutputStream)
-          }
-          else {
-            response.content = IOUtils.toString(body as InputStream)
-            response.stream = null
-          }
-          break;
-        case "text/plain":
-          def body = contentHandler.getContent(connection)
-          if (config.stdout && body instanceof InputStream) {
-            IOUtils.copy(body as InputStream, config.stdout as OutputStream)
-          }
-          else {
-            response.content = IOUtils.toString(body as InputStream)
-            response.stream = null
-          }
-          break;
-        default:
-          if (config.stdout) {
-            IOUtils.copy(response.stream as InputStream, config.stdout as OutputStream)
-          }
-          else {
-            response.content = IOUtils.toString(response.stream as InputStream)
+            response.content = IOUtils.toString(content as InputStream)
             response.stream = null
           }
           println()
-          break
-      }
+        }
+        else {
+          logger.warn("couldn't handle mime type '${mimetype}'. passing through via `response.content`.")
+          response.content = content
+        }
+        break
     }
     return response
   }
