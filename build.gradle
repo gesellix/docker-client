@@ -122,7 +122,7 @@ dependencies {
 //  compile 'com.turbomanage.basic-http-client:http-client:0.89'
   compile 'de.gesellix:docker-socket-factory:2015-02-19T12-18-03'
 
-  testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
+  testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
   testCompile 'co.freeside:betamax:1.1.2'
   testCompile 'org.yaml:snakeyaml:1.15'
   testCompile 'cglib:cglib-nodep:3.1'
