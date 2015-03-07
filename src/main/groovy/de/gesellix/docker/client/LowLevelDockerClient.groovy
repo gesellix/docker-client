@@ -64,7 +64,6 @@ class LowLevelDockerClient {
 
     // since we listen to a stream we disable the timeout
 //    connection.setConnectTimeout(0)
-    // since we listen to a stream we disable the timeout
 //    connection.setReadTimeout(0)
 
     if (config.body) {
@@ -77,11 +76,11 @@ class LowLevelDockerClient {
           def bodyAsString = json.toString()
           postData = bodyAsString.getBytes(Charset.forName("UTF-8"))
           postDataLength = postData.length
-          break;
+          break
         default:
           postData = config.body.toString().getBytes(Charset.forName("UTF-8"))
           postDataLength = postData.length
-          break;
+          break
       }
 
       connection.setDoOutput(true)
@@ -99,22 +98,89 @@ class LowLevelDockerClient {
   }
 
   def handleResponse(HttpURLConnection connection, config) {
+    def response = readHeaders(connection)
+
+    def contentHandler = contentHandlerFactory.createContentHandler(response.mimeType)
+    if (contentHandler == null) {
+      logger.warn("couldn't find a specific ContentHandler for '${response.contentType}'.")
+      if (config.stdout) {
+        logger.debug("redirecting to stdout.")
+        IOUtils.copy(response.stream as InputStream, config.stdout as OutputStream)
+        response.stream = null
+      }
+    }
+    else {
+      def content = contentHandler.getContent(connection)
+
+      switch (response.mimeType) {
+        case "application/vnd.docker.raw-stream":
+          InputStream rawStream = content as RawInputStream
+          response.stream = rawStream
+          config.stdout = config.stdout ?: System.out
+          IOUtils.copy(rawStream as InputStream, config.stdout as OutputStream)
+          break
+        case "application/json":
+        case "text/html":
+        case "text/plain":
+          if (content instanceof InputStream) {
+            if (config.stdout) {
+              IOUtils.copy(content as InputStream, config.stdout as OutputStream)
+              response.stream = null
+            }
+            else if (response.contentLength) {
+              response.content = IOUtils.toString(content as InputStream)
+              response.stream = null
+            }
+            else {
+              response.stream = content as InputStream
+            }
+          }
+          else {
+            response.content = content
+            response.stream = null
+          }
+          break
+        default:
+          logger.warn("unexpected mime type '${response.mimeType}'.")
+          if (content instanceof InputStream) {
+            logger.debug("passing through via `response.stream`.")
+            if (config.stdout) {
+              IOUtils.copy(content as InputStream, config.stdout as OutputStream)
+              response.stream = null
+            }
+            else {
+              response.stream = content as InputStream
+            }
+          }
+          else {
+            logger.debug("passing through via `response.content`.")
+            response.content = content
+            response.stream = null
+          }
+          break
+      }
+    }
+
+    return response
+  }
+
+  def readHeaders(HttpURLConnection connection) {
     def statusLine = connection.headerFields[null]
-    logger.debug("status: ${statusLine}")
+    logger.info("status: ${statusLine}")
 
     def headers = connection.headerFields.findAll { key, value ->
       key != null
     }.collectEntries { key, value ->
       [key.toLowerCase(), value]
     }
-    def contentType = headers['content-type']?.first()
-    def contentLength = headers['content-length']?.first()
     logger.debug("headers: ${headers}")
 
-    logger.debug("content-length: ${contentLength}")
+    def contentType = headers['content-type']?.first()
     logger.debug("content-type: ${contentType}")
-    def mimetype = getMimeType(contentType)
-    logger.debug("mime type: ${mimetype}")
+    def contentLength = headers['content-length']?.first()
+    logger.debug("content-length: ${contentLength}")
+    def mimeType = getMimeType(contentType)
+    logger.debug("mime type: ${mimeType}")
 
     def response = [
         statusLine   : [
@@ -123,63 +189,10 @@ class LowLevelDockerClient {
         ],
         headers      : headers,
         contentType  : contentType,
+        mimeType     : mimeType,
         contentLength: contentLength,
         stream       : connection.inputStream
     ]
-
-    def contentHandler = contentHandlerFactory.createContentHandler(mimetype)
-    if (contentHandler == null) {
-      logger.warn("couldn't find a specific ContentHandler for '${contentType}'. redirecting to stdout.")
-      config.stdout = config.stdout ?: System.out
-      IOUtils.copy(response.stream as InputStream, config.stdout as OutputStream)
-      return response
-    }
-
-    def content = contentHandler.getContent(connection)
-
-    switch (mimetype) {
-      case "application/vnd.docker.raw-stream":
-        InputStream rawStream = content as RawInputStream
-        response.stream = rawStream
-        config.stdout = config.stdout ?: System.out
-        IOUtils.copy(rawStream as InputStream, config.stdout as OutputStream)
-        break;
-      case "application/json":
-      case "text/html":
-      case "text/plain":
-        if (content instanceof InputStream) {
-          if (config.stdout || !response.contentLength) {
-            config.stdout = config.stdout ?: System.out
-            IOUtils.copy(content as InputStream, config.stdout as OutputStream)
-          }
-          else {
-            response.content = IOUtils.toString(content as InputStream)
-            response.stream = null
-          }
-        }
-        else {
-          response.content = content
-          response.stream = null
-        }
-        break;
-      default:
-        if (content instanceof InputStream) {
-          logger.warn("couldn't handle mime type '${mimetype}'. redirecting to stdout.")
-          if (config.stdout) {
-            IOUtils.copy(content as InputStream, config.stdout as OutputStream)
-          }
-          else {
-            response.content = IOUtils.toString(content as InputStream)
-            response.stream = null
-          }
-          println()
-        }
-        else {
-          logger.warn("couldn't handle mime type '${mimetype}'. passing through via `response.content`.")
-          response.content = content
-        }
-        break
-    }
     return response
   }
 
@@ -229,10 +242,10 @@ class LowLevelDockerClient {
       def dockerCertPath = dockerURLHandler.dockerCertPath
 
       def keyStore = KeyStoreUtil.createDockerKeyStore(new File(dockerCertPath).absolutePath)
-      final KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(getDefaultAlgorithm());
-      kmfactory.init(keyStore, KEY_STORE_PASSWORD as char[]);
+      final KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(getDefaultAlgorithm())
+      kmfactory.init(keyStore, KEY_STORE_PASSWORD as char[])
 
-      TrustManagerFactory tmf = TrustManagerFactory.getInstance(getDefaultAlgorithm());
+      TrustManagerFactory tmf = TrustManagerFactory.getInstance(getDefaultAlgorithm())
       tmf.init(keyStore)
 
       def sslContext = SSLContext.getInstance("TLS")

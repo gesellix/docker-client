@@ -216,6 +216,7 @@ class LowLevelDockerClientSpec extends Specification {
         headers      : ['content-type'  : ["text/plain"],
                         'content-length': [9]],
         contentType  : "text/plain",
+        mimeType     : "text/plain",
         contentLength: 9,
         stream       : null,
         content      : "holy ship"]
@@ -255,7 +256,8 @@ class LowLevelDockerClientSpec extends Specification {
         headers      : ['content-type'  : ["text/plain"],
                         'content-length': [9]],
         contentType  : "text/plain",
+        mimeType     : "text/plain",
         contentLength: 9,
-        stream       : responseBody]
+        stream       : null]
   }
 }
