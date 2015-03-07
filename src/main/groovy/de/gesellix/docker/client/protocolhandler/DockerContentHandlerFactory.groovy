@@ -8,7 +8,7 @@ class DockerContentHandlerFactory implements ContentHandlerFactory {
 
   @Override
   ContentHandler createContentHandler(String contentType) {
-    def mimetype = contentType.replace(" ", "").split(";").first()
+    def mimetype = contentType?.replace(" ", "")?.split(";")?.first()
     switch (mimetype) {
       case "text/plain":
       case "text/html":

@@ -98,7 +98,7 @@ class LowLevelDockerClient {
     return response
   }
 
-  def handleResponse(connection, config) {
+  def handleResponse(HttpURLConnection connection, config) {
     def statusLine = connection.headerFields[null]
     logger.debug("status: ${statusLine}")
 
@@ -260,7 +260,7 @@ class LowLevelDockerClient {
   }
 
   String getMimeType(String contentTypeHeader) {
-    return contentTypeHeader.replace(" ", "").split(";").first()
+    return contentTypeHeader?.replace(" ", "")?.split(";")?.first()
   }
 
   String getCharset(String contentTypeHeader) {

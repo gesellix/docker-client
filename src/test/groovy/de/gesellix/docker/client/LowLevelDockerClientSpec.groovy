@@ -49,6 +49,7 @@ class LowLevelDockerClientSpec extends Specification {
     client.getMimeType(contentType) == expectedMimeType
     where:
     contentType                         | expectedMimeType
+    null                                | null
     "application/json"                  | "application/json"
     "text/plain"                        | "text/plain"
     "text/plain; charset=utf-8"         | "text/plain"
@@ -186,5 +187,33 @@ class LowLevelDockerClientSpec extends Specification {
     else {
       System.clearProperty("docker.cert.path")
     }
+  }
+
+  def "request without request body"() {
+    given:
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    def connectionMock = Mock(HttpURLConnection)
+    client.metaClass.openConnection = {
+      connectionMock
+    }
+    def headerFields = [:]
+    headerFields[null] = ["HTTP/1.1 200 OK"]
+    headerFields["Content-Type"] = ["text/plain"]
+    connectionMock.getHeaderFields() >> headerFields
+    connectionMock.responseCode >> 200
+    connectionMock.inputStream >> new ByteArrayInputStream()
+
+    when:
+    def response = client.request([method: "HEADER",
+                                   path  : "/a-resource"])
+
+    then:
+    response == [
+        statusLine: [
+            text: ["HTTP/1.1 200 OK"],
+            code: 200],
+        headers   : ['content-type': ["text/plain"]],
+        stream    : null,
+        content   : ""]
   }
 }
