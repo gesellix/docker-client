@@ -120,25 +120,13 @@ class LowLevelDockerClient {
           IOUtils.copy(rawStream as InputStream, config.stdout as OutputStream)
           break
         case "application/json":
+          consumeResponseBody(response, content, config)
+          break
         case "text/html":
+          consumeResponseBody(response, content, config)
+          break
         case "text/plain":
-          if (content instanceof InputStream) {
-            if (config.stdout) {
-              IOUtils.copy(content as InputStream, config.stdout as OutputStream)
-              response.stream = null
-            }
-            else if (response.contentLength) {
-              response.content = IOUtils.toString(content as InputStream)
-              response.stream = null
-            }
-            else {
-              response.stream = content as InputStream
-            }
-          }
-          else {
-            response.content = content
-            response.stream = null
-          }
+          consumeResponseBody(response, content, config)
           break
         default:
           logger.warn("unexpected mime type '${response.mimeType}'.")
@@ -194,6 +182,26 @@ class LowLevelDockerClient {
         stream       : connection.inputStream
     ]
     return response
+  }
+
+  def consumeResponseBody(response, content, config) {
+    if (content instanceof InputStream) {
+      if (config.stdout) {
+        IOUtils.copy(content as InputStream, config.stdout as OutputStream)
+        response.stream = null
+      }
+      else if (response.contentLength) {
+        response.content = IOUtils.toString(content as InputStream)
+        response.stream = null
+      }
+      else {
+        response.stream = content as InputStream
+      }
+    }
+    else {
+      response.content = content
+      response.stream = null
+    }
   }
 
   def ensureValidRequestConfig(config) {
