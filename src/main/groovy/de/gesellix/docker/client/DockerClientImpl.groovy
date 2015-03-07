@@ -81,7 +81,7 @@ class DockerClientImpl implements DockerClient {
     logger.info "docker build"
     getDelegate().post([path              : "/build",
                         query             : query,
-                        body              : IOUtils.toByteArray(buildContext),
+                        body              : buildContext,
                         requestContentType: ContentType.BINARY])
 
     responseHandler.ensureSuccessfulResponse(new IllegalStateException("docker build failed"))

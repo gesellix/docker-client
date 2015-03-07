@@ -126,7 +126,7 @@ class DockerClientImplSpec extends Specification {
     then:
     1 * delegateMock.post([path              : "/build",
                            query             : ["rm": true],
-                           body              : [42],
+                           body              : buildContext,
                            requestContentType: ContentType.BINARY])
     and:
     dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
@@ -148,7 +148,7 @@ class DockerClientImplSpec extends Specification {
     then:
     1 * delegateMock.post([path              : "/build",
                            query             : ["rm": false],
-                           body              : [42],
+                           body              : buildContext,
                            requestContentType: ContentType.BINARY])
     and:
     dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->

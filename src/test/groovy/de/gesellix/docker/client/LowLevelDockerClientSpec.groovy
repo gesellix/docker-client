@@ -18,10 +18,10 @@ class LowLevelDockerClientSpec extends Specification {
   }
 
   def "dockerBaseUrl should support tls port"() {
-    def client = new LowLevelDockerClient(dockerHost: "tcp://127.0.0.1:2376")
-    def tmpDockerCertPath = File.createTempDir()
     given:
+    def tmpDockerCertPath = File.createTempDir()
     def oldDockerCertPath = System.setProperty("docker.cert.path", tmpDockerCertPath.absolutePath)
+    def client = new LowLevelDockerClient(dockerHost: "tcp://127.0.0.1:2376")
     expect:
     client.dockerBaseUrl?.toString() == new URL("https://127.0.0.1:2376").toString()
     cleanup:

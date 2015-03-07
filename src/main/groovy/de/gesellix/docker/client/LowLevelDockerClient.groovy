@@ -9,10 +9,7 @@ import org.apache.commons.io.IOUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import javax.net.ssl.HttpsURLConnection
-import javax.net.ssl.KeyManagerFactory
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManagerFactory
+import javax.net.ssl.*
 import java.nio.charset.Charset
 import java.util.regex.Pattern
 
@@ -24,16 +21,25 @@ class LowLevelDockerClient {
 
   def Logger logger = LoggerFactory.getLogger(LowLevelDockerClient)
 
-  ContentHandlerFactory contentHandlerFactory = new DockerContentHandlerFactory()
+  ContentHandlerFactory contentHandlerFactory
+  DockerURLHandler dockerURLHandler
 
-  def dockerHost = "http://127.0.0.1:2375"
+  def dockerHost
   URL dockerHostUrl
 
-  def sslSocketFactory = null
+  def sslSocketFactory
+
+  LowLevelDockerClient() {
+    dockerURLHandler = new DockerURLHandler()
+    contentHandlerFactory = new DockerContentHandlerFactory()
+    dockerHost = "http://127.0.0.1:2375"
+    sslSocketFactory = null
+  }
 
   def getDockerBaseUrl() {
     if (!getDockerHostUrl()) {
-      dockerHostUrl = new DockerURLHandler(dockerHost: getDockerHost()).getURL()
+      dockerURLHandler.dockerHost = getDockerHost()
+      dockerHostUrl = dockerURLHandler.getURL()
     }
     return dockerHostUrl
   }
@@ -231,14 +237,14 @@ class LowLevelDockerClient {
 
   def configureSSL(connection) {
     if (connection instanceof HttpsURLConnection) {
-      def sslSocketFactory = initSSLSocketFactory()
+      SSLSocketFactory sslSocketFactory = initSSLSocketFactory()
       ((HttpsURLConnection) connection).setSSLSocketFactory(sslSocketFactory)
     }
   }
 
-  def initSSLSocketFactory() {
+  SSLSocketFactory initSSLSocketFactory() {
     if (!sslSocketFactory) {
-      def dockerCertPath = System.getProperty("docker.cert.path", System.env.DOCKER_CERT_PATH)
+      def dockerCertPath = dockerURLHandler.dockerCertPath
 
       def keyStore = KeyStoreUtil.createDockerKeyStore(new File(dockerCertPath).absolutePath)
       final KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(getDefaultAlgorithm());
@@ -254,11 +260,11 @@ class LowLevelDockerClient {
     return sslSocketFactory
   }
 
-  String getMimeType(contentTypeHeader) {
+  String getMimeType(String contentTypeHeader) {
     return contentTypeHeader.replace(" ", "").split(";").first()
   }
 
-  String getCharset(contentTypeHeader) {
+  String getCharset(String contentTypeHeader) {
     String charset = "utf-8"
     def matcher = Pattern.compile("[^;]+;\\s*charset=([^;]+);.*").matcher(contentTypeHeader)
     if (matcher.find()) {
