@@ -163,11 +163,11 @@ class LowLevelDockerClient {
     }
     logger.debug("headers: ${headers}")
 
-    def contentType = headers['content-type']?.first()
+    String contentType = headers['content-type']?.first()
     logger.debug("content-type: ${contentType}")
-    def contentLength = headers['content-length']?.first()
+    int contentLength = headers['content-length']?.first()
     logger.debug("content-length: ${contentLength}")
-    def mimeType = getMimeType(contentType)
+    String mimeType = getMimeType(contentType)
     logger.debug("mime type: ${mimeType}")
 
     def response = [
@@ -180,7 +180,7 @@ class LowLevelDockerClient {
         mimeType     : mimeType,
         contentLength: contentLength,
         stream       : connection.inputStream
-    ]
+    ] as Map
     return response
   }
 
