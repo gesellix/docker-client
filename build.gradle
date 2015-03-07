@@ -19,7 +19,7 @@ buildscript {
   }
 
   dependencies {
-    classpath 'net.saliman:gradle-cobertura-plugin:2.2.6'
+    classpath 'net.saliman:gradle-cobertura-plugin:2.2.7'
     classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.3.1'
     classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.1'
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.8'
@@ -103,7 +103,7 @@ def dependencyVersions = [
     'org.codehaus.groovy.modules.http-builder:http-builder': '0.7.1',
     'org.hamcrest:hamcrest-core'                           : '1.3',
     'org.slf4j:slf4j-api'                                  : '1.7.10',
-    'org.yaml:snakeyaml'                                   : '1.14',
+    'org.yaml:snakeyaml'                                   : '1.15',
     'xerces:xmlParserAPIs'                                 : '2.6.2',
     'xerces:xercesImpl'                                    : '2.9.1',
     'xml-apis:xml-apis'                                    : '1.0.b2'
@@ -118,11 +118,12 @@ dependencies {
 
   compile 'org.slf4j:slf4j-api:1.7.10'
 
+//  compile 'com.turbomanage.basic-http-client:http-client:0.89'
   compile 'de.gesellix:docker-socket-factory:2015-02-19T12-18-03'
 
   testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
   testCompile 'co.freeside:betamax:1.1.2'
-  testCompile 'org.yaml:snakeyaml:1.14'
+  testCompile 'org.yaml:snakeyaml:1.15'
   testCompile 'cglib:cglib-nodep:3.1'
   testCompile 'commons-lang:commons-lang:2.6'
 
