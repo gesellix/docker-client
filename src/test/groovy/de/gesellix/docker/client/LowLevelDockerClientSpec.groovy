@@ -1,7 +1,11 @@
 package de.gesellix.docker.client
 
+import org.apache.commons.io.IOUtils
 import org.codehaus.groovy.runtime.MethodClosure
 import spock.lang.Specification
+
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLSocketFactory
 
 class LowLevelDockerClientSpec extends Specification {
 
@@ -19,8 +23,8 @@ class LowLevelDockerClientSpec extends Specification {
 
   def "dockerBaseUrl should support tls port"() {
     given:
-    def tmpDockerCertPath = File.createTempDir()
-    def oldDockerCertPath = System.setProperty("docker.cert.path", tmpDockerCertPath.absolutePath)
+    def certsPath = IOUtils.getResource("/certs").file
+    def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
     def client = new LowLevelDockerClient(dockerHost: "tcp://127.0.0.1:2376")
     expect:
     client.dockerBaseUrl?.toString() == new URL("https://127.0.0.1:2376").toString()
@@ -31,7 +35,6 @@ class LowLevelDockerClientSpec extends Specification {
     else {
       System.clearProperty("docker.cert.path")
     }
-    tmpDockerCertPath.delete()
   }
 
   def "dockerBaseUrl should support https protocol"() {
@@ -104,21 +107,45 @@ class LowLevelDockerClientSpec extends Specification {
   }
 
   def "openConnection with path and query"() {
-    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    def client = new LowLevelDockerClient(dockerHost: "http://127.0.0.1:2375")
     when:
     def connection = client.openConnection([method: "GET",
                                             path  : "/bar",
                                             query : [baz: "la/la", answer: 42]])
     then:
-    connection.URL == new URL("https://127.0.0.1:2376/bar?baz=la%2Fla&answer=42")
+    connection.URL == new URL("http://127.0.0.1:2375/bar?baz=la%2Fla&answer=42")
   }
 
   def "configureConnection with plain http connection"() {
-    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    def client = new LowLevelDockerClient(dockerHost: "http://127.0.0.1:2375")
     def connectionMock = Mock(HttpURLConnection)
     when:
     client.configureConnection(connectionMock, [method: "HEADER"])
     then:
     1 * connectionMock.setRequestMethod("HEADER")
+  }
+
+  def "configureConnection with https connection"() {
+    given:
+    def certsPath = IOUtils.getResource("/certs").file
+    def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    def connectionMock = Mock(HttpsURLConnection)
+
+    when:
+    client.configureConnection(connectionMock, [method: "HEADER"])
+
+    then:
+    1 * connectionMock.setRequestMethod("HEADER")
+    and:
+    1 * connectionMock.setSSLSocketFactory(_ as SSLSocketFactory)
+
+    cleanup:
+    if (oldDockerCertPath) {
+      System.setProperty("docker.cert.path", oldDockerCertPath)
+    }
+    else {
+      System.clearProperty("docker.cert.path")
+    }
   }
 }
