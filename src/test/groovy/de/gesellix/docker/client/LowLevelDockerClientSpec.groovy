@@ -69,6 +69,19 @@ class LowLevelDockerClientSpec extends Specification {
     "application/vnd.docker.raw-stream" | "utf-8"
   }
 
+  def "queryToString"() {
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    expect:
+    client.queryToString(parameters) == query
+    where:
+    parameters                 | query
+    null                       | ""
+    [:]                        | ""
+    [param1: "value-1"]        | "param1=value-1"
+    ["p 1": "v 1"]             | "p+1=v+1"
+    [param1: "v 1", p2: "v-2"] | "param1=v+1&p2=v-2"
+  }
+
   def "generic request with bad config: #requestConfig"() {
     def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
     when:

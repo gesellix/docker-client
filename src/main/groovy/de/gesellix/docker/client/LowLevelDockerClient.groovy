@@ -221,9 +221,8 @@ class LowLevelDockerClient {
     return connection as HttpURLConnection
   }
 
-  def queryToString(query) {
-//    Charset.forName("UTF-8")
-    def queryAsString = query.collect { key, value ->
+  def queryToString(queryParameters) {
+    def queryAsString = queryParameters.collect { key, value ->
       "${URLEncoder.encode("$key".toString(), "UTF-8")}=${URLEncoder.encode("$value".toString(), "UTF-8")}"
     }
     return queryAsString.join("&")
