@@ -49,8 +49,8 @@ class LowLevelDockerClientIntegrationSpec extends Specification {
     def client = new LowLevelDockerClient(dockerHost: System.env.DOCKER_HOST)
     def outputStream = new ByteArrayOutputStream()
     when:
-    client.get([path        : "/_ping",
-                outputStream: outputStream])
+    client.get([path  : "/_ping",
+                stdout: outputStream])
     then:
     outputStream.toString() == "OK"
   }

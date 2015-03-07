@@ -14,6 +14,7 @@ import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
 import java.nio.charset.Charset
+import java.util.regex.Pattern
 
 import static de.gesellix.socketfactory.https.KeyStoreUtil.getKEY_STORE_PASSWORD
 import static javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm
@@ -52,7 +53,7 @@ class LowLevelDockerClient {
   def request(config) {
     config = ensureValidRequestConfig(config)
 
-    def connection = openConnection(config)
+    HttpURLConnection connection = openConnection(config)
     configureConnection(connection, config)
 
     // since we listen to a stream we disable the timeout
@@ -87,6 +88,11 @@ class LowLevelDockerClient {
       IOUtils.copy(new ByteArrayInputStream(postData), connection.getOutputStream())
     }
 
+    def response = handleResponse(connection, config)
+    return response
+  }
+
+  def handleResponse(connection, config) {
     def statusLine = connection.headerFields[null]
     logger.debug("status: ${statusLine}")
 
@@ -110,19 +116,26 @@ class LowLevelDockerClient {
         stream    : connection.inputStream
     ]
 
-    def mimetype = contentType.replace(" ", "").split(";").first()
+    def mimetype = getMimeType(contentType)
+    logger.debug("mime type: ${mimetype}")
     def contentHandler = contentHandlerFactory.createContentHandler(mimetype)
     if (contentHandler == null) {
-      logger.warn("couldn't find a specific ContentHandler for '${contentType}'.")
-      IOUtils.copy(response.stream, System.out)
-      println()
+      logger.warn("couldn't find a specific ContentHandler for '${contentType}'. redirecting to stdout.")
+      if (config.stdout) {
+        IOUtils.copy(response.stream as InputStream, config.stdout as OutputStream)
+      }
+      else {
+        IOUtils.copy(response.stream as InputStream, System.out)
+        println()
+        response.stream = null
+      }
     }
     else {
       switch (mimetype) {
         case "application/vnd.docker.raw-stream":
           InputStream rawStream = contentHandler.getContent(connection) as RawInputStream
-          if (config.outputStream) {
-            IOUtils.copy(rawStream as InputStream, config.outputStream as OutputStream)
+          if (config.stdout) {
+            IOUtils.copy(rawStream as InputStream, config.stdout as OutputStream)
           }
           else {
             IOUtils.copy(rawStream, System.out)
@@ -132,8 +145,8 @@ class LowLevelDockerClient {
           break;
         case "application/json":
           def body = contentHandler.getContent(connection)
-          if (config.outputStream && body instanceof InputStream) {
-            IOUtils.copy(body as InputStream, config.outputStream as OutputStream)
+          if (config.stdout && body instanceof InputStream) {
+            IOUtils.copy(body as InputStream, config.stdout as OutputStream)
           }
           else {
             if (body instanceof InputStream) {
@@ -148,8 +161,8 @@ class LowLevelDockerClient {
           break;
         case "text/html":
           def body = contentHandler.getContent(connection)
-          if (config.outputStream && body instanceof InputStream) {
-            IOUtils.copy(body as InputStream, config.outputStream as OutputStream)
+          if (config.stdout && body instanceof InputStream) {
+            IOUtils.copy(body as InputStream, config.stdout as OutputStream)
           }
           else {
             response.content = IOUtils.toString(body as InputStream)
@@ -158,8 +171,8 @@ class LowLevelDockerClient {
           break;
         case "text/plain":
           def body = contentHandler.getContent(connection)
-          if (config.outputStream && body instanceof InputStream) {
-            IOUtils.copy(body as InputStream, config.outputStream as OutputStream)
+          if (config.stdout && body instanceof InputStream) {
+            IOUtils.copy(body as InputStream, config.stdout as OutputStream)
           }
           else {
             response.content = IOUtils.toString(body as InputStream)
@@ -167,8 +180,8 @@ class LowLevelDockerClient {
           }
           break;
         default:
-          if (config.outputStream) {
-            IOUtils.copy(response.stream as InputStream, config.outputStream as OutputStream)
+          if (config.stdout) {
+            IOUtils.copy(response.stream as InputStream, config.stdout as OutputStream)
           }
           else {
             response.content = IOUtils.toString(response.stream as InputStream)
@@ -178,7 +191,6 @@ class LowLevelDockerClient {
           break
       }
     }
-
     return response
   }
 
@@ -194,6 +206,15 @@ class LowLevelDockerClient {
     return validConfig
   }
 
+  def openConnection(config) {
+    config.query = (config.query) ? "?${queryToString(config.query)}" : ""
+    def requestUrl = new URL("${getDockerBaseUrl()}${config.path}${config.query}")
+    logger.info("${config.method} ${requestUrl}")
+
+    def connection = requestUrl.openConnection()
+    return connection as HttpURLConnection
+  }
+
   def queryToString(query) {
 //    Charset.forName("UTF-8")
     def queryAsString = query.collect { key, value ->
@@ -202,45 +223,48 @@ class LowLevelDockerClient {
     return queryAsString.join("&")
   }
 
-  def openConnection(config) {
-    config.query = (config.query) ? "?${queryToString(config.query)}" : ""
-    def requestUrl = new URL("${getDockerBaseUrl()}${config.path}${config.query}")
-    logger.info("${config.method} ${requestUrl}")
-    return requestUrl.openConnection()
-  }
-
-  def configureConnection(connection, config) {
+  def configureConnection(HttpURLConnection connection, config) {
     connection.setUseCaches(false)
-    connection.setRequestMethod(config.method)
+    connection.setRequestMethod(config.method as String)
     configureSSL(connection)
   }
 
   def configureSSL(connection) {
-    def dockerCertPath = System.getProperty("docker.cert.path", System.env.DOCKER_CERT_PATH)
     if (connection instanceof HttpsURLConnection) {
-      if (!sslSocketFactory) {
-        def keyStore = KeyStoreUtil.createDockerKeyStore(new File(dockerCertPath).absolutePath)
-        final KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(getDefaultAlgorithm());
-        kmfactory.init(keyStore, KEY_STORE_PASSWORD as char[]);
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance(getDefaultAlgorithm());
-        tmf.init(keyStore)
-        def sslContext = SSLContext.getInstance("TLS")
-        sslContext.init(kmfactory.keyManagers, tmf.trustManagers, null)
-        sslSocketFactory = sslContext.socketFactory
-      }
+      def sslSocketFactory = initSSLSocketFactory()
       ((HttpsURLConnection) connection).setSSLSocketFactory(sslSocketFactory)
     }
   }
 
-  def getCharset(contentTypeHeader) {
-    String charset = "utf-8"
-    for (String param : contentTypeHeader.replace(" ", "").split(";")) {
-      if (param.startsWith("charset=")) {
-        charset = param.split("=", 2)[1]
-        break
-      }
+  def initSSLSocketFactory() {
+    if (!sslSocketFactory) {
+      def dockerCertPath = System.getProperty("docker.cert.path", System.env.DOCKER_CERT_PATH)
+
+      def keyStore = KeyStoreUtil.createDockerKeyStore(new File(dockerCertPath).absolutePath)
+      final KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(getDefaultAlgorithm());
+      kmfactory.init(keyStore, KEY_STORE_PASSWORD as char[]);
+
+      TrustManagerFactory tmf = TrustManagerFactory.getInstance(getDefaultAlgorithm());
+      tmf.init(keyStore)
+
+      def sslContext = SSLContext.getInstance("TLS")
+      sslContext.init(kmfactory.keyManagers, tmf.trustManagers, null)
+      sslSocketFactory = sslContext.socketFactory
     }
-    logger.info("charset: ${charset}")
+    return sslSocketFactory
+  }
+
+  String getMimeType(contentTypeHeader) {
+    return contentTypeHeader.replace(" ", "").split(";").first()
+  }
+
+  String getCharset(contentTypeHeader) {
+    String charset = "utf-8"
+    def matcher = Pattern.compile("[^;]+;\\s*charset=([^;]+);.*").matcher(contentTypeHeader)
+    if (matcher.find()) {
+      charset = matcher.group(1)
+    }
+    logger.info("charset: '${charset}'")
     return charset
   }
 }

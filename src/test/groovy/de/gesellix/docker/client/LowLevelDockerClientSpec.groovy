@@ -112,4 +112,13 @@ class LowLevelDockerClientSpec extends Specification {
     then:
     connection.URL == new URL("https://127.0.0.1:2376/bar?baz=la%2Fla&answer=42")
   }
+
+  def "configureConnection with plain http connection"() {
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    def connectionMock = Mock(HttpURLConnection)
+    when:
+    client.configureConnection(connectionMock, [method: "HEADER"])
+    then:
+    1 * connectionMock.setRequestMethod("HEADER")
+  }
 }
