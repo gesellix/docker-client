@@ -116,8 +116,11 @@ class LowLevelDockerClient {
         case "application/vnd.docker.raw-stream":
           InputStream rawStream = content as RawInputStream
           response.stream = rawStream
-          config.stdout = config.stdout ?: System.out
-          IOUtils.copy(rawStream as InputStream, config.stdout as OutputStream)
+          if (config.stdout) {
+            logger.debug("redirecting to stdout.")
+            IOUtils.copy(response.stream as InputStream, config.stdout as OutputStream)
+            response.stream = null
+          }
           break
         case "application/json":
           consumeResponseBody(response, content, config)

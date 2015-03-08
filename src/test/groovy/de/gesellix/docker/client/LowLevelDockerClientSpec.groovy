@@ -1,11 +1,15 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.client.protocolhandler.RawHeaderAndPayload
+import de.gesellix.docker.client.protocolhandler.RawInputStream
 import org.apache.commons.io.IOUtils
 import org.codehaus.groovy.runtime.MethodClosure
 import spock.lang.Specification
 
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLSocketFactory
+
+import static de.gesellix.docker.client.protocolhandler.StreamType.STDOUT
 
 class LowLevelDockerClientSpec extends Specification {
 
@@ -308,7 +312,7 @@ class LowLevelDockerClientSpec extends Specification {
     }
     def headerFields = [:]
     headerFields[null] = ["HTTP/1.1 200 OK"]
-    headerFields["Content-Type"] = ["text/plain"]
+    headerFields["Content-Type"] = ["text/html"]
     headerFields["Content-Length"] = [-1]
     connectionMock.getHeaderFields() >> headerFields
     connectionMock.responseCode >> 200
@@ -384,7 +388,8 @@ class LowLevelDockerClientSpec extends Specification {
   def "request with consumed body by ContentHandler"() {
     given:
     def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
-    client.contentHandlerFactory = new TestContentHandlerFactory(contentHandler: new TestContentHandler(result: "result"))
+    def contentHandler = new TestContentHandler(result: "result")
+    client.contentHandlerFactory = new TestContentHandlerFactory(contentHandler: contentHandler)
     def connectionMock = Mock(HttpURLConnection)
     client.metaClass.openConnection = {
       connectionMock
@@ -406,6 +411,102 @@ class LowLevelDockerClientSpec extends Specification {
     response.stream == null
     and:
     response.content == "result"
+  }
+
+  def "request with json response"() {
+    given:
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    def contentHandler = new TestContentHandler(result: "result")
+    client.contentHandlerFactory = new TestContentHandlerFactory(contentHandler: contentHandler)
+    def connectionMock = Mock(HttpURLConnection)
+    client.metaClass.openConnection = {
+      connectionMock
+    }
+    def headerFields = [:]
+    headerFields[null] = ["HTTP/1.1 200 OK"]
+    headerFields["Content-Type"] = ["application/json"]
+    headerFields["Content-Length"] = ['{"holy":"ship"}'.length()]
+    connectionMock.getHeaderFields() >> headerFields
+    connectionMock.responseCode >> 200
+    def responseBody = new ByteArrayInputStream('{"holy":"ship"}'.bytes)
+    connectionMock.inputStream >> responseBody
+
+    when:
+    def response = client.request([method: "HEADER",
+                                   path  : "/a-resource"])
+
+    then:
+    response.stream == null
+    and:
+    response.content == "result"
+  }
+
+  def "request with docker raw-stream response"() {
+    given:
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    def actualText = "holy ship"
+    def headerAndPayload = new RawHeaderAndPayload(STDOUT, actualText.bytes)
+    def responseBody = new ByteArrayInputStream((byte[]) headerAndPayload.bytes)
+    def responseStream = new RawInputStream(responseBody)
+    def contentHandler = new TestContentHandler(result: responseStream)
+    client.contentHandlerFactory = new TestContentHandlerFactory(contentHandler: contentHandler)
+    def connectionMock = Mock(HttpURLConnection)
+    client.metaClass.openConnection = {
+      connectionMock
+    }
+    def headerFields = [:]
+    headerFields[null] = ["HTTP/1.1 200 OK"]
+    headerFields["Content-Type"] = ["application/vnd.docker.raw-stream"]
+    headerFields["Content-Length"] = [headerAndPayload.bytes.size()]
+    connectionMock.getHeaderFields() >> headerFields
+    connectionMock.responseCode >> 200
+    connectionMock.inputStream >> responseBody
+
+    when:
+    def response = client.request([method: "HEADER",
+                                   path  : "/a-resource"])
+
+    then:
+    response.stream == responseStream
+    and:
+    response.content == null
+  }
+
+  def "request with docker raw-stream response on stdout"() {
+    given:
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    def actualText = "holy ship"
+    def headerAndPayload = new RawHeaderAndPayload(STDOUT, actualText.bytes)
+    def responseBody = new ByteArrayInputStream((byte[]) headerAndPayload.bytes)
+    def responseStream = new RawInputStream(responseBody)
+    def contentHandler = new TestContentHandler(result: responseStream)
+    client.contentHandlerFactory = new TestContentHandlerFactory(contentHandler: contentHandler)
+    def connectionMock = Mock(HttpURLConnection)
+    client.metaClass.openConnection = {
+      connectionMock
+    }
+    def headerFields = [:]
+    headerFields[null] = ["HTTP/1.1 200 OK"]
+    headerFields["Content-Type"] = ["application/vnd.docker.raw-stream"]
+    headerFields["Content-Length"] = [headerAndPayload.bytes.size()]
+    connectionMock.getHeaderFields() >> headerFields
+    connectionMock.responseCode >> 200
+    connectionMock.inputStream >> responseBody
+    def stdout = new ByteArrayOutputStream()
+
+    when:
+    def response = client.request([method: "HEADER",
+                                   path  : "/a-resource",
+                                   stdout: stdout])
+
+    then:
+    stdout.toByteArray() == actualText.bytes
+    and:
+    responseBody.available() == 0
+    and:
+    response.stream == null
+    and:
+    response.content == null
   }
 
   static class TestContentHandlerFactory implements ContentHandlerFactory {
