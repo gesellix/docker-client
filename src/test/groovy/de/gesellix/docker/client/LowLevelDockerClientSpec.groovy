@@ -191,24 +191,27 @@ class LowLevelDockerClientSpec extends Specification {
 
   def "request should return statusLine"() {
     given:
-    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    def client = new LowLevelDockerClient(dockerHost: "http://127.0.0.1:2375")
     def connectionMock = Mock(HttpURLConnection)
     client.metaClass.openConnection = {
       connectionMock
     }
     def headerFields = [:]
-    headerFields[null] = ["HTTP/1.1 200 OK"]
+    headerFields[null] = [statusLine]
     connectionMock.getHeaderFields() >> headerFields
-    connectionMock.responseCode >> 200
+    connectionMock.responseCode >> statusCode
 
     when:
-    def response = client.request([method: "HEADER",
+    def response = client.request([method: "OPTIONS",
                                    path  : "/a-resource"])
 
     then:
-    response.statusLine == [
-        text: ["HTTP/1.1 200 OK"],
-        code: 200]
+    response.statusLine == expectedStatusLine
+
+    where:
+    statusLine                | statusCode | expectedStatusLine
+    "HTTP/1.1 200 OK"         | 200        | [text: ["HTTP/1.1 200 OK"], code: 200]
+    "HTTP/1.1 204 No Content" | 204        | [text: ["HTTP/1.1 204 No Content"], code: 204]
   }
 
   def "request should return headers"() {
@@ -241,7 +244,7 @@ class LowLevelDockerClientSpec extends Specification {
     response.contentLength == 9
   }
 
-  def "request should return content"() {
+  def "request should return consumed content"() {
     given:
     def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
     def connectionMock = Mock(HttpURLConnection)
@@ -266,7 +269,7 @@ class LowLevelDockerClientSpec extends Specification {
     response.content == "holy ship"
   }
 
-  def "request with stdout stream"() {
+  def "request with stdout stream and known content length"() {
     given:
     def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
     def connectionMock = Mock(HttpURLConnection)
@@ -294,5 +297,134 @@ class LowLevelDockerClientSpec extends Specification {
     responseBody.available() == 0
     and:
     response.stream == null
+  }
+
+  def "request with stdout stream and unknown content length"() {
+    given:
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    def connectionMock = Mock(HttpURLConnection)
+    client.metaClass.openConnection = {
+      connectionMock
+    }
+    def headerFields = [:]
+    headerFields[null] = ["HTTP/1.1 200 OK"]
+    headerFields["Content-Type"] = ["text/plain"]
+    headerFields["Content-Length"] = [-1]
+    connectionMock.getHeaderFields() >> headerFields
+    connectionMock.responseCode >> 200
+    def responseBody = new ByteArrayInputStream("holy ship".bytes)
+    connectionMock.inputStream >> responseBody
+
+    when:
+    def response = client.request([method: "HEADER",
+                                   path  : "/a-resource"])
+
+    then:
+    response.stream.available() == "holy ship".length()
+    and:
+    IOUtils.toByteArray(response.stream as InputStream) == "holy ship".bytes
+  }
+
+  def "request with unknown mime type"() {
+    given:
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    def connectionMock = Mock(HttpURLConnection)
+    client.metaClass.openConnection = {
+      connectionMock
+    }
+    def headerFields = [:]
+    headerFields[null] = ["HTTP/1.1 200 OK"]
+    headerFields["Content-Type"] = ["unknown/mime-type"]
+    headerFields["Content-Length"] = ["holy ship".length()]
+    connectionMock.getHeaderFields() >> headerFields
+    connectionMock.responseCode >> 200
+    def responseBody = new ByteArrayInputStream("holy ship".bytes)
+    connectionMock.inputStream >> responseBody
+
+    when:
+    def response = client.request([method: "HEADER",
+                                   path  : "/a-resource"])
+
+    then:
+    response.stream.available() == "holy ship".length()
+    and:
+    IOUtils.toByteArray(response.stream as InputStream) == "holy ship".bytes
+  }
+
+  def "request with unknown mime type and stdout"() {
+    given:
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    def connectionMock = Mock(HttpURLConnection)
+    client.metaClass.openConnection = {
+      connectionMock
+    }
+    def headerFields = [:]
+    headerFields[null] = ["HTTP/1.1 200 OK"]
+    headerFields["Content-Type"] = ["unknown/mime-type"]
+    headerFields["Content-Length"] = ["holy ship".length()]
+    connectionMock.getHeaderFields() >> headerFields
+    connectionMock.responseCode >> 200
+    def responseBody = new ByteArrayInputStream("holy ship".bytes)
+    connectionMock.inputStream >> responseBody
+    def stdout = new ByteArrayOutputStream()
+
+    when:
+    def response = client.request([method: "HEADER",
+                                   path  : "/a-resource",
+                                   stdout: stdout])
+
+    then:
+    stdout.toByteArray() == "holy ship".bytes
+    and:
+    responseBody.available() == 0
+    and:
+    response.stream == null
+  }
+
+  def "request with consumed body by ContentHandler"() {
+    given:
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    client.contentHandlerFactory = new TestContentHandlerFactory(contentHandler: new TestContentHandler(result: "result"))
+    def connectionMock = Mock(HttpURLConnection)
+    client.metaClass.openConnection = {
+      connectionMock
+    }
+    def headerFields = [:]
+    headerFields[null] = ["HTTP/1.1 200 OK"]
+    headerFields["Content-Type"] = ["text/plain"]
+    headerFields["Content-Length"] = ["holy ship".length()]
+    connectionMock.getHeaderFields() >> headerFields
+    connectionMock.responseCode >> 200
+    def responseBody = new ByteArrayInputStream("holy ship".bytes)
+    connectionMock.inputStream >> responseBody
+
+    when:
+    def response = client.request([method: "HEADER",
+                                   path  : "/a-resource"])
+
+    then:
+    response.stream == null
+    and:
+    response.content == "result"
+  }
+
+  static class TestContentHandlerFactory implements ContentHandlerFactory {
+
+    def contentHandler = null
+
+    @Override
+    ContentHandler createContentHandler(String mimetype) {
+      return contentHandler
+    }
+  }
+
+  static class TestContentHandler extends ContentHandler {
+
+    def result = null
+
+    @Override
+    Object getContent(URLConnection urlc) throws IOException {
+      return result
+    }
   }
 }

@@ -59,8 +59,8 @@ class LowLevelDockerClient {
   def request(config) {
     config = ensureValidRequestConfig(config)
 
-    HttpURLConnection connection = openConnection(config)
-    configureConnection(connection, config)
+    HttpURLConnection connection = openConnection(config as Map)
+    configureConnection(connection, config as Map)
 
     // since we listen to a stream we disable the timeout
 //    connection.setConnectTimeout(0)
@@ -93,14 +93,14 @@ class LowLevelDockerClient {
       IOUtils.copy(new ByteArrayInputStream(postData), connection.getOutputStream())
     }
 
-    def response = handleResponse(connection, config)
+    def response = handleResponse(connection, config as Map)
     return response
   }
 
-  def handleResponse(HttpURLConnection connection, config) {
+  def handleResponse(HttpURLConnection connection, Map config) {
     def response = readHeaders(connection)
 
-    def contentHandler = contentHandlerFactory.createContentHandler(response.mimeType)
+    def contentHandler = contentHandlerFactory.createContentHandler(response.mimeType as String)
     if (contentHandler == null) {
       logger.warn("couldn't find a specific ContentHandler for '${response.contentType}'.")
       if (config.stdout) {
@@ -184,13 +184,13 @@ class LowLevelDockerClient {
     return response
   }
 
-  def consumeResponseBody(response, content, config) {
+  def consumeResponseBody(Map response, Object content, Map config) {
     if (content instanceof InputStream) {
       if (config.stdout) {
         IOUtils.copy(content as InputStream, config.stdout as OutputStream)
         response.stream = null
       }
-      else if (response.contentLength) {
+      else if (response.contentLength >= 0) {
         response.content = IOUtils.toString(content as InputStream)
         response.stream = null
       }
@@ -204,11 +204,8 @@ class LowLevelDockerClient {
     }
   }
 
-  def ensureValidRequestConfig(config) {
-    def validConfig = config
-    if (config instanceof String) {
-      validConfig = [path: config]
-    }
+  def ensureValidRequestConfig(Object config) {
+    def validConfig = (config instanceof String) ? [path: config] : config
     if (!validConfig?.path) {
       logger.error("bad request config: ${config}")
       throw new IllegalArgumentException("bad request config")
@@ -225,20 +222,20 @@ class LowLevelDockerClient {
     return connection as HttpURLConnection
   }
 
-  def queryToString(queryParameters) {
+  def queryToString(Map queryParameters) {
     def queryAsString = queryParameters.collect { key, value ->
       "${URLEncoder.encode("$key".toString(), "UTF-8")}=${URLEncoder.encode("$value".toString(), "UTF-8")}"
     }
     return queryAsString.join("&")
   }
 
-  def configureConnection(HttpURLConnection connection, config) {
+  def configureConnection(HttpURLConnection connection, Map config) {
     connection.setUseCaches(false)
     connection.setRequestMethod(config.method as String)
     configureSSL(connection)
   }
 
-  def configureSSL(connection) {
+  def configureSSL(HttpURLConnection connection) {
     if (connection instanceof HttpsURLConnection) {
       SSLSocketFactory sslSocketFactory = initSSLSocketFactory()
       ((HttpsURLConnection) connection).setSSLSocketFactory(sslSocketFactory)
