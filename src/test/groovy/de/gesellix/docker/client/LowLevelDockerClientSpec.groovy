@@ -210,7 +210,7 @@ class LowLevelDockerClientSpec extends Specification {
                                    path  : "/a-resource"])
 
     then:
-    response.statusLine == expectedStatusLine
+    response.status == expectedStatusLine
 
     where:
     statusLine                | statusCode | expectedStatusLine

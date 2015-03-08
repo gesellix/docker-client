@@ -156,8 +156,12 @@ class LowLevelDockerClient {
   }
 
   def readHeaders(HttpURLConnection connection) {
+    def response = new DockerResponse()
+
     def statusLine = connection.headerFields[null]
     logger.info("status: ${statusLine}")
+    response.status = [text: statusLine,
+                       code: connection.responseCode]
 
     def headers = connection.headerFields.findAll { key, value ->
       key != null
@@ -165,29 +169,25 @@ class LowLevelDockerClient {
       [key.toLowerCase(), value]
     }
     logger.debug("headers: ${headers}")
+    response.headers = headers
 
     String contentType = headers['content-type']?.first()
     logger.debug("content-type: ${contentType}")
+    response.contentType = contentType
+
     int contentLength = headers['content-length']?.first() ?: -1
     logger.debug("content-length: ${contentLength}")
+    response.contentLength = contentLength
+
     String mimeType = getMimeType(contentType)
     logger.debug("mime type: ${mimeType}")
+    response.mimeType = mimeType
 
-    def response = [
-        statusLine   : [
-            text: statusLine,
-            code: connection.responseCode
-        ],
-        headers      : headers,
-        contentType  : contentType,
-        mimeType     : mimeType,
-        contentLength: contentLength,
-        stream       : connection.inputStream
-    ] as Map
+    response.stream = connection.inputStream
     return response
   }
 
-  def consumeResponseBody(Map response, Object content, Map config) {
+  def consumeResponseBody(DockerResponse response, Object content, Map config) {
     if (content instanceof InputStream) {
       if (config.stdout) {
         IOUtils.copy(content as InputStream, config.stdout as OutputStream)

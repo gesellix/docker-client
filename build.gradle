@@ -120,6 +120,7 @@ dependencies {
   compile 'org.slf4j:slf4j-api:1.7.10'
 
 //  compile 'com.turbomanage.basic-http-client:http-client:0.89'
+//  compile 'com.github.kevinsawicki:http-request:6.0'
   compile 'de.gesellix:docker-socket-factory:2015-02-19T12-18-03'
 
   testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
