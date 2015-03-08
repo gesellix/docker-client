@@ -165,7 +165,7 @@ class LowLevelDockerClient {
 
     String contentType = headers['content-type']?.first()
     logger.debug("content-type: ${contentType}")
-    int contentLength = headers['content-length']?.first()
+    int contentLength = headers['content-length']?.first() ?: -1
     logger.debug("content-length: ${contentLength}")
     String mimeType = getMimeType(contentType)
     logger.debug("mime type: ${mimeType}")

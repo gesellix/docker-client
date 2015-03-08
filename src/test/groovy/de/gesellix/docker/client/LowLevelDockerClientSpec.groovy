@@ -189,7 +189,59 @@ class LowLevelDockerClientSpec extends Specification {
     }
   }
 
-  def "request without request body"() {
+  def "request should return statusLine"() {
+    given:
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    def connectionMock = Mock(HttpURLConnection)
+    client.metaClass.openConnection = {
+      connectionMock
+    }
+    def headerFields = [:]
+    headerFields[null] = ["HTTP/1.1 200 OK"]
+    connectionMock.getHeaderFields() >> headerFields
+    connectionMock.responseCode >> 200
+
+    when:
+    def response = client.request([method: "HEADER",
+                                   path  : "/a-resource"])
+
+    then:
+    response.statusLine == [
+        text: ["HTTP/1.1 200 OK"],
+        code: 200]
+  }
+
+  def "request should return headers"() {
+    given:
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    def connectionMock = Mock(HttpURLConnection)
+    client.metaClass.openConnection = {
+      connectionMock
+    }
+    def headerFields = [:]
+    headerFields[null] = ["HTTP/1.1 200 OK"]
+    headerFields["Content-Type"] = ["text/plain;encoding=utf-8"]
+    headerFields["Content-Length"] = ["123456789".length()]
+    connectionMock.getHeaderFields() >> headerFields
+    connectionMock.responseCode >> 200
+    connectionMock.inputStream >> new ByteArrayInputStream("123456789".bytes)
+
+    when:
+    def response = client.request([method: "HEADER",
+                                   path  : "/a-resource"])
+
+    then:
+    response.headers == ['content-type'  : ["text/plain;encoding=utf-8"],
+                         'content-length': [9]]
+    and:
+    response.contentType == "text/plain;encoding=utf-8"
+    and:
+    response.mimeType == "text/plain"
+    and:
+    response.contentLength == 9
+  }
+
+  def "request should return content"() {
     given:
     def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
     def connectionMock = Mock(HttpURLConnection)
@@ -209,20 +261,12 @@ class LowLevelDockerClientSpec extends Specification {
                                    path  : "/a-resource"])
 
     then:
-    response == [
-        statusLine   : [
-            text: ["HTTP/1.1 200 OK"],
-            code: 200],
-        headers      : ['content-type'  : ["text/plain"],
-                        'content-length': [9]],
-        contentType  : "text/plain",
-        mimeType     : "text/plain",
-        contentLength: 9,
-        stream       : null,
-        content      : "holy ship"]
+    response.stream == null
+    and:
+    response.content == "holy ship"
   }
 
-  def "request without request body and stdout stream"() {
+  def "request with stdout stream"() {
     given:
     def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
     def connectionMock = Mock(HttpURLConnection)
@@ -249,15 +293,6 @@ class LowLevelDockerClientSpec extends Specification {
     and:
     responseBody.available() == 0
     and:
-    response == [
-        statusLine   : [
-            text: ["HTTP/1.1 200 OK"],
-            code: 200],
-        headers      : ['content-type'  : ["text/plain"],
-                        'content-length': [9]],
-        contentType  : "text/plain",
-        mimeType     : "text/plain",
-        contentLength: 9,
-        stream       : null]
+    response.stream == null
   }
 }
