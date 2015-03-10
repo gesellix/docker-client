@@ -325,6 +325,7 @@ class DockerClientImpl implements DockerClient {
   def inspectContainer(containerId) {
     logger.info "docker inspect container"
     getDelegate().get([path: "/containers/${containerId}/json"])
+    responseHandler.ensureSuccessfulResponse(new IllegalStateException("docker inspect failed"))
     return responseHandler.lastChunk
   }
 

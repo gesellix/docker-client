@@ -175,7 +175,7 @@ class LowLevelDockerClient {
     logger.debug("content-type: ${contentType}")
     response.contentType = contentType
 
-    int contentLength = headers['content-length']?.first() ?: -1
+    String contentLength = headers['content-length']?.first() ?: "-1"
     logger.debug("content-length: ${contentLength}")
     response.contentLength = contentLength
 
@@ -193,7 +193,7 @@ class LowLevelDockerClient {
         IOUtils.copy(content as InputStream, config.stdout as OutputStream)
         response.stream = null
       }
-      else if (response.contentLength >= 0) {
+      else if (response.contentLength && Integer.parseInt(response.contentLength) >= 0) {
         response.content = IOUtils.toString(content as InputStream)
         response.stream = null
       }

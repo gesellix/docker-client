@@ -228,7 +228,7 @@ class LowLevelDockerClientSpec extends Specification {
     def headerFields = [:]
     headerFields[null] = ["HTTP/1.1 200 OK"]
     headerFields["Content-Type"] = ["text/plain;encoding=utf-8"]
-    headerFields["Content-Length"] = ["123456789".length()]
+    headerFields["Content-Length"] = ["${"123456789".length()}"]
     connectionMock.getHeaderFields() >> headerFields
     connectionMock.responseCode >> 200
     connectionMock.inputStream >> new ByteArrayInputStream("123456789".bytes)
@@ -239,13 +239,13 @@ class LowLevelDockerClientSpec extends Specification {
 
     then:
     response.headers == ['content-type'  : ["text/plain;encoding=utf-8"],
-                         'content-length': [9]]
+                         'content-length': ["9"]]
     and:
     response.contentType == "text/plain;encoding=utf-8"
     and:
     response.mimeType == "text/plain"
     and:
-    response.contentLength == 9
+    response.contentLength == "9"
   }
 
   def "request should return consumed content"() {
