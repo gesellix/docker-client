@@ -1,9 +1,10 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.client.protocolhandler.RawInputStream
+import org.apache.commons.io.IOUtils
 import spock.lang.Ignore
 import spock.lang.Specification
 
-@Ignore("only for explorative testing")
 class DockerClientImplExplorationTest extends Specification {
 
   DockerClient dockerClient
@@ -14,6 +15,7 @@ class DockerClientImplExplorationTest extends Specification {
     dockerClient = new DockerClientImpl(dockerHost: defaultDockerHost ?: "http://172.17.42.1:2375/")
   }
 
+  @Ignore("only for explorative testing")
   def info() {
     when:
     def info = dockerClient.info()
@@ -41,6 +43,7 @@ class DockerClientImplExplorationTest extends Specification {
         SwapLimit         : 1]
   }
 
+  @Ignore("only for explorative testing")
   def version() {
     when:
     def version = dockerClient.version()
@@ -54,5 +57,41 @@ class DockerClientImplExplorationTest extends Specification {
         KernelVersion: "3.16.4-tinycore64",
         Os           : "linux",
         Version      : "1.3.0"]
+  }
+
+  @Ignore("only for explorative testing")
+  def "attach with container.config.tty=false"() {
+    when:
+    def attached = dockerClient.attach("test-d", [logs  : false,
+                                                  stream: true,
+                                                  stdin : false,
+                                                  stdout: true,
+                                                  stderr: false])
+
+    then:
+    attached.status.code == 200
+    and:
+    attached.stream instanceof RawInputStream
+    and:
+    attached.stream.multiplexStreams == true
+    IOUtils.copy(attached.stream, System.out)
+  }
+
+  @Ignore("only for explorative testing")
+  def "attach with container.config.tty=true"() {
+    when:
+    def attached = dockerClient.attach("test-it", [logs  : false,
+                                                   stream: true,
+                                                   stdin : false,
+                                                   stdout: true,
+                                                   stderr: false])
+
+    then:
+    attached.status.code == 200
+    and:
+    attached.stream instanceof RawInputStream
+    and:
+    attached.stream.multiplexStreams == false
+    IOUtils.copy(attached.stream, System.out)
   }
 }

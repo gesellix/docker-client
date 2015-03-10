@@ -16,28 +16,37 @@ class RawInputStream extends FilterInputStream {
     super(inputStream)
   }
 
+  def multiplexStreams = true
   def remainingFrameSize = -1
 
   @Override
   synchronized int read(byte[] b, int off, int len) throws IOException {
-    if (remainingFrameSize <= 0) {
-      def parsedHeader = readFrameHeader()
-      logger.trace(parsedHeader.toString())
-      if (parsedHeader == EMPTY_HEADER) {
-        return -1
+    if (multiplexStreams) {
+      if (remainingFrameSize <= 0) {
+        def parsedHeader = readFrameHeader()
+        logger.trace(parsedHeader.toString())
+        if (parsedHeader == EMPTY_HEADER) {
+          return -1
+        }
+        remainingFrameSize = parsedHeader.frameSize
       }
-      remainingFrameSize = parsedHeader.frameSize
+      def count = readRemainingFrameSize(b, off, len, remainingFrameSize)
+      remainingFrameSize -= (count >= 0 ? count : 0)
+      return count
     }
-
-    def count = readRemainingFrameSize(b, off, len, remainingFrameSize)
-    remainingFrameSize -= (count >= 0 ? count : 0)
-    return count
+    return super.read(b, off, len)
   }
 
   def readFrameHeader() {
     int[] headerBuf = [
         read(), read(), read(), read(),
         read(), read(), read(), read()]
+
+//    logger.trace("header bytes: '${headerBuf}'")
+//    byte[] headerBufAsBytes = [
+//        (byte) headerBuf[0], (byte) headerBuf[1], (byte) headerBuf[2], (byte) headerBuf[3],
+//        (byte) headerBuf[4], (byte) headerBuf[5], (byte) headerBuf[6], (byte) headerBuf[7]]
+//    logger.trace("header bytes as String: '${new String(headerBufAsBytes)}'")
 
 //    logger.trace("read header: ${headerBuf}")
     if (headerBuf.find { it < 0 }) {

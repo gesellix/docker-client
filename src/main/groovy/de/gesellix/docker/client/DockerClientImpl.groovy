@@ -19,12 +19,20 @@ class DockerClientImpl implements DockerClient {
 
   def dockerHost = "http://127.0.0.1:2375/"
   RESTClient delegate
+  LowLevelDockerClient httpClient
 
   def getDelegate() {
     if (!delegate) {
       this.delegate = createDockerClient(dockerHost)
     }
     return delegate
+  }
+
+  def getHttpClient() {
+    if (!httpClient) {
+      this.httpClient = new LowLevelDockerClient(dockerHost: dockerHost)
+    }
+    return httpClient
   }
 
   def createDockerClient(String dockerHost) {
@@ -439,6 +447,16 @@ class DockerClientImpl implements DockerClient {
     getDelegate().get([path : "/images/search".toString(),
                        query: [term: term]])
     return responseHandler.lastChunk
+  }
+
+  @Override
+  def attach(containerId, query) {
+    logger.info "docker attach"
+    def container = inspectContainer(containerId)
+    def response = getHttpClient().post([path : "/containers/${containerId}/attach".toString(),
+                                         query: query])
+    response.stream.multiplexStreams = !container.Config.Tty
+    return response
   }
 
   def extractSingleTarEntry(byte[] tarContent, String filename) {

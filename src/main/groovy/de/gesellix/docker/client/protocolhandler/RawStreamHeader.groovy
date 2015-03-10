@@ -45,6 +45,6 @@ class RawStreamHeader {
 
   @Override
   public String toString() {
-    return "RawDockerHeader{streamType=${streamType}, frameSize=${frameSize}} " + super.toString();
+    return "RawDockerHeader{streamType=${streamType}, frameSize=${frameSize}}"
   }
 }

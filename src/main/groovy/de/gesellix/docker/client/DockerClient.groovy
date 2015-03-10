@@ -91,4 +91,6 @@ interface DockerClient {
   def rename(containerId, newName)
 
   def search(term)
+
+  def attach(containerId, query)
 }
