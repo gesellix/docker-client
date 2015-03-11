@@ -59,7 +59,7 @@ class RawInputStreamSpec extends Specification {
     def copied = rawInputStream.copyFullyMultiplexed(stdout, stderr)
 
     then:
-    copied == 38
+    copied == actualText.length() + actualError.length()
     and:
     stdout.toString() == actualText
     and:
