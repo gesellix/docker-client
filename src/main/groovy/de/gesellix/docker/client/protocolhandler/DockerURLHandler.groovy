@@ -1,5 +1,6 @@
 package de.gesellix.docker.client.protocolhandler
 
+import de.gesellix.docker.client.protocolhandler.urlstreamhandler.HttpOverUnixSocketClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -33,12 +34,14 @@ class DockerURLHandler {
   }
 
   def getURLWithActualProtocol(String dockerHost) {
+    def result
     def oldProtocol = dockerHost.split("://", 2)[0]
     def protocol = oldProtocol
     switch (protocol) {
       case "http":
       case "https":
-        break;
+        result = new URL(dockerHost)
+        break
       case "tcp":
         if (shouldUseTls(new URL(dockerHost.replaceFirst("^${oldProtocol}://", "https://")))) {
           logger.info("assume 'https'")
@@ -48,16 +51,21 @@ class DockerURLHandler {
           logger.info("assume 'http'")
           protocol = "http"
         }
-        break;
+        result = new URL(dockerHost.replaceFirst("^${oldProtocol}://", "${protocol}://"))
+        break
       case "unix":
         logger.info("is 'unix'")
-        break;
+        def dockerUnixSocket = dockerHost.replaceFirst("unix://", "")
+        HttpOverUnixSocketClient.dockerUnixSocket = dockerUnixSocket
+        result = new URL("unix", "socket", dockerUnixSocket)
+        break
       default:
         logger.warn("protocol '${protocol}' not supported")
-        break;
+        result = new URL(dockerHost)
+        break
     }
-    logger.debug("selected protocol '${protocol}'")
-    return new URL(dockerHost.replaceFirst("^${oldProtocol}://", "${protocol}://"))
+    logger.debug("selected dockerHost at '${result}'")
+    return result
   }
 
   def shouldUseTls(candidateURL) {

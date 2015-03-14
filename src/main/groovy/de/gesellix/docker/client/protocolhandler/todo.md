@@ -2,7 +2,7 @@
 
 * [x] plain http
 * [x] tls/https
-* [ ] unix socket
+* [x] unix socket
 * [x] basic get 
 * [x] basic post 
 * [x] allow raw stream
