@@ -100,9 +100,15 @@ class RawInputStream extends FilterInputStream {
       return EMPTY_HEADER
     }
 
-    def parsedHeader = new RawStreamHeader(headerBuf)
-    logger.trace(parsedHeader.toString())
-    return parsedHeader
+    try {
+      def parsedHeader = new RawStreamHeader(headerBuf)
+      logger.trace(parsedHeader.toString())
+      return parsedHeader
+    }
+    catch (Exception e) {
+      logger.error("could not parse header - setting multiplexStreams=false could help.", e)
+      throw e
+    }
   }
 
   def readRemainingFrameSize(byte[] b, int off, int len, int remainingFrameSize) {

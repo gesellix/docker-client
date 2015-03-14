@@ -24,6 +24,23 @@ class RawInputStreamSpec extends Specification {
     outputStream.toString() == actualText
   }
 
+  def "should allow non multiplexed stream"() {
+    given:
+    def actualText = "docker\nrocks!\n\n"
+    def inputStream = new ByteArrayInputStream(actualText.bytes)
+    def outputStream = new ByteArrayOutputStream()
+
+    def stream = new RawInputStream(inputStream)
+    when:
+    stream.multiplexStreams = false
+    def copied = IOUtils.copy(stream, outputStream)
+
+    then:
+    copied == actualText.size()
+    and:
+    outputStream.toString() == actualText
+  }
+
   def "should stream the complete payload with empty final frame"() {
     given:
     def actualText = "docker\nstill\nrocks!"
