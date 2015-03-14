@@ -10,20 +10,22 @@ class HttpOverUnixSocketURLConnection extends HttpURLConnection {
   }
 
   protected void setNewClient(URL var1) throws IOException {
-    this.setNewClient(var1, false);
+    this.setNewClient(var1, false)
   }
 
   protected void setNewClient(URL var1, boolean var2) throws IOException {
     this.http = new HttpOverUnixSocketClient(var1)
     this.http.setConnectTimeout(this.connectTimeout)
-    this.http.setReadTimeout(this.readTimeout);
+    this.http.setReadTimeout(this.readTimeout)
   }
 
-  protected HttpClient getNewHttpClient(URL var1, Proxy var2, int var3) throws IOException {
-    return new HttpOverUnixSocketClient(var1);
+  protected HttpClient getNewHttpClient(URL var1, Proxy var2, int connectTimeout) throws IOException {
+    def client = new HttpOverUnixSocketClient(var1)
+    client.setConnectTimeout(connectTimeout)
+    return client
   }
 
-  protected HttpClient getNewHttpClient(URL var1, Proxy var2, int var3, boolean var4) throws IOException {
-    return new HttpOverUnixSocketClient(var1);
+  protected HttpClient getNewHttpClient(URL var1, Proxy var2, int connectTimeout, boolean var4) throws IOException {
+    return new HttpOverUnixSocketClient(var1)
   }
 }
