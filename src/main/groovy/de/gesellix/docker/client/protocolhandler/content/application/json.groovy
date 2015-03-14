@@ -15,12 +15,19 @@ class json extends ContentHandler {
   Object getContent(URLConnection connection) throws IOException {
     try {
       def stream = connection.getInputStream()
-      def text = IOUtils.toString(stream)
-      def jsonAsObject = jsonSlurper.parse("[${text.replaceAll("\\}[\n\r]*\\{", "},{")}]".bytes)
+
+      def jsonAsObject
+      if (connection.getHeaderField("transfer-encoding") == "chunked") {
+        def text = IOUtils.toString(stream)
+        jsonAsObject = jsonSlurper.parse("[${text.replaceAll("\\}[\n\r]*\\{", "},{")}]".bytes)
+      }
+      else {
+        jsonAsObject = jsonSlurper.parse(stream)
+      }
       return jsonAsObject
     }
     catch (IOException e) {
-      throw e;
+      throw e
     }
   }
 }

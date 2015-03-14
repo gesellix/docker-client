@@ -49,7 +49,7 @@ class HttpOverUnixSocketIntegrationTest extends Specification {
     def ping = dockerClient.get([path: "/_ping"])
 
     then:
-    ping.content.contains(["a-key": 42, "another-key": 4711])
+    ping.content == ["a-key": 42, "another-key": 4711]
 
     cleanup:
     testserver?.stop()

@@ -17,6 +17,7 @@ class JsonContentHandlerSpec extends Specification {
     given:
     def inputStream = new ByteArrayInputStream("{'key':'a-value'}\n{'2nd':'chunk'}".bytes)
     connection.inputStream >> inputStream
+    connection.getHeaderField("transfer-encoding") >> "chunked"
 
     when:
     jsonContentHandler.getContent(connection)
@@ -29,7 +30,7 @@ class JsonContentHandlerSpec extends Specification {
     given:
     def inputStream = new ByteArrayInputStream("{'key':'a-value'}".bytes)
     connection.inputStream >> inputStream
-    1 * jsonSlurper.parse(_) >> ["key": "a-value"]
+    1 * jsonSlurper.parse(inputStream) >> ["key": "a-value"]
 
     when:
     def content = jsonContentHandler.getContent(connection)

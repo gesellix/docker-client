@@ -60,13 +60,13 @@ class LowLevelDockerClientIntegrationSpec extends Specification {
     when:
     def response = client.get("/version")
     then:
-    def firstChunk = response.content.first()
-    firstChunk.ApiVersion == "1.17"
-    firstChunk.Arch == "amd64"
-    firstChunk.GitCommit == "a8a31ef"
-    firstChunk.GoVersion == "go1.4.1"
-    firstChunk.KernelVersion ==~ "3\\.\\d+\\.\\d+-.+"
-    firstChunk.Os == "linux"
-    firstChunk.Version == "1.5.0"
+    def content = response.content
+    content.ApiVersion == "1.17"
+    content.Arch == "amd64"
+    content.GitCommit == "a8a31ef"
+    content.GoVersion == "go1.4.1"
+    content.KernelVersion ==~ "3\\.\\d+\\.\\d+-.+"
+    content.Os == "linux"
+    content.Version == "1.5.0"
   }
 }
