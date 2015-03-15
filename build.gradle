@@ -93,39 +93,40 @@ ext {
 }
 
 def dependencyVersions = [
-    'commons-io:commons-io'                                : '2.4',
-    'commons-lang:commons-lang'                            : '2.6',
-    'commons-logging:commons-logging'                      : '1.1.3',
-    'junit:junit'                                          : '4.11',
-    'org.apache.commons:commons-compress'                  : '1.9',
-    'org.apache.httpcomponents:httpclient'                 : '4.3',
-    'org.apache.httpcomponents:httpmime'                   : '4.3',
-    'org.codehaus.groovy:groovy-all'                       : '2.4.1',
-    'org.codehaus.groovy.modules.http-builder:http-builder': '0.7.1',
-    'org.hamcrest:hamcrest-core'                           : '1.3',
-    'org.slf4j:slf4j-api'                                  : '1.7.10',
-    'org.yaml:snakeyaml'                                   : '1.15',
-    'xerces:xmlParserAPIs'                                 : '2.6.2',
-    'xerces:xercesImpl'                                    : '2.9.1',
-    'xml-apis:xml-apis'                                    : '1.0.b2'
+    'commons-io:commons-io'              : '2.4',
+    'commons-lang:commons-lang'          : '2.6',
+    'commons-logging:commons-logging'    : '1.1.3',
+    'junit:junit'                        : '4.12',
+    'org.apache.commons:commons-compress': '1.9',
+//    'org.apache.httpcomponents:httpclient'                 : '4.3',
+//    'org.codehaus.groovy.modules.http-builder:http-builder': '0.7.1',
+    'org.hamcrest:hamcrest-core'         : '1.3',
+    'org.slf4j:slf4j-api'                : '1.7.10',
+    'xerces:xmlParserAPIs'               : '2.6.2',
+    'xerces:xercesImpl'                  : '2.9.1',
+    'xml-apis:xml-apis'                  : '1.0.b2'
 ]
 
 dependencies {
-  compile 'org.codehaus.groovy:groovy-all:2.4.1'
-  compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
+  compile 'org.codehaus.groovy:groovy:2.4.1'
+  compile 'org.codehaus.groovy:groovy-json:2.4.1'
 
   compile 'org.apache.commons:commons-compress:1.9'
   compile 'commons-io:commons-io:2.4'
 
   compile 'org.slf4j:slf4j-api:1.7.10'
 
-//  compile 'com.turbomanage.basic-http-client:http-client:0.89'
-//  compile 'com.github.kevinsawicki:http-request:6.0'
-  compile 'de.gesellix:docker-socket-factory:2015-02-19T12-18-03'
+  compile 'org.bouncycastle:bcpkix-jdk15on:1.52'
+  compile('com.kohlschutter.junixsocket:junixsocket-native-common:2.0.4') {
+    exclude module: 'log4j'
+  }
+  compile('com.kohlschutter.junixsocket:junixsocket-common:2.0.4') {
+    exclude module: 'log4j'
+  }
 
-  testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
-  testCompile 'co.freeside:betamax:1.1.2'
-  testCompile 'org.yaml:snakeyaml:1.15'
+  testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
+    exclude module: 'groovy-all'
+  }
   testCompile 'cglib:cglib-nodep:3.1'
   testCompile 'commons-lang:commons-lang:2.6'
 

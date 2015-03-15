@@ -4,6 +4,8 @@ import org.newsclub.net.unix.AFUNIXSocket
 import org.newsclub.net.unix.AFUNIXSocketAddress
 import sun.net.www.http.HttpClient
 
+// behave like the sun internal HttpClient,
+// but connect via unix socket to the docker daemon.
 class HttpOverUnixSocketClient extends HttpClient {
 
   static String dockerUnixSocket

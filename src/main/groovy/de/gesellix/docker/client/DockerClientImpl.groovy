@@ -1,9 +1,6 @@
 package de.gesellix.docker.client
 
-import de.gesellix.socketfactory.httpclient.DockerHttpClientFactory
 import groovy.json.JsonBuilder
-import groovyx.net.http.ContentType
-import groovyx.net.http.RESTClient
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.io.IOUtils
@@ -18,64 +15,53 @@ class DockerClientImpl implements DockerClient {
   def responseHandler = new DockerResponseHandler()
 
   def dockerHost = "http://127.0.0.1:2375/"
-  RESTClient delegate
   LowLevelDockerClient httpClient
+  def Closure newDockerHttpClient
 
-  def getDelegate() {
-    if (!delegate) {
-      this.delegate = createDockerClient(dockerHost)
-    }
-    return delegate
+  DockerClientImpl() {
+    newDockerHttpClient = new MethodClosure(this, "createDockerHttpClient")
   }
 
   def getHttpClient() {
     if (!httpClient) {
-      this.httpClient = new LowLevelDockerClient(dockerHost: dockerHost)
+      this.httpClient = newDockerHttpClient(dockerHost)
+      logger.info "using docker at '${dockerHost}'"
     }
     return httpClient
   }
 
-  def createDockerClient(String dockerHost) {
-    def httpClientFactory = new DockerHttpClientFactory(dockerHost)
-    def restClient = httpClientFactory.getRESTClient()
-    restClient.with {
-      handler.failure = new MethodClosure(responseHandler, "handleFailure")
-      handler.success = new MethodClosure(responseHandler, "handleSuccess")
-    }
-    logger.info "using docker at '${httpClientFactory.sanitizedUri}'"
-    return restClient
+  def createDockerHttpClient(dockerHost) {
+    return new LowLevelDockerClient(dockerHost: dockerHost)
   }
 
   @Override
   def ping() {
     logger.info "docker ping"
-    getDelegate().get([path: "/_ping"])
-    return [status  : responseHandler.statusLine,
-            response: responseHandler.lastChunk]
+    def response = getHttpClient().get([path: "/_ping"])
+    return response
   }
 
   @Override
   def info() {
     logger.info "docker info"
-    getDelegate().get([path: "/info"])
-    return responseHandler.lastChunk
+    def response = getHttpClient().get([path: "/info"])
+    return response
   }
 
   @Override
   def version() {
     logger.info "docker version"
-    getDelegate().get([path: "/version"])
-    return responseHandler.lastChunk
+    def response = getHttpClient().get([path: "/version"])
+    return response
   }
 
   @Override
   def auth(def authDetails) {
     logger.info "docker login"
-    getDelegate().post([path              : "/auth",
-                        body              : authDetails,
-                        requestContentType: ContentType.JSON])
-    return responseHandler.statusLine.statusCode
-//    return responseHandler.lastChunk
+    def response = getHttpClient().post([path              : "/auth",
+                                         body              : authDetails,
+                                         requestContentType: "application/json"])
+    return response
   }
 
   @Override
@@ -87,13 +73,13 @@ class DockerClientImpl implements DockerClient {
   @Override
   def build(InputStream buildContext, query = ["rm": true]) {
     logger.info "docker build"
-    getDelegate().post([path              : "/build",
-                        query             : query,
-                        body              : buildContext,
-                        requestContentType: ContentType.BINARY])
+    def response = getHttpClient().post([path              : "/build",
+                                         query             : query,
+                                         body              : buildContext,
+                                         requestContentType: "application/octet-stream"])
 
-    responseHandler.ensureSuccessfulResponse(new IllegalStateException("docker build failed"))
-    def lastChunk = responseHandler.lastChunk
+    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker build failed"))
+    def lastChunk = response.content.last()
     return lastChunk.stream.trim() - "Successfully built "
   }
 
@@ -101,12 +87,11 @@ class DockerClientImpl implements DockerClient {
   def tag(imageId, repository, force = false) {
     logger.info "docker tag"
     def repoAndTag = parseRepositoryTag(repository)
-    getDelegate().post([path : "/images/${imageId}/tag".toString(),
-                        query: [repo : repoAndTag.repo,
-                                tag  : repoAndTag.tag,
-                                force: force]])
-    return responseHandler.statusLine.statusCode
-//    return responseHandler.lastChunk
+    def response = getHttpClient().post([path : "/images/${imageId}/tag".toString(),
+                                         query: [repo : repoAndTag.repo,
+                                                 tag  : repoAndTag.tag,
+                                                 force: force]])
+    return response
   }
 
   @Override
@@ -120,12 +105,12 @@ class DockerClientImpl implements DockerClient {
     }
     def repoAndTag = parseRepositoryTag(actualImageName)
 
-    getDelegate().post([path   : "/images/${repoAndTag.repo}/push".toString(),
-                        query  : [registry: registry,
-                                  tag     : repoAndTag.tag],
-                        headers: ["X-Registry-Auth": authBase64Encoded ?: "."]])
-    responseHandler.ensureSuccessfulResponse(new IllegalStateException("docker push failed"))
-    return responseHandler.lastChunk
+    def response = getHttpClient().post([path   : "/images/${repoAndTag.repo}/push".toString(),
+                                         query  : [registry: registry,
+                                                   tag     : repoAndTag.tag],
+                                         headers: ["X-Registry-Auth": authBase64Encoded ?: "."]])
+    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker push failed"))
+    return response
   }
 
   @Override
@@ -170,12 +155,17 @@ class DockerClientImpl implements DockerClient {
       actualImageName = "$registry/$imageName".toString()
     }
 
-    getDelegate().post([path : "/images/create",
-                        query: [fromImage: actualImageName,
-                                tag      : tag,
-                                registry : registry]])
-    responseHandler.ensureSuccessfulResponse(new IllegalStateException("docker pull failed"))
-    def lastChunkWithId = responseHandler.chunks.findAll { it.id }.last()
+    def response = getHttpClient().post([path : "/images/create",
+                                         query: [fromImage: actualImageName,
+                                                 tag      : tag,
+                                                 registry : registry]])
+    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker pull failed"))
+
+    def chunksWithId = response.content.findAll { it.id }
+    if (chunksWithId.empty) {
+      throw new DockerClientException(new IllegalStateException("cannot find 'id' in response"))
+    }
+    def lastChunkWithId = chunksWithId.last()
     return lastChunkWithId.id
   }
 
@@ -184,39 +174,34 @@ class DockerClientImpl implements DockerClient {
     logger.info "docker create"
     def actualContainerConfig = [:] + containerConfig
 
-    getDelegate().post([path              : "/containers/create".toString(),
-                        query             : query,
-                        body              : actualContainerConfig,
-                        requestContentType: ContentType.JSON])
+    def response = getHttpClient().post([path              : "/containers/create".toString(),
+                                         query             : query,
+                                         body              : actualContainerConfig,
+                                         requestContentType: "application/json"])
 
-    if (!responseHandler.success) {
-      if (responseHandler.statusLine?.statusCode == 404) {
+    if (!response.status.success) {
+      if (response.status?.code == 404) {
         def repoAndTag = parseRepositoryTag(containerConfig.Image)
         logger.warn "'${repoAndTag.repo}:${repoAndTag.tag}' not found."
         pull(repoAndTag.repo, repoAndTag.tag)
         // retry...
-        getDelegate().post([path              : "/containers/create".toString(),
-                            query             : query,
-                            body              : actualContainerConfig,
-                            requestContentType: ContentType.JSON])
-        responseHandler.ensureSuccessfulResponse(new IllegalStateException("docker create failed"))
-//        if (!responseHandler.success) {
-//          throw new DockerClientException(new IllegalStateException("create container failed."), [
-//              statusCode    : responseHandler.statusLine?.statusCode,
-//              responseDetail: responseHandler.lastChunk])
-//        }
+        response = getHttpClient().post([path              : "/containers/create".toString(),
+                                         query             : query,
+                                         body              : actualContainerConfig,
+                                         requestContentType: "application/json"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker create failed after retry"))
       }
+      responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker create failed"))
     }
-    return responseHandler.lastChunk
+    return response
   }
 
   @Override
   def startContainer(containerId) {
     logger.info "docker start"
-    getDelegate().post([path              : "/containers/${containerId}/start".toString(),
-                        requestContentType: ContentType.JSON])
-    return responseHandler.statusLine.statusCode
-//    return responseHandler.lastChunk
+    def response = getHttpClient().post([path              : "/containers/${containerId}/start".toString(),
+                                         requestContentType: "application/json"])
+    return response
   }
 
   @Override
@@ -239,10 +224,10 @@ class DockerClientImpl implements DockerClient {
     def containerConfigWithImageName = [:] + containerConfig
     containerConfigWithImageName.Image = fromImage + (tag ? ":$tag" : "")
 
-    def containerInfo = createContainer(containerConfigWithImageName, [name: name])
-    def result = startContainer(containerInfo.Id)
+    def containerResponse = createContainer(containerConfigWithImageName, [name: name])
+    def result = startContainer(containerResponse.content.Id)
     return [
-        container: containerInfo,
+        container: containerResponse,
         status   : result
     ]
   }
@@ -250,145 +235,137 @@ class DockerClientImpl implements DockerClient {
   @Override
   def restart(containerId) {
     logger.info "docker restart"
-    getDelegate().post([path : "/containers/${containerId}/restart".toString(),
-                        query: [t: 10]])
-    return [status  : responseHandler.statusLine,
-            response: responseHandler.lastChunk]
+    def response = getHttpClient().post([path : "/containers/${containerId}/restart".toString(),
+                                         query: [t: 10]])
+    return response
   }
 
   @Override
   def stop(containerId) {
     logger.info "docker stop"
-    getDelegate().post([path: "/containers/${containerId}/stop".toString()])
-    return responseHandler.statusLine.statusCode
-//    return responseHandler.lastChunk
+    def response = getHttpClient().post([path: "/containers/${containerId}/stop".toString()])
+    return response
   }
 
   @Override
   def kill(containerId) {
     logger.info "docker kill"
-    getDelegate().post([path: "/containers/${containerId}/kill".toString()])
-    return [status  : responseHandler.statusLine,
-            response: responseHandler.lastChunk]
+    def response = getHttpClient().post([path: "/containers/${containerId}/kill".toString()])
+    return response
   }
 
   @Override
   def wait(containerId) {
     logger.info "docker wait"
-    getDelegate().post([path: "/containers/${containerId}/wait".toString()])
-    return [status  : responseHandler.statusLine,
-            response: responseHandler.lastChunk]
+    def response = getHttpClient().post([path: "/containers/${containerId}/wait".toString()])
+    return response
   }
 
   @Override
   def pause(containerId) {
     logger.info "docker pause"
-    getDelegate().post([path: "/containers/${containerId}/pause".toString()])
-    return [status  : responseHandler.statusLine,
-            response: responseHandler.lastChunk]
+    def response = getHttpClient().post([path: "/containers/${containerId}/pause".toString()])
+    return response
   }
 
   @Override
   def unpause(containerId) {
     logger.info "docker unpause"
-    getDelegate().post([path: "/containers/${containerId}/unpause".toString()])
-    return [status  : responseHandler.statusLine,
-            response: responseHandler.lastChunk]
+    def response = getHttpClient().post([path: "/containers/${containerId}/unpause".toString()])
+    return response
   }
 
   @Override
   def rm(containerId) {
     logger.info "docker rm"
-    getDelegate().delete([path: "/containers/${containerId}".toString()])
-    return responseHandler.statusLine.statusCode
-//    return responseHandler.lastChunk
+    def response = getHttpClient().delete([path: "/containers/${containerId}".toString()])
+    return response
   }
 
   @Override
   def rmi(imageId) {
     logger.info "docker rmi"
-    getDelegate().delete([path: "/images/${imageId}".toString()])
-    return responseHandler.statusLine.statusCode
-//    return responseHandler.lastChunk
+    def response = getHttpClient().delete([path: "/images/${imageId}".toString()])
+    return response
   }
 
   @Override
   def ps() {
     logger.info "docker ps"
-    getDelegate().get([path : "/containers/json",
-                       query: [all : true,
-                               size: false]])
-    return responseHandler.lastChunk
+    def response = getHttpClient().get([path : "/containers/json",
+                                        query: [all : true,
+                                                size: false]])
+    return response
   }
 
   @Override
   def inspectContainer(containerId) {
     logger.info "docker inspect container"
-    getDelegate().get([path: "/containers/${containerId}/json"])
-    responseHandler.ensureSuccessfulResponse(new IllegalStateException("docker inspect failed"))
-    return responseHandler.lastChunk
+    def response = getHttpClient().get([path: "/containers/${containerId}/json"])
+    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker inspect failed"))
+    return response
   }
 
   @Override
   def diff(containerId) {
     logger.info "docker diff"
-    getDelegate().get([path: "/containers/${containerId}/changes"])
-    return responseHandler.lastChunk
+    def response = getHttpClient().get([path: "/containers/${containerId}/changes"])
+    return response
   }
 
   @Override
   def inspectImage(imageId) {
     logger.info "docker inspect image"
-    getDelegate().get([path: "/images/${imageId}/json"])
-    return responseHandler.lastChunk
+    def response = getHttpClient().get([path: "/images/${imageId}/json"])
+    return response
   }
 
   @Override
   def history(imageId) {
     logger.info "docker history"
-    getDelegate().get([path: "/images/${imageId}/history"])
-    return responseHandler.lastChunk
+    def response = getHttpClient().get([path: "/images/${imageId}/history"])
+    return response
   }
 
   @Override
   def images(query = [all    : false,
                       filters: [:]]) {
     logger.info "docker images"
-    getDelegate().get([path : "/images/json",
-                       query: query])
-    return responseHandler.lastChunk
+    def response = getHttpClient().get([path : "/images/json",
+                                        query: query])
+    return response
   }
 
   @Override
   def createExec(containerId, execConfig) {
     logger.info "docker create exec on '${containerId}'"
 
-    getDelegate().post([path              : "/containers/${containerId}/exec".toString(),
-                        body              : execConfig,
-                        requestContentType: ContentType.JSON])
+    def response = getHttpClient().post([path              : "/containers/${containerId}/exec".toString(),
+                                         body              : execConfig,
+                                         requestContentType: "application/json"])
 
 
-    if (responseHandler.statusLine?.statusCode == 404) {
+    if (response.status?.code == 404) {
       logger.error("no such container '${containerId}'")
     }
-    responseHandler.ensureSuccessfulResponse(new IllegalStateException("docker exec create failed"))
-    return responseHandler.lastChunk
+    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker exec create failed"))
+    return response
   }
 
   @Override
   def startExec(execId, execConfig) {
     logger.info "docker start exec '${execId}'"
 
-    getDelegate().post([path              : "/exec/${execId}/start".toString(),
-                        body              : execConfig,
-                        requestContentType: ContentType.JSON])
+    def response = getHttpClient().post([path              : "/exec/${execId}/start".toString(),
+                                         body              : execConfig,
+                                         requestContentType: "application/json"])
 
 
-    if (responseHandler.statusLine?.statusCode == 404) {
+    if (response.status?.code == 404) {
       logger.error("no such exec '${execId}'")
     }
-    responseHandler.ensureSuccessfulResponse(new IllegalStateException("docker exec start failed"))
-    return responseHandler.lastChunk
+    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker exec start failed"))
+    return response
   }
 
   @Override
@@ -407,7 +384,7 @@ class DockerClientImpl implements DockerClient {
         "Cmd"         : command]
 
     def execCreateResult = createExec(containerId, actualExecConfig)
-    def execId = execCreateResult.Id
+    def execId = execCreateResult.content.Id
     return startExec(execId, actualExecConfig)
   }
 
@@ -415,39 +392,39 @@ class DockerClientImpl implements DockerClient {
   def copyFile(containerId, String filename) {
     logger.info "copy '${filename}' from '${containerId}'"
 
-    def fileAsTar = copy(containerId, [Resource: filename])
-    return extractSingleTarEntry(fileAsTar as byte[], filename)
+    def response = copy(containerId, [Resource: filename])
+    return extractSingleTarEntry(response.stream as InputStream, filename)
   }
 
   @Override
   def copy(containerId, resourceBody) {
     logger.info "docker cp ${containerId} ${resourceBody}"
 
-    getDelegate().post([path              : "/containers/${containerId}/copy".toString(),
-                        body              : resourceBody,
-                        requestContentType: ContentType.JSON])
+    def response = getHttpClient().post([path              : "/containers/${containerId}/copy".toString(),
+                                         body              : resourceBody,
+                                         requestContentType: "application/json"])
 
-    if (responseHandler.statusLine?.statusCode == 404) {
+    if (response.status.code == 404) {
       logger.error("no such container ${containerId}")
     }
-    responseHandler.ensureSuccessfulResponse(new IllegalStateException("docker cp failed"))
-    return responseHandler.lastChunk.raw
+    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker cp failed"))
+    return response
   }
 
   @Override
   def rename(containerId, newName) {
     logger.info "docker rename"
-    getDelegate().post([path : "/containers/${containerId}/rename".toString(),
-                        query: [name: newName]])
-    return responseHandler.statusLine.statusCode
+    def response = getHttpClient().post([path : "/containers/${containerId}/rename".toString(),
+                                         query: [name: newName]])
+    return response
   }
 
   @Override
   def search(term) {
     logger.info "docker search"
-    getDelegate().get([path : "/images/search".toString(),
-                       query: [term: term]])
-    return responseHandler.lastChunk
+    def response = getHttpClient().get([path : "/images/search".toString(),
+                                        query: [term: term]])
+    return response
   }
 
   @Override
@@ -460,8 +437,8 @@ class DockerClientImpl implements DockerClient {
     return response
   }
 
-  def extractSingleTarEntry(byte[] tarContent, String filename) {
-    def stream = new TarArchiveInputStream(new BufferedInputStream(new ByteArrayInputStream(tarContent)))
+  def extractSingleTarEntry(InputStream tarContent, String filename) {
+    def stream = new TarArchiveInputStream(new BufferedInputStream(tarContent))
 
     TarArchiveEntry entry = stream.nextTarEntry
     logger.debug("entry size: ${entry.size}")

@@ -1,6 +1,5 @@
 package de.gesellix.docker.client
 
-import groovyx.net.http.ContentType
 import spock.lang.Ignore
 import spock.lang.IgnoreIf
 import spock.lang.Specification
@@ -38,11 +37,11 @@ class LowLevelDockerClientIntegrationSpec extends Specification {
                        "serveraddress": "https://index.docker.io/v1/"]
     def request = [path       : "/auth",
                    body       : authDetails,
-                   contentType: ContentType.JSON]
+                   contentType: "application/json"]
     when:
     def response = client.post(request)
     then:
-    response.content.last() == [Status: "Login Succeeded"]
+    response.content == [Status: "Login Succeeded"]
   }
 
   def "should optionally stream a response"() {

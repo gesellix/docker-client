@@ -3,7 +3,6 @@ package de.gesellix.docker.client
 import de.gesellix.docker.client.protocolhandler.DockerContentHandlerFactory
 import de.gesellix.docker.client.protocolhandler.DockerURLHandler
 import de.gesellix.docker.client.protocolhandler.RawInputStream
-import de.gesellix.socketfactory.https.KeyStoreUtil
 import groovy.json.JsonBuilder
 import org.apache.commons.io.IOUtils
 import org.slf4j.Logger
@@ -13,7 +12,7 @@ import javax.net.ssl.*
 import java.nio.charset.Charset
 import java.util.regex.Pattern
 
-import static de.gesellix.socketfactory.https.KeyStoreUtil.getKEY_STORE_PASSWORD
+import static de.gesellix.docker.client.KeyStoreUtil.KEY_STORE_PASSWORD
 import static javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm
 
 // Proof-of-concept for https://docs.docker.com/reference/api/docker_remote_api_v1.17/#attach-to-a-container
@@ -56,6 +55,12 @@ class LowLevelDockerClient {
     return request(config)
   }
 
+  def delete(requestConfig) {
+    def config = ensureValidRequestConfig(requestConfig)
+    config.method = "DELETE"
+    return request(config)
+  }
+
   def request(config) {
     config = ensureValidRequestConfig(config)
 
@@ -67,19 +72,25 @@ class LowLevelDockerClient {
 //    connection.setReadTimeout(0)
 
     if (config.body) {
-      byte[] postData
+      InputStream postBody
       int postDataLength
       switch (config.contentType) {
         case "application/json":
           def json = new JsonBuilder()
           json config.body
           def bodyAsString = json.toString()
-          postData = bodyAsString.getBytes(Charset.forName("UTF-8"))
+          def postData = bodyAsString.getBytes(Charset.forName("UTF-8"))
+          postBody = new ByteArrayInputStream(postData)
           postDataLength = postData.length
+          connection.setRequestProperty("charset", "utf-8")
+          break
+        case "application/octet-stream":
+          postBody = config.body
+          postDataLength = -1
           break
         default:
-          postData = config.body.toString().getBytes(Charset.forName("UTF-8"))
-          postDataLength = postData.length
+          postBody = config.body
+          postDataLength = -1
           break
       }
 
@@ -88,9 +99,8 @@ class LowLevelDockerClient {
       connection.setInstanceFollowRedirects(false)
 
       connection.setRequestProperty("Content-Type", config.contentType as String)
-      connection.setRequestProperty("charset", "utf-8")
       connection.setRequestProperty("Content-Length", Integer.toString(postDataLength))
-      IOUtils.copy(new ByteArrayInputStream(postData), connection.getOutputStream())
+      IOUtils.copy(postBody, connection.getOutputStream())
     }
 
     def response = handleResponse(connection, config as Map)
@@ -103,7 +113,7 @@ class LowLevelDockerClient {
     def contentHandler = contentHandlerFactory.createContentHandler(response.mimeType as String)
     if (contentHandler == null) {
       logger.warn("couldn't find a specific ContentHandler for '${response.contentType}'.")
-      if (config.stdout) {
+      if (response.stream && config.stdout) {
         logger.debug("redirecting to stdout.")
         IOUtils.copy(response.stream as InputStream, config.stdout as OutputStream)
         response.stream = null
@@ -160,8 +170,9 @@ class LowLevelDockerClient {
 
     def statusLine = connection.headerFields[null]
     logger.info("status: ${statusLine}")
-    response.status = [text: statusLine,
-                       code: connection.responseCode]
+    response.status = [text   : statusLine,
+                       code   : connection.responseCode,
+                       success: 200 <= connection.responseCode && connection.responseCode < 300]
 
     def headers = connection.headerFields.findAll { key, value ->
       key != null
@@ -183,7 +194,12 @@ class LowLevelDockerClient {
     logger.debug("mime type: ${mimeType}")
     response.mimeType = mimeType
 
-    response.stream = connection.inputStream
+    if (response.status.success) {
+      response.stream = connection.inputStream
+    }
+    else {
+      response.stream = null
+    }
     return response
   }
 

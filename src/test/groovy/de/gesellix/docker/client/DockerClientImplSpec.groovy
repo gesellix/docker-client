@@ -1,8 +1,5 @@
 package de.gesellix.docker.client
 
-import groovyx.net.http.ContentType
-import groovyx.net.http.RESTClient
-import org.apache.http.StatusLine
 import org.slf4j.Logger
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -10,12 +7,11 @@ import spock.lang.Unroll
 class DockerClientImplSpec extends Specification {
 
   def DockerClientImpl dockerClient = Spy(DockerClientImpl)
-  def RESTClient delegateMock = Mock(RESTClient)
+  def LowLevelDockerClient httpClient = Mock(LowLevelDockerClient)
 
   def setup() {
-    dockerClient.createDockerClient(_) >> delegateMock
     dockerClient.responseHandler = Spy(DockerResponseHandler)
-    dockerClient.responseHandler.chunks = []
+    dockerClient.newDockerHttpClient = { httpClient }
   }
 
   def "encode authConfig"() {
@@ -64,439 +60,333 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "ping"() {
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [plain: "OK"]
-
     when:
     dockerClient.ping()
 
     then:
-    1 * delegateMock.get([path: "/_ping"])
+    1 * httpClient.get([path: "/_ping"])
   }
 
   def "info"() {
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
-
     when:
     dockerClient.info()
 
     then:
-    1 * delegateMock.get([path: "/info"])
+    1 * httpClient.get([path: "/info"])
   }
 
   def "version"() {
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
-
     when:
     dockerClient.version()
 
     then:
-    1 * delegateMock.get([path: "/version"])
+    1 * httpClient.get([path: "/version"])
   }
 
   def "login"() {
     def authDetails = [:]
-    given:
-    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
-
     when:
     dockerClient.auth(authDetails)
 
     then:
-    1 * delegateMock.post([path              : "/auth",
-                           body              : authDetails,
-                           requestContentType: ContentType.JSON])
+    1 * httpClient.post([path              : "/auth",
+                         body              : authDetails,
+                         requestContentType: "application/json"])
   }
 
   def "build with defaults"() {
     def buildContext = new ByteArrayInputStream([42] as byte[])
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [error : false,
-                                            stream: ""]
 
     when:
     dockerClient.build(buildContext)
 
     then:
-    1 * delegateMock.post([path              : "/build",
-                           query             : ["rm": true],
-                           body              : buildContext,
-                           requestContentType: ContentType.BINARY])
+    1 * httpClient.post([path              : "/build",
+                         query             : ["rm": true],
+                         body              : buildContext,
+                         requestContentType: "application/octet-stream"]) >> [content: [[stream: ""]]]
     and:
     dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-      assert arguments[0]?.message == "docker build failed"
+      assert arguments[1]?.message == "docker build failed"
     }
   }
 
   def "build with query"() {
     def buildContext = new ByteArrayInputStream([42] as byte[])
     def query = ["rm": false]
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [error : false,
-                                            stream: ""]
 
     when:
     dockerClient.build(buildContext, query)
 
     then:
-    1 * delegateMock.post([path              : "/build",
-                           query             : ["rm": false],
-                           body              : buildContext,
-                           requestContentType: ContentType.BINARY])
+    1 * httpClient.post([path              : "/build",
+                         query             : ["rm": false],
+                         body              : buildContext,
+                         requestContentType: "application/octet-stream"]) >> [content: [[stream: ""]]]
     and:
     dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-      assert arguments[0]?.message == "docker build failed"
+      assert arguments[1]?.message == "docker build failed"
     }
   }
 
   def "tag with defaults"() {
-    given:
-    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
-
     when:
     dockerClient.tag("an-image", "registry:port/username/image-name:a-tag")
 
     then:
-    1 * delegateMock.post([path : "/images/an-image/tag",
-                           query: [repo : "registry:port/username/image-name",
-                                   tag  : "a-tag",
-                                   force: false]])
+    1 * httpClient.post([path : "/images/an-image/tag",
+                         query: [repo : "registry:port/username/image-name",
+                                 tag  : "a-tag",
+                                 force: false]])
   }
 
   def "tag with force == true"() {
-    given:
-    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
-
     when:
     dockerClient.tag("an-image", "registry:port/username/image-name:a-tag", true)
 
     then:
-    1 * delegateMock.post([path : "/images/an-image/tag",
-                           query: [repo : "registry:port/username/image-name",
-                                   tag  : "a-tag",
-                                   force: true]])
+    1 * httpClient.post([path : "/images/an-image/tag",
+                         query: [repo : "registry:port/username/image-name",
+                                 tag  : "a-tag",
+                                 force: true]])
   }
 
   def "push with defaults"() {
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
-
     when:
     dockerClient.push("an-image")
 
     then:
-    1 * delegateMock.post([path   : "/images/an-image/push",
-                           query  : [registry: "",
-                                     tag     : ""],
-                           headers: ["X-Registry-Auth": "."]])
+    1 * httpClient.post([path   : "/images/an-image/push",
+                         query  : [registry: "",
+                                   tag     : ""],
+                         headers: ["X-Registry-Auth": "."]]) >> [status: [success: true]]
   }
 
   def "push with auth"() {
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
-
     when:
     dockerClient.push("an-image:a-tag", "some-base64-encoded-auth")
 
     then:
-    1 * delegateMock.post([path   : "/images/an-image/push",
-                           query  : [registry: "",
-                                     tag     : "a-tag"],
-                           headers: ["X-Registry-Auth": "some-base64-encoded-auth"]])
+    1 * httpClient.post([path   : "/images/an-image/push",
+                         query  : [registry: "",
+                                   tag     : "a-tag"],
+                         headers: ["X-Registry-Auth": "some-base64-encoded-auth"]]) >> [status: [success: true]]
   }
 
   def "push with registry"() {
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
-    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
-
     when:
     dockerClient.push("an-image", ".", "registry:port")
 
     then:
-    1 * delegateMock.post([path : "/images/an-image/tag",
-                           query: [repo : "registry:port/an-image",
-                                   tag  : "",
-                                   force: true]])
+    1 * httpClient.post([path : "/images/an-image/tag",
+                         query: [repo : "registry:port/an-image",
+                                 tag  : "",
+                                 force: true]])
     then:
-    1 * delegateMock.post([path   : "/images/registry:port/an-image/push",
-                           query  : [registry: "registry:port",
-                                     tag     : ""],
-                           headers: ["X-Registry-Auth": "."]])
+    1 * httpClient.post([path   : "/images/registry:port/an-image/push",
+                         query  : [registry: "registry:port",
+                                   tag     : ""],
+                         headers: ["X-Registry-Auth": "."]]) >> [status: [success: true]]
   }
 
   def "pull with defaults"() {
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks = [[id: "image-id"]]
-
     when:
     dockerClient.pull("an-image")
 
     then:
-    1 * delegateMock.post([path : "/images/create",
-                           query: [fromImage: "an-image",
-                                   tag      : "",
-                                   registry : ""]])
+    1 * httpClient.post([path : "/images/create",
+                         query: [fromImage: "an-image",
+                                 tag      : "",
+                                 registry : ""]]) >> [content: [[id: "image-id"]]]
     and:
     dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-      assert arguments[0]?.message == "docker pull failed"
+      assert arguments[1]?.message == "docker pull failed"
     }
   }
 
   def "pull with tag"() {
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks = [[id: "image-id"]]
-
     when:
     dockerClient.pull("an-image", "a-tag")
 
     then:
-    1 * delegateMock.post([path : "/images/create",
-                           query: [fromImage: "an-image",
-                                   tag      : "a-tag",
-                                   registry : ""]])
+    1 * httpClient.post([path : "/images/create",
+                         query: [fromImage: "an-image",
+                                 tag      : "a-tag",
+                                 registry : ""]]) >> [content: [[id: "image-id"]]]
     and:
     dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-      assert arguments[0]?.message == "docker pull failed"
+      assert arguments[1]?.message == "docker pull failed"
     }
   }
 
   def "pull with registry"() {
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks = [[id: "image-id"]]
-
     when:
     dockerClient.pull("an-image", "", "registry:port")
 
     then:
-    1 * delegateMock.post([path : "/images/create",
-                           query: [fromImage: "registry:port/an-image",
-                                   tag      : "",
-                                   registry : "registry:port"]])
+    1 * httpClient.post([path : "/images/create",
+                         query: [fromImage: "registry:port/an-image",
+                                 tag      : "",
+                                 registry : "registry:port"]]) >> [content: [[id: "image-id"]]]
     and:
     dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-      assert arguments[0]?.message == "docker pull failed"
+      assert arguments[1]?.message == "docker pull failed"
     }
   }
 
   def "restart container"() {
-    given:
-    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
-
     when:
     dockerClient.restart("a-container")
 
     then:
-    1 * delegateMock.post([path : "/containers/a-container/restart",
-                           query: [t: 10]])
+    1 * httpClient.post([path : "/containers/a-container/restart",
+                         query: [t: 10]])
   }
 
   def "stop container"() {
-    given:
-    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
-
     when:
     dockerClient.stop("a-container")
 
     then:
-    1 * delegateMock.post([path: "/containers/a-container/stop"])
+    1 * httpClient.post([path: "/containers/a-container/stop"])
   }
 
   def "kill container"() {
-    given:
-    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
-
     when:
     dockerClient.kill("a-container")
 
     then:
-    1 * delegateMock.post([path: "/containers/a-container/kill"])
+    1 * httpClient.post([path: "/containers/a-container/kill"])
   }
 
   def "wait container"() {
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
-
     when:
     dockerClient.wait("a-container")
 
     then:
-    1 * delegateMock.post([path: "/containers/a-container/wait"])
+    1 * httpClient.post([path: "/containers/a-container/wait"])
   }
 
   def "pause container"() {
-    given:
-    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
-
     when:
     dockerClient.pause("a-container")
 
     then:
-    1 * delegateMock.post([path: "/containers/a-container/pause"])
+    1 * httpClient.post([path: "/containers/a-container/pause"])
   }
 
   def "unpause container"() {
-    given:
-    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
-
     when:
     dockerClient.unpause("a-container")
 
     then:
-    1 * delegateMock.post([path: "/containers/a-container/unpause"])
+    1 * httpClient.post([path: "/containers/a-container/unpause"])
   }
 
   def "rm container"() {
-    given:
-    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
-
     when:
     dockerClient.rm("a-container")
 
     then:
-    1 * delegateMock.delete([path: "/containers/a-container"]) >> [statusLine: [:]]
+    1 * httpClient.delete([path: "/containers/a-container"])
   }
 
   def "ps containers"() {
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
-
     when:
     dockerClient.ps()
 
     then:
-    1 * delegateMock.get([path : "/containers/json",
-                          query: [all : true,
-                                  size: false]])
+    1 * httpClient.get([path : "/containers/json",
+                        query: [all : true,
+                                size: false]])
   }
 
   def "inspect container"() {
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
-
     when:
     dockerClient.inspectContainer("a-container")
 
     then:
-    1 * delegateMock.get([path: "/containers/a-container/json"])
+    1 * httpClient.get([path: "/containers/a-container/json"]) >> [status : [success: true],
+                                                                   content: [:]]
   }
 
   def "diff"() {
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
-
     when:
     dockerClient.diff("a-container")
 
     then:
-    1 * delegateMock.get([path: "/containers/a-container/changes"])
+    1 * httpClient.get([path: "/containers/a-container/changes"])
   }
 
   def "inspect image"() {
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
-
     when:
     dockerClient.inspectImage("an-image")
 
     then:
-    1 * delegateMock.get([path: "/images/an-image/json"])
+    1 * httpClient.get([path: "/images/an-image/json"]) >> [status : [success: true],
+                                                            content: [:]]
   }
 
   def "history"() {
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
-
     when:
     dockerClient.history("an-image")
 
     then:
-    1 * delegateMock.get([path: "/images/an-image/history"])
+    1 * httpClient.get([path: "/images/an-image/history"])
   }
 
   def "images with defaults"() {
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
-
     when:
     dockerClient.images()
 
     then:
-    1 * delegateMock.get([path : "/images/json",
-                          query: [all    : false,
-                                  filters: [:]]])
+    1 * httpClient.get([path : "/images/json",
+                        query: [all    : false,
+                                filters: [:]]])
   }
 
   def "images with query"() {
     def query = [all    : true,
                  filters: ["dangling": true]]
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
 
     when:
     dockerClient.images(query)
 
     then:
-    1 * delegateMock.get([path : "/images/json",
-                          query: query])
+    1 * httpClient.get([path : "/images/json",
+                        query: query])
   }
 
   def "rmi image"() {
-    given:
-    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
-
     when:
     dockerClient.rmi("an-image")
 
     then:
-    1 * delegateMock.delete([path: "/images/an-image"]) >> [statusLine: [:]]
+    1 * httpClient.delete([path: "/images/an-image"])
   }
 
   def "create exec"() {
     def execCreateConfig = [:]
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
 
     when:
     dockerClient.createExec("a-container", execCreateConfig)
 
     then:
-    1 * delegateMock.post([path              : "/containers/a-container/exec",
-                           body              : execCreateConfig,
-                           requestContentType: ContentType.JSON])
+    1 * httpClient.post([path              : "/containers/a-container/exec",
+                         body              : execCreateConfig,
+                         requestContentType: "application/json"]) >> [status: [:]]
     and:
     dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-      assert arguments[0]?.message == "docker exec create failed"
+      assert arguments[1]?.message == "docker exec create failed"
     }
   }
 
   def "create exec with missing container"() {
     def execCreateConfig = [:]
     given:
-    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
-    dockerClient.responseHandler.statusLine.statusCode >> 404
+    httpClient.post([path              : "/containers/a-missing-container/exec",
+                     body              : execCreateConfig,
+                     requestContentType: "application/json"]) >> [status: [code: 404]]
     dockerClient.logger = Mock(Logger)
 
     when:
@@ -510,28 +400,26 @@ class DockerClientImplSpec extends Specification {
 
   def "start exec"() {
     def execStartConfig = [:]
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
 
     when:
     dockerClient.startExec("an-exec", execStartConfig)
 
     then:
-    1 * delegateMock.post([path              : "/exec/an-exec/start",
-                           body              : execStartConfig,
-                           requestContentType: ContentType.JSON])
+    1 * httpClient.post([path              : "/exec/an-exec/start",
+                         body              : execStartConfig,
+                         requestContentType: "application/json"]) >> [status: [:]]
     and:
     dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-      assert arguments[0]?.message == "docker exec start failed"
+      assert arguments[1]?.message == "docker exec start failed"
     }
   }
 
   def "start exec with missing exec"() {
     def execStartConfig = [:]
     given:
-    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
-    dockerClient.responseHandler.statusLine.statusCode >> 404
+    httpClient.post([path              : "/exec/a-missing-exec/start",
+                     body              : execStartConfig,
+                     requestContentType: "application/json"]) >> [status: [code: 404]]
     dockerClient.logger = Mock(Logger)
 
     when:
@@ -545,9 +433,6 @@ class DockerClientImplSpec extends Specification {
 
   def "exec"() {
     def execConfig = [:]
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
 
     when:
     dockerClient.exec("container-id", ["command", "line"], execConfig)
@@ -559,7 +444,8 @@ class DockerClientImplSpec extends Specification {
         "AttachStderr": true,
         "Detach"      : false,
         "Tty"         : false,
-        "Cmd"         : ["command", "line"]]) >> [Id: "exec-id"]
+        "Cmd"         : ["command", "line"]]) >> [status : [:],
+                                                  content: [Id: "exec-id"]]
     then:
     1 * dockerClient.startExec("exec-id", [
         "AttachStdin" : false,
@@ -567,63 +453,51 @@ class DockerClientImplSpec extends Specification {
         "AttachStderr": true,
         "Detach"      : false,
         "Tty"         : false,
-        "Cmd"         : ["command", "line"]])
+        "Cmd"         : ["command", "line"]]) >> [status: [:]]
   }
 
   def "create container with defaults"() {
     def containerConfig = [Cmd: "true"]
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
 
     when:
     dockerClient.createContainer(containerConfig)
 
     then:
-    1 * delegateMock.post([path              : "/containers/create",
-                           query             : [name: ""],
-                           body              : containerConfig,
-                           requestContentType: ContentType.JSON])
+    1 * httpClient.post([path              : "/containers/create",
+                         query             : [name: ""],
+                         body              : containerConfig,
+                         requestContentType: "application/json"]) >> [status: [success: true]]
   }
 
   def "create container with query"() {
     def containerConfig = [Cmd: "true"]
     def query = [name: "foo"]
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
 
     when:
     dockerClient.createContainer(containerConfig, query)
 
     then:
-    1 * delegateMock.post([path              : "/containers/create",
-                           query             : query,
-                           body              : containerConfig,
-                           requestContentType: ContentType.JSON])
+    1 * httpClient.post([path              : "/containers/create",
+                         query             : query,
+                         body              : containerConfig,
+                         requestContentType: "application/json"]) >> [status: [success: true]]
   }
 
   def "start container"() {
-    given:
-    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
-
     when:
     dockerClient.startContainer("a-container")
 
     then:
-    1 * delegateMock.post([path              : "/containers/a-container/start",
-                           requestContentType: ContentType.JSON])
+    1 * httpClient.post([path              : "/containers/a-container/start",
+                         requestContentType: "application/json"])
   }
 
   def "run container with defaults"() {
-    given:
-    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
-
     when:
     dockerClient.run("an-image", [:])
 
     then:
-    1 * dockerClient.createContainer(["Image": "an-image"], [name: ""]) >> [Id: "container-id"]
+    1 * dockerClient.createContainer(["Image": "an-image"], [name: ""]) >> [content: [Id: "container-id"]]
 
     then:
     1 * dockerClient.startContainer("container-id")
@@ -631,62 +505,66 @@ class DockerClientImplSpec extends Specification {
 
   def "copy from container"() {
     given:
-    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [raw: "tar".bytes]
+    def tarStream = new ByteArrayInputStream("tar".bytes)
 
     when:
     def result = dockerClient.copy("a-container", [Resource: "/file.txt"])
 
     then:
-    1 * delegateMock.post([path              : "/containers/a-container/copy",
-                           body              : [Resource: "/file.txt"],
-                           requestContentType: ContentType.JSON]) >> new ByteArrayInputStream()
+    1 * httpClient.post([path              : "/containers/a-container/copy",
+                         body              : [Resource: "/file.txt"],
+                         requestContentType: "application/json"]) >> [status: [success: true],
+                                                                      stream: tarStream]
     and:
-    result == "tar".bytes
+    result.stream == tarStream
   }
 
   def "copy file from container"() {
     given:
-    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [raw: "file-content".bytes]
+    def tarStream = new ByteArrayInputStream("file-content".bytes)
 
     when:
     def result = dockerClient.copyFile("a-container", "/file.txt")
 
     then:
-    1 * delegateMock.post([path              : "/containers/a-container/copy",
-                           body              : [Resource: "/file.txt"],
-                           requestContentType: ContentType.JSON]) >> new ByteArrayInputStream()
+    1 * httpClient.post([path              : "/containers/a-container/copy",
+                         body              : [Resource: "/file.txt"],
+                         requestContentType: "application/json"]) >> [status: [success: true],
+                                                                      stream: tarStream]
     and:
-    1 * dockerClient.extractSingleTarEntry(_ as byte[], "/file.txt") >> "file-content".bytes
+    1 * dockerClient.extractSingleTarEntry(tarStream, "/file.txt") >> "file-content".bytes
     and:
     result == "file-content".bytes
   }
 
   def "rename container"() {
-    given:
-    dockerClient.responseHandler.statusLine >> Mock(StatusLine)
-
     when:
     dockerClient.rename("an-old-container", "a-new-container-name")
 
     then:
-    1 * delegateMock.post([path : "/containers/an-old-container/rename",
-                           query: [name: "a-new-container-name"]]) >> [statusLine: [:]]
+    1 * httpClient.post([path : "/containers/an-old-container/rename",
+                         query: [name: "a-new-container-name"]]) >> [:]
   }
 
   def "search"() {
-    given:
-    dockerClient.responseHandler.success = true
-    dockerClient.responseHandler.chunks << [:]
-
     when:
     dockerClient.search("ubuntu")
 
     then:
-    1 * delegateMock.get([path : "/images/search",
-                          query: [term: "ubuntu"]])
+    1 * httpClient.get([path : "/images/search",
+                        query: [term: "ubuntu"]])
+  }
+
+  def "attach"() {
+    given:
+    httpClient.get([path: "/containers/a-container/json"]) >> [status: [success: true],
+                                                               Config: [Tty: false]]
+
+    when:
+    dockerClient.attach("a-container", [stream: true])
+
+    then:
+    1 * httpClient.post([path : "/containers/a-container/attach",
+                         query: [stream: true]]) >> [stream: [:]]
   }
 }

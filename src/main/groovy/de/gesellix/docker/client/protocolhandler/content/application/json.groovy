@@ -3,9 +3,13 @@ package de.gesellix.docker.client.protocolhandler.content.application
 import groovy.json.JsonSlurper
 import org.apache.commons.io.IOUtils
 
+import java.util.regex.Pattern
+
 class json extends ContentHandler {
 
   def jsonSlurper
+  def chunkDelimiter = "\\}[\\n\\r]*\\{"
+  Pattern multipleChunks = Pattern.compile(".*${chunkDelimiter}.*", Pattern.DOTALL)
 
   json() {
     jsonSlurper = new JsonSlurper()
@@ -19,7 +23,12 @@ class json extends ContentHandler {
       def jsonAsObject
       if (connection.getHeaderField("transfer-encoding") == "chunked") {
         def text = IOUtils.toString(stream)
-        jsonAsObject = jsonSlurper.parse("[${text.replaceAll("\\}[\n\r]*\\{", "},{")}]".bytes)
+        if (text.matches(multipleChunks)) {
+          jsonAsObject = jsonSlurper.parse("[${text.replaceAll(chunkDelimiter, "},{")}]".bytes)
+        }
+        else {
+          jsonAsObject = jsonSlurper.parse(text.bytes)
+        }
       }
       else {
         jsonAsObject = jsonSlurper.parse(stream)

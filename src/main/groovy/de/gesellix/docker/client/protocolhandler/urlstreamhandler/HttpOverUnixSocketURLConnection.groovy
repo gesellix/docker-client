@@ -3,6 +3,8 @@ package de.gesellix.docker.client.protocolhandler.urlstreamhandler
 import sun.net.www.http.HttpClient
 import sun.net.www.protocol.http.HttpURLConnection
 
+// this class only exists to override the sun internal HttpClient with
+// our own unix socket aware implementation
 class HttpOverUnixSocketURLConnection extends HttpURLConnection {
 
   HttpOverUnixSocketURLConnection(URL url) {

@@ -141,6 +141,18 @@ class LowLevelDockerClientSpec extends Specification {
     method == "POST"
   }
 
+  def "delete request uses the DELETE method"() {
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    given:
+    client.metaClass.request = { config ->
+      config.method
+    }
+    when:
+    def method = client.delete("/foo")
+    then:
+    method == "DELETE"
+  }
+
   def "openConnection with path"() {
     def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
     when:
@@ -213,9 +225,13 @@ class LowLevelDockerClientSpec extends Specification {
     response.status == expectedStatusLine
 
     where:
-    statusLine                | statusCode | expectedStatusLine
-    "HTTP/1.1 200 OK"         | 200        | [text: ["HTTP/1.1 200 OK"], code: 200]
-    "HTTP/1.1 204 No Content" | 204        | [text: ["HTTP/1.1 204 No Content"], code: 204]
+    statusLine                           | statusCode | expectedStatusLine
+    "HTTP/1.1 100 Continue"              | 100        | [text: ["HTTP/1.1 100 Continue"], code: 100, success: false]
+    "HTTP/1.1 200 OK"                    | 200        | [text: ["HTTP/1.1 200 OK"], code: 200, success: true]
+    "HTTP/1.1 204 No Content"            | 204        | [text: ["HTTP/1.1 204 No Content"], code: 204, success: true]
+    "HTTP/1.1 302 Found"                 | 302        | [text: ["HTTP/1.1 302 Found"], code: 302, success: false]
+    "HTTP/1.1 404 Not Found"             | 404        | [text: ["HTTP/1.1 404 Not Found"], code: 404, success: false]
+    "HTTP/1.1 500 Internal Server Error" | 500        | [text: ["HTTP/1.1 500 Internal Server Error"], code: 500, success: false]
   }
 
   def "request should return headers"() {

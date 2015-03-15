@@ -1,10 +1,12 @@
 package de.gesellix.docker.client.protocolhandler.urlstreamhandler
 
-class UnixSocketURLStreamHandler extends URLStreamHandler {
-
-  protected int getDefaultPort() {
-    return -1
-  }
+/**
+ * This is class marked as abstract, because it is normally
+ * instantiated by the sun.net.www.protocol.unix.Handler subclass.
+ * @see sun.net.www.protocol.unix.Handler
+ * @see URLStreamHandler
+ */
+abstract class UnixSocketURLStreamHandler extends URLStreamHandler {
 
   @Override
   protected URLConnection openConnection(URL u) throws IOException {

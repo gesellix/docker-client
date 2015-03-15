@@ -1,15 +1,10 @@
 package de.gesellix.docker.client
 
-import co.freeside.betamax.Betamax
-import co.freeside.betamax.MatchRule
-import co.freeside.betamax.Recorder
-import co.freeside.betamax.httpclient.BetamaxRoutePlanner
-import co.freeside.betamax.tape.yaml.OrderedPropertyComparator
-import co.freeside.betamax.tape.yaml.TapePropertyUtils
-import org.junit.Rule
-import org.yaml.snakeyaml.introspector.Property
+import spock.lang.Ignore
+import spock.lang.IgnoreIf
 import spock.lang.Specification
 
+@IgnoreIf({ !System.env.DOCKER_HOST })
 class DockerClientImplIntegrationSpec extends Specification {
 
   DockerClient dockerClient
@@ -19,35 +14,24 @@ class DockerClientImplIntegrationSpec extends Specification {
                      "email"        : "tobias@gesellix.de",
                      "serveraddress": "https://index.docker.io/v1/"]
 
-  @Rule
-  Recorder recorder = new Recorder()
-
   def setup() {
-    // see https://github.com/robfletcher/betamax/issues/141#issuecomment-48077632
-    TapePropertyUtils.metaClass.sort = { Set<Property> properties, List<String> names ->
-      new LinkedHashSet(properties.sort(true, new OrderedPropertyComparator(names)))
-    }
-
     def defaultDockerHost = System.env.DOCKER_HOST?.replaceFirst("tcp://", "http://")
     //defaultDockerHost = "http://172.17.42.1:4243/"
     dockerClient = new DockerClientImpl(dockerHost: defaultDockerHost ?: "http://172.17.42.1:4243/")
-    BetamaxRoutePlanner.configure(dockerClient.delegate.client)
   }
 
-  @Betamax(tape = 'ping', match = [MatchRule.method, MatchRule.path])
   def ping() {
     when:
     def ping = dockerClient.ping()
 
     then:
-    ping.status.statusCode == 200
-    ping.response == [plain: "OK"]
+    ping.status.code == 200
+    ping.content == "OK"
   }
 
-  @Betamax(tape = 'info', match = [MatchRule.method, MatchRule.path])
   def info() {
     when:
-    def info = dockerClient.info()
+    def info = dockerClient.info().content
 
     then:
     info.Containers == 2
@@ -86,10 +70,9 @@ class DockerClientImplIntegrationSpec extends Specification {
     info.SwapLimit == 0
   }
 
-  @Betamax(tape = 'version', match = [MatchRule.method, MatchRule.path])
   def version() {
     when:
-    def version = dockerClient.version()
+    def version = dockerClient.version().content
 
     then:
     version == [
@@ -97,12 +80,12 @@ class DockerClientImplIntegrationSpec extends Specification {
         Arch         : "amd64",
         GitCommit    : "a8a31ef",
         GoVersion    : "go1.4.1",
-        KernelVersion: "3.13.0-45-generic",
+        KernelVersion: "3.13.0-48-generic",
         Os           : "linux",
         Version      : "1.5.0"]
   }
 
-  @Betamax(tape = 'auth', match = [MatchRule.method, MatchRule.path])
+  @Ignore
   def auth() {
     given:
     def authPlain = authDetails
@@ -114,7 +97,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     authResult == 200
   }
 
-  @Betamax(tape = 'build image', match = [MatchRule.method, MatchRule.path])
   def "build image"() {
     given:
     def buildContext = getClass().getResourceAsStream("build/build.tar")
@@ -126,7 +108,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     buildResult == "bb85e57675ec"
   }
 
-  @Betamax(tape = 'build image with unknown base image', match = [MatchRule.method, MatchRule.path])
   def "build image with unknown base image"() {
     given:
     def buildContext = getClass().getResourceAsStream("build/build_with_unknown_base_image.tar")
@@ -141,7 +122,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     ex.detail.error == "Error: image missing/image:latest not found"
   }
 
-  @Betamax(tape = 'tag image', match = [MatchRule.method, MatchRule.path])
   def "tag image"() {
     given:
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
@@ -157,7 +137,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.rmi(imageName)
   }
 
-  @Betamax(tape = 'push image', match = [MatchRule.method, MatchRule.path, MatchRule.query, MatchRule.headers])
+  @Ignore
   def "push image"() {
     given:
     def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
@@ -175,7 +155,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.rmi(imageName)
   }
 
-  @Betamax(tape = 'push image with registry', match = [MatchRule.method, MatchRule.path, MatchRule.query, MatchRule.headers])
   def "push image with registry"() {
     given:
     def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
@@ -193,7 +172,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.rmi(imageName)
   }
 
-  @Betamax(tape = 'push image with undefined authentication', match = [MatchRule.method, MatchRule.path, MatchRule.query, MatchRule.headers])
   def "push image with undefined authentication"() {
     given:
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
@@ -210,7 +188,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.rmi(imageName)
   }
 
-  @Betamax(tape = 'pull image', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "pull image"() {
     when:
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
@@ -219,7 +196,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     imageId == "3eb19b6d9332"
   }
 
-  @Betamax(tape = 'pull image from private registry', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "pull image from private registry"() {
     given:
     dockerClient.pull("gesellix/docker-client-testimage", "latest")
@@ -232,7 +208,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     imageId == "3eb19b6d9332"
   }
 
-  @Betamax(tape = 'list containers', match = [MatchRule.method, MatchRule.path])
   def "list containers"() {
     given:
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
@@ -256,7 +231,6 @@ class DockerClientImplIntegrationSpec extends Specification {
      "Status" : "Up Less than a second"] in containers
   }
 
-  @Betamax(tape = 'inspect container', match = [MatchRule.method, MatchRule.path])
   def "inspect container"() {
     given:
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
@@ -289,7 +263,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.rmi(imageName)
   }
 
-  @Betamax(tape = 'diff', match = [MatchRule.method, MatchRule.path])
   def "diff"() {
     given:
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
@@ -311,7 +284,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.rm(containerId)
   }
 
-  @Betamax(tape = 'inspect image', match = [MatchRule.method, MatchRule.path])
   def "inspect image"() {
     given:
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
@@ -329,7 +301,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     imageInspection.Container == "c0c18082a03537cda7a61792e50501303051b84a90849765aa0793f69ce169b3"
   }
 
-  @Betamax(tape = 'history', match = [MatchRule.method, MatchRule.path])
   def "history"() {
     given:
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
@@ -372,7 +343,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     ]
   }
 
-  @Betamax(tape = 'list images', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "list images"() {
     when:
     def images = dockerClient.images()
@@ -386,7 +356,6 @@ class DockerClientImplIntegrationSpec extends Specification {
      "VirtualSize": 0] in images
   }
 
-  @Betamax(tape = 'list images with intermediate layers', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "list images with intermediate layers"() {
     when:
     def images = dockerClient.images([all: true])
@@ -403,7 +372,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     ])
   }
 
-  @Betamax(tape = 'list images filtered', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "list images filtered"() {
     when:
     def images = dockerClient.images([filters: '{"dangling":["true"]}'])
@@ -414,7 +382,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     }
   }
 
-  @Betamax(tape = 'create container', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "create container"() {
     given:
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
@@ -428,7 +395,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     containerInfo.Id == "266e22e3e4d53041a811135f13bff8935b64b1dec7fb6c005ce4f00eca0013a1"
   }
 
-  @Betamax(tape = 'create container with name', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "create container with name"() {
     given:
     dockerClient.rm("example")
@@ -443,7 +409,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     containerInfo.Id == "c7da7719091fd3d2f3737e681baa8be593feacce4d08ca4f40c0d15feb5acf65"
   }
 
-  @Betamax(tape = 'create container with unknown base image', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "create container with unknown base image"() {
     given:
     dockerClient.rm("example")
@@ -460,7 +425,6 @@ class DockerClientImplIntegrationSpec extends Specification {
                   errorDetail: [message: "Tag unkown not found in repository gesellix/docker-client-testimage"]]
   }
 
-  @Betamax(tape = 'start container', match = [MatchRule.method, MatchRule.path])
   def "start container"() {
     given:
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
@@ -475,7 +439,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     startContainerResult == 204
   }
 
-  @Betamax(tape = 'run container with existing base image', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "run container with existing base image"() {
     given:
     def imageName = "gesellix/docker-client-testimage"
@@ -495,7 +458,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.rm(containerStatus.container.Id)
   }
 
-  @Betamax(tape = 'run container with PortBindings', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "run container with PortBindings"() {
     given:
     def imageName = "gesellix/docker-client-testimage"
@@ -527,7 +489,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.stop(containerStatus.container.Id)
   }
 
-  @Betamax(tape = 'run container with name', match = [MatchRule.method, MatchRule.path, MatchRule.query])
   def "run container with name"() {
     given:
     def imageName = "gesellix/docker-client-testimage"
@@ -550,7 +511,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.stop(containerStatus.container.Id)
   }
 
-  @Betamax(tape = 'restart container', match = [MatchRule.method, MatchRule.path])
   def "restart container"() {
     given:
     def imageName = "gesellix/docker-client-testimage"
@@ -566,7 +526,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     result.status.statusCode == 204
   }
 
-  @Betamax(tape = 'stop container', match = [MatchRule.method, MatchRule.path])
   def "stop container"() {
     given:
     def imageName = "gesellix/docker-client-testimage"
@@ -582,7 +541,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     result == 204
   }
 
-  @Betamax(tape = 'kill container', match = [MatchRule.method, MatchRule.path])
   def "kill container"() {
     given:
     def imageName = "gesellix/docker-client-testimage"
@@ -598,7 +556,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     result.status.statusCode == 204
   }
 
-  @Betamax(tape = 'wait container', match = [MatchRule.method, MatchRule.path])
   def "wait container"() {
     given:
     def imageName = "gesellix/docker-client-testimage"
@@ -617,7 +574,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     result.response.StatusCode == 137
   }
 
-  @Betamax(tape = 'pause container', match = [MatchRule.method, MatchRule.path])
   def "pause container"() {
     given:
     def imageName = "gesellix/docker-client-testimage"
@@ -633,7 +589,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     result.status.statusCode == 204
   }
 
-  @Betamax(tape = 'unpause container', match = [MatchRule.method, MatchRule.path])
   def "unpause container"() {
     given:
     def imageName = "gesellix/docker-client-testimage"
@@ -650,7 +605,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     result.status.statusCode == 204
   }
 
-  @Betamax(tape = 'rm container', match = [MatchRule.method, MatchRule.path])
   def "rm container"() {
     given:
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
@@ -665,7 +619,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     rmContainerResult == 204
   }
 
-  @Betamax(tape = 'rm unkown container', match = [MatchRule.method, MatchRule.path])
   def "rm unknown container"() {
     when:
     def rmContainerResult = dockerClient.rm("a_not_so_random_id")
@@ -674,7 +627,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     rmContainerResult == 404
   }
 
-  @Betamax(tape = 'rm image', match = [MatchRule.method, MatchRule.path])
   def "rm image"() {
     given:
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
@@ -687,7 +639,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     rmImageResult == 200
   }
 
-  @Betamax(tape = 'rm unkown image', match = [MatchRule.method, MatchRule.path])
   def "rm unkown image"() {
     when:
     def rmImageResult = dockerClient.rmi("an_unkown_image")
@@ -696,7 +647,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     rmImageResult == 404
   }
 
-  @Betamax(tape = 'rm image with existing container', match = [MatchRule.method, MatchRule.path])
   def "rm image with existing container"() {
     given:
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
@@ -715,7 +665,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     rmImageResult == 200
   }
 
-  @Betamax(tape = 'exec create', match = [MatchRule.method, MatchRule.path, MatchRule.body])
   def "exec create"() {
     given:
     def imageName = "gesellix/docker-client-testimage"
@@ -740,7 +689,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.rm(name)
   }
 
-  @Betamax(tape = 'exec start', match = [MatchRule.method, MatchRule.path, MatchRule.body])
   def "exec start"() {
     given:
     def imageName = "gesellix/docker-client-testimage"
@@ -777,7 +725,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.rm(name)
   }
 
-  @Betamax(tape = 'copy', match = [MatchRule.method, MatchRule.path])
   def "copy"() {
     given:
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
@@ -803,7 +750,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.rmi(imageName)
   }
 
-  @Betamax(tape = 'rename', match = [MatchRule.method, MatchRule.path])
   def "rename"() {
     given:
     dockerClient.rm("a_wonderful_new_name")
@@ -822,13 +768,12 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.rm("a_wonderful_new_name")
   }
 
-  @Betamax(tape = 'search', match = [MatchRule.method, MatchRule.path])
   def "search"() {
     when:
     def searchResult = dockerClient.search("testimage")
 
     then:
-    searchResult.contains([
+    searchResult.content.contains([
         description: "",
         is_official: false,
         is_trusted : true,
