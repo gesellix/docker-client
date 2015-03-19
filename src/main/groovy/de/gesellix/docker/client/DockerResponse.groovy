@@ -1,5 +1,8 @@
 package de.gesellix.docker.client
 
+import groovy.transform.ToString
+
+@ToString(includeNames = true)
 class DockerResponse {
 
   def status

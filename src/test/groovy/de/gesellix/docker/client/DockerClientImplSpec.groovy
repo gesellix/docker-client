@@ -342,7 +342,7 @@ class DockerClientImplSpec extends Specification {
     then:
     1 * httpClient.get([path : "/images/json",
                         query: [all    : false,
-                                filters: [:]]])
+                                filters: '']])
   }
 
   def "images with query"() {

@@ -224,11 +224,11 @@ class DockerClientImpl implements DockerClient {
     def containerConfigWithImageName = [:] + containerConfig
     containerConfigWithImageName.Image = fromImage + (tag ? ":$tag" : "")
 
-    def containerResponse = createContainer(containerConfigWithImageName, [name: name])
-    def result = startContainer(containerResponse.content.Id)
+    def createContainerResponse = createContainer(containerConfigWithImageName, [name: name])
+    def startContainerResponse = startContainer(createContainerResponse.content.Id)
     return [
-        container: containerResponse,
-        status   : result
+        container: createContainerResponse,
+        status   : startContainerResponse
     ]
   }
 
@@ -329,7 +329,7 @@ class DockerClientImpl implements DockerClient {
 
   @Override
   def images(query = [all    : false,
-                      filters: [:]]) {
+                      filters: '']) {
     logger.info "docker images"
     def response = getHttpClient().get([path : "/images/json",
                                         query: query])

@@ -1,24 +1,45 @@
 package de.gesellix.docker.client
 
-import org.codehaus.groovy.runtime.MethodClosure
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class DockerResponseHandler {
 
+  final Logger logger = LoggerFactory.getLogger(DockerResponseHandler)
+
   def ensureSuccessfulResponse(def response, Throwable context) {
-    if (!response || !response.status.success || response.content?.error) {
+    if (!response || !response.status.success || hasError(response)) {
       throw new DockerClientException(context, response?.content);
     }
   }
 
-  @Deprecated
-  Map<String, Closure> contentTypeReaders() {
-    return [
-        "application/vnd.docker.raw-stream": new MethodClosure(this, "readRawDockerStream"),
-        "application/x-tar"                : new MethodClosure(this, "readTarStream"),
-        "application/json"                 : new MethodClosure(this, "readJson"),
-        "text/plain"                       : new MethodClosure(this, "readText"),
-        "text/html"                        : new MethodClosure(this, "readText"),
-        "*/*"                              : new MethodClosure(this, "readText")
-    ]
+  def hasError(response) {
+    if (!response?.content) {
+      return false
+    }
+
+    def content = response.content
+
+    switch (response.mimeType) {
+      case "application/vnd.docker.raw-stream":
+        return false
+      case "application/json":
+        def foundErrors = false
+        if (content instanceof List) {
+          foundErrors = content.find { it.error }
+        }
+        else if (content instanceof Map) {
+          foundErrors = content.error ?: null
+        }
+        else {
+          logger.warn("won't search for errors in ${content.class}")
+        }
+        return foundErrors ? true : false
+      case "text/html":
+        return content.error
+      case "text/plain":
+        return content.error
+    }
+    return false
   }
 }

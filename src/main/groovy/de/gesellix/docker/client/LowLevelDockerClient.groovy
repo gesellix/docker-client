@@ -5,6 +5,7 @@ import de.gesellix.docker.client.protocolhandler.DockerURLHandler
 import de.gesellix.docker.client.protocolhandler.RawInputStream
 import groovy.json.JsonBuilder
 import org.apache.commons.io.IOUtils
+import org.apache.commons.io.output.NullOutputStream
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -74,7 +75,7 @@ class LowLevelDockerClient {
     if (config.body) {
       InputStream postBody
       int postDataLength
-      switch (config.contentType) {
+      switch (config.requestContentType) {
         case "application/json":
           def json = new JsonBuilder()
           json config.body
@@ -98,9 +99,17 @@ class LowLevelDockerClient {
       connection.setDoInput(true)
       connection.setInstanceFollowRedirects(false)
 
-      connection.setRequestProperty("Content-Type", config.contentType as String)
-      connection.setRequestProperty("Content-Length", Integer.toString(postDataLength))
+      if (config.requestContentType) {
+        connection.setRequestProperty("Content-Type", config.requestContentType as String)
+      }
+      if (postDataLength >= 0) {
+        connection.setRequestProperty("Content-Length", Integer.toString(postDataLength))
+      }
       IOUtils.copy(postBody, connection.getOutputStream())
+    }
+
+    config.headers?.each { key, value ->
+      connection.setRequestProperty(key, value)
     }
 
     def response = handleResponse(connection, config as Map)
@@ -110,56 +119,69 @@ class LowLevelDockerClient {
   def handleResponse(HttpURLConnection connection, Map config) {
     def response = readHeaders(connection)
 
+    if (response.status.code == 204) {
+      if (response.stream) {
+        // redirect the response body to /dev/null, since it's expected to be empty
+        IOUtils.copy(response.stream as InputStream, new NullOutputStream())
+      }
+      return response
+    }
+
     def contentHandler = contentHandlerFactory.createContentHandler(response.mimeType as String)
     if (contentHandler == null) {
-      logger.warn("couldn't find a specific ContentHandler for '${response.contentType}'.")
-      if (response.stream && config.stdout) {
-        logger.debug("redirecting to stdout.")
-        IOUtils.copy(response.stream as InputStream, config.stdout as OutputStream)
-        response.stream = null
+      if (response.stream) {
+        logger.warn("couldn't find a specific ContentHandler for '${response.contentType}'.")
+        if (config.stdout) {
+          logger.debug("redirecting to stdout.")
+          IOUtils.copy(response.stream as InputStream, config.stdout as OutputStream)
+          response.stream = null
+        }
+        else {
+          logger.warn("stream won't be consumed.")
+        }
       }
+      return response
     }
-    else {
-      def content = contentHandler.getContent(connection)
 
-      switch (response.mimeType) {
-        case "application/vnd.docker.raw-stream":
-          InputStream rawStream = content as RawInputStream
-          response.stream = rawStream
+    def content = contentHandler.getContent(connection)
+
+    switch (response.mimeType) {
+      case "application/vnd.docker.raw-stream":
+        InputStream rawStream = content as RawInputStream
+        response.stream = rawStream
+        if (config.stdout) {
+          logger.debug("redirecting to stdout.")
+          IOUtils.copy(response.stream as InputStream, config.stdout as OutputStream)
+          response.stream = null
+        }
+        break
+      case "application/json":
+        consumeResponseBody(response, content, config)
+        break
+      case "text/html":
+        consumeResponseBody(response, content, config)
+        break
+      case "text/plain":
+        consumeResponseBody(response, content, config)
+        break
+      default:
+        logger.warn("unexpected mime type '${response.mimeType}'.")
+        if (content instanceof InputStream) {
+          logger.debug("passing through via `response.stream`.")
           if (config.stdout) {
-            logger.debug("redirecting to stdout.")
-            IOUtils.copy(response.stream as InputStream, config.stdout as OutputStream)
+            IOUtils.copy(content as InputStream, config.stdout as OutputStream)
             response.stream = null
-          }
-          break
-        case "application/json":
-          consumeResponseBody(response, content, config)
-          break
-        case "text/html":
-          consumeResponseBody(response, content, config)
-          break
-        case "text/plain":
-          consumeResponseBody(response, content, config)
-          break
-        default:
-          logger.warn("unexpected mime type '${response.mimeType}'.")
-          if (content instanceof InputStream) {
-            logger.debug("passing through via `response.stream`.")
-            if (config.stdout) {
-              IOUtils.copy(content as InputStream, config.stdout as OutputStream)
-              response.stream = null
-            }
-            else {
-              response.stream = content as InputStream
-            }
           }
           else {
-            logger.debug("passing through via `response.content`.")
-            response.content = content
-            response.stream = null
+            response.stream = content as InputStream
           }
-          break
-      }
+        }
+        else {
+          logger.debug("passing through via `response.content`.")
+          response.content = content
+          response.stream = null
+        }
+        break
     }
 
     return response
@@ -183,15 +205,15 @@ class LowLevelDockerClient {
     response.headers = headers
 
     String contentType = headers['content-type']?.first()
-    logger.debug("content-type: ${contentType}")
+    logger.trace("content-type: ${contentType}")
     response.contentType = contentType
 
     String contentLength = headers['content-length']?.first() ?: "-1"
-    logger.debug("content-length: ${contentLength}")
+    logger.trace("content-length: ${contentLength}")
     response.contentLength = contentLength
 
     String mimeType = getMimeType(contentType)
-    logger.debug("mime type: ${mimeType}")
+    logger.trace("mime type: ${mimeType}")
     response.mimeType = mimeType
 
     if (response.status.success) {

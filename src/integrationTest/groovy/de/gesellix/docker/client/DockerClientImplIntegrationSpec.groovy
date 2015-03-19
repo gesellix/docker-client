@@ -34,16 +34,13 @@ class DockerClientImplIntegrationSpec extends Specification {
     def info = dockerClient.info().content
 
     then:
-    info.Containers == 2
+    info.Containers
     info.Debug == 1
     info.Driver == "aufs"
-    info.DriverStatus == [
-        ["Root Dir", "/var/lib/docker/aufs"],
-        ["Backing Filesystem", "extfs"],
-        ["Dirs", "218"]]
+    info.DriverStatus.findAll { it[0] == "Root Dir" || it[0] == "Backing Filesystem" || it[0] == "Dirs" }.size() == 3
     info.ExecutionDriver == "native-0.2"
     info.ID == "4C3F:A25Q:NBWE:P7OC:YP45:GIOR:HBTQ:BFJ7:CGYE:2YDE:5BXO:ICTB"
-    info.Images == 214
+    info.Images > 0
     info.IndexServerAddress == "https://index.docker.io/v1/"
     info.InitPath == "/usr/bin/docker"
     info.InitSha1 == ""
@@ -54,9 +51,9 @@ class DockerClientImplIntegrationSpec extends Specification {
     info.Name == "gesellix-r2"
     info.NCPU == 8
     info.NEventsListener == 0
-    info.NFd == 31
-    info.NGoroutines == 38
-    info.KernelVersion == "3.13.0-45-generic"
+    info.NFd > 0
+    info.NGoroutines > 0
+    info.KernelVersion =~ "3.13.0-\\d+-generic"
     info.OperatingSystem == "Ubuntu 14.04.2 LTS"
     info.RegistryConfig == [
         "IndexConfigs"         : [
@@ -94,7 +91,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def authResult = dockerClient.auth(authPlain)
 
     then:
-    authResult == 200
+    authResult.status.code == 200
   }
 
   def "build image"() {
@@ -105,7 +102,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def buildResult = dockerClient.build(buildContext)
 
     then:
-    buildResult == "bb85e57675ec"
+    buildResult =~ "\\w{12}"
   }
 
   def "build image with unknown base image"() {
@@ -118,8 +115,8 @@ class DockerClientImplIntegrationSpec extends Specification {
     then:
     DockerClientException ex = thrown()
     ex.cause.message == 'docker build failed'
-    ex.detail.errorDetail == [message: "Error: image missing/image:latest not found"]
-    ex.detail.error == "Error: image missing/image:latest not found"
+    ex.detail.last().error == "Error: image missing/image:latest not found"
+    ex.detail.last().errorDetail == [message: "Error: image missing/image:latest not found"]
   }
 
   def "tag image"() {
@@ -131,7 +128,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def buildResult = dockerClient.tag(imageId, imageName)
 
     then:
-    buildResult == 201
+    buildResult.status.code == 201
 
     cleanup:
     dockerClient.rmi(imageName)
@@ -149,12 +146,15 @@ class DockerClientImplIntegrationSpec extends Specification {
     def pushResult = dockerClient.push(imageName, authBase64Encoded)
 
     then:
-    pushResult.status == "Pushing tag for rev [3eb19b6d9332] on {https://cdn-registry-1.docker.io/v1/repositories/gesellix/test/tags/latest}"
+    pushResult.status.code == 200
+    and:
+    pushResult.content.last().status =~ "Pushing tag for rev \\[\\w+\\] on \\{https://cdn-registry-1.docker.io/v1/repositories/gesellix/test/tags/latest\\}"
 
     cleanup:
     dockerClient.rmi(imageName)
   }
 
+  @Ignore
   def "push image with registry"() {
     given:
     def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
@@ -166,7 +166,9 @@ class DockerClientImplIntegrationSpec extends Specification {
     def pushResult = dockerClient.push(imageName, authBase64Encoded, "localhost:5000")
 
     then:
-    pushResult.status == "Pushing tag for rev [3eb19b6d9332] on {http://localhost:5000/v1/repositories/gesellix/test/tags/latest}"
+    pushResult.status.code == 200
+    and:
+    pushResult.content.last().status =~ "Pushing tag for rev \\[\\w+\\] on \\{http://localhost:5000/v1/repositories/gesellix/test/tags/latest\\}"
 
     cleanup:
     dockerClient.rmi(imageName)
@@ -182,7 +184,9 @@ class DockerClientImplIntegrationSpec extends Specification {
     def pushResult = dockerClient.push(imageName, null, "localhost:5000")
 
     then:
-    pushResult.status == "Pushing tag for rev [3eb19b6d9332] on {http://localhost:5000/v1/repositories/gesellix/test/tags/latest}"
+    pushResult.status.code == 200
+    and:
+    pushResult.content.last().status =~ "Pushing tag for rev \\[\\w+\\] on \\{http://localhost:5000/v1/repositories/gesellix/test/tags/latest\\}"
 
     cleanup:
     dockerClient.rmi(imageName)
@@ -215,20 +219,17 @@ class DockerClientImplIntegrationSpec extends Specification {
     dockerClient.tag(imageId, imageName, true)
     def containerConfig = ["Cmd"  : ["true"],
                            "Image": imageName]
-    def containerId = dockerClient.createContainer(containerConfig).Id
+    def containerId = dockerClient.createContainer(containerConfig).content.Id
     dockerClient.startContainer(containerId)
 
     when:
-    def containers = dockerClient.ps()
+    def containers = dockerClient.ps().content
 
     then:
-    ["Command": "true",
-     "Created": 1423611158,
-     "Id"     : "0ab1ccc1a8aae3c15538173a2367be6236622f82ad2c52b7702f1cc5d342d677",
-     "Image"  : "gesellix/docker-client-testimage:latest",
-     "Names"  : ["/elegant_ptolemy"],
-     "Ports"  : [],
-     "Status" : "Up Less than a second"] in containers
+    containers.find { it.Id == containerId }.Image == "gesellix/docker-client-testimage:latest"
+
+    cleanup:
+    dockerClient.rm(containerId)
   }
 
   def "inspect container"() {
@@ -239,22 +240,22 @@ class DockerClientImplIntegrationSpec extends Specification {
                            "Image"     : "inspect_container",
                            "HostConfig": ["PublishAllPorts": true]]
     dockerClient.tag(imageId, imageName, true)
-    def containerId = dockerClient.createContainer(containerConfig).Id
+    def containerId = dockerClient.createContainer(containerConfig).content.Id
     dockerClient.startContainer(containerId)
 
     when:
-    def containerInspection = dockerClient.inspectContainer(containerId)
+    def containerInspection = dockerClient.inspectContainer(containerId).content
 
     then:
-    containerInspection.HostnamePath == "/var/lib/docker/containers/453297c16c71322adf0452d0bdacbcf9af8e0e4bb6213167f437d7143ed7aa81/hostname"
+    containerInspection.HostnamePath == "/var/lib/docker/containers/${containerId}/hostname".toString()
     and:
     containerInspection.Config.Cmd == ["true"]
     and:
     containerInspection.Config.Image == "inspect_container"
     and:
-    containerInspection.Image == "3eb19b6d933247ab513993b2b9ed43a44f0432580e6f4f974bb2071ea968b494"
+    containerInspection.Image =~ "${imageId}\\w+"
     and:
-    containerInspection.Id == "453297c16c71322adf0452d0bdacbcf9af8e0e4bb6213167f437d7143ed7aa81"
+    containerInspection.Id == containerId
 
     cleanup:
     dockerClient.stop(containerId)
@@ -268,11 +269,11 @@ class DockerClientImplIntegrationSpec extends Specification {
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def containerConfig = ["Cmd"  : ["/bin/sh", "-c", "echo 'hallo' > /change.txt"],
                            "Image": imageId]
-    def containerId = dockerClient.run(imageId, containerConfig).container.Id
+    def containerId = dockerClient.run(imageId, containerConfig).container.content.Id
     dockerClient.stop(containerId)
 
     when:
-    def changes = dockerClient.diff(containerId)
+    def changes = dockerClient.diff(containerId).content
 
     then:
     changes == [
@@ -289,7 +290,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
 
     when:
-    def imageInspection = dockerClient.inspectImage(imageId)
+    def imageInspection = dockerClient.inspectImage(imageId).content
 
     then:
     imageInspection.Config.Image == "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc"
@@ -306,46 +307,22 @@ class DockerClientImplIntegrationSpec extends Specification {
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
 
     when:
-    def history = dockerClient.history(imageId)
+    def history = dockerClient.history(imageId).content
 
     then:
-    history == [
-        ["Created"  : 1423607478,
-         "CreatedBy": "/bin/sh -c #(nop) CMD [cat /gattaca.txt]",
-         "Id"       : "3eb19b6d933247ab513993b2b9ed43a44f0432580e6f4f974bb2071ea968b494",
-         "Size"     : 0,
-         "Tags"     : ["example.com:5000/gesellix/example:latest", "gesellix/docker-client-testimage:latest"]],
-        ["Created"  : 1423607478,
-         "CreatedBy": "/bin/sh -c echo \"The wind caught it\" \u003e /gattaca.txt",
-         "Id"       : "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc",
-         "Size"     : 19,
-         "Tags"     : null],
-        ["Created"  : 1420064636,
-         "CreatedBy": "/bin/sh -c #(nop) CMD [/bin/sh]",
-         "Id"       : "4986bf8c15363d1c5d15512d5266f8777bfba4974ac56e3270e7760f6f0a8125",
-         "Size"     : 0,
-         "Tags"     : ["busybox:latest", "busybox:buildroot-2014.02"]],
-        ["Created"  : 1420064636,
-         "CreatedBy": "/bin/sh -c #(nop) ADD file:8cf517d90fe79547c474641cc1e6425850e04abbd8856718f7e4a184ea878538 in /",
-         "Id"       : "ea13149945cb6b1e746bf28032f02e9b5a793523481a0a18645fc77ad53c4ea2",
-         "Size"     : 2433303,
-         "Tags"     : null],
-        ["Created"  : 1412196367,
-         "CreatedBy": "/bin/sh -c #(nop) MAINTAINER Jérôme Petazzoni \u003cjerome@docker.com\u003e",
-         "Id"       : "df7546f9f060a2268024c8a230d8639878585defcc1bc6f79d2728a13957871b",
-         "Size"     : 0,
-         "Tags"     : null],
-        ["Created"  : 1371157430,
-         "CreatedBy": "",
-         "Id"       : "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158",
-         "Size"     : 0,
-         "Tags"     : ["scratch:latest"]]
+    history.collect { it.Id } == [
+        "3eb19b6d933247ab513993b2b9ed43a44f0432580e6f4f974bb2071ea968b494",
+        "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc",
+        "4986bf8c15363d1c5d15512d5266f8777bfba4974ac56e3270e7760f6f0a8125",
+        "ea13149945cb6b1e746bf28032f02e9b5a793523481a0a18645fc77ad53c4ea2",
+        "df7546f9f060a2268024c8a230d8639878585defcc1bc6f79d2728a13957871b",
+        "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158"
     ]
   }
 
   def "list images"() {
     when:
-    def images = dockerClient.images()
+    def images = dockerClient.images().content
 
     then:
     ["Created"    : 1371157430,
@@ -358,7 +335,7 @@ class DockerClientImplIntegrationSpec extends Specification {
 
   def "list images with intermediate layers"() {
     when:
-    def images = dockerClient.images([all: true])
+    def images = dockerClient.images([all: true]).content
 
     then:
     def imageIds = images.collect { image -> image.Id }
@@ -374,7 +351,7 @@ class DockerClientImplIntegrationSpec extends Specification {
 
   def "list images filtered"() {
     when:
-    def images = dockerClient.images([filters: '{"dangling":["true"]}'])
+    def images = dockerClient.images([filters: '{"dangling":["true"]}']).content
 
     then:
     images.every { image ->
@@ -389,10 +366,10 @@ class DockerClientImplIntegrationSpec extends Specification {
                            "Image": imageId]
 
     when:
-    def containerInfo = dockerClient.createContainer(containerConfig)
+    def containerInfo = dockerClient.createContainer(containerConfig).content
 
     then:
-    containerInfo.Id == "266e22e3e4d53041a811135f13bff8935b64b1dec7fb6c005ce4f00eca0013a1"
+    containerInfo.Id =~ "\\w+"
   }
 
   def "create container with name"() {
@@ -403,10 +380,10 @@ class DockerClientImplIntegrationSpec extends Specification {
                            "Image": imageId]
 
     when:
-    def containerInfo = dockerClient.createContainer(containerConfig, [name: "example"])
+    def containerInfo = dockerClient.createContainer(containerConfig, [name: "example"]).content
 
     then:
-    containerInfo.Id == "c7da7719091fd3d2f3737e681baa8be593feacce4d08ca4f40c0d15feb5acf65"
+    containerInfo.Id =~ "\\w+"
   }
 
   def "create container with unknown base image"() {
@@ -421,8 +398,8 @@ class DockerClientImplIntegrationSpec extends Specification {
     then:
     DockerClientException ex = thrown()
     ex.cause.message == 'docker pull failed'
-    ex.detail == [error      : "Tag unkown not found in repository gesellix/docker-client-testimage",
-                  errorDetail: [message: "Tag unkown not found in repository gesellix/docker-client-testimage"]]
+    ex.detail.last() == [error      : "Tag unkown not found in repository gesellix/docker-client-testimage",
+                         errorDetail: [message: "Tag unkown not found in repository gesellix/docker-client-testimage"]]
   }
 
   def "start container"() {
@@ -430,13 +407,13 @@ class DockerClientImplIntegrationSpec extends Specification {
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def containerConfig = ["Cmd"  : ["true"],
                            "Image": imageId]
-    def containerId = dockerClient.createContainer(containerConfig).Id
+    def containerId = dockerClient.createContainer(containerConfig).content.Id
 
     when:
     def startContainerResult = dockerClient.startContainer(containerId)
 
     then:
-    startContainerResult == 204
+    startContainerResult.status.code == 204
   }
 
   def "run container with existing base image"() {
@@ -450,12 +427,12 @@ class DockerClientImplIntegrationSpec extends Specification {
     def containerStatus = dockerClient.run(imageName, containerConfig, tag)
 
     then:
-    containerStatus.status == 204
+    containerStatus.status.status.code == 204
 
     cleanup:
-    dockerClient.stop(containerStatus.container.Id)
-    dockerClient.wait(containerStatus.container.Id)
-    dockerClient.rm(containerStatus.container.Id)
+    dockerClient.stop(containerStatus.container.content.Id)
+    dockerClient.wait(containerStatus.container.content.Id)
+    dockerClient.rm(containerStatus.container.content.Id)
   }
 
   def "run container with PortBindings"() {
@@ -475,18 +452,18 @@ class DockerClientImplIntegrationSpec extends Specification {
     def containerStatus = dockerClient.run(imageName, containerConfig, tag)
 
     then:
-    containerStatus.status == 204
+    containerStatus.status.status.code == 204
     and:
-    dockerClient.inspectContainer(containerStatus.container.Id).Config.ExposedPorts == ["4711/tcp": [:]]
+    dockerClient.inspectContainer(containerStatus.container.content.Id).content.Config.ExposedPorts == ["4711/tcp": [:]]
     and:
-    dockerClient.inspectContainer(containerStatus.container.Id).HostConfig.PortBindings == [
+    dockerClient.inspectContainer(containerStatus.container.content.Id).content.HostConfig.PortBindings == [
         "4711/tcp": [
             ["HostIp"  : "0.0.0.0",
              "HostPort": "4712"]]
     ]
 
     cleanup:
-    dockerClient.stop(containerStatus.container.Id)
+    dockerClient.stop(containerStatus.container.content.Id)
   }
 
   def "run container with name"() {
@@ -501,14 +478,15 @@ class DockerClientImplIntegrationSpec extends Specification {
     def containerStatus = dockerClient.run(imageName, containerConfig, tag, name)
 
     then:
-    containerStatus.status == 204
+    containerStatus.status.status.code == 204
 
     and:
-    def containers = dockerClient.ps()
-    containers[0].Names == ["/example-name"]
+    def containers = dockerClient.ps().content
+    containers.findAll { it.Names == ["/example-name"] }?.size() == 1
 
     cleanup:
-    dockerClient.stop(containerStatus.container.Id)
+    dockerClient.stop(containerStatus.container.content.Id)
+    dockerClient.rm(containerStatus.container.content.Id)
   }
 
   def "restart container"() {
@@ -520,10 +498,14 @@ class DockerClientImplIntegrationSpec extends Specification {
     def containerStatus = dockerClient.run(imageName, containerConfig, tag)
 
     when:
-    def result = dockerClient.restart(containerStatus.container.Id)
+    def result = dockerClient.restart(containerStatus.container.content.Id)
 
     then:
-    result.status.statusCode == 204
+    result.status.code == 204
+
+    cleanup:
+    dockerClient.stop(containerStatus.container.content.Id)
+    dockerClient.rm(containerStatus.container.content.Id)
   }
 
   def "stop container"() {
@@ -535,10 +517,13 @@ class DockerClientImplIntegrationSpec extends Specification {
     def containerStatus = dockerClient.run(imageName, containerConfig, tag)
 
     when:
-    def result = dockerClient.stop(containerStatus.container.Id)
+    def result = dockerClient.stop(containerStatus.container.content.Id)
 
     then:
-    result == 204
+    result.status.code == 204
+
+    cleanup:
+    dockerClient.rm(containerStatus.container.content.Id)
   }
 
   def "kill container"() {
@@ -550,10 +535,13 @@ class DockerClientImplIntegrationSpec extends Specification {
     def containerStatus = dockerClient.run(imageName, containerConfig, tag)
 
     when:
-    def result = dockerClient.kill(containerStatus.container.Id)
+    def result = dockerClient.kill(containerStatus.container.content.Id)
 
     then:
-    result.status.statusCode == 204
+    result.status.code == 204
+
+    cleanup:
+    dockerClient.rm(containerStatus.container.content.Id)
   }
 
   def "wait container"() {
@@ -563,15 +551,18 @@ class DockerClientImplIntegrationSpec extends Specification {
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def containerConfig = ["Cmd": cmds]
     def containerStatus = dockerClient.run(imageName, containerConfig, tag)
-    dockerClient.stop(containerStatus.container.Id)
+    dockerClient.stop(containerStatus.container.content.Id)
 
     when:
-    def result = dockerClient.wait(containerStatus.container.Id)
+    def result = dockerClient.wait(containerStatus.container.content.Id)
 
     then:
-    result.status.statusCode == 200
+    result.status.code == 200
     and:
-    result.response.StatusCode == 137
+    result.content.StatusCode == 137
+
+    cleanup:
+    dockerClient.rm(containerStatus.container.content.Id)
   }
 
   def "pause container"() {
@@ -583,10 +574,15 @@ class DockerClientImplIntegrationSpec extends Specification {
     def containerStatus = dockerClient.run(imageName, containerConfig, tag)
 
     when:
-    def result = dockerClient.pause(containerStatus.container.Id)
+    def result = dockerClient.pause(containerStatus.container.content.Id)
 
     then:
-    result.status.statusCode == 204
+    result.status.code == 204
+
+    cleanup:
+    dockerClient.unpause(containerStatus.container.content.Id)
+    dockerClient.stop(containerStatus.container.content.Id)
+    dockerClient.rm(containerStatus.container.content.Id)
   }
 
   def "unpause container"() {
@@ -596,13 +592,17 @@ class DockerClientImplIntegrationSpec extends Specification {
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
     def containerConfig = ["Cmd": cmds]
     def containerStatus = dockerClient.run(imageName, containerConfig, tag)
-    dockerClient.pause(containerStatus.container.Id)
+    dockerClient.pause(containerStatus.container.content.Id)
 
     when:
-    def result = dockerClient.unpause(containerStatus.container.Id)
+    def result = dockerClient.unpause(containerStatus.container.content.Id)
 
     then:
-    result.status.statusCode == 204
+    result.status.code == 204
+
+    cleanup:
+    dockerClient.stop(containerStatus.container.content.Id)
+    dockerClient.rm(containerStatus.container.content.Id)
   }
 
   def "rm container"() {
@@ -610,13 +610,13 @@ class DockerClientImplIntegrationSpec extends Specification {
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def containerConfig = ["Cmd"  : ["true"],
                            "Image": imageId]
-    def containerId = dockerClient.createContainer(containerConfig).Id
+    def containerId = dockerClient.createContainer(containerConfig).content.Id
 
     when:
     def rmContainerResult = dockerClient.rm(containerId)
 
     then:
-    rmContainerResult == 204
+    rmContainerResult.status.code == 204
   }
 
   def "rm unknown container"() {
@@ -624,7 +624,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def rmContainerResult = dockerClient.rm("a_not_so_random_id")
 
     then:
-    rmContainerResult == 404
+    rmContainerResult.status.code == 404
   }
 
   def "rm image"() {
@@ -636,7 +636,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def rmImageResult = dockerClient.rmi("an_image_to_be_deleted")
 
     then:
-    rmImageResult == 200
+    rmImageResult.status.code == 200
   }
 
   def "rm unkown image"() {
@@ -644,7 +644,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def rmImageResult = dockerClient.rmi("an_unkown_image")
 
     then:
-    rmImageResult == 404
+    rmImageResult.status.code == 404
   }
 
   def "rm image with existing container"() {
@@ -662,7 +662,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def rmImageResult = dockerClient.rmi("an_image_with_existing_container:latest")
 
     then:
-    rmImageResult == 200
+    rmImageResult.status.code == 200
   }
 
   def "exec create"() {
@@ -678,7 +678,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def execConfig = ["Cmd": [
         'echo "hello exec!"'
     ]]
-    def execCreateResult = dockerClient.createExec(containerStatus.container.Id, execConfig)
+    def execCreateResult = dockerClient.createExec(containerStatus.container.content.Id, execConfig).content
 
     then:
     execCreateResult?.Id =~ "[0-9a-f]+"
@@ -697,7 +697,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def containerConfig = ["Cmd": cmds]
     def name = "start-exec"
     def containerStatus = dockerClient.run(imageName, containerConfig, tag, name)
-    def containerId = containerStatus.container.Id
+    def containerId = containerStatus.container.content.Id
     def execCreateConfig = [
         "AttachStdin" : false,
         "AttachStdout": true,
@@ -707,7 +707,7 @@ class DockerClientImplIntegrationSpec extends Specification {
             "ls", "-lisah", "/"
         ]]
 
-    def execCreateResult = dockerClient.createExec(containerId, execCreateConfig)
+    def execCreateResult = dockerClient.createExec(containerId, execCreateConfig).content
     def execId = execCreateResult.Id
 
     when:
@@ -733,13 +733,13 @@ class DockerClientImplIntegrationSpec extends Specification {
                            "Image": "copy_container"]
     dockerClient.tag(imageId, imageName)
     def containerInfo = dockerClient.run(imageName, containerConfig, [:])
-    def containerId = containerInfo.container.Id
+    def containerId = containerInfo.container.content.Id
 
     when:
-    def tarContent = dockerClient.copy(containerId, [Resource: "/file1.txt"])
+    def tarContent = dockerClient.copy(containerId, [Resource: "/file1.txt"]).stream
 
     then:
-    def fileContent = dockerClient.extractSingleTarEntry(tarContent as byte[], "file1.txt")
+    def fileContent = dockerClient.extractSingleTarEntry(tarContent as InputStream, "file1.txt")
     and:
     fileContent == "to be or\nnot to be".bytes
 
@@ -756,13 +756,13 @@ class DockerClientImplIntegrationSpec extends Specification {
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def containerConfig = ["Cmd"  : ["true"],
                            "Image": imageId]
-    def containerId = dockerClient.createContainer(containerConfig).Id
+    def containerId = dockerClient.createContainer(containerConfig).content.Id
 
     when:
     def renameContainerResult = dockerClient.rename(containerId, "a_wonderful_new_name")
 
     then:
-    renameContainerResult == 204
+    renameContainerResult.status.code == 204
 
     cleanup:
     dockerClient.rm("a_wonderful_new_name")
