@@ -42,9 +42,19 @@ class LowLevelDockerClientSpec extends Specification {
   }
 
   def "dockerBaseUrl should support https protocol"() {
+    given:
+    def certsPath = IOUtils.getResource("/certs").file
+    def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
     def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
     expect:
     client.dockerBaseUrl?.toString() == new URL("https://127.0.0.1:2376").toString()
+    cleanup:
+    if (oldDockerCertPath) {
+      System.setProperty("docker.cert.path", oldDockerCertPath)
+    }
+    else {
+      System.clearProperty("docker.cert.path")
+    }
   }
 
   def "getMimeType"() {
@@ -154,12 +164,12 @@ class LowLevelDockerClientSpec extends Specification {
   }
 
   def "openConnection with path"() {
-    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    def client = new LowLevelDockerClient(dockerHost: "http://127.0.0.1:2375")
     when:
     def connection = client.openConnection([method: "GET",
                                             path  : "/foo"])
     then:
-    connection.URL == new URL("https://127.0.0.1:2376/foo")
+    connection.URL == new URL("http://127.0.0.1:2375/foo")
   }
 
   def "openConnection with path and query"() {
