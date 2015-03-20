@@ -24,7 +24,7 @@ class DockerignoreFileFilter {
   }
 
   def relativize(File base, File absolute) {
-    return base.toPath().relativize(absolute.toPath()).toString()
+    return base.absoluteFile.toPath().relativize(absolute.absoluteFile.toPath()).toString()
   }
 
   def collectFiles(File base) {

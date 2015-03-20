@@ -15,7 +15,7 @@ class GlobsMatcher {
   }
 
   def matches(File base, File path) {
-    def relativePath = base.toPath().relativize(path.toPath())
+    def relativePath = base.absoluteFile.toPath().relativize(path.absoluteFile.toPath())
     def result = matchers.find { key, matcher ->
       matcher.matches(relativePath) ? key : null
     }

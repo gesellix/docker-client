@@ -1,5 +1,7 @@
 package de.gesellix.docker.client
 
+import org.apache.commons.lang.SystemUtils
+import spock.lang.IgnoreIf
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -41,12 +43,22 @@ class GlobsMatcherSpec extends Specification {
     "ab[!e-g]"     | new File("")  | new File("abc")
     "a?c"          | new File("")  | new File("a§c")
     "[a-ζ]*"       | new File("")  | new File("α")
-    "[\\-]"        | new File("")  | new File("-")
-    "[x\\-]"       | new File("")  | new File("-")
-    "[x\\-]"       | new File("")  | new File("x")
-    "[\\-x]"       | new File("")  | new File("x")
     "[-]"          | new File("")  | new File("-")
-//    "[\\]a]"       | new File("")  | new File("]")
+  }
+
+  @IgnoreIf({ !SystemUtils.IS_OS_LINUX })
+  @Unroll
+  def "#pattern should match #path on unix systems"(String pattern, File base, File path) {
+    expect:
+    new GlobsMatcher([pattern]).matches(base, path)
+
+    where:
+    pattern  | base         | path
+    "[\\-]"  | new File("") | new File("-")
+    "[x\\-]" | new File("") | new File("-")
+    "[x\\-]" | new File("") | new File("x")
+    "[\\-x]" | new File("") | new File("x")
+    "[\\]a]" | new File("") | new File("]")
   }
 
   @Unroll
@@ -66,11 +78,21 @@ class GlobsMatcherSpec extends Specification {
     "ab[!c]"       | new File("") | new File("abc")
     "ab[!b-d]"     | new File("") | new File("abc")
     "a??c"         | new File("") | new File("abc")
-    "[a-ζ]*"       | new File("") | new File("A")
     "a?b"          | new File("") | new File("a/b")
     "a*b"          | new File("") | new File("a/b")
-    "[x\\-]"       | new File("") | new File("z")
-    "[\\-x]"       | new File("") | new File("z")
+  }
+
+  @IgnoreIf({ !SystemUtils.IS_OS_LINUX })
+  @Unroll
+  def "#pattern should not match #path on unix systems"(String pattern, File base, File path) {
+    expect:
+    !new GlobsMatcher([pattern]).matches(base, path)
+
+    where:
+    pattern  | base         | path
+    "[a-ζ]*" | new File("") | new File("A")
+    "[x\\-]" | new File("") | new File("z")
+    "[\\-x]" | new File("") | new File("z")
   }
 
   @Unroll
