@@ -40,8 +40,6 @@ class DockerURLHandler {
     switch (protocol) {
       case "http":
       case "https":
-        result = new URL(dockerHost)
-        break
       case "tcp":
         if (shouldUseTls(new URL(dockerHost.replaceFirst("^${oldProtocol}://", "https://")))) {
           logger.info("assume 'https'")

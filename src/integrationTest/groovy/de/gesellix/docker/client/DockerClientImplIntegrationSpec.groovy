@@ -17,7 +17,8 @@ class DockerClientImplIntegrationSpec extends Specification {
   def setup() {
     def defaultDockerHost = System.env.DOCKER_HOST?.replaceFirst("tcp://", "http://")
     //defaultDockerHost = "http://172.17.42.1:4243/"
-    dockerClient = new DockerClientImpl(dockerHost: defaultDockerHost ?: "http://172.17.42.1:4243/")
+    //System.setProperty("docker.cert.path", "C:\\Users\\gesellix\\.boot2docker\\certs\\boot2docker-vm")
+    dockerClient = new DockerClientImpl(dockerHost: defaultDockerHost ?: "http://172.17.42.1:2375/")
   }
 
   def ping() {
@@ -34,27 +35,27 @@ class DockerClientImplIntegrationSpec extends Specification {
     def info = dockerClient.info().content
 
     then:
-    info.Containers
+    info.Containers >= 0
     info.Debug == 1
     info.Driver == "aufs"
     info.DriverStatus.findAll { it[0] == "Root Dir" || it[0] == "Backing Filesystem" || it[0] == "Dirs" }.size() == 3
     info.ExecutionDriver == "native-0.2"
-    info.ID == "4C3F:A25Q:NBWE:P7OC:YP45:GIOR:HBTQ:BFJ7:CGYE:2YDE:5BXO:ICTB"
+    info.ID =~ "([0-9A-Z]{4}:?){12}"
     info.Images > 0
     info.IndexServerAddress == "https://index.docker.io/v1/"
-    info.InitPath == "/usr/bin/docker"
+    info.InitPath =~ "/usr(/local)?/bin/docker"
     info.InitSha1 == ""
     info.IPv4Forwarding == 1
     info.Labels == null
-    info.MemTotal == 16262012928
+    info.MemTotal > 0
     info.MemoryLimit == 1
-    info.Name == "gesellix-r2"
-    info.NCPU == 8
+    info.Name =~ "\\w+"
+    info.NCPU > 2
     info.NEventsListener == 0
     info.NFd > 0
     info.NGoroutines > 0
-    info.KernelVersion =~ "3.13.0-\\d+-generic"
-    info.OperatingSystem == "Ubuntu 14.04.2 LTS"
+    info.KernelVersion =~ "3.\\d{2}.\\d-\\w+"
+    info.OperatingSystem =~ "\\w+"
     info.RegistryConfig == [
         "IndexConfigs"         : [
             "docker.io": ["Mirrors" : null,
@@ -64,7 +65,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         ],
         "InsecureRegistryCIDRs": ["127.0.0.0/8"]
     ]
-    info.SwapLimit == 0
+    info.SwapLimit >= 0
   }
 
   def version() {
@@ -72,14 +73,13 @@ class DockerClientImplIntegrationSpec extends Specification {
     def version = dockerClient.version().content
 
     then:
-    version == [
-        ApiVersion   : "1.17",
-        Arch         : "amd64",
-        GitCommit    : "a8a31ef",
-        GoVersion    : "go1.4.1",
-        KernelVersion: "3.13.0-48-generic",
-        Os           : "linux",
-        Version      : "1.5.0"]
+    version.ApiVersion == "1.17"
+    version.Arch == "amd64"
+    version.GitCommit == "a8a31ef"
+    version.GoVersion == "go1.4.1"
+    version.KernelVersion =~ "3.\\d{2}.\\d-\\w+"
+    version.Os == "linux"
+    version.Version == "1.5.0"
   }
 
   @Ignore
@@ -247,7 +247,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def containerInspection = dockerClient.inspectContainer(containerId).content
 
     then:
-    containerInspection.HostnamePath == "/var/lib/docker/containers/${containerId}/hostname".toString()
+    containerInspection.HostnamePath =~ "\\w*/var/lib/docker/containers/${containerId}/hostname".toString()
     and:
     containerInspection.Config.Cmd == ["true"]
     and:
