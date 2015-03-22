@@ -103,6 +103,9 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     then:
     buildResult =~ "\\w{12}"
+
+    cleanup:
+    dockerClient.rmi(buildResult)
   }
 
   def "build image with unknown base image"() {
@@ -172,6 +175,7 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     cleanup:
     dockerClient.rmi(imageName)
+    dockerClient.rmi("localhost:5000/${imageName}")
   }
 
   def "push image with undefined authentication"() {
@@ -190,6 +194,7 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     cleanup:
     dockerClient.rmi(imageName)
+    dockerClient.rmi("localhost:5000/${imageName}")
   }
 
   def "pull image"() {
@@ -210,6 +215,9 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     then:
     imageId == "3eb19b6d9332"
+
+    cleanup:
+    dockerClient.rmi("localhost:5000/gesellix/docker-client-testimage")
   }
 
   def "list containers"() {
@@ -229,7 +237,10 @@ class DockerClientImplIntegrationSpec extends Specification {
     containers.find { it.Id == containerId }.Image == "gesellix/docker-client-testimage:latest"
 
     cleanup:
+    dockerClient.stop(containerId)
+    dockerClient.wait(containerId)
     dockerClient.rm(containerId)
+    dockerClient.rmi(imageName)
   }
 
   def "inspect container"() {
@@ -370,11 +381,13 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     then:
     containerInfo.Id =~ "\\w+"
+
+    cleanup:
+    dockerClient.rm(containerInfo.Id)
   }
 
   def "create container with name"() {
     given:
-    dockerClient.rm("example")
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def containerConfig = ["Cmd"  : ["true"],
                            "Image": imageId]
@@ -384,6 +397,9 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     then:
     containerInfo.Id =~ "\\w+"
+
+    cleanup:
+    dockerClient.rm("example")
   }
 
   def "create container with unknown base image"() {
@@ -414,6 +430,11 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     then:
     startContainerResult.status.code == 204
+
+    cleanup:
+    dockerClient.stop(containerId)
+    dockerClient.wait(containerId)
+    dockerClient.rm(containerId)
   }
 
   def "run container with existing base image"() {
@@ -464,6 +485,8 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     cleanup:
     dockerClient.stop(containerStatus.container.content.Id)
+    dockerClient.wait(containerStatus.container.content.Id)
+    dockerClient.rm(containerStatus.container.content.Id)
   }
 
   def "run container with name"() {
@@ -486,6 +509,7 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     cleanup:
     dockerClient.stop(containerStatus.container.content.Id)
+    dockerClient.wait(containerStatus.container.content.Id)
     dockerClient.rm(containerStatus.container.content.Id)
   }
 
@@ -505,6 +529,7 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     cleanup:
     dockerClient.stop(containerStatus.container.content.Id)
+    dockerClient.wait(containerStatus.container.content.Id)
     dockerClient.rm(containerStatus.container.content.Id)
   }
 
@@ -523,6 +548,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     result.status.code == 204
 
     cleanup:
+    dockerClient.wait(containerStatus.container.content.Id)
     dockerClient.rm(containerStatus.container.content.Id)
   }
 
@@ -541,6 +567,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     result.status.code == 204
 
     cleanup:
+    dockerClient.wait(containerStatus.container.content.Id)
     dockerClient.rm(containerStatus.container.content.Id)
   }
 
@@ -582,6 +609,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     cleanup:
     dockerClient.unpause(containerStatus.container.content.Id)
     dockerClient.stop(containerStatus.container.content.Id)
+    dockerClient.wait(containerStatus.container.content.Id)
     dockerClient.rm(containerStatus.container.content.Id)
   }
 
@@ -602,6 +630,7 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     cleanup:
     dockerClient.stop(containerStatus.container.content.Id)
+    dockerClient.wait(containerStatus.container.content.Id)
     dockerClient.rm(containerStatus.container.content.Id)
   }
 
@@ -655,7 +684,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     def containerConfig = ["Cmd": ["true"]]
     def tag = "latest"
     def name = "another-example-name"
-    dockerClient.rm(name)
     dockerClient.run("an_image_with_existing_container", containerConfig, tag, name)
 
     when:
@@ -663,6 +691,11 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     then:
     rmImageResult.status.code == 200
+
+    cleanup:
+    dockerClient.stop(name)
+    dockerClient.wait(name)
+    dockerClient.rm(name)
   }
 
   def "exec create"() {
@@ -765,7 +798,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     renameContainerResult.status.code == 204
 
     cleanup:
-    dockerClient.rm("a_wonderful_new_name")
+    dockerClient.rm(containerId)
   }
 
   def "search"() {
