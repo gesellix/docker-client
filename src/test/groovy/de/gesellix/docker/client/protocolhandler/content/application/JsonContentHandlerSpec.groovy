@@ -23,7 +23,7 @@ class JsonContentHandlerSpec extends Specification {
     jsonContentHandler.getContent(connection)
 
     then:
-    1 * jsonSlurper.parse("[{'key':'a-value'},{'2nd':'chunk'}]".bytes) >> ["key": "a-value", "2nd": "chunk"]
+    1 * jsonSlurper.parseText("[{'key':'a-value'},{'2nd':'chunk'}]") >> ["key": "a-value", "2nd": "chunk"]
   }
 
   def "should delegate to the JsonSlurper"() {
