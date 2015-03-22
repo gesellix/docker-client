@@ -224,7 +224,7 @@ class DockerClientImpl implements DockerClient {
     def containerConfigWithImageName = [:] + containerConfig
     containerConfigWithImageName.Image = fromImage + (tag ? ":$tag" : "")
 
-    def createContainerResponse = createContainer(containerConfigWithImageName, [name: name])
+    def createContainerResponse = createContainer(containerConfigWithImageName, [name: name ?: ""])
     def startContainerResponse = startContainer(createContainerResponse.content.Id)
     return [
         container: createContainerResponse,
