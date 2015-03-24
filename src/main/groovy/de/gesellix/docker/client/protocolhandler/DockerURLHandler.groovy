@@ -12,6 +12,7 @@ class DockerURLHandler {
   String dockerTlsVerify
   String dockerCertPath
   final int defaultDockerTlsPort = 2376
+  final File defaultDockerCertPath = new File(System.properties['user.home'] as String, ".docker")
 
   URL dockerUrl
 
@@ -74,8 +75,6 @@ class DockerURLHandler {
 
     def certsPathExists = dockerCertPath && new File(dockerCertPath).isDirectory()
     if (!certsPathExists) {
-      String userHome = System.properties['user.home']
-      def defaultDockerCertPath = new File(userHome, ".docker")
       if (defaultDockerCertPath.isDirectory()) {
         logger.debug("dockerCertPath=${defaultDockerCertPath}")
         certsPathExists = true
