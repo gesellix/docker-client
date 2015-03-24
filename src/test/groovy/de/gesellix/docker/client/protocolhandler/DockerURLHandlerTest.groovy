@@ -68,4 +68,52 @@ class DockerURLHandlerTest extends Specification {
     cleanup:
     defaultDockerCertPathExisted || Files.delete(dockerUrlHandler.defaultDockerCertPath.toPath())
   }
+
+  def "should choose http for 'tcp://127.0.0.1:2375'"() {
+    def dockerUrlHandler = new DockerURLHandler()
+    when:
+    def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("tcp://127.0.0.1:2375")
+    then:
+    finalDockerHost.toString() == "http://127.0.0.1:2375"
+  }
+
+  def "should choose http for 'http://127.0.0.1:2375'"() {
+    def dockerUrlHandler = new DockerURLHandler()
+    when:
+    def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("http://127.0.0.1:2375")
+    then:
+    finalDockerHost.toString() == "http://127.0.0.1:2375"
+  }
+
+  def "should choose http for 'https://127.0.0.1:2376' and disabled tls"() {
+    def dockerUrlHandler = new DockerURLHandler(dockerTlsVerify: "0")
+    when:
+    def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("https://127.0.0.1:2376")
+    then:
+    finalDockerHost.toString() == "http://127.0.0.1:2376"
+  }
+
+  def "should choose https for 'https://127.0.0.1:2376' and enabled tls"() {
+    def dockerUrlHandler = new DockerURLHandler(dockerTlsVerify: "1")
+    when:
+    def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("https://127.0.0.1:2376")
+    then:
+    finalDockerHost.toString() == "https://127.0.0.1:2376"
+  }
+
+  def "should choose unix socket for 'unix:///var/lib/socket.example'"() {
+    def dockerUrlHandler = new DockerURLHandler()
+    when:
+    def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("unix:///var/lib/socket.example")
+    then:
+    finalDockerHost.toString() == "unix://socket/var/lib/socket.example"
+  }
+
+  def "should ignore unknown protocol"() {
+    def dockerUrlHandler = new DockerURLHandler()
+    when:
+    def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("ftp://example/foo")
+    then:
+    finalDockerHost.toString() == "ftp://example/foo"
+  }
 }
