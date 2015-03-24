@@ -4,8 +4,6 @@ import de.gesellix.docker.client.protocolhandler.urlstreamhandler.HttpOverUnixSo
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import static java.lang.Boolean.FALSE
-
 class DockerURLHandler {
 
   Logger logger = LoggerFactory.getLogger(DockerURLHandler)
@@ -68,7 +66,8 @@ class DockerURLHandler {
 
   def shouldUseTls(candidateURL) {
     // explicitly disabled?
-    if ((dockerTlsVerify && Boolean.valueOf(dockerTlsVerify) == FALSE) || "0".equals(dockerTlsVerify)) {
+    def falsyValues = ["0", "no", "false"]
+    if (falsyValues.contains(dockerTlsVerify)) {
       logger.debug("dockerTlsVerify=${dockerTlsVerify}")
       return false
     }
@@ -87,8 +86,8 @@ class DockerURLHandler {
     }
 
     // explicitly enabled?
-    def isTlsVerifyEnabled = "1".equals(dockerTlsVerify) || Boolean.valueOf(dockerTlsVerify)
-    if (isTlsVerifyEnabled) {
+    def truthyValues = ["1", "yes", "true"]
+    if (truthyValues.contains(dockerTlsVerify)) {
       if (!certsPathExists) {
         throw new IllegalStateException("tlsverify=${dockerTlsVerify}, but ${dockerCertPath} doesn't exist")
       }
