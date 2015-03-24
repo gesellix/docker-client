@@ -94,7 +94,10 @@ class DockerURLHandlerTest extends Specification {
   }
 
   def "should choose https for 'https://127.0.0.1:2376' and enabled tls"() {
-    def dockerUrlHandler = new DockerURLHandler(dockerTlsVerify: "1")
+    def certsDir = Files.createTempDirectory("certs")
+    def dockerUrlHandler = new DockerURLHandler(
+        dockerTlsVerify: "1",
+        dockerCertPath: certsDir.toString())
     when:
     def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("https://127.0.0.1:2376")
     then:
