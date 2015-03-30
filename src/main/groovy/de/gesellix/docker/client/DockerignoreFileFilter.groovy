@@ -1,7 +1,9 @@
 package de.gesellix.docker.client
 
+import groovy.util.logging.Slf4j
 import org.apache.commons.io.IOUtils
 
+@Slf4j
 class DockerignoreFileFilter {
 
   GlobsMatcher globsMatcher
@@ -12,6 +14,9 @@ class DockerignoreFileFilter {
     additionalExcludes.each {
       dockerignore += it
     }
+    dockerignore = relativize(dockerignore as Collection, base)
+    log.debug "base: ${base.absolutePath}"
+    log.debug "dockerignore: ${dockerignore}"
     globsMatcher = new GlobsMatcher(dockerignore)
   }
 
@@ -21,6 +26,12 @@ class DockerignoreFileFilter {
       return ".dockerignore" == relativeFileName
     }
     dockerignoreFile ? IOUtils.toString(new FileInputStream(dockerignoreFile as File)).split("[\r\n]+") : []
+  }
+
+  def relativize(Collection<String> dockerignores, File base) {
+    dockerignores.collect { dockerignore ->
+      new File(dockerignore).isAbsolute() ? relativize(base, new File(dockerignore)) : dockerignore
+    }
   }
 
   def relativize(File base, File absolute) {

@@ -13,7 +13,7 @@ class BuildContextBuilder {
   private static Logger logger = LoggerFactory.getLogger(BuildContextBuilder)
 
   def static archiveTarFilesRecursively(File base, File targetFile) throws IOException {
-    def filenames = new DockerignoreFileFilter(base, [targetFile.name]).collectFiles(base)
+    def filenames = new DockerignoreFileFilter(base, [targetFile.absolutePath]).collectFiles(base)
     logger.debug "found ${filenames.size()} files in buildContext."
     archiveTarFiles(base, filenames, targetFile)
   }
@@ -24,6 +24,7 @@ class BuildContextBuilder {
       tos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU)
       for (String filename : filenames) {
         def relativeFileName = relativize(base, new File(filename))
+        logger.debug "adding ${filename} as ${relativeFileName}"
         addAsTarEntry(new File(filename), relativeFileName, tos)
       }
     }
