@@ -4,6 +4,8 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.io.IOUtils
 import spock.lang.Specification
 
+import java.util.zip.GZIPInputStream
+
 class BuildContextBuilderTest extends Specification {
 
   def "test archiveTarFilesRecursively"() {
@@ -55,7 +57,7 @@ class BuildContextBuilderTest extends Specification {
 
   def collectEntryNames(File tarArchive) {
     def collectedEntryNames = []
-    def tarArchiveInputStream = new TarArchiveInputStream(new FileInputStream(tarArchive))
+    def tarArchiveInputStream = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(tarArchive)))
 
     def entry
     while (entry = tarArchiveInputStream.nextTarEntry) {
@@ -65,7 +67,7 @@ class BuildContextBuilderTest extends Specification {
   }
 
   def getFileMode(File tarArchive, String filename) {
-    def tarArchiveInputStream = new TarArchiveInputStream(new FileInputStream(tarArchive))
+    def tarArchiveInputStream = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(tarArchive)))
 
     def entry
     while (entry = tarArchiveInputStream.nextTarEntry) {

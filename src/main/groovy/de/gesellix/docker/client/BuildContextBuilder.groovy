@@ -7,6 +7,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import java.nio.file.Files
+import java.util.zip.GZIPOutputStream
 
 class BuildContextBuilder {
 
@@ -19,7 +20,7 @@ class BuildContextBuilder {
   }
 
   def static archiveTarFiles(File base, filenames, File targetFile) throws IOException {
-    TarArchiveOutputStream tos = new TarArchiveOutputStream(new FileOutputStream(targetFile))
+    TarArchiveOutputStream tos = new TarArchiveOutputStream(new GZIPOutputStream(new FileOutputStream(targetFile)))
     try {
       tos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU)
       for (String filename : filenames) {
