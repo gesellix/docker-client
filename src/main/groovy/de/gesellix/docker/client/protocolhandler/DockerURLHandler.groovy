@@ -41,17 +41,17 @@ class DockerURLHandler {
       case "https":
       case "tcp":
         if (shouldUseTls(new URL(dockerHost.replaceFirst("^${oldProtocol}://", "https://")))) {
-          logger.info("assume 'https'")
+          logger.debug("assume 'https'")
           protocol = "https"
         }
         else {
-          logger.info("assume 'http'")
+          logger.debug("assume 'http'")
           protocol = "http"
         }
         result = new URL(dockerHost.replaceFirst("^${oldProtocol}://", "${protocol}://"))
         break
       case "unix":
-        logger.info("is 'unix'")
+        logger.debug("is 'unix'")
         def dockerUnixSocket = dockerHost.replaceFirst("unix://", "")
         HttpOverUnixSocketClient.dockerUnixSocket = dockerUnixSocket
         result = new URL("unix", "socket", dockerUnixSocket)
