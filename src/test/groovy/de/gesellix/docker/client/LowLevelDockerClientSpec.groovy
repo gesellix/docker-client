@@ -170,7 +170,7 @@ class LowLevelDockerClientSpec extends Specification {
     given:
     def httpServer = new TestHttpServer()
     def serverAddress = httpServer.start()
-    def client = new LowLevelDockerClient(dockerHost: "http://${serverAddress}")
+    def client = new LowLevelDockerClient(dockerHost: "http://127.0.0.1:${serverAddress.port}")
     when:
     def connection = client.openConnection([method: "GET",
                                             path  : "/foo"])
