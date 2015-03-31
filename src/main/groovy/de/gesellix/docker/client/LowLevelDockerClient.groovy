@@ -16,7 +16,6 @@ import java.util.regex.Pattern
 import static de.gesellix.docker.client.KeyStoreUtil.KEY_STORE_PASSWORD
 import static javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm
 
-// Proof-of-concept for https://docs.docker.com/reference/api/docker_remote_api_v1.17/#attach-to-a-container
 class LowLevelDockerClient {
 
   def Logger logger = LoggerFactory.getLogger(LowLevelDockerClient)
@@ -24,6 +23,7 @@ class LowLevelDockerClient {
   ContentHandlerFactory contentHandlerFactory
   DockerURLHandler dockerURLHandler
 
+  def proxy
   def dockerHost
   URL dockerHostUrl
 
@@ -33,6 +33,7 @@ class LowLevelDockerClient {
     dockerURLHandler = new DockerURLHandler()
     contentHandlerFactory = new DockerContentHandlerFactory()
     dockerHost = "http://127.0.0.1:2375"
+    proxy = Proxy.NO_PROXY
     sslSocketFactory = null
   }
 
@@ -257,9 +258,9 @@ class LowLevelDockerClient {
   def openConnection(config) {
     config.query = (config.query) ? "?${queryToString(config.query)}" : ""
     def requestUrl = new URL("${getDockerBaseUrl()}${config.path}${config.query}")
-    logger.info("${config.method} ${requestUrl}")
+    logger.info("${config.method} ${requestUrl} using proxy: ${proxy}")
 
-    def connection = requestUrl.openConnection()
+    def connection = requestUrl.openConnection(proxy)
     return connection as HttpURLConnection
   }
 

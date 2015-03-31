@@ -5,6 +5,7 @@ import de.gesellix.docker.client.protocolhandler.RawInputStream
 import org.apache.commons.io.IOUtils
 import org.codehaus.groovy.runtime.MethodClosure
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLSocketFactory
@@ -97,6 +98,7 @@ class LowLevelDockerClientSpec extends Specification {
     [param1: "v 1", p2: "v-2"] | "param1=v+1&p2=v-2"
   }
 
+  @Unroll
   def "generic request with bad config: #requestConfig"() {
     def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
     when:
@@ -108,6 +110,7 @@ class LowLevelDockerClientSpec extends Specification {
     requestConfig << [null, [], [:], ["foo": "bar"]]
   }
 
+  @Unroll
   def "#method request with bad config: #requestConfig"() {
     def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
     when:
@@ -161,6 +164,37 @@ class LowLevelDockerClientSpec extends Specification {
     def method = client.delete("/foo")
     then:
     method == "DELETE"
+  }
+
+  def "openConnection uses DIRECT proxy by default"() {
+    given:
+    def httpServer = new TestHttpServer()
+    def serverAddress = httpServer.start()
+    def client = new LowLevelDockerClient(dockerHost: "http://${serverAddress}")
+    when:
+    def connection = client.openConnection([method: "GET",
+                                            path  : "/foo"])
+    connection.connect()
+    then:
+    !connection.usingProxy()
+    cleanup:
+    httpServer.stop()
+  }
+
+  def "openConnection uses configured proxy"() {
+    given:
+    def httpServer = new TestHttpServer()
+    def proxyAddress = httpServer.start()
+    def proxy = new Proxy(Proxy.Type.HTTP, proxyAddress)
+    def client = new LowLevelDockerClient(dockerHost: "http://any.thi.ng:4711", proxy: proxy)
+    when:
+    def connection = client.openConnection([method: "GET",
+                                            path  : "/test/"])
+    connection.connect()
+    then:
+    connection.usingProxy()
+    cleanup:
+    httpServer.stop()
   }
 
   def "openConnection with path"() {
