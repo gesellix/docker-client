@@ -12,4 +12,10 @@ abstract class UnixSocketURLStreamHandler extends URLStreamHandler {
   protected URLConnection openConnection(URL u) throws IOException {
     return new HttpOverUnixSocketURLConnection(u)
   }
+
+  @Override
+  protected URLConnection openConnection(URL u, Proxy p) throws IOException {
+    // ignore the proxy
+    return this.openConnection(u)
+  }
 }
