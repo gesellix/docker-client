@@ -340,7 +340,7 @@ class DockerClientImpl implements DockerClient {
     applyDefaults(actualQuery, defaults)
     jsonEncodeFilters(actualQuery)
     def response = getHttpClient().get([path : "/images/json",
-                                        query: query])
+                                        query: actualQuery])
     return response
   }
 
