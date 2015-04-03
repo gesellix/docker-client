@@ -36,6 +36,8 @@ interface DockerClient {
 
   def ps()
 
+  def ps(query)
+
   def inspectContainer(containerId)
 
   def diff(containerId)

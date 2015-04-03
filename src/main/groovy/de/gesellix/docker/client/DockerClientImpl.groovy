@@ -292,11 +292,17 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def ps() {
+  def ps(query = [:]) {
     logger.info "docker ps"
+    def actualQuery = query ?: [:]
+    def defaults = [all: true, size: false]
+    defaults.every { k, v ->
+      if (!actualQuery.containsKey(k)) {
+        actualQuery[k] = v
+      }
+    }
     def response = getHttpClient().get([path : "/containers/json",
-                                        query: [all : true,
-                                                size: false]])
+                                        query: actualQuery])
     return response
   }
 

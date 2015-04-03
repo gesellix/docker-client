@@ -301,6 +301,17 @@ class DockerClientImplSpec extends Specification {
                                 size: false]])
   }
 
+  def "ps containers with query"() {
+    when:
+    dockerClient.ps([filters: [status: "exited"]])
+
+    then:
+    1 * httpClient.get([path : "/containers/json",
+                        query: [all    : true,
+                                size   : false,
+                                filters: [status: "exited"]]])
+  }
+
   def "inspect container"() {
     when:
     dockerClient.inspectContainer("a-container")
