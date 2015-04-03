@@ -296,11 +296,8 @@ class DockerClientImpl implements DockerClient {
     logger.info "docker ps"
     def actualQuery = query ?: [:]
     def defaults = [all: true, size: false]
-    defaults.every { k, v ->
-      if (!actualQuery.containsKey(k)) {
-        actualQuery[k] = v
-      }
-    }
+    applyDefaults(actualQuery, defaults)
+    jsonEncodeFilters(actualQuery)
     def response = getHttpClient().get([path : "/containers/json",
                                         query: actualQuery])
     return response
@@ -336,9 +333,12 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def images(query = [all    : false,
-                      filters: '']) {
+  def images(query = [:]) {
     logger.info "docker images"
+    def actualQuery = query ?: [:]
+    def defaults = [all: false]
+    applyDefaults(actualQuery, defaults)
+    jsonEncodeFilters(actualQuery)
     def response = getHttpClient().get([path : "/images/json",
                                         query: query])
     return response
@@ -461,5 +461,21 @@ class DockerClientImpl implements DockerClient {
     IOUtils.closeQuietly(stream)
 
     return content
+  }
+
+  def applyDefaults(query, defaults){
+    defaults.each { k, v ->
+      if (!query.containsKey(k)) {
+        query[k] = v
+      }
+    }
+  }
+
+  def jsonEncodeFilters(query){
+    query.each { k, v ->
+      if (k == "filters") {
+        query[k] = new JsonBuilder(v).toString()
+      }
+    }
   }
 }

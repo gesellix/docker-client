@@ -1,5 +1,6 @@
 package de.gesellix.docker.client
 
+import groovy.json.JsonBuilder
 import org.slf4j.Logger
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -302,14 +303,18 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "ps containers with query"() {
+    given:
+    def filters = [status: ["exited"]]
+    def expectedFilterValue = new JsonBuilder(filters).toString()
+
     when:
-    dockerClient.ps([filters: [status: "exited"]])
+    dockerClient.ps([filters: filters])
 
     then:
     1 * httpClient.get([path : "/containers/json",
                         query: [all    : true,
                                 size   : false,
-                                filters: [status: "exited"]]])
+                                filters: expectedFilterValue]])
   }
 
   def "inspect container"() {
@@ -357,15 +362,19 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "images with query"() {
+    given:
+    def filters = [dangling: ["true"]]
+    def expectedFilterValue = new JsonBuilder(filters).toString()
     def query = [all    : true,
-                 filters: ["dangling": true]]
+                 filters: filters]
 
     when:
     dockerClient.images(query)
 
     then:
     1 * httpClient.get([path : "/images/json",
-                        query: query])
+                        query: [all    : true,
+                                filters: expectedFilterValue]])
   }
 
   def "rmi image"() {
