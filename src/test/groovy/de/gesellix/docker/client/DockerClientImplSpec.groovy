@@ -586,4 +586,59 @@ class DockerClientImplSpec extends Specification {
     1 * httpClient.post([path : "/containers/a-container/attach",
                          query: [stream: true]]) >> [stream: [:]]
   }
+
+  def "cleanupStorage removes exited containers"() {
+    given:
+    def keepContainer = { container ->
+      container.Names.any { String name ->
+        name.replaceAll("^/", "").matches(".*data.*")
+      }
+    }
+
+    when:
+    dockerClient.cleanupStorage keepContainer
+
+    then:
+    1 * dockerClient.ps([filters: [status: ["exited"]]]) >> [
+        content: [
+            [Command: "ping 127.0.0.1",
+             Id     : "container-id-1",
+             Image  : "gesellix/docker-client-testimage:latest",
+             Names  : ["/agitated_bardeen"],
+             Status : "Exited (137) 13 minutes ago"],
+            [Command: "ping 127.0.0.1",
+             Id     : "container-id-2",
+             Image  : "gesellix/docker-client-testimage:latest",
+             Names  : ["/my_data"],
+             Status : "Exited (137) 13 minutes ago"]
+        ]
+    ]
+    then:
+    1 * dockerClient.rm("container-id-1")
+    and:
+    0 * dockerClient.rm("container-id-2")
+    and:
+    1 * dockerClient.images([filters: [dangling: ["true"]]]) >> [:]
+  }
+
+  def "cleanupStorage removes dangling images"() {
+    when:
+    dockerClient.cleanupStorage { container -> false }
+
+    then:
+    1 * dockerClient.ps([filters: [status: ["exited"]]]) >> [:]
+    and:
+    1 * dockerClient.images([filters: [dangling: ["true"]]]) >> [
+        content: [
+            [Created    : 1420075526,
+             Id         : "image-id-1",
+             ParentId   : "f62feddc05dc67da9b725361f97d7ae72a32e355ce1585f9a60d090289120f73",
+             RepoTags   : ["<none>": "<none>"],
+             Size       : 0,
+             VirtualSize: 188299119]
+        ]
+    ]
+    then:
+    1 * dockerClient.rmi("image-id-1")
+  }
 }
