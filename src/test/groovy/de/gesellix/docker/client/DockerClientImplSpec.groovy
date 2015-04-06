@@ -299,7 +299,7 @@ class DockerClientImplSpec extends Specification {
     then:
     1 * httpClient.get([path : "/containers/json",
                         query: [all : true,
-                                size: false]])
+                                size: false]]) >> [status: [success: true]]
   }
 
   def "ps containers with query"() {
@@ -314,7 +314,7 @@ class DockerClientImplSpec extends Specification {
     1 * httpClient.get([path : "/containers/json",
                         query: [all    : true,
                                 size   : false,
-                                filters: expectedFilterValue]])
+                                filters: expectedFilterValue]]) >> [status: [success: true]]
   }
 
   def "inspect container"() {
@@ -357,7 +357,7 @@ class DockerClientImplSpec extends Specification {
 
     then:
     1 * httpClient.get([path : "/images/json",
-                        query: [all: false]])
+                        query: [all: false]]) >> [status: [success: true]]
   }
 
   def "images with query"() {
@@ -373,7 +373,7 @@ class DockerClientImplSpec extends Specification {
     then:
     1 * httpClient.get([path : "/images/json",
                         query: [all    : true,
-                                filters: expectedFilterValue]])
+                                filters: expectedFilterValue]]) >> [status: [success: true]]
   }
 
   def "rmi image"() {

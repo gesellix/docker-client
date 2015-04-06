@@ -8,4 +8,14 @@ class DockerClientException extends RuntimeException {
     super(cause)
     this.detail = detail
   }
+
+  @Override
+  public String toString() {
+    if (detail instanceof String) {
+      return "DockerClientException{detail=$detail} ${super.toString()}"
+    }
+    else {
+      return "DockerClientException{...} ${super.toString()}"
+    }
+  }
 }

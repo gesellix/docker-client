@@ -2,6 +2,8 @@ package de.gesellix.docker.client
 
 interface DockerClient {
 
+  def cleanupStorage(Closure shouldKeepContainer)
+
   def ping()
 
   def info()

@@ -37,6 +37,22 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
+  def cleanupStorage(Closure shouldKeepContainer) {
+    def allContainers = ps([filters: [status: ["exited"]]]).content
+    allContainers.findAll { Map container ->
+      !shouldKeepContainer(container)
+    }.each { container ->
+      logger.info "docker rm ${container.Id} (${container.Names.first()})"
+      rm(container.Id)
+    }
+
+    images([filters: [dangling: ["true"]]]).content.each { image ->
+      logger.info "docker rmi ${image.Id}"
+      rmi(image.Id)
+    }
+  }
+
+  @Override
   def ping() {
     logger.info "docker ping"
     def response = getHttpClient().get([path: "/_ping"])
@@ -300,6 +316,7 @@ class DockerClientImpl implements DockerClient {
     jsonEncodeFilters(actualQuery)
     def response = getHttpClient().get([path : "/containers/json",
                                         query: actualQuery])
+    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker ps failed"))
     return response
   }
 
@@ -341,6 +358,7 @@ class DockerClientImpl implements DockerClient {
     jsonEncodeFilters(actualQuery)
     def response = getHttpClient().get([path : "/images/json",
                                         query: actualQuery])
+    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker images failed"))
     return response
   }
 
@@ -463,7 +481,7 @@ class DockerClientImpl implements DockerClient {
     return content
   }
 
-  def applyDefaults(query, defaults){
+  def applyDefaults(query, defaults) {
     defaults.each { k, v ->
       if (!query.containsKey(k)) {
         query[k] = v
@@ -471,7 +489,7 @@ class DockerClientImpl implements DockerClient {
     }
   }
 
-  def jsonEncodeFilters(query){
+  def jsonEncodeFilters(query) {
     query.each { k, v ->
       if (k == "filters") {
         query[k] = new JsonBuilder(v).toString()
