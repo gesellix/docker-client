@@ -3,6 +3,8 @@ package de.gesellix.docker.client
 import groovy.util.logging.Slf4j
 import org.apache.commons.io.IOUtils
 
+import static groovy.io.FileType.FILES
+
 @Slf4j
 class DockerignoreFileFilter {
 
@@ -39,16 +41,23 @@ class DockerignoreFileFilter {
   }
 
   def collectFiles(File base) {
+    def ignoredDirs = []
+    base.eachDirMatch(
+        { globsMatcher.matches(base, new File("${base}${File.separator}${it}")) },
+        { ignoredDirs << it })
+
     def files = []
 
-    base.eachFileRecurse {
-      if (!globsMatcher.matches(base, it)) {
-        files << it
+    base.eachFileRecurse FILES, { File file ->
+      def parentDirIgnored = ignoredDirs.find { File ignoredDir ->
+        file.toPath().startsWith(ignoredDir.toPath())
+      }
+
+      if (!parentDirIgnored && !globsMatcher.matches(base, file)) {
+        files << file
       }
     }
 
-    return files.findAll {
-      it.isFile()
-    }
+    return files
   }
 }
