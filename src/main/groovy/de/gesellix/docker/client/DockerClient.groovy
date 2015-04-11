@@ -10,9 +10,11 @@ interface DockerClient {
 
   def version()
 
-  def auth(authDetails)
+  def readAuthConfig(def hostnameOrNull, File dockerCfgOrNull)
 
   def encodeAuthConfig(authConfig)
+
+  def auth(authDetails)
 
   def build(InputStream buildContext)
 
@@ -34,7 +36,9 @@ interface DockerClient {
 
   def pull(imageName, tag)
 
-  def pull(imageName, tag, registry)
+  def pull(imageName, tag, authBase64Encoded)
+
+  def pull(imageName, tag, authBase64Encoded, registry)
 
   def ps()
 

@@ -17,10 +17,8 @@ class DockerClientImplSpec extends Specification {
 
   def "encode authConfig"() {
     given:
-    def authDetails = ["username"     : "gesellix",
-                       "password"     : "-yet-another-password-",
-                       "email"        : "tobias@gesellix.de",
-                       "serveraddress": "https://index.docker.io/v1/"]
+    def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg')
+    def authDetails = dockerClient.readAuthConfig(null, dockerCfg)
     def authPlain = authDetails
 
     when:
@@ -95,6 +93,40 @@ class DockerClientImplSpec extends Specification {
                          requestContentType: "application/json"])
   }
 
+  def "read dockercfg for official Docker index"() {
+    given:
+    def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg')
+
+    when:
+    def authDetails = dockerClient.readAuthConfig(null, dockerCfg)
+
+    then:
+    authDetails.username == "gesellix"
+    and:
+    authDetails.password == "-yet-another-password-"
+    and:
+    authDetails.email == "tobias@gesellix.de"
+    and:
+    authDetails.serveraddress == "https://index.docker.io/v1/"
+  }
+
+  def "read dockercfg for quay.io"() {
+    given:
+    def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg')
+
+    when:
+    def authDetails = dockerClient.readAuthConfig("quay.io", dockerCfg)
+
+    then:
+    authDetails.username == "gesellix"
+    and:
+    authDetails.password == "-a-password-for-quay-"
+    and:
+    authDetails.email == "tobias@gesellix.de"
+    and:
+    authDetails.serveraddress == "quay.io"
+  }
+
   def "build with defaults"() {
     def buildContext = new ByteArrayInputStream([42] as byte[])
 
@@ -158,8 +190,7 @@ class DockerClientImplSpec extends Specification {
 
     then:
     1 * httpClient.post([path   : "/images/an-image/push",
-                         query  : [registry: "",
-                                   tag     : ""],
+                         query  : [tag: ""],
                          headers: ["X-Registry-Auth": "."]]) >> [status: [success: true]]
   }
 
@@ -169,8 +200,7 @@ class DockerClientImplSpec extends Specification {
 
     then:
     1 * httpClient.post([path   : "/images/an-image/push",
-                         query  : [registry: "",
-                                   tag     : "a-tag"],
+                         query  : [tag: "a-tag"],
                          headers: ["X-Registry-Auth": "some-base64-encoded-auth"]]) >> [status: [success: true]]
   }
 
@@ -185,8 +215,7 @@ class DockerClientImplSpec extends Specification {
                                  force: true]])
     then:
     1 * httpClient.post([path   : "/images/registry:port/an-image/push",
-                         query  : [registry: "registry:port",
-                                   tag     : ""],
+                         query  : [tag: ""],
                          headers: ["X-Registry-Auth": "."]]) >> [status: [success: true]]
   }
 
@@ -195,10 +224,11 @@ class DockerClientImplSpec extends Specification {
     dockerClient.pull("an-image")
 
     then:
-    1 * httpClient.post([path : "/images/create",
-                         query: [fromImage: "an-image",
-                                 tag      : "",
-                                 registry : ""]]) >> [content: [[id: "image-id"]]]
+    1 * httpClient.post([path   : "/images/create",
+                         query  : [fromImage: "an-image",
+                                   tag      : "",
+                                   registry : ""],
+                         headers: ["X-Registry-Auth": "."]]) >> [content: [[id: "image-id"]]]
     and:
     dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
       assert arguments[1]?.message == "docker pull failed"
@@ -210,10 +240,11 @@ class DockerClientImplSpec extends Specification {
     dockerClient.pull("an-image", "a-tag")
 
     then:
-    1 * httpClient.post([path : "/images/create",
-                         query: [fromImage: "an-image",
-                                 tag      : "a-tag",
-                                 registry : ""]]) >> [content: [[id: "image-id"]]]
+    1 * httpClient.post([path   : "/images/create",
+                         query  : [fromImage: "an-image",
+                                   tag      : "a-tag",
+                                   registry : ""],
+                         headers: ["X-Registry-Auth": "."]]) >> [content: [[id: "image-id"]]]
     and:
     dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
       assert arguments[1]?.message == "docker pull failed"
@@ -222,13 +253,30 @@ class DockerClientImplSpec extends Specification {
 
   def "pull with registry"() {
     when:
-    dockerClient.pull("an-image", "", "registry:port")
+    dockerClient.pull("an-image", "", ".", "registry:port")
 
     then:
-    1 * httpClient.post([path : "/images/create",
-                         query: [fromImage: "registry:port/an-image",
-                                 tag      : "",
-                                 registry : "registry:port"]]) >> [content: [[id: "image-id"]]]
+    1 * httpClient.post([path   : "/images/create",
+                         query  : [fromImage: "registry:port/an-image",
+                                   tag      : "",
+                                   registry : "registry:port"],
+                         headers: ["X-Registry-Auth": "."]]) >> [content: [[id: "image-id"]]]
+    and:
+    dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[1]?.message == "docker pull failed"
+    }
+  }
+
+  def "pull with auth"() {
+    when:
+    dockerClient.pull("an-image", "", "some-base64-encoded-auth", "registry:port")
+
+    then:
+    1 * httpClient.post([path   : "/images/create",
+                         query  : [fromImage: "registry:port/an-image",
+                                   tag      : "",
+                                   registry : "registry:port"],
+                         headers: ["X-Registry-Auth": "some-base64-encoded-auth"]]) >> [content: [[id: "image-id"]]]
     and:
     dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
       assert arguments[1]?.message == "docker pull failed"

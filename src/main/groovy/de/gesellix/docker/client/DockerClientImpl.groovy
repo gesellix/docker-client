@@ -1,6 +1,7 @@
 package de.gesellix.docker.client
 
 import groovy.json.JsonBuilder
+import groovy.json.JsonSlurper
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.io.IOUtils
@@ -74,18 +75,51 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def auth(def authDetails) {
-    logger.info "docker login"
-    def response = getHttpClient().post([path              : "/auth",
-                                         body              : authDetails,
-                                         requestContentType: "application/json"])
-    return response
+  def readAuthConfig(def hostname, File dockerCfg) {
+    logger.debug "read authConfig"
+
+    if (!dockerCfg) {
+      dockerCfg = new File(System.getProperty('user.home'), ".dockercfg")
+    }
+    if (!dockerCfg?.exists()) {
+      logger.warn "${dockerCfg} doesn't exist"
+      return [:]
+    }
+    logger.debug "reading auth info from ${dockerCfg}"
+    def parsedDockerCfg = new JsonSlurper().parse(dockerCfg)
+
+    if (!hostname) {
+      hostname = "https://index.docker.io/v1/"
+    }
+
+    def authDetails = ["username"     : "UNKNOWN-USERNAME",
+                       "password"     : "UNKNOWN-PASSWORD",
+                       "email"        : "UNKNOWN-EMAIL",
+                       "serveraddress": hostname]
+
+
+    def auth = parsedDockerCfg[hostname].auth as String
+    def (username, password) = new String(auth.decodeBase64()).split(":")
+    authDetails.username = username
+    authDetails.password = password
+    authDetails.email = parsedDockerCfg[hostname].email
+
+    return authDetails
   }
 
   @Override
   def encodeAuthConfig(def authConfig) {
     logger.debug "encode authConfig"
     return new JsonBuilder(authConfig).toString().bytes.encodeBase64().toString()
+  }
+
+  @Override
+  def auth(def authDetails) {
+    logger.info "docker login"
+    def response = getHttpClient().post([path              : "/auth",
+                                         body              : authDetails,
+                                         requestContentType: "application/json"])
+    return response
   }
 
   @Override
@@ -124,8 +158,7 @@ class DockerClientImpl implements DockerClient {
     def repoAndTag = parseRepositoryTag(actualImageName)
 
     def response = getHttpClient().post([path   : "/images/${repoAndTag.repo}/push".toString(),
-                                         query  : [registry: registry,
-                                                   tag     : repoAndTag.tag],
+                                         query  : [tag: repoAndTag.tag],
                                          headers: ["X-Registry-Auth": authBase64Encoded ?: "."]])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker push failed"))
     return response
@@ -165,7 +198,7 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def pull(imageName, tag = "", registry = "") {
+  def pull(imageName, tag = "", authBase64Encoded = ".", registry = "") {
     logger.info "docker pull '${imageName}:${tag}'"
 
     def actualImageName = imageName
@@ -173,10 +206,11 @@ class DockerClientImpl implements DockerClient {
       actualImageName = "$registry/$imageName".toString()
     }
 
-    def response = getHttpClient().post([path : "/images/create",
-                                         query: [fromImage: actualImageName,
-                                                 tag      : tag,
-                                                 registry : registry]])
+    def response = getHttpClient().post([path   : "/images/create",
+                                         query  : [fromImage: actualImageName,
+                                                   tag      : tag,
+                                                   registry : registry],
+                                         headers: ["X-Registry-Auth": authBase64Encoded ?: "."]])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker pull failed"))
 
     def chunksWithId = response.content.findAll { it.id }
@@ -187,6 +221,7 @@ class DockerClientImpl implements DockerClient {
     return lastChunkWithId.id
   }
 
+  // TODO we might need some authentication here for the pull(...) step
   @Override
   def createContainer(containerConfig, query = [name: ""]) {
     logger.info "docker create"

@@ -1,8 +1,5 @@
 package de.gesellix.docker.client
 
-import spock.lang.Ignore
-
-@Ignore
 class ExploreTheApi {
 
   public static void main(String[] args) {
@@ -16,5 +13,8 @@ class ExploreTheApi {
       }
     }
     dockerClient.cleanupStorage(keepDataContainers)
+
+    def authConfig = dockerClient.readAuthConfig(null, null)
+    println authConfig
   }
 }

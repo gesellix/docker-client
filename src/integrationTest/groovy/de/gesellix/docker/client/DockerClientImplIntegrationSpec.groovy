@@ -9,11 +9,6 @@ class DockerClientImplIntegrationSpec extends Specification {
 
   DockerClient dockerClient
 
-  def authDetails = ["username"     : "gesellix",
-                     "password"     : "-yet-another-password-",
-                     "email"        : "tobias@gesellix.de",
-                     "serveraddress": "https://index.docker.io/v1/"]
-
   def setup() {
     def defaultDockerHost = System.env.DOCKER_HOST?.replaceFirst("tcp://", "http://")
     //defaultDockerHost = "http://172.17.42.1:4243/"
@@ -82,9 +77,9 @@ class DockerClientImplIntegrationSpec extends Specification {
     version.Version == "1.5.0"
   }
 
-  @Ignore
   def auth() {
     given:
+    def authDetails = dockerClient.readAuthConfig(null, null)
     def authPlain = authDetails
 
     when:
@@ -140,6 +135,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   @Ignore
   def "push image"() {
     given:
+    def authDetails = dockerClient.readAuthConfig(null, null)
     def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def imageName = "gesellix/test:latest"
@@ -160,6 +156,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   @Ignore
   def "push image with registry"() {
     given:
+    def authDetails = dockerClient.readAuthConfig(null, null)
     def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def imageName = "gesellix/test:latest"
