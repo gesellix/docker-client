@@ -127,6 +127,17 @@ class DockerClientImplSpec extends Specification {
     authDetails.serveraddress == "quay.io"
   }
 
+  def "read dockercfg for unknown registry hostname"() {
+    given:
+    def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg')
+
+    when:
+    def authDetails = dockerClient.readAuthConfig("unkown.example.com", dockerCfg)
+
+    then:
+    authDetails == [:]
+  }
+
   def "build with defaults"() {
     def buildContext = new ByteArrayInputStream([42] as byte[])
 

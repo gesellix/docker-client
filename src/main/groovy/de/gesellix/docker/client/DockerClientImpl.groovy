@@ -92,6 +92,10 @@ class DockerClientImpl implements DockerClient {
       hostname = "https://index.docker.io/v1/"
     }
 
+    if (!parsedDockerCfg[hostname]) {
+      return [:]
+    }
+
     def authDetails = ["username"     : "UNKNOWN-USERNAME",
                        "password"     : "UNKNOWN-PASSWORD",
                        "email"        : "UNKNOWN-EMAIL",
