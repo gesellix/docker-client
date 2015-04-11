@@ -93,6 +93,16 @@ class DockerClientImplSpec extends Specification {
                          requestContentType: "application/json"])
   }
 
+  def "read default dockercfg for official Docker index"() {
+    when:
+    def authDetails = dockerClient.readDefaultAuthConfig()
+
+    then:
+    1 * dockerClient.readAuthConfig(null, new File(System.getProperty('user.home'), ".dockercfg")) >> [username: "gesellix"]
+    and:
+    authDetails == [username: "gesellix"]
+  }
+
   def "read dockercfg for official Docker index"() {
     given:
     def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg')

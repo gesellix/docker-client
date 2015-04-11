@@ -75,6 +75,11 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
+  def readDefaultAuthConfig() {
+    return readAuthConfig(null, new File(System.getProperty('user.home'), ".dockercfg"))
+  }
+
+  @Override
   def readAuthConfig(def hostname, File dockerCfg) {
     logger.debug "read authConfig"
 

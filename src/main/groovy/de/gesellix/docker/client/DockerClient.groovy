@@ -10,7 +10,9 @@ interface DockerClient {
 
   def version()
 
-  def readAuthConfig(def hostnameOrNull, File dockerCfgOrNull)
+  def readDefaultAuthConfig()
+
+  def readAuthConfig(hostnameOrNull, File dockerCfgOrNull)
 
   def encodeAuthConfig(authConfig)
 
