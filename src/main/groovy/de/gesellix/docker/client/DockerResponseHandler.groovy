@@ -9,38 +9,40 @@ class DockerResponseHandler {
 
   def ensureSuccessfulResponse(def response, Throwable context) {
     if (!response || !response.status.success || hasError(response)) {
-      logger.error "request failed: ${response?.content?.error}"
+      logError(response)
       throw new DockerClientException(context, response?.content)
     }
   }
 
+  def logError(response){
+    if (response?.content instanceof String){
+      logger.error "request failed: ${response?.content}"
+    } else {
+      logger.error "request failed: ${getErrors(response)}"
+    }
+  }
+
   def hasError(response) {
+    return getErrors(response).size()
+  }
+
+  def getErrors(response) {
     if (!response?.content) {
-      return false
+      return []
     }
 
     def content = response.content
-
-    switch (response.mimeType) {
-      case "application/vnd.docker.raw-stream":
-        return false
-      case "application/json":
-        def foundErrors = false
-        if (content instanceof List) {
-          foundErrors = content.find { it.error }
-        }
-        else if (content instanceof Map) {
-          foundErrors = content.error ?: null
-        }
-        else {
-          logger.warn("won't search for errors in ${content.class}")
-        }
-        return foundErrors ? true : false
-      case "text/html":
-        return content.error
-      case "text/plain":
-        return content.error
+    if (!response.mimeType || response.mimeType == "application/json") {
+      def foundErrors = []
+      if (content instanceof List) {
+        foundErrors.addAll content.findAll { it.error }
+      } else if (content instanceof Map && content.error) {
+        foundErrors << content.error
+      } else {
+        logger.warn("won't search for errors in ${content.class}")
+      }
+      return foundErrors
     }
-    return false
+    return []
   }
 }

@@ -17,7 +17,16 @@ class DockerResponseHandlerSpec extends Specification {
     DockerClientException thrown = thrown()
     thrown.cause.message == testException.message
     where:
-    response << [null, [], [:], [status: [:]], [status: [success: false]], [status: [content: [error: "anything"]]]]
+    response << [
+        null,
+        [],
+        [:],
+        [status: [:]],
+        [status: [success: false]],
+        [status: [success: true], content: [error: "anything"]],
+        [status: [success: true], mimeType: "application/json", content: [error: "anything"]],
+        [status: [success: true], mimeType: "application/json", content: [[foo: "bar"], [error: "anything"]]],
+        [status: [success: false], mimeType: "text/plain", content: "any error"]]
   }
 
   @Unroll
