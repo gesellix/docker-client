@@ -118,7 +118,7 @@ class DockerClientImpl implements DockerClient {
 
   @Override
   def encodeAuthConfig(def authConfig) {
-    logger.debug "encode authConfig"
+    logger.debug "encode authConfig for ${authConfig.username}@${authConfig.serveraddress}"
     return new JsonBuilder(authConfig).toString().bytes.encodeBase64().toString()
   }
 
