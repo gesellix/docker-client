@@ -39,7 +39,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     info.Images > 0
     info.IndexServerAddress == "https://index.docker.io/v1/"
     info.InitPath =~ "/usr(/local)?/bin/docker"
-    info.InitSha1 == ""
+    info.InitSha1 == "9145575052383dbf64cede3bac278606472e027c"
     info.IPv4Forwarding == 1
     info.Labels == null
     info.MemTotal > 0
@@ -68,13 +68,13 @@ class DockerClientImplIntegrationSpec extends Specification {
     def version = dockerClient.version().content
 
     then:
-    version.ApiVersion == "1.17"
+    version.ApiVersion == "1.18"
     version.Arch == "amd64"
-    version.GitCommit == "a8a31ef"
-    version.GoVersion == "go1.4.1"
+    version.GitCommit == "4749651"
+    version.GoVersion == "go1.4.2"
     version.KernelVersion =~ "3.\\d{2}.\\d-\\w+"
     version.Os == "linux"
-    version.Version == "1.5.0"
+    version.Version == "1.6.0"
   }
 
   def auth() {
@@ -133,7 +133,7 @@ class DockerClientImplIntegrationSpec extends Specification {
   }
 
   @Ignore
-  def "push image"() {
+  def "push image (registry api v2)"() {
     given:
     def authDetails = dockerClient.readAuthConfig(null, null)
     def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
@@ -147,16 +147,16 @@ class DockerClientImplIntegrationSpec extends Specification {
     then:
     pushResult.status.code == 200
     and:
-    pushResult.content.last().status =~ "Pushing tag for rev \\[\\w+\\] on \\{https://cdn-registry-1.docker.io/v1/repositories/gesellix/test/tags/latest\\}"
+    pushResult.content.last().status =~ "Digest: sha256:\\w+"
 
     cleanup:
     dockerClient.rmi(imageName)
   }
 
   @Ignore
-  def "push image with registry"() {
+  def "push image with registry (registry api v2)"() {
     given:
-    def authDetails = dockerClient.readAuthConfig(null, null)
+    def authDetails = dockerClient.readDefaultAuthConfig()
     def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
     def imageName = "gesellix/test:latest"
@@ -168,7 +168,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     then:
     pushResult.status.code == 200
     and:
-    pushResult.content.last().status =~ "Pushing tag for rev \\[\\w+\\] on \\{http://localhost:5000/v1/repositories/gesellix/test/tags/latest\\}"
+    pushResult.content.last().status =~ "Digest: sha256:\\w+"
 
     cleanup:
     dockerClient.rmi(imageName)
@@ -187,7 +187,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     then:
     pushResult.status.code == 200
     and:
-    pushResult.content.last().status =~ "Pushing tag for rev \\[\\w+\\] on \\{http://localhost:5000/v1/repositories/gesellix/test/tags/latest\\}"
+    pushResult.content.last().status =~ "Digest: sha256:\\w+"
 
     cleanup:
     dockerClient.rmi(imageName)
@@ -231,7 +231,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def containers = dockerClient.ps().content
 
     then:
-    containers.find { it.Id == containerId }.Image == "gesellix/docker-client-testimage:latest"
+    containers.find { it.Id == containerId }.Image == "${imageName}:latest"
 
     cleanup:
     dockerClient.stop(containerId)
@@ -335,7 +335,9 @@ class DockerClientImplIntegrationSpec extends Specification {
     then:
     ["Created"    : 1371157430,
      "Id"         : "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158",
+     "Labels"     : null,
      "ParentId"   : "",
+     "RepoDigests": [],
      "RepoTags"   : ["scratch:latest"],
      "Size"       : 0,
      "VirtualSize": 0] in images
@@ -359,7 +361,7 @@ class DockerClientImplIntegrationSpec extends Specification {
 
   def "list images filtered"() {
     when:
-    def images = dockerClient.images([filters: '{"dangling":["true"]}']).content
+    def images = dockerClient.images([filters: [dangling: ["true"]]]).content
 
     then:
     images.every { image ->
@@ -370,8 +372,12 @@ class DockerClientImplIntegrationSpec extends Specification {
   def "create container"() {
     given:
     def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
-    def containerConfig = ["Cmd"  : ["true"],
-                           "Image": imageId]
+    def containerConfig = ["Cmd"   : ["true"],
+                           "Image" : imageId,
+                           "Labels": [
+                               "a nice label" : "with a nice value",
+                               "another-label": "{'foo':'bar'}"
+                           ]]
 
     when:
     def containerInfo = dockerClient.createContainer(containerConfig).content

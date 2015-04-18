@@ -60,12 +60,12 @@ class LowLevelDockerClientIntegrationSpec extends Specification {
     def response = client.get("/version")
     then:
     def content = response.content
-    content.ApiVersion == "1.17"
+    content.ApiVersion == "1.18"
     content.Arch == "amd64"
-    content.GitCommit == "a8a31ef"
-    content.GoVersion == "go1.4.1"
+    content.GitCommit == "4749651"
+    content.GoVersion == "go1.4.2"
     content.KernelVersion ==~ "3\\.\\d+\\.\\d+-.+"
     content.Os == "linux"
-    content.Version == "1.5.0"
+    content.Version == "1.6.0"
   }
 }
