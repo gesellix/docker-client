@@ -54,7 +54,13 @@ class DockerURLHandler {
         logger.debug("is 'unix'")
         def dockerUnixSocket = dockerHost.replaceFirst("unix://", "")
         HttpOverUnixSocketClient.dockerUnixSocket = dockerUnixSocket
-        result = new URL("unix", "socket", dockerUnixSocket)
+        try {
+          result = new URL("unix", "socket", dockerUnixSocket)
+        }
+        catch (MalformedURLException e) {
+          logger.error("could not use the 'unix' protocol to connect to $dockerUnixSocket", e)
+          throw e
+        }
         break
       default:
         logger.warn("protocol '${protocol}' not supported")

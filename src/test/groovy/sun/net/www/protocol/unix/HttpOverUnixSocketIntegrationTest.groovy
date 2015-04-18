@@ -5,7 +5,7 @@ import org.apache.commons.lang.SystemUtils
 import spock.lang.IgnoreIf
 import spock.lang.Specification
 
-@IgnoreIf({ true || !SystemUtils.IS_OS_LINUX })
+@IgnoreIf({ !SystemUtils.IS_OS_LINUX })
 class HttpOverUnixSocketIntegrationTest extends Specification {
 
   File defaultDockerSocket = new File("/var/run/docker.sock")
