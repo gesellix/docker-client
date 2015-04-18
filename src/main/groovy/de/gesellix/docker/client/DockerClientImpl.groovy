@@ -16,7 +16,7 @@ class DockerClientImpl implements DockerClient {
   def responseHandler = new DockerResponseHandler()
 
   def proxy
-  def dockerHost = "http://127.0.0.1:2375/"
+  def dockerHost = "http://127.0.0.1:2375"
   LowLevelDockerClient httpClient
   def Closure newDockerHttpClient
 
