@@ -10,7 +10,7 @@ class DockerResponseHandler {
   def ensureSuccessfulResponse(def response, Throwable context) {
     if (!response || !response.status.success || hasError(response)) {
       logError(response)
-      throw new DockerClientException(context, response?.content)
+      throw new DockerClientException(context, response)
     }
   }
 
