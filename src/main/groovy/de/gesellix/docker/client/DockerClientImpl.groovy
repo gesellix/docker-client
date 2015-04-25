@@ -244,7 +244,7 @@ class DockerClientImpl implements DockerClient {
     if (!response.status.success) {
       if (response.status?.code == 404) {
         def repoAndTag = parseRepositoryTag(containerConfig.Image)
-        logger.warn "'${repoAndTag.repo}:${repoAndTag.tag}' not found."
+        logger.info "'${repoAndTag.repo}:${repoAndTag.tag}' not found."
         pull(repoAndTag.repo, repoAndTag.tag)
         // retry...
         response = getHttpClient().post([path              : "/containers/create".toString(),

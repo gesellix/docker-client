@@ -39,7 +39,7 @@ class DockerResponseHandler {
       } else if (content instanceof Map && content.error) {
         foundErrors << content.error
       } else {
-        logger.warn("won't search for errors in ${content.class}")
+        logger.info("won't search for errors in ${content.class}")
       }
       return foundErrors
     }
