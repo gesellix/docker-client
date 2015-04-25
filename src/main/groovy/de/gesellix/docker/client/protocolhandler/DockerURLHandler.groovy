@@ -3,6 +3,7 @@ package de.gesellix.docker.client.protocolhandler
 import de.gesellix.docker.client.protocolhandler.urlstreamhandler.HttpOverUnixSocketClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import sun.net.www.protocol.unix.Handler
 
 class DockerURLHandler {
 
@@ -58,8 +59,14 @@ class DockerURLHandler {
           result = new URL("unix", "socket", dockerUnixSocket)
         }
         catch (MalformedURLException e) {
-          logger.error("could not use the 'unix' protocol to connect to $dockerUnixSocket", e)
-          throw e
+          logger.warn("could not use the 'unix' protocol to connect to $dockerUnixSocket", e)
+          try {
+            result = new URL("unix", "socket", -1, dockerUnixSocket, new Handler())
+          }
+          catch (MalformedURLException finalException) {
+            logger.error("retry failed", finalException)
+            throw finalException
+          }
         }
         break
       default:
