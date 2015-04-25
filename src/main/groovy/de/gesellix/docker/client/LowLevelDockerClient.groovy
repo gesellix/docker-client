@@ -286,7 +286,7 @@ class LowLevelDockerClient {
 
   SSLSocketFactory initSSLSocketFactory() {
     if (!sslSocketFactory) {
-      def dockerCertPath = dockerURLHandler.dockerCertPath
+      String dockerCertPath = dockerURLHandler.dockerCertPath
 
       def keyStore = KeyStoreUtil.createDockerKeyStore(new File(dockerCertPath).absolutePath)
       final KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(getDefaultAlgorithm())
