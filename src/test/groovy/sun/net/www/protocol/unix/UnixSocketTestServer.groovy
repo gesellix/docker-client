@@ -5,6 +5,8 @@ import org.newsclub.net.unix.AFUNIXSocketAddress
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import java.util.concurrent.CountDownLatch
+
 // from https://github.com/gesellix/junixsocket/blob/master/junixsocket/src/demo/org/newsclub/net/unix/demo/SimpleTestServer.java
 class UnixSocketTestServer {
 
@@ -37,6 +39,7 @@ class UnixSocketTestServer {
   }
 
   def runInNewThread() throws IOException {
+    def startedLatch = new CountDownLatch(1)
     socketThread = Thread.start {
 //    Thread.start {
       AFUNIXServerSocket server = AFUNIXServerSocket.newInstance()
@@ -44,11 +47,12 @@ class UnixSocketTestServer {
       println("server: " + server)
       println("chat with me: 'socat UNIX:${socketFile} -'")
 
-      loop(server)
+      loop(server, startedLatch)
     }
+    startedLatch.await()
   }
 
-  def loop(AFUNIXServerSocket server) {
+  def loop(AFUNIXServerSocket server, CountDownLatch startedLatch) {
     def sock
     def is
     def os
@@ -56,6 +60,7 @@ class UnixSocketTestServer {
     while (!Thread.interrupted()) {
       if (requiresNewConnection) {
         System.out.println("waiting for a new connection...")
+        startedLatch.countDown()
         sock = server.accept()
         System.out.println("connected: " + sock)
         is = sock.getInputStream()
