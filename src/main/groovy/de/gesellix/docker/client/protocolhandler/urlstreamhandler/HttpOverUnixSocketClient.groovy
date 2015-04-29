@@ -10,7 +10,7 @@ import sun.net.www.http.HttpClient
 // but connect via unix socket to the docker daemon.
 class HttpOverUnixSocketClient extends HttpClient {
 
-  Logger logger = LoggerFactory.getLogger(HttpOverUnixSocketClient)
+  final static Logger logger = LoggerFactory.getLogger(HttpOverUnixSocketClient)
 
   static String dockerUnixSocket
 
