@@ -16,7 +16,7 @@ class DockerResponseHandler {
 
   def logError(response){
     if (response?.content instanceof String){
-      logger.error "request failed: ${response?.content}"
+      logger.error "request failed: '${response?.content}'"
     } else {
       logger.error "request failed: ${getErrors(response)}"
     }
