@@ -20,7 +20,7 @@ class HttpOverUnixSocketClient extends HttpClient {
 
   @Override
   protected Socket doConnect(String host, int port) throws IOException, UnknownHostException {
-    logger.debug "connect at host:port '${host}:${port}' via '${dockerUnixSocket}'..."
+    logger.debug "connect via '${dockerUnixSocket}'..."
 
     File socketFile = new File(dockerUnixSocket)
     logger.debug "unix socket exists/canRead/canWrite: ${socketFile.exists()}/${socketFile.canRead()}/${socketFile.canWrite()}"
