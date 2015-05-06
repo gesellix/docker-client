@@ -1,5 +1,6 @@
 package de.gesellix.docker.client
 
+import org.apache.commons.lang.SystemUtils
 import spock.lang.Ignore
 import spock.lang.IgnoreIf
 import spock.lang.Specification
@@ -67,5 +68,15 @@ class LowLevelDockerClientIntegrationSpec extends Specification {
     content.KernelVersion ==~ "3\\.\\d+\\.\\d+-.+"
     content.Os == "linux"
     content.Version == "1.6.0"
+  }
+
+  @IgnoreIf({ !SystemUtils.IS_OS_LINUX || !new File("/var/run/docker.sock").exists() })
+  def "should support unix socket connections"() {
+    def client = new LowLevelDockerClient(dockerHost: "unix:///var/run/docker.sock")
+    when:
+    def response = client.request([method: "GET",
+                                   path  : "/info"])
+    then:
+    response.status.code == 200
   }
 }

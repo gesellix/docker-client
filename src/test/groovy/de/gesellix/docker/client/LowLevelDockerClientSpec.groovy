@@ -17,13 +17,13 @@ class LowLevelDockerClientSpec extends Specification {
   def "dockerBaseUrl should default to http://localhost:2375"() {
     def client = new LowLevelDockerClient()
     expect:
-    client.dockerBaseUrl?.toString() == new URL("http://127.0.0.1:2375").toString()
+    client.getRequestUrl("", "").toString() == new URL("http://127.0.0.1:2375").toString()
   }
 
   def "dockerBaseUrl should support tcp protocol"() {
     def client = new LowLevelDockerClient(dockerHost: "tcp://127.0.0.1:2375")
     expect:
-    client.dockerBaseUrl?.toString() == new URL("http://127.0.0.1:2375").toString()
+    client.getRequestUrl("", "").toString() == new URL("http://127.0.0.1:2375").toString()
   }
 
   def "dockerBaseUrl should support tls port"() {
@@ -32,7 +32,7 @@ class LowLevelDockerClientSpec extends Specification {
     def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
     def client = new LowLevelDockerClient(dockerHost: "tcp://127.0.0.1:2376")
     expect:
-    client.dockerBaseUrl?.toString() == new URL("https://127.0.0.1:2376").toString()
+    client.getRequestUrl("", "").toString() == new URL("https://127.0.0.1:2376").toString()
     cleanup:
     if (oldDockerCertPath) {
       System.setProperty("docker.cert.path", oldDockerCertPath)
@@ -48,7 +48,7 @@ class LowLevelDockerClientSpec extends Specification {
     def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
     def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
     expect:
-    client.dockerBaseUrl?.toString() == new URL("https://127.0.0.1:2376").toString()
+    client.getRequestUrl("", "").toString() == new URL("https://127.0.0.1:2376").toString()
     cleanup:
     if (oldDockerCertPath) {
       System.setProperty("docker.cert.path", oldDockerCertPath)

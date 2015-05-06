@@ -11,7 +11,8 @@ class DockerClientImplIntegrationSpec extends Specification {
 
   def setup() {
     def defaultDockerHost = System.env.DOCKER_HOST?.replaceFirst("tcp://", "http://")
-    //defaultDockerHost = "http://172.17.42.1:4243/"
+//    defaultDockerHost = "http://172.17.42.1:4243/"
+//    defaultDockerHost = "unix:///var/run/docker.sock"
     //System.setProperty("docker.cert.path", "C:\\Users\\gesellix\\.boot2docker\\certs\\boot2docker-vm")
     dockerClient = new DockerClientImpl(dockerHost: defaultDockerHost ?: "http://172.17.42.1:2375/")
   }
@@ -113,8 +114,8 @@ class DockerClientImplIntegrationSpec extends Specification {
     then:
     DockerClientException ex = thrown()
     ex.cause.message == 'docker build failed'
-    ex.detail.last().error == "Error: image missing/image:latest not found"
-    ex.detail.last().errorDetail == [message: "Error: image missing/image:latest not found"]
+    ex.detail.content.last() == [error      : "Error: image missing/image:latest not found",
+                                 errorDetail: [message: "Error: image missing/image:latest not found"]]
   }
 
   def "tag image"() {
@@ -417,8 +418,8 @@ class DockerClientImplIntegrationSpec extends Specification {
     then:
     DockerClientException ex = thrown()
     ex.cause.message == 'docker pull failed'
-    ex.detail.last() == [error      : "Tag unkown not found in repository gesellix/docker-client-testimage",
-                         errorDetail: [message: "Tag unkown not found in repository gesellix/docker-client-testimage"]]
+    ex.detail.content.last() == [error      : "Tag unkown not found in repository gesellix/docker-client-testimage",
+                                 errorDetail: [message: "Tag unkown not found in repository gesellix/docker-client-testimage"]]
   }
 
   def "start container"() {

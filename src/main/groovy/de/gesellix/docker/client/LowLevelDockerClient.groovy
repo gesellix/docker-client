@@ -23,11 +23,10 @@ class LowLevelDockerClient {
   ContentHandlerFactory contentHandlerFactory
   DockerURLHandler dockerURLHandler
 
-  def proxy
-  def dockerHost
-  URL dockerHostUrl
+  Proxy proxy
+  String dockerHost
 
-  def sslSocketFactory
+  SSLSocketFactory sslSocketFactory
 
   LowLevelDockerClient() {
     dockerURLHandler = new DockerURLHandler()
@@ -35,14 +34,6 @@ class LowLevelDockerClient {
     dockerHost = "http://127.0.0.1:2375"
     proxy = Proxy.NO_PROXY
     sslSocketFactory = null
-  }
-
-  def getDockerBaseUrl() {
-    if (!getDockerHostUrl()) {
-      dockerURLHandler.dockerHost = getDockerHost()
-      dockerHostUrl = dockerURLHandler.getURL()
-    }
-    return dockerHostUrl
   }
 
   def get(requestConfig) {
@@ -255,9 +246,13 @@ class LowLevelDockerClient {
     return validConfig
   }
 
+  def getRequestUrl(String path, String query) {
+    return dockerURLHandler.getRequestUrl(getDockerHost(), path, query)
+  }
+
   def openConnection(config) {
-    config.query = (config.query) ? "?${queryToString(config.query)}" : ""
-    def requestUrl = new URL("${getDockerBaseUrl()}${config.path}${config.query}")
+    String queryAsString = (config.query) ? "?${queryToString(config.query)}" : ""
+    def requestUrl = getRequestUrl(config.path as String, queryAsString)
     logger.info("${config.method} ${requestUrl} using proxy: ${proxy}")
 
     def connection = requestUrl.openConnection(proxy)

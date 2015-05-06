@@ -15,22 +15,30 @@ class DockerURLHandler {
   final int defaultDockerTlsPort = 2376
   final File defaultDockerCertPath = new File(System.properties['user.home'] as String, ".docker")
 
-  URL dockerUrl
-
   DockerURLHandler() {
     this.dockerHost = System.getProperty("docker.host", System.env.DOCKER_HOST)
     this.dockerTlsVerify = System.getProperty("docker.tlsverify", System.env.DOCKER_TLS_VERIFY)
     this.dockerCertPath = System.getProperty("docker.cert.path", System.env.DOCKER_CERT_PATH)
   }
 
-  def getURL() {
-    if (!dockerUrl) {
-      if (!dockerHost) {
-        throw new IllegalStateException("dockerHost must be set")
-      }
-      dockerUrl = getURLWithActualProtocol(dockerHost)
+  def getRequestUrl(String path, String query) {
+    if (!dockerHost) {
+      throw new IllegalStateException("dockerHost must be set")
     }
-    return dockerUrl
+    return getRequestUrl(dockerHost, path, query)
+  }
+
+  def getRequestUrl(String dockerHost, String path, String query) {
+    if (!dockerHost) {
+      throw new IllegalStateException("dockerHost must be set")
+    }
+    def dockerBaseUrl = getURLWithActualProtocol(dockerHost)
+    if (dockerBaseUrl.protocol == "unix") {
+      return new URL(dockerBaseUrl.protocol, dockerBaseUrl.host, -1, "${path}${query}", new Handler())
+    }
+    else {
+      return new URL("${dockerBaseUrl}${path}${query}")
+    }
   }
 
   def getURLWithActualProtocol(String dockerHost) {
