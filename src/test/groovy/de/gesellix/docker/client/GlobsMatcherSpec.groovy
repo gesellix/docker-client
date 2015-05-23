@@ -46,7 +46,7 @@ class GlobsMatcherSpec extends Specification {
     "[-]"          | new File("")  | new File("-")
   }
 
-  @IgnoreIf({ !SystemUtils.IS_OS_LINUX })
+  @IgnoreIf({ !SystemUtils.IS_OS_LINUX && !SystemUtils.IS_OS_MAC })
   @Unroll
   def "#pattern should match #path on unix systems"(String pattern, File base, File path) {
     expect:
@@ -82,7 +82,7 @@ class GlobsMatcherSpec extends Specification {
     "a*b"          | new File("") | new File("a/b")
   }
 
-  @IgnoreIf({ !SystemUtils.IS_OS_LINUX })
+  @IgnoreIf({ !SystemUtils.IS_OS_LINUX  && !SystemUtils.IS_OS_MAC })
   @Unroll
   def "#pattern should not match #path on unix systems"(String pattern, File base, File path) {
     expect:
