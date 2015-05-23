@@ -67,7 +67,7 @@ class DockerURLHandler {
           result = new URL("unix", "socket", dockerUnixSocket)
         }
         catch (MalformedURLException e) {
-          logger.warn("could not use the 'unix' protocol to connect to $dockerUnixSocket", e)
+          logger.warn("could not use the 'unix' protocol to connect to $dockerUnixSocket - retry.")
           try {
             result = new URL("unix", "socket", -1, dockerUnixSocket, new Handler())
           }
