@@ -11,10 +11,11 @@ class DockerClientImplIntegrationSpec extends Specification {
 
   def setup() {
     def defaultDockerHost = System.env.DOCKER_HOST?.replaceFirst("tcp://", "http://")
-//    defaultDockerHost = "http://172.17.42.1:4243/"
+//    defaultDockerHost = "http://192.168.59.103:2376"
 //    defaultDockerHost = "unix:///var/run/docker.sock"
-    //System.setProperty("docker.cert.path", "C:\\Users\\gesellix\\.boot2docker\\certs\\boot2docker-vm")
-    dockerClient = new DockerClientImpl(dockerHost: defaultDockerHost ?: "http://172.17.42.1:2375/")
+//    System.setProperty("docker.cert.path", "C:\\Users\\${System.getProperty('user.name')}\\.boot2docker\\certs\\boot2docker-vm")
+//    System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.boot2docker/certs/boot2docker-vm")
+    dockerClient = new DockerClientImpl(dockerHost: defaultDockerHost ?: "http://172.17.42.1:2375")
   }
 
   def ping() {
@@ -32,25 +33,36 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     then:
     info.Containers >= 0
-    info.Debug == 1
+    info.CpuCfsPeriod == true
+    info.CpuCfsQuota == true
+    info.Debug == true
+    info.DockerRootDir == "/mnt/sda1/var/lib/docker"
     info.Driver == "aufs"
-    info.DriverStatus.findAll { it[0] == "Root Dir" || it[0] == "Backing Filesystem" || it[0] == "Dirs" }.size() == 3
+    info.DriverStatus.findAll {
+      it[0] == "Root Dir" || it[0] == "Backing Filesystem" || it[0] == "Dirs" || it[0] == "Dirperm1 Supported"
+    }.size() == 4
     info.ExecutionDriver == "native-0.2"
+    info.ExperimentalBuild == false
+    info.HttpProxy == ""
+    info.HttpsProxy == ""
     info.ID =~ "([0-9A-Z]{4}:?){12}"
     info.Images > 0
     info.IndexServerAddress == "https://index.docker.io/v1/"
     info.InitPath =~ "/usr(/local)?/bin/docker"
-    info.InitSha1 == "9145575052383dbf64cede3bac278606472e027c"
-    info.IPv4Forwarding == 1
+    info.InitSha1 == ""
+    info.IPv4Forwarding == true
     info.Labels == null
+    info.LoggingDriver == "json-file"
     info.MemTotal > 0
-    info.MemoryLimit == 1
+    info.MemoryLimit == true
     info.Name =~ "\\w+"
     info.NCPU > 2
     info.NEventsListener == 0
     info.NFd > 0
     info.NGoroutines > 0
-    info.KernelVersion =~ "3.\\d{2}.\\d-\\w+"
+    info.NoProxy == ""
+    info.KernelVersion =~ "\\d.\\d{1,2}.\\d-\\w+"
+    info.OomKillDisable == true
     info.OperatingSystem =~ "\\w+"
     info.RegistryConfig == [
         "IndexConfigs"         : [
@@ -61,7 +73,8 @@ class DockerClientImplIntegrationSpec extends Specification {
         ],
         "InsecureRegistryCIDRs": ["127.0.0.0/8"]
     ]
-    info.SwapLimit >= 0
+    info.SwapLimit == true
+    info.SystemTime =~ "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3,}Z"
   }
 
   def version() {
@@ -69,13 +82,13 @@ class DockerClientImplIntegrationSpec extends Specification {
     def version = dockerClient.version().content
 
     then:
-    version.ApiVersion == "1.18"
+    version.ApiVersion == "1.19"
     version.Arch == "amd64"
-    version.GitCommit == "4749651"
+    version.GitCommit == "0baf609"
     version.GoVersion == "go1.4.2"
-    version.KernelVersion =~ "3.\\d{2}.\\d-\\w+"
+    version.KernelVersion =~ "\\d.\\d{1,2}.\\d-\\w+"
     version.Os == "linux"
-    version.Version == "1.6.0"
+    version.Version == "1.7.0"
   }
 
   def auth() {
@@ -232,7 +245,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def containers = dockerClient.ps().content
 
     then:
-    containers.find { it.Id == containerId }.Image == "${imageName}:latest"
+    containers.find { it.Id == containerId }.Image == "${imageName}"
 
     cleanup:
     dockerClient.stop(containerId)
@@ -330,18 +343,19 @@ class DockerClientImplIntegrationSpec extends Specification {
   }
 
   def "list images"() {
+    given:
+    dockerClient.pull("gesellix/test:latest")
+
     when:
     def images = dockerClient.images().content
 
     then:
-    ["Created"    : 1371157430,
-     "Id"         : "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158",
-     "Labels"     : null,
-     "ParentId"   : "",
-     "RepoDigests": [],
-     "RepoTags"   : ["scratch:latest"],
-     "Size"       : 0,
-     "VirtualSize": 0] in images
+    def imageById = images.find {
+      it.Id == "3eb19b6d933247ab513993b2b9ed43a44f0432580e6f4f974bb2071ea968b494"
+    }
+    imageById.Created == 1423607478
+    imageById.ParentId == "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc"
+    imageById.RepoTags.contains "gesellix/test:latest"
   }
 
   def "list images with intermediate layers"() {
