@@ -2,10 +2,12 @@
 
 *feature set based on the [Docker Remote API v1.17](https://docs.docker.com/reference/api/docker_remote_api_v1.17/)*
 
+Since the Docker remote api tends to be backwards compatible, the Docker-Client currently supports v1.19 of the api.
+
 Current api coverage (29/44): ![Remote API Coverage Status](http://progressed.io/bar/66)
 
 This project tends to support most api endpoints, but only if there's an actual use case. If you're missing a feature, please file
-a [new issue](https://github.com/gesellix-docker/docker-client/issues) or a [pull request](https://github.com/gesellix-docker/docker-client/pulls) 
+a [new issue](https://github.com/gesellix/docker-client/issues) or a [pull request](https://github.com/gesellix/docker-client/pulls) 
 and we'll add it as soon as the private free time allows. If you're looking for a more feature complete Java based Docker library, 
 check out the project at [Java Docker API Client](https://github.com/docker-java/docker-java).
 

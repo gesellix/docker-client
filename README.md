@@ -29,5 +29,5 @@ The tests in `DockerClientImplSpec` and `DockerClientImplIntegrationSpec` should
 ## Usage with Gradle-Docker-Plugin
 
 My personal focus implementing this Docker client was to leverage the Docker remote API in our Gradle scripts.
-A convenient integration in Gradle is possible by using the [Gradle-Docker-Plugin](https://github.com/gesellix-docker/gradle-docker-plugin),
+A convenient integration in Gradle is possible by using the [Gradle-Docker-Plugin](https://github.com/gesellix/gradle-docker-plugin),
 which will be developed along with the Docker client library.
