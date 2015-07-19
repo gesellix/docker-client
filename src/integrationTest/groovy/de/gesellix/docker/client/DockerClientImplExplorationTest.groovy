@@ -11,8 +11,9 @@ class DockerClientImplExplorationTest extends Specification {
 
   def setup() {
     def defaultDockerHost = System.env.DOCKER_HOST?.replaceFirst("tcp://", "http://")
-    System.setProperty("docker.cert.path", "C:\\Users\\gesellix\\.boot2docker\\certs\\boot2docker-vm")
-    dockerClient = new DockerClientImpl(dockerHost: defaultDockerHost ?: "http://172.17.42.1:2375/")
+//    System.setProperty("docker.cert.path", "C:\\Users\\gesellix\\.boot2docker\\certs\\boot2docker-vm")
+    System.setProperty("docker.cert.path", "/Users/gesellix/.boot2docker/certs/boot2docker-vm")
+    dockerClient = new DockerClientImpl(dockerHost: defaultDockerHost ?: "https://192.168.59.103:2376")
   }
 
   @Ignore("only for explorative testing")
@@ -93,5 +94,17 @@ class DockerClientImplExplorationTest extends Specification {
     and:
     attached.stream.multiplexStreams == false
     IOUtils.copy(attached.stream, System.out)
+  }
+
+  def "attach via websocket"() {
+    when:
+    def attached = dockerClient.attachWebsocket("test-it", [logs  : false,
+                                                            stream: true,
+                                                            stdin : false,
+                                                            stdout: true,
+                                                            stderr: false])
+
+    then:
+    attached
   }
 }

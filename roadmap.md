@@ -4,7 +4,7 @@
 
 Since the Docker remote api tends to be backwards compatible, the Docker-Client currently supports v1.19 of the api.
 
-Current api coverage (29/44): ![Remote API Coverage Status](http://progressed.io/bar/66)
+Current api coverage (30/44): ![Remote API Coverage Status](http://progressed.io/bar/68)
 
 This project tends to support most api endpoints, but only if there's an actual use case. If you're missing a feature, please file
 a [new issue](https://github.com/gesellix/docker-client/issues) or a [pull request](https://github.com/gesellix/docker-client/pulls) 
@@ -30,7 +30,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker pause <container>`: Pause a container
 * [x] `docker unpause <container>`: Unpause a container
 * [ ] `docker attach <container>`: Attach to a container
-* [ ] Attach to a container (websocket)
+* [x] Attach to a container (websocket)
 * [x] `docker wait <container>`: Wait a container
 * [x] `docker rm <container>`: Remove a container
 * [x] `docker cp <container>:<path> <hostpath>`: Copy files or folders from a container

@@ -6,8 +6,19 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.io.IOUtils
 import org.codehaus.groovy.runtime.MethodClosure
+import org.java_websocket.WebSocketImpl
+import org.java_websocket.client.WebSocketClient
+import org.java_websocket.drafts.Draft_17
+import org.java_websocket.handshake.ServerHandshake
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import javax.net.ssl.KeyManagerFactory
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManagerFactory
+
+import static de.gesellix.docker.client.KeyStoreUtil.getKEY_STORE_PASSWORD
+import static javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm
 
 class DockerClientImpl implements DockerClient {
 
@@ -505,6 +516,69 @@ class DockerClientImpl implements DockerClient {
                                          query: query])
     response.stream.multiplexStreams = !container.Config.Tty
     return response
+  }
+
+  @Override
+  def attachWebsocket(containerId, query) {
+    logger.info "docker attach via websocket"
+//    def container = inspectContainer(containerId)
+
+    URI uri = new URI("ws://192.168.59.103:2375/containers/${containerId}/attach/ws")
+
+    WebSocketImpl.DEBUG = true;
+    WebSocketClient client = new WebSocketClient(uri, new Draft_17()) {
+
+      @Override
+      void onOpen(ServerHandshake handshakedata) {
+        println "onOpen"
+      }
+
+      @Override
+      void onMessage(String message) {
+        println "onMessage '$message'"
+      }
+
+      @Override
+      void onClose(int code, String reason, boolean remote) {
+        println "onClose $code '$reason' ($remote)"
+      }
+
+      @Override
+      void onError(Exception ex) {
+        println "onError"
+        ex.printStackTrace()
+      }
+    }
+
+//    client.setWebSocketFactory(new DefaultSSLWebSocketClientFactory(createSslContext()))
+
+    client.connectBlocking()
+
+    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))
+    while (true) {
+      String line = reader.readLine()
+      if (line.equals("close")) {
+        client.close()
+      } else {
+        client.send(line as String)
+      }
+    }
+
+//    def response = getHttpClient().post([path : "/containers/${containerId}/attach/ws".toString(),
+//                                         query: query])
+    return client
+  }
+
+  def createSslContext() {
+    String dockerCertPath = getHttpClient().dockerURLHandler.dockerCertPath
+    def keyStore = KeyStoreUtil.createDockerKeyStore(new File(dockerCertPath).absolutePath)
+    final KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(getDefaultAlgorithm())
+    kmfactory.init(keyStore, KEY_STORE_PASSWORD as char[])
+    TrustManagerFactory tmf = TrustManagerFactory.getInstance(getDefaultAlgorithm())
+    tmf.init(keyStore)
+    def sslContext = SSLContext.getInstance("TLS")
+    sslContext.init(kmfactory.keyManagers, tmf.trustManagers, null)
+    return sslContext
   }
 
   def extractSingleTarEntry(InputStream tarContent, String filename) {
