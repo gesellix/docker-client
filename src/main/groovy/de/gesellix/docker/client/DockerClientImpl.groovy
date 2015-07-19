@@ -7,6 +7,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.io.IOUtils
 import org.codehaus.groovy.runtime.MethodClosure
 import org.java_websocket.WebSocketImpl
+import org.java_websocket.client.DefaultSSLWebSocketClientFactory
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.drafts.Draft_17
 import org.java_websocket.handshake.ServerHandshake
@@ -521,51 +522,38 @@ class DockerClientImpl implements DockerClient {
   @Override
   def attachWebsocket(containerId, query) {
     logger.info "docker attach via websocket"
-//    def container = inspectContainer(containerId)
 
-    URI uri = new URI("ws://192.168.59.103:2375/containers/${containerId}/attach/ws")
+    URI uri = new URI("wss://192.168.59.103:2376/containers/${containerId}/attach/ws")
 
-    WebSocketImpl.DEBUG = true;
-    WebSocketClient client = new WebSocketClient(uri, new Draft_17()) {
+    WebSocketImpl.DEBUG = true
+    WebSocketClient client = new WebSocketClient(uri, new Draft_17(), ["Origin": "http://localhost"], 0) {
 
       @Override
       void onOpen(ServerHandshake handshakedata) {
-        println "onOpen"
+        println "-- onOpen"
       }
 
       @Override
       void onMessage(String message) {
-        println "onMessage '$message'"
+        println "-- onMessage '$message'"
       }
 
       @Override
       void onClose(int code, String reason, boolean remote) {
-        println "onClose $code '$reason' ($remote)"
+        println "-- onClose $code '$reason' ($remote)"
       }
 
       @Override
       void onError(Exception ex) {
-        println "onError"
-        ex.printStackTrace()
+        println "-- onError: ${ex.message}"
+        if (WebSocketImpl.DEBUG) {
+          ex.printStackTrace()
+        }
       }
     }
 
-//    client.setWebSocketFactory(new DefaultSSLWebSocketClientFactory(createSslContext()))
-
+    client.setWebSocketFactory(new DefaultSSLWebSocketClientFactory(createSslContext()))
     client.connectBlocking()
-
-    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))
-    while (true) {
-      String line = reader.readLine()
-      if (line.equals("close")) {
-        client.close()
-      } else {
-        client.send(line as String)
-      }
-    }
-
-//    def response = getHttpClient().post([path : "/containers/${containerId}/attach/ws".toString(),
-//                                         query: query])
     return client
   }
 
