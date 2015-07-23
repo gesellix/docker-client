@@ -99,39 +99,32 @@ class DockerClientImplExplorationTest extends Specification {
 
   def "attach via websocket"() {
     when:
-    WebSocketClient wsClient = dockerClient.attachWebsocket("test-it", [logs  : false,
-                                                                        stream: true,
-                                                                        stdin : false,
-                                                                        stdout: true,
-                                                                        stderr: true])
+    WebSocketClient wsClient = dockerClient.attachWebsocket("test-it", [logs  : 0,
+                                                                        stream: 1,
+                                                                        stdin : 1,
+                                                                        stdout: 1,
+                                                                        stderr: 1])
 
     def lines = [
-        "123",
-        "456",
-        "close"
+        "here i am\n"
     ]
 
-    for (String line : lines) {
+    lines.each {
+      wsClient.send(it as String)
+    }
+
+    boolean closed = false
+    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))
+    while (!closed && wsClient.connection.open) {
+      String line = reader.readLine()
+      println "[${new Date()}] -- got line '$line'"
       if (line.equals("close")) {
-        wsClient.closeBlocking()
+        wsClient.close()
+        closed = true
       } else if (line) {
         wsClient.send(line as String)
       }
     }
-
-    println ". ok ."
-
-//    boolean closed = false
-//    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))
-//    while (!closed) {
-//      String line = reader.readLine()
-//      if (line.equals("close")) {
-//        wsClient.close()
-//        closed = true
-//      } else if (line) {
-//        wsClient.send(line as String)
-//      }
-//    }
 
     then:
     wsClient
