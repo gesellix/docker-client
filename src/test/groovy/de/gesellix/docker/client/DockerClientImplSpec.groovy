@@ -656,6 +656,20 @@ class DockerClientImplSpec extends Specification {
                          query: [stream: true]]) >> [stream: [:]]
   }
 
+  def "attach websocket"() {
+    given:
+    def wsHandler = [:]
+
+    when:
+    dockerClient.attachWebsocket("a-container", [stream: true], wsHandler)
+
+    then:
+    1 * httpClient.getWebsocketClient(
+        [path : "/containers/a-container/attach/ws",
+         query: [stream: true]],
+        wsHandler)
+  }
+
   def "cleanupStorage removes exited containers"() {
     given:
     def keepContainer = { container ->

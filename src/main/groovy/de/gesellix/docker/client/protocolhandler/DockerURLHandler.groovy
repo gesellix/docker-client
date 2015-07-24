@@ -16,9 +16,9 @@ class DockerURLHandler {
   final File defaultDockerCertPath = new File(System.properties['user.home'] as String, ".docker")
 
   DockerURLHandler() {
-    this.dockerHost = System.getProperty("docker.host", System.env.DOCKER_HOST)
-    this.dockerTlsVerify = System.getProperty("docker.tlsverify", System.env.DOCKER_TLS_VERIFY)
-    this.dockerCertPath = System.getProperty("docker.cert.path", System.env.DOCKER_CERT_PATH)
+    this.dockerHost = System.getProperty("docker.host", System.env.DOCKER_HOST as String)
+    this.dockerTlsVerify = System.getProperty("docker.tlsverify", System.env.DOCKER_TLS_VERIFY as String)
+    this.dockerCertPath = System.getProperty("docker.cert.path", System.env.DOCKER_CERT_PATH as String)
   }
 
   def getRequestUrl(String path, String query) {
@@ -36,12 +36,10 @@ class DockerURLHandler {
     if (dockerBaseUrl.protocol == "unix") {
       return new URL(dockerBaseUrl.protocol, dockerBaseUrl.host, -1, "${path}${query}", new Handler())
     }
-    else {
-      return new URL("${dockerBaseUrl}${path}${query}")
-    }
+    return new URL("${dockerBaseUrl}${path}${query}")
   }
 
-  def getURLWithActualProtocol(String dockerHost) {
+  URL getURLWithActualProtocol(String dockerHost) {
     def result
     def oldProtocol = dockerHost.split("://", 2)[0]
     def protocol = oldProtocol
@@ -52,8 +50,7 @@ class DockerURLHandler {
         if (shouldUseTls(new URL(dockerHost.replaceFirst("^${oldProtocol}://", "https://")))) {
           logger.debug("assume 'https'")
           protocol = "https"
-        }
-        else {
+        } else {
           logger.debug("assume 'http'")
           protocol = "http"
         }
@@ -66,7 +63,7 @@ class DockerURLHandler {
         try {
           result = new URL("unix", "socket", dockerUnixSocket)
         }
-        catch (MalformedURLException e) {
+        catch (MalformedURLException ignored) {
           logger.warn("could not use the 'unix' protocol to connect to $dockerUnixSocket - retry.")
           try {
             result = new URL("unix", "socket", -1, dockerUnixSocket, new Handler())
@@ -100,8 +97,7 @@ class DockerURLHandler {
         logger.debug("dockerCertPath=${defaultDockerCertPath}")
         certsPathExists = true
       }
-    }
-    else {
+    } else {
       logger.debug("dockerCertPath=${dockerCertPath}")
     }
 
@@ -110,8 +106,7 @@ class DockerURLHandler {
     if (truthyValues.contains(dockerTlsVerify)) {
       if (!certsPathExists) {
         throw new IllegalStateException("tlsverify=${dockerTlsVerify}, but ${dockerCertPath} doesn't exist")
-      }
-      else {
+      } else {
         logger.debug("certsPathExists=${certsPathExists}")
         return true
       }

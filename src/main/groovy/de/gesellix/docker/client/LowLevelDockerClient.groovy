@@ -25,6 +25,7 @@ class LowLevelDockerClient {
   Proxy proxy
   String dockerHost
 
+  SSLContext sslContext
   SSLSocketFactory sslSocketFactory
 
   LowLevelDockerClient() {
@@ -32,6 +33,7 @@ class LowLevelDockerClient {
     contentHandlerFactory = new DockerContentHandlerFactory()
     dockerHost = "http://127.0.0.1:2375"
     proxy = Proxy.NO_PROXY
+    sslContext = null
     sslSocketFactory = null
   }
 
@@ -51,6 +53,24 @@ class LowLevelDockerClient {
     def config = ensureValidRequestConfig(requestConfig)
     config.method = "DELETE"
     return request(config)
+  }
+
+  def getWebsocketClient(requestConfig, handler) {
+    def config = ensureValidRequestConfig(requestConfig)
+    config.method = "GET"
+
+    def requestUrl = getRequestUrlWithOptionalQuery(config).toExternalForm()
+    requestUrl = requestUrl.replaceFirst("^http", "ws")
+
+    logger.debug "websocket uri: '$requestUrl'"
+
+    def websocketClient
+    if (requestUrl.startsWith("wss://")) {
+      websocketClient = new DockerWebsocketClient(new URI(requestUrl), handler, initSSLContext())
+    } else {
+      websocketClient = new DockerWebsocketClient(new URI(requestUrl), handler)
+    }
+    return websocketClient
   }
 
   def request(config) {
@@ -126,8 +146,7 @@ class LowLevelDockerClient {
           logger.debug("redirecting to stdout.")
           IOUtils.copy(response.stream as InputStream, config.stdout as OutputStream)
           response.stream = null
-        }
-        else {
+        } else {
           logger.warn("stream won't be consumed.")
         }
       }
@@ -162,12 +181,10 @@ class LowLevelDockerClient {
           if (config.stdout) {
             IOUtils.copy(content as InputStream, config.stdout as OutputStream)
             response.stream = null
-          }
-          else {
+          } else {
             response.stream = content as InputStream
           }
-        }
-        else {
+        } else {
           logger.debug("passing through via `response.content`.")
           response.content = content
           response.stream = null
@@ -209,8 +226,7 @@ class LowLevelDockerClient {
 
     if (response.status.success) {
       response.stream = connection.inputStream
-    }
-    else {
+    } else {
       response.stream = null
     }
     return response
@@ -221,16 +237,13 @@ class LowLevelDockerClient {
       if (config.stdout) {
         IOUtils.copy(content as InputStream, config.stdout as OutputStream)
         response.stream = null
-      }
-      else if (response.contentLength && Integer.parseInt(response.contentLength) >= 0) {
+      } else if (response.contentLength && Integer.parseInt(response.contentLength) >= 0) {
         response.content = IOUtils.toString(content as InputStream)
         response.stream = null
-      }
-      else {
+      } else {
         response.stream = content as InputStream
       }
-    }
-    else {
+    } else {
       response.content = content
       response.stream = null
     }
@@ -249,9 +262,13 @@ class LowLevelDockerClient {
     return dockerURLHandler.getRequestUrl(getDockerHost(), path, query)
   }
 
-  def openConnection(config) {
+  def getRequestUrlWithOptionalQuery(config) {
     String queryAsString = (config.query) ? "?${queryToString(config.query)}" : ""
-    def requestUrl = getRequestUrl(config.path as String, queryAsString)
+    return getRequestUrl(config.path as String, queryAsString)
+  }
+
+  def openConnection(config) {
+    def requestUrl = getRequestUrlWithOptionalQuery(config)
     logger.info("${config.method} ${requestUrl} using proxy: ${proxy}")
 
     def connection = requestUrl.openConnection(proxy)
@@ -280,6 +297,13 @@ class LowLevelDockerClient {
 
   SSLSocketFactory initSSLSocketFactory() {
     if (!sslSocketFactory) {
+      sslSocketFactory = initSSLContext().socketFactory
+    }
+    return sslSocketFactory
+  }
+
+  SSLContext initSSLContext() {
+    if (!sslContext) {
       String dockerCertPath = dockerURLHandler.dockerCertPath
 
       def keyStore = KeyStoreUtil.createDockerKeyStore(new File(dockerCertPath).absolutePath)
@@ -289,11 +313,10 @@ class LowLevelDockerClient {
       TrustManagerFactory tmf = TrustManagerFactory.getInstance(getDefaultAlgorithm())
       tmf.init(keyStore)
 
-      def sslContext = SSLContext.getInstance("TLS")
+      sslContext = SSLContext.getInstance("TLS")
       sslContext.init(kmfactory.keyManagers, tmf.trustManagers, null)
-      sslSocketFactory = sslContext.socketFactory
     }
-    return sslSocketFactory
+    return sslContext
   }
 
   String getMimeType(String contentTypeHeader) {

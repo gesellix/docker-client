@@ -36,8 +36,7 @@ class LowLevelDockerClientSpec extends Specification {
     cleanup:
     if (oldDockerCertPath) {
       System.setProperty("docker.cert.path", oldDockerCertPath)
-    }
-    else {
+    } else {
       System.clearProperty("docker.cert.path")
     }
   }
@@ -52,8 +51,7 @@ class LowLevelDockerClientSpec extends Specification {
     cleanup:
     if (oldDockerCertPath) {
       System.setProperty("docker.cert.path", oldDockerCertPath)
-    }
-    else {
+    } else {
       System.clearProperty("docker.cert.path")
     }
   }
@@ -166,6 +164,14 @@ class LowLevelDockerClientSpec extends Specification {
     method == "DELETE"
   }
 
+  def "getWebsocketClient creates a websocket client"() {
+    def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+    when:
+    def wsClient = client.getWebsocketClient("/foo", Mock(DefaultWebsocketHandler))
+    then:
+    wsClient != null
+  }
+
   def "openConnection uses DIRECT proxy by default"() {
     given:
     def httpServer = new TestHttpServer()
@@ -243,8 +249,7 @@ class LowLevelDockerClientSpec extends Specification {
     cleanup:
     if (oldDockerCertPath) {
       System.setProperty("docker.cert.path", oldDockerCertPath)
-    }
-    else {
+    } else {
       System.clearProperty("docker.cert.path")
     }
   }

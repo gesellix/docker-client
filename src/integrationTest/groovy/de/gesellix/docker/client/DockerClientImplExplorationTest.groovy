@@ -97,17 +97,26 @@ class DockerClientImplExplorationTest extends Specification {
     IOUtils.copy(attached.stream, System.out)
   }
 
+  @Ignore("only for explorative testing")
   def "attach via websocket"() {
+    given:
+    def handler = new DefaultWebsocketHandler()
+
     when:
-    WebSocketClient wsClient = dockerClient.attachWebsocket("test-it", [logs  : false,
-                                                                        stream: true,
-                                                                        stdin : true,
-                                                                        stdout: true,
-                                                                        stderr: true])
+    DockerWebsocketClient wsClient = dockerClient.attachWebsocket(
+        "test-it",
+        [logs  : false,
+         stream: true,
+         stdin : true,
+         stdout: true,
+         stderr: true],
+        handler)
 
     def lines = [
         "here i am\n"
     ]
+
+    wsClient.connectBlocking()
 
     lines.each {
       wsClient.send(it as String)

@@ -104,5 +104,5 @@ interface DockerClient {
 
   def attach(containerId, query)
 
-  def attachWebsocket(containerId, query)
+  def attachWebsocket(containerId, query, handler)
 }

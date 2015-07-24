@@ -508,16 +508,15 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  def attachWebsocket(containerId, query) {
+  def attachWebsocket(containerId, query, handler) {
     logger.info "docker attach via websocket"
-
-    // TODO add something like 'getWebsocketClient()'
-    def queryAsString = getHttpClient().queryToString(query)
-    URI uri = new URI("ws://192.168.59.103:2375/containers/${containerId}/attach/ws?${queryAsString}")
-    logger.info "attaching to '$uri'..."
-    DockerWebsocketClient client = new DockerWebsocketClient(uri)
-    client.connectBlocking()
-    return client
+    DockerWebsocketClient wsClient = getHttpClient().getWebsocketClient(
+        [path : "/containers/${containerId}/attach/ws".toString(),
+         query: query],
+        handler)
+    // TODO we should connect here, shouldn't we?
+//    wsClient.connectBlocking()
+    return wsClient
   }
 
   def extractSingleTarEntry(InputStream tarContent, String filename) {
