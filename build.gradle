@@ -3,18 +3,8 @@ import java.text.SimpleDateFormat
 buildscript {
   repositories {
     mavenLocal()
-    if (hasProperty("nexus.public.url") && project["nexus.public.url"]) {
-      maven {
-        url project["nexus.public.url"]
-        credentials {
-          username project["nexus.username"]
-          password project["nexus.password"]
-        }
-      }
-    } else {
-      jcenter()
-      mavenCentral()
-    }
+    jcenter()
+    mavenCentral()
   }
 
   dependencies {
@@ -27,18 +17,8 @@ buildscript {
 
 repositories {
   mavenLocal()
-  if (hasProperty("nexus.public.url") && project["nexus.public.url"]) {
-    maven {
-      url project["nexus.public.url"]
-      credentials {
-        username project["nexus.username"]
-        password project["nexus.password"]
-      }
-    }
-  } else {
-    jcenter()
-    mavenCentral()
-  }
+  jcenter()
+  mavenCentral()
 }
 
 apply plugin: 'groovy'
@@ -192,7 +172,7 @@ bintray {
     name = 'docker-client'
     desc = 'A Docker client written in Groovy'
     licenses = ['Apache-2.0']
-    labels = ['docker']
+    labels = ['docker', 'remote api', 'client']
     version = [
         name: artifactVersion
     ]
@@ -202,6 +182,6 @@ bintray {
 bintrayUpload.dependsOn build
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '2.4'
+  gradleVersion = '2.5'
   distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
