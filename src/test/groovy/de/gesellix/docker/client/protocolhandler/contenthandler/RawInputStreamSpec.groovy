@@ -1,10 +1,10 @@
-package de.gesellix.docker.client.protocolhandler
+package de.gesellix.docker.client.protocolhandler.contenthandler
 
 import org.apache.commons.io.IOUtils
 import spock.lang.Specification
 
-import static de.gesellix.docker.client.protocolhandler.StreamType.STDERR
-import static de.gesellix.docker.client.protocolhandler.StreamType.STDOUT
+import static de.gesellix.docker.client.protocolhandler.contenthandler.StreamType.STDERR
+import static de.gesellix.docker.client.protocolhandler.contenthandler.StreamType.STDOUT
 
 class RawInputStreamSpec extends Specification {
 

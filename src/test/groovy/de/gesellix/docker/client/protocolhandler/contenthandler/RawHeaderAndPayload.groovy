@@ -1,4 +1,4 @@
-package de.gesellix.docker.client.protocolhandler
+package de.gesellix.docker.client.protocolhandler.contenthandler
 
 class RawHeaderAndPayload {
   private StreamType streamType

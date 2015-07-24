@@ -1,6 +1,6 @@
 package de.gesellix.docker.client.protocolhandler.content.application
 
-import de.gesellix.docker.client.protocolhandler.RawInputStream
+import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
 
 class vnd_docker_raw_stream extends ContentHandler {
 

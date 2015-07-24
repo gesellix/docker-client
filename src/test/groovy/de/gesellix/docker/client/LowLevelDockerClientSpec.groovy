@@ -1,7 +1,7 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.client.protocolhandler.RawHeaderAndPayload
-import de.gesellix.docker.client.protocolhandler.RawInputStream
+import de.gesellix.docker.client.protocolhandler.contenthandler.RawHeaderAndPayload
+import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
 import org.apache.commons.io.IOUtils
 import org.codehaus.groovy.runtime.MethodClosure
 import spock.lang.Specification
@@ -10,7 +10,7 @@ import spock.lang.Unroll
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLSocketFactory
 
-import static de.gesellix.docker.client.protocolhandler.StreamType.STDOUT
+import static de.gesellix.docker.client.protocolhandler.contenthandler.StreamType.STDOUT
 
 class LowLevelDockerClientSpec extends Specification {
 

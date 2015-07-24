@@ -1,6 +1,6 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.client.protocolhandler.RawInputStream
+import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
 import org.apache.commons.io.IOUtils
 import org.java_websocket.client.WebSocketClient
 import spock.lang.Ignore
@@ -99,11 +99,11 @@ class DockerClientImplExplorationTest extends Specification {
 
   def "attach via websocket"() {
     when:
-    WebSocketClient wsClient = dockerClient.attachWebsocket("test-it", [logs  : 0,
-                                                                        stream: 1,
-                                                                        stdin : 1,
-                                                                        stdout: 1,
-                                                                        stderr: 1])
+    WebSocketClient wsClient = dockerClient.attachWebsocket("test-it", [logs  : false,
+                                                                        stream: true,
+                                                                        stdin : true,
+                                                                        stdout: true,
+                                                                        stderr: true])
 
     def lines = [
         "here i am\n"

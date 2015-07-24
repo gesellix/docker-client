@@ -1,10 +1,10 @@
-package de.gesellix.docker.client.protocolhandler
+package de.gesellix.docker.client.protocolhandler.contenthandler
 
 import org.apache.commons.io.IOUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import static de.gesellix.docker.client.protocolhandler.RawStreamHeader.EMPTY_HEADER
+import static de.gesellix.docker.client.protocolhandler.contenthandler.RawStreamHeader.EMPTY_HEADER
 
 /**
  * see https://docs.docker.com/reference/api/docker_remote_api_v1.17/#attach-to-a-container.

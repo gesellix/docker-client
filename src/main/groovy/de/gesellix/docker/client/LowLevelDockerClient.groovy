@@ -2,7 +2,6 @@ package de.gesellix.docker.client
 
 import de.gesellix.docker.client.protocolhandler.DockerContentHandlerFactory
 import de.gesellix.docker.client.protocolhandler.DockerURLHandler
-import de.gesellix.docker.client.protocolhandler.RawInputStream
 import groovy.json.JsonBuilder
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.output.NullOutputStream
@@ -139,7 +138,7 @@ class LowLevelDockerClient {
 
     switch (response.mimeType) {
       case "application/vnd.docker.raw-stream":
-        InputStream rawStream = content as RawInputStream
+        InputStream rawStream = content as InputStream
         response.stream = rawStream
         if (config.stdout) {
           logger.debug("redirecting to stdout.")
