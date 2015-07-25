@@ -9,7 +9,7 @@ class DefaultWebsocketHandler {
   }
 
   void onMessage(String message) {
-    println "[${new Date()}] -- onMessage '$message'"
+    print "[${new Date()}] -- onMessage $message"
 //    send(message)
   }
 
