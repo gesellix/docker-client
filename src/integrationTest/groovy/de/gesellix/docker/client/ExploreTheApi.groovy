@@ -24,21 +24,16 @@ class ExploreTheApi {
     def runResult = dockerClient.run(
         "busybox:latest",
         [
-            AttachStdin: true,
+            AttachStdin : true,
             AttachStdout: true,
             AttachStderr: true,
-            Tty: false,
-            Cmd: ["/bin/sh", "-c", "ping 127.0.0.1"]
+            Tty         : false,
+            Cmd         : ["/bin/sh", "-c", "ping 127.0.0.1"]
         ])
     def containerId = runResult.container.content.Id
     println "containerId: $containerId"
 
-    println dockerClient.inspectContainer(containerId).content.State
-
-    def handler = new DefaultWebsocketHandler() {
-
-    }
-
+    def handler = new DefaultWebsocketHandler()
     def wsClient = dockerClient.attachWebsocket(containerId, [stream: 1, stdin: 1, stdout: 1, stderr: 1], handler)
 
     wsClient.connectBlocking()
@@ -48,8 +43,12 @@ class ExploreTheApi {
     wsClient.send("hallo welt")
     Thread.sleep(500)
 
+//    println "closeBlocking..."
+//    wsClient.closeBlocking()
+
     println "close..."
-    wsClient.closeBlocking()
+    wsClient.close()
+
     println "closed"
 
     dockerClient.stop(containerId)
