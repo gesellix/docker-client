@@ -10,7 +10,6 @@ class DefaultWebsocketHandler {
 
   void onMessage(String message) {
     print "[${new Date()}] -- onMessage $message"
-//    send(message)
   }
 
   void onClose(int code, String reason, boolean remote) {

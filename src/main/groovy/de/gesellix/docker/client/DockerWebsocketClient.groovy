@@ -1,6 +1,5 @@
 package de.gesellix.docker.client
 
-import org.java_websocket.WebSocketImpl
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.drafts.Draft_17
 import org.java_websocket.handshake.ServerHandshake
@@ -9,10 +8,6 @@ import javax.net.ssl.SSLContext
 import java.nio.ByteBuffer
 
 class DockerWebsocketClient extends WebSocketClient {
-
-//  static {
-//    WebSocketImpl.DEBUG = true
-//  }
 
   def handler
 
@@ -33,6 +28,11 @@ class DockerWebsocketClient extends WebSocketClient {
   void onOpen(ServerHandshake handshakedata) {
     handler.onOpen(handshakedata)
   }
+
+//  @Override
+//  void onFragment(Framedata frame) {
+//    println "received fragment: ${new String(frame.getPayloadData().array())}"
+//  }
 
   @Override
   void onMessage(String message) {

@@ -1,8 +1,13 @@
 package de.gesellix.docker.client
 
+import org.java_websocket.handshake.ServerHandshake
 import spock.lang.Ignore
 import spock.lang.IgnoreIf
 import spock.lang.Specification
+
+import java.util.concurrent.CountDownLatch
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS
 
 @IgnoreIf({ !System.env.DOCKER_HOST })
 class DockerClientImplIntegrationSpec extends Specification {
@@ -831,5 +836,54 @@ class DockerClientImplIntegrationSpec extends Specification {
         name       : "gesellix/docker-client-testimage",
         star_count : 0
     ])
+  }
+
+  def "attach (websocket)"() {
+    given:
+    def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
+    def containerConfig = [
+        Tty      : true,
+        OpenStdin: true,
+        Cmd      : ["/bin/sh", "-c", "cat"]
+    ]
+    def containerId = dockerClient.run(imageId, containerConfig).container.content.Id
+
+    def openConnection = new CountDownLatch(1)
+    def receiveMessage = new CountDownLatch(1)
+    def receivedMessages = []
+    def handler = new DefaultWebsocketHandler() {
+      @Override
+      void onOpen(ServerHandshake handshakedata) {
+        openConnection.countDown()
+      }
+
+      @Override
+      void onMessage(String message) {
+        receivedMessages << message
+        receiveMessage.countDown()
+      }
+    }
+
+    when:
+    DockerWebsocketClient wsClient = dockerClient.attachWebsocket(
+        containerId,
+        [stream: 1, stdin: 1, stdout: 1, stderr: 1],
+        handler) as DockerWebsocketClient
+
+    def ourMessage = "hallo welt ${UUID.randomUUID()}!".toString()
+
+    wsClient.connectBlocking()
+    openConnection.await(500, MILLISECONDS)
+    wsClient.send(ourMessage)
+    receiveMessage.await(500, MILLISECONDS)
+
+    then:
+    receivedMessages.contains ourMessage
+
+    cleanup:
+    wsClient.close()
+    dockerClient.stop(containerId)
+    dockerClient.wait(containerId)
+    dockerClient.rm(containerId)
   }
 }
