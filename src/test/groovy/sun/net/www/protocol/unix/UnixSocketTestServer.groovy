@@ -44,8 +44,8 @@ class UnixSocketTestServer {
 //    Thread.start {
       AFUNIXServerSocket server = AFUNIXServerSocket.newInstance()
       server.bind(new AFUNIXSocketAddress(socketFile))
-      println("server: " + server)
-      println("chat with me: 'socat UNIX:${socketFile} -'")
+      logger.info("server: " + server)
+      logger.info("chat with me: 'socat UNIX:${socketFile} -'")
 
       loop(server, startedLatch)
     }
@@ -59,10 +59,10 @@ class UnixSocketTestServer {
     def requiresNewConnection = true
     while (!Thread.interrupted()) {
       if (requiresNewConnection) {
-        System.out.println("waiting for a new connection...")
+        logger.info("waiting for a new connection...")
         startedLatch.countDown()
         sock = server.accept()
-        System.out.println("connected: " + sock)
+        logger.info("connected: " + sock)
         is = sock.getInputStream()
         os = sock.getOutputStream()
         requiresNewConnection = false
@@ -72,7 +72,7 @@ class UnixSocketTestServer {
           os.write(greeting.bytes)
           os.flush()
         }
-        println("- ok, let's chat!")
+        logger.info("- ok, let's chat!")
       }
       assert sock && is && os
 
@@ -86,12 +86,11 @@ class UnixSocketTestServer {
         return
       }
       if (read == -1) {
-        println("EndOfStream - closing connection...")
+        logger.info("EndOfStream - closing connection...")
         requiresNewConnection = true
 
         closeAll(os, is, sock)
-      }
-      else if (read >= 0) {
+      } else if (read >= 0) {
         def clientMessage = new String(buf, 0, read)
         print("> $clientMessage")
 

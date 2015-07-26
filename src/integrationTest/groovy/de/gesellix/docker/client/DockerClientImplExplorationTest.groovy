@@ -2,7 +2,6 @@ package de.gesellix.docker.client
 
 import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
 import org.apache.commons.io.IOUtils
-import org.java_websocket.client.WebSocketClient
 import spock.lang.Ignore
 import spock.lang.Specification
 
@@ -95,47 +94,5 @@ class DockerClientImplExplorationTest extends Specification {
     and:
     attached.stream.multiplexStreams == false
     IOUtils.copy(attached.stream, System.out)
-  }
-
-  @Ignore("only for explorative testing")
-  def "attach via websocket"() {
-    given:
-    def handler = new DefaultWebsocketHandler()
-
-    when:
-    DockerWebsocketClient wsClient = dockerClient.attachWebsocket(
-        "test-it",
-        [logs  : false,
-         stream: true,
-         stdin : true,
-         stdout: true,
-         stderr: true],
-        handler)
-
-    def lines = [
-        "here i am\n"
-    ]
-
-    wsClient.connectBlocking()
-
-    lines.each {
-      wsClient.send(it as String)
-    }
-
-    boolean closed = false
-    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))
-    while (!closed && wsClient.connection.open) {
-      String line = reader.readLine()
-      println "[${new Date()}] -- got line '$line'"
-      if (line.equals("close")) {
-        wsClient.close()
-        closed = true
-      } else if (line) {
-        wsClient.send(line as String)
-      }
-    }
-
-    then:
-    wsClient
   }
 }
