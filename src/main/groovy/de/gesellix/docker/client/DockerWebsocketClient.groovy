@@ -1,5 +1,6 @@
 package de.gesellix.docker.client
 
+import org.java_websocket.client.DefaultSSLWebSocketClientFactory
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.drafts.Draft_17
 import org.java_websocket.handshake.ServerHandshake
@@ -20,8 +21,8 @@ class DockerWebsocketClient extends WebSocketClient {
 
   DockerWebsocketClient(URI serverUri, handler, SSLContext sslContext) {
     this(serverUri, handler)
-//    setWebSocketFactory(new DefaultSSLWebSocketClientFactory(sslContext))
-    setSocket(sslContext.getSocketFactory().createSocket())
+    setWebSocketFactory(new DefaultSSLWebSocketClientFactory(sslContext))
+//    setSocket(sslContext.getSocketFactory().createSocket())
   }
 
   @Override
