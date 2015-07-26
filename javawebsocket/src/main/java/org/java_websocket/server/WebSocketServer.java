@@ -128,7 +128,7 @@ public abstract class WebSocketServer extends WebSocketAdapter implements Runnab
    * @see #WebSocketServer(InetSocketAddress, int, List, Collection) more details here
    */
   public WebSocketServer(InetSocketAddress address, int decodercount, List<Draft> drafts) {
-    this(address, decodercount, drafts, new HashSet<>());
+    this(address, decodercount, drafts, new HashSet<WebSocket>());
   }
 
   /**

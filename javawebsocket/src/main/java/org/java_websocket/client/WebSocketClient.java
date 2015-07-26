@@ -70,7 +70,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
    * will be established once you call <var>connect</var>.
    */
   public WebSocketClient(URI serverUri, Draft draft) {
-    this(serverUri, draft, Collections.emptyMap(), 0);
+    this(serverUri, draft, Collections.<String, String>emptyMap(), 0);
   }
 
   public WebSocketClient(URI serverUri, Draft protocolDraft, Map<String, String> httpHeaders, int connectTimeout) {
