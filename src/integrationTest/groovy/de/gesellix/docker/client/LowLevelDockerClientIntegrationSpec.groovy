@@ -61,13 +61,13 @@ class LowLevelDockerClientIntegrationSpec extends Specification {
     def response = client.get("/version")
     then:
     def content = response.content
-    content.ApiVersion == "1.18"
+    content.ApiVersion == "1.19"
     content.Arch == "amd64"
-    content.GitCommit == "4749651"
+    content.GitCommit == "786b29d"
     content.GoVersion == "go1.4.2"
-    content.KernelVersion ==~ "3\\.\\d+\\.\\d+-.+"
+    content.KernelVersion =~ "\\d.\\d{1,2}.\\d-\\w+"
     content.Os == "linux"
-    content.Version == "1.6.0"
+    content.Version == "1.7.1"
   }
 
   @IgnoreIf({ !SystemUtils.IS_OS_LINUX || !new File("/var/run/docker.sock").exists() })
