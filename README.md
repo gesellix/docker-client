@@ -3,7 +3,6 @@
 A Docker HTTP client written in Groovy
 
 [![Build Status](https://travis-ci.org/gesellix/docker-client.svg)](https://travis-ci.org/gesellix/docker-client)
-[![Coverage Status](https://coveralls.io/repos/gesellix/docker-client/badge.png)](https://coveralls.io/r/gesellix/docker-client)
 [![Latest version](https://api.bintray.com/packages/gesellix/docker-utils/docker-client/images/download.svg) ](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion)
 
 ## Plain Usage
