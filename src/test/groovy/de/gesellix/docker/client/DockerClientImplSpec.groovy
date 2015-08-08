@@ -15,9 +15,22 @@ class DockerClientImplSpec extends Specification {
     dockerClient.newDockerHttpClient = { dockerHost, proxy -> httpClient }
   }
 
-  def "encode authConfig"() {
+  def "read and encode authConfig (old format)"() {
     given:
     def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg')
+    def authDetails = dockerClient.readAuthConfig(null, dockerCfg)
+    def authPlain = authDetails
+
+    when:
+    def authResult = dockerClient.encodeAuthConfig(authPlain)
+
+    then:
+    authResult == 'eyJ1c2VybmFtZSI6Imdlc2VsbGl4IiwicGFzc3dvcmQiOiIteWV0LWFub3RoZXItcGFzc3dvcmQtIiwiZW1haWwiOiJ0b2JpYXNAZ2VzZWxsaXguZGUiLCJzZXJ2ZXJhZGRyZXNzIjoiaHR0cHM6Ly9pbmRleC5kb2NrZXIuaW8vdjEvIn0='
+  }
+
+  def "read and encode authConfig (new format)"() {
+    given:
+    def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/config.json')
     def authDetails = dockerClient.readAuthConfig(null, dockerCfg)
     def authPlain = authDetails
 
@@ -93,19 +106,70 @@ class DockerClientImplSpec extends Specification {
                          requestContentType: "application/json"])
   }
 
-  def "read default dockercfg for official Docker index"() {
+  def "read configured docker config.json"() {
+    given:
+    def expectedConfigFile = new File('.').absoluteFile
+    def oldDockerConfig = System.setProperty("docker.config", expectedConfigFile.absolutePath)
+
     when:
-    def authDetails = dockerClient.readDefaultAuthConfig()
+    def dockerConfigFile = dockerClient.getActualDockerConfigFile()
 
     then:
-    1 * dockerClient.readAuthConfig(null, new File(System.getProperty('user.home'), ".dockercfg")) >> [username: "gesellix"]
-    and:
-    authDetails == [username: "gesellix"]
+    dockerConfigFile == expectedConfigFile
+
+    cleanup:
+    if (oldDockerConfig) {
+      System.setProperty("docker.config", oldDockerConfig)
+    } else {
+      System.clearProperty("docker.config")
+    }
   }
 
-  def "read dockercfg for official Docker index"() {
+  def "read default docker config file"() {
     given:
-    def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg')
+    def oldDockerConfig = System.clearProperty("docker.config")
+    def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/config.json')
+    dockerClient.dockerConfigFile = expectedConfigFile
+
+    when:
+    dockerClient.readDefaultAuthConfig()
+
+    then:
+    1 * dockerClient.readAuthConfig(null, expectedConfigFile)
+    dockerClient.legacyDockerConfigFile
+
+    cleanup:
+    if (oldDockerConfig) {
+      System.setProperty("docker.config", oldDockerConfig)
+    }
+  }
+
+  def "read legacy docker config file"() {
+    given:
+    def oldDockerConfig = System.clearProperty("docker.config")
+    def nonExistingFile = new File('./I should not exist')
+    assert !nonExistingFile.exists()
+    dockerClient.dockerConfigFile = nonExistingFile
+    def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg')
+    dockerClient.legacyDockerConfigFile = expectedConfigFile
+
+    when:
+    dockerClient.readDefaultAuthConfig()
+
+    then:
+    1 * dockerClient.readAuthConfig(null, expectedConfigFile)
+    dockerClient.dockerConfigFile
+    dockerClient.legacyDockerConfigFile
+
+    cleanup:
+    if (oldDockerConfig) {
+      System.setProperty("docker.config", oldDockerConfig)
+    }
+  }
+
+  def "read auth config for official Docker index"() {
+    given:
+    def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/config.json')
 
     when:
     def authDetails = dockerClient.readAuthConfig(null, dockerCfg)
@@ -120,9 +184,9 @@ class DockerClientImplSpec extends Specification {
     authDetails.serveraddress == "https://index.docker.io/v1/"
   }
 
-  def "read dockercfg for quay.io"() {
+  def "read auth config for quay.io"() {
     given:
-    def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg')
+    def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/config.json')
 
     when:
     def authDetails = dockerClient.readAuthConfig("quay.io", dockerCfg)
@@ -137,9 +201,9 @@ class DockerClientImplSpec extends Specification {
     authDetails.serveraddress == "quay.io"
   }
 
-  def "read dockercfg for unknown registry hostname"() {
+  def "read auth config for unknown registry hostname"() {
     given:
-    def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg')
+    def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/config.json')
 
     when:
     def authDetails = dockerClient.readAuthConfig("unkown.example.com", dockerCfg)

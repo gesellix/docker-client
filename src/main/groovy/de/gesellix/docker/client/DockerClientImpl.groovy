@@ -17,8 +17,12 @@ class DockerClientImpl implements DockerClient {
 
   def proxy
   def dockerHost = "http://127.0.0.1:2375"
+  def indexUrl = 'https://index.docker.io/v1/'
+  def dockerConfigFile = new File("${System.getProperty('user.home')}/.docker", "config.json")
+  def legacyDockerConfigFile = new File("${System.getProperty('user.home')}", ".dockercfg")
+
   LowLevelDockerClient httpClient
-  def Closure newDockerHttpClient
+  def Closure<LowLevelDockerClient> newDockerHttpClient
 
   DockerClientImpl() {
     proxy = Proxy.NO_PROXY
@@ -35,6 +39,19 @@ class DockerClientImpl implements DockerClient {
 
   def createDockerHttpClient(dockerHost, proxy) {
     return new LowLevelDockerClient(dockerHost: dockerHost, proxy: proxy)
+  }
+
+  File getActualDockerConfigFile() {
+    String dockerConfig = System.getProperty("docker.config", System.env.DOCKER_CONFIG as String)
+    if (dockerConfig) {
+      return new File(dockerConfig)
+    }
+    if (dockerConfigFile.exists()) {
+      return dockerConfigFile
+    } else if (legacyDockerConfigFile.exists()) {
+      return legacyDockerConfigFile
+    }
+    return null
   }
 
   @Override
@@ -76,7 +93,7 @@ class DockerClientImpl implements DockerClient {
 
   @Override
   def readDefaultAuthConfig() {
-    return readAuthConfig(null, new File(System.getProperty('user.home'), ".dockercfg"))
+    return readAuthConfig(null, getActualDockerConfigFile())
   }
 
   @Override
@@ -84,7 +101,7 @@ class DockerClientImpl implements DockerClient {
     logger.debug "read authConfig"
 
     if (!dockerCfg) {
-      dockerCfg = new File(System.getProperty('user.home'), ".dockercfg")
+      dockerCfg = getActualDockerConfigFile()
     }
     if (!dockerCfg?.exists()) {
       logger.warn "${dockerCfg} doesn't exist"
@@ -94,10 +111,17 @@ class DockerClientImpl implements DockerClient {
     def parsedDockerCfg = new JsonSlurper().parse(dockerCfg)
 
     if (!hostname) {
-      hostname = "https://index.docker.io/v1/"
+      hostname = indexUrl
     }
 
-    if (!parsedDockerCfg[hostname]) {
+    def authConfig
+    if (parsedDockerCfg['auths']) {
+      authConfig = parsedDockerCfg.auths
+    } else {
+      authConfig = parsedDockerCfg
+    }
+
+    if (!authConfig[hostname]) {
       return [:]
     }
 
@@ -107,11 +131,11 @@ class DockerClientImpl implements DockerClient {
                        "serveraddress": hostname]
 
 
-    def auth = parsedDockerCfg[hostname].auth as String
+    def auth = authConfig[hostname].auth as String
     def (username, password) = new String(auth.decodeBase64()).split(":")
     authDetails.username = username
     authDetails.password = password
-    authDetails.email = parsedDockerCfg[hostname].email
+    authDetails.email = authConfig[hostname].email
 
     return authDetails
   }
