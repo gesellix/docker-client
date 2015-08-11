@@ -44,7 +44,7 @@ class DockerClientImpl implements DockerClient {
   File getActualDockerConfigFile() {
     String dockerConfig = System.getProperty("docker.config", System.env.DOCKER_CONFIG as String)
     if (dockerConfig) {
-      return new File(dockerConfig)
+      return new File(dockerConfig, 'config.json')
     }
     if (dockerConfigFile.exists()) {
       return dockerConfigFile

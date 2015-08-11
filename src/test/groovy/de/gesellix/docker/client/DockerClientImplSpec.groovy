@@ -108,18 +108,18 @@ class DockerClientImplSpec extends Specification {
 
   def "read configured docker config.json"() {
     given:
-    def expectedConfigFile = new File('.').absoluteFile
-    def oldDockerConfig = System.setProperty("docker.config", expectedConfigFile.absolutePath)
+    def expectedConfigDir = new File('.').absoluteFile
+    def oldDockerConfigDir = System.setProperty("docker.config", expectedConfigDir.absolutePath)
 
     when:
     def dockerConfigFile = dockerClient.getActualDockerConfigFile()
 
     then:
-    dockerConfigFile == expectedConfigFile
+    dockerConfigFile.absolutePath == new File(expectedConfigDir, 'config.json').absolutePath
 
     cleanup:
-    if (oldDockerConfig) {
-      System.setProperty("docker.config", oldDockerConfig)
+    if (oldDockerConfigDir) {
+      System.setProperty("docker.config", oldDockerConfigDir)
     } else {
       System.clearProperty("docker.config")
     }
