@@ -183,6 +183,6 @@ bintray {
 bintrayUpload.dependsOn build
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '2.6-rc-1'
+  gradleVersion = '2.6'
   distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
