@@ -304,9 +304,9 @@ class LowLevelDockerClient {
 
   SSLContext initSSLContext() {
     if (!sslContext) {
-      String dockerCertPath = dockerURLHandler.dockerCertPath
+      def dockerCertPath = dockerURLHandler.dockerCertPath
 
-      def keyStore = KeyStoreUtil.createDockerKeyStore(new File(dockerCertPath).absolutePath)
+      def keyStore = KeyStoreUtil.createDockerKeyStore(new File(dockerCertPath as String).absolutePath)
       final KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(getDefaultAlgorithm())
       kmfactory.init(keyStore, KEY_STORE_PASSWORD as char[])
 

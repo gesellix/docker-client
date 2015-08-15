@@ -165,11 +165,23 @@ class LowLevelDockerClientSpec extends Specification {
   }
 
   def "getWebsocketClient creates a websocket client"() {
+    given:
+    def certsPath = IOUtils.getResource("/certs").file
+    def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
     def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+
     when:
     def wsClient = client.getWebsocketClient("/foo", Mock(DefaultWebsocketHandler))
+
     then:
     wsClient != null
+
+    cleanup:
+    if (oldDockerCertPath) {
+      System.setProperty("docker.cert.path", oldDockerCertPath)
+    } else {
+      System.clearProperty("docker.cert.path")
+    }
   }
 
   def "openConnection uses DIRECT proxy by default"() {
