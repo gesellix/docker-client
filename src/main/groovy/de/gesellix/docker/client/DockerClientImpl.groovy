@@ -246,12 +246,7 @@ class DockerClientImpl implements DockerClient {
                                          headers: ["X-Registry-Auth": authBase64Encoded ?: "."]])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker pull failed"))
 
-    def chunksWithId = response.content.findAll { it.id }
-    if (chunksWithId.empty) {
-      throw new DockerClientException(new IllegalStateException("cannot find 'id' in response"))
-    }
-    def lastChunkWithId = chunksWithId.last()
-    return lastChunkWithId.id
+    return findImageId(actualImageName, tag)
   }
 
   // TODO we might need some authentication here for the pull(...) step
@@ -428,6 +423,24 @@ class DockerClientImpl implements DockerClient {
                                         query: actualQuery])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker images failed"))
     return response
+  }
+
+  def findImageId(imageName, tag = "") {
+    def images = images().content
+    def imageIdsByName = images.collectEntries { image ->
+      image.RepoTags.collectEntries { repoTag ->
+        def idByName = [:]
+        idByName[repoTag] = image.Id
+        idByName
+      }
+    }
+    def canonicalImageName = "$imageName:${tag ?: 'latest'}".toString()
+    if (imageIdsByName[canonicalImageName]) {
+      return imageIdsByName[canonicalImageName]
+    } else {
+      logger.warn("couldn't find imageId for `${canonicalImageName}` via `docker images`")
+      return canonicalImageName
+    }
   }
 
   @Override

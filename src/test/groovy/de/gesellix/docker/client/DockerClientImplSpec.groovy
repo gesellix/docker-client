@@ -305,6 +305,9 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "pull with defaults"() {
+    given:
+    dockerClient.images() >> [content: [:]]
+
     when:
     dockerClient.pull("an-image")
 
@@ -321,6 +324,9 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "pull with tag"() {
+    given:
+    dockerClient.images() >> [content: [:]]
+
     when:
     dockerClient.pull("an-image", "a-tag")
 
@@ -337,6 +343,9 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "pull with registry"() {
+    given:
+    dockerClient.images() >> [content: [:]]
+
     when:
     dockerClient.pull("an-image", "", ".", "registry:port")
 
@@ -353,6 +362,9 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "pull with auth"() {
+    given:
+    dockerClient.images() >> [content: [:]]
+
     when:
     dockerClient.pull("an-image", "", "some-base64-encoded-auth", "registry:port")
 
@@ -507,6 +519,23 @@ class DockerClientImplSpec extends Specification {
     1 * httpClient.get([path : "/images/json",
                         query: [all    : true,
                                 filters: expectedFilterValue]]) >> [status: [success: true]]
+  }
+
+  def "findImageId with existing image"() {
+    given:
+    dockerClient.images() >> [content: [[RepoTags: ['anImage:latest'],
+                                         Id      : 'the-id']]]
+
+    expect:
+    dockerClient.findImageId('anImage') == 'the-id'
+  }
+
+  def "findImageId with missing image"() {
+    given:
+    dockerClient.images() >> [content: []]
+
+    expect:
+    dockerClient.findImageId('anImage') == 'anImage:latest'
   }
 
   def "rmi image"() {
