@@ -10,34 +10,34 @@ import sun.net.www.http.HttpClient
 // but connect via unix socket to the docker daemon.
 class HttpOverUnixSocketClient extends HttpClient {
 
-  final static Logger logger = LoggerFactory.getLogger(HttpOverUnixSocketClient)
+    final static Logger logger = LoggerFactory.getLogger(HttpOverUnixSocketClient)
 
-  static String dockerUnixSocket
+    static String dockerUnixSocket
 
-  protected HttpOverUnixSocketClient(URL url) throws IOException {
-    super(url, true)
-  }
-
-  @Override
-  protected Socket doConnect(String host, int port) throws IOException, UnknownHostException {
-    logger.debug "connect via '${dockerUnixSocket}'..."
-
-    File socketFile = new File(dockerUnixSocket)
-    logger.debug "unix socket exists/canRead/canWrite: ${socketFile.exists()}/${socketFile.canRead()}/${socketFile.canWrite()}"
-
-    Socket socket = AFUNIXSocket.newInstance()
-
-    if (connectTimeout < 0) {
-      connectTimeout = defaultConnectTimeout
+    protected HttpOverUnixSocketClient(URL url) throws IOException {
+        super(url, true)
     }
-    socket.connect(new AFUNIXSocketAddress(socketFile), connectTimeout)
 
-    if (readTimeout < 0) {
-      readTimeout = defaultSoTimeout
+    @Override
+    protected Socket doConnect(String host, int port) throws IOException, UnknownHostException {
+        logger.debug "connect via '${dockerUnixSocket}'..."
+
+        File socketFile = new File(dockerUnixSocket)
+        logger.debug "unix socket exists/canRead/canWrite: ${socketFile.exists()}/${socketFile.canRead()}/${socketFile.canWrite()}"
+
+        Socket socket = AFUNIXSocket.newInstance()
+
+        if (connectTimeout < 0) {
+            connectTimeout = defaultConnectTimeout
+        }
+        socket.connect(new AFUNIXSocketAddress(socketFile), connectTimeout)
+
+        if (readTimeout < 0) {
+            readTimeout = defaultSoTimeout
+        }
+        if (this.readTimeout >= 0) {
+            socket.setSoTimeout(defaultSoTimeout)
+        }
+        return socket
     }
-    if (this.readTimeout >= 0) {
-      socket.setSoTimeout(defaultSoTimeout)
-    }
-    return socket
-  }
 }

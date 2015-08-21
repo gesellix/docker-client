@@ -4,8 +4,8 @@ import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
 
 class vnd_docker_raw_stream extends ContentHandler {
 
-  @Override
-  Object getContent(URLConnection connection) throws IOException {
-    return new RawInputStream(connection.inputStream)
-  }
+    @Override
+    Object getContent(URLConnection connection) throws IOException {
+        return new RawInputStream(connection.inputStream)
+    }
 }

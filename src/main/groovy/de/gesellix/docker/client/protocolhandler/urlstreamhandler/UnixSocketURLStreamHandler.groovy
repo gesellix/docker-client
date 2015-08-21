@@ -11,20 +11,20 @@ import org.slf4j.LoggerFactory
  */
 abstract class UnixSocketURLStreamHandler extends URLStreamHandler {
 
-  Logger logger = LoggerFactory.getLogger(UnixSocketURLStreamHandler)
+    Logger logger = LoggerFactory.getLogger(UnixSocketURLStreamHandler)
 
-  UnixSocketURLStreamHandler() {
-    logger.debug "initialize unix protocol support"
-  }
+    UnixSocketURLStreamHandler() {
+        logger.debug "initialize unix protocol support"
+    }
 
-  @Override
-  protected URLConnection openConnection(URL u) throws IOException {
-    return new HttpOverUnixSocketURLConnection(u)
-  }
+    @Override
+    protected URLConnection openConnection(URL u) throws IOException {
+        return new HttpOverUnixSocketURLConnection(u)
+    }
 
-  @Override
-  protected URLConnection openConnection(URL u, Proxy p) throws IOException {
-    // ignore the proxy
-    return this.openConnection(u)
-  }
+    @Override
+    protected URLConnection openConnection(URL u, Proxy p) throws IOException {
+        // ignore the proxy
+        return this.openConnection(u)
+    }
 }

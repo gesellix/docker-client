@@ -2,107 +2,107 @@ package de.gesellix.docker.client
 
 interface DockerClient {
 
-  def cleanupStorage(Closure shouldKeepContainer)
+    def cleanupStorage(Closure shouldKeepContainer)
 
-  def ping()
+    def ping()
 
-  def info()
+    def info()
 
-  def version()
+    def version()
 
-  def readDefaultAuthConfig()
+    def readDefaultAuthConfig()
 
-  def readAuthConfig(hostnameOrNull, File dockerCfgOrNull)
+    def readAuthConfig(hostnameOrNull, File dockerCfgOrNull)
 
-  def encodeAuthConfig(authConfig)
+    def encodeAuthConfig(authConfig)
 
-  def auth(authDetails)
+    def auth(authDetails)
 
-  def build(InputStream buildContext)
+    def build(InputStream buildContext)
 
-  def build(InputStream buildContext, query)
+    def build(InputStream buildContext, query)
 
-  def tag(imageId, repository)
+    def tag(imageId, repository)
 
-  def tag(imageId, repository, force)
+    def tag(imageId, repository, force)
 
-  def parseRepositoryTag(name)
+    def parseRepositoryTag(name)
 
-  def push(imageName)
+    def push(imageName)
 
-  def push(imageName, authBase64Encoded)
+    def push(imageName, authBase64Encoded)
 
-  def push(imageName, authBase64Encoded, registry)
+    def push(imageName, authBase64Encoded, registry)
 
-  def pull(imageName)
+    def pull(imageName)
 
-  def pull(imageName, tag)
+    def pull(imageName, tag)
 
-  def pull(imageName, tag, authBase64Encoded)
+    def pull(imageName, tag, authBase64Encoded)
 
-  def pull(imageName, tag, authBase64Encoded, registry)
+    def pull(imageName, tag, authBase64Encoded, registry)
 
-  def ps()
+    def ps()
 
-  def ps(query)
+    def ps(query)
 
-  def inspectContainer(containerId)
+    def inspectContainer(containerId)
 
-  def diff(containerId)
+    def diff(containerId)
 
-  def inspectImage(imageId)
+    def inspectImage(imageId)
 
-  def history(imageId)
+    def history(imageId)
 
-  def images()
+    def images()
 
-  def images(query)
+    def images(query)
 
-  def createContainer(containerConfig)
+    def createContainer(containerConfig)
 
-  def createContainer(containerConfig, query)
+    def createContainer(containerConfig, query)
 
-  def startContainer(containerId)
+    def startContainer(containerId)
 
-  def run(fromImage, containerConfig)
+    def run(fromImage, containerConfig)
 
-  def run(fromImage, containerConfig, tag)
+    def run(fromImage, containerConfig, tag)
 
-  def run(fromImage, containerConfig, tag, name)
+    def run(fromImage, containerConfig, tag, name)
 
-  def restart(containerId)
+    def restart(containerId)
 
-  def stop(containerId)
+    def stop(containerId)
 
-  def kill(containerId)
+    def kill(containerId)
 
-  def wait(containerId)
+    def wait(containerId)
 
-  def pause(containerId)
+    def pause(containerId)
 
-  def unpause(containerId)
+    def unpause(containerId)
 
-  def rm(containerId)
+    def rm(containerId)
 
-  def rmi(imageId)
+    def rmi(imageId)
 
-  def createExec(containerId, execConfig)
+    def createExec(containerId, execConfig)
 
-  def startExec(execId, execConfig)
+    def startExec(execId, execConfig)
 
-  def exec(containerId, command)
+    def exec(containerId, command)
 
-  def exec(containerId, command, execConfig)
+    def exec(containerId, command, execConfig)
 
-  def copy(containerId, resourceBody)
+    def copy(containerId, resourceBody)
 
-  def copyFile(containerId, String filename)
+    def copyFile(containerId, String filename)
 
-  def rename(containerId, newName)
+    def rename(containerId, newName)
 
-  def search(term)
+    def search(term)
 
-  def attach(containerId, query)
+    def attach(containerId, query)
 
-  def attachWebsocket(containerId, query, handler)
+    def attachWebsocket(containerId, query, handler)
 }

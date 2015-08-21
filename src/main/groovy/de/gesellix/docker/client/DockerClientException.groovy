@@ -2,20 +2,19 @@ package de.gesellix.docker.client
 
 class DockerClientException extends RuntimeException {
 
-  def detail
+    def detail
 
-  DockerClientException(Throwable cause, detail = [:]) {
-    super(cause)
-    this.detail = detail
-  }
+    DockerClientException(Throwable cause, detail = [:]) {
+        super(cause)
+        this.detail = detail
+    }
 
-  @Override
-  public String toString() {
-    if (detail instanceof String) {
-      return "DockerClientException{detail=$detail} ${super.toString()}"
+    @Override
+    public String toString() {
+        if (detail instanceof String) {
+            return "DockerClientException{detail=$detail} ${super.toString()}"
+        } else {
+            return "DockerClientException{...} ${super.toString()}"
+        }
     }
-    else {
-      return "DockerClientException{...} ${super.toString()}"
-    }
-  }
 }

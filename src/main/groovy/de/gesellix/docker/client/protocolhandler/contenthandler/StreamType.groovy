@@ -12,27 +12,27 @@ package de.gesellix.docker.client.protocolhandler.contenthandler
  */
 enum StreamType {
 
-  STDIN((byte) 0),
-  STDOUT((byte) 1),
-  STDERR((byte) 2);
+    STDIN((byte) 0),
+    STDOUT((byte) 1),
+    STDERR((byte) 2);
 
-  private final byte streamTypeId;
+    private final byte streamTypeId;
 
-  StreamType(streamTypeId) {
-    this.streamTypeId = streamTypeId
-  }
-
-  static def valueOf(byte b) {
-    def value = values().find {
-      return it.streamTypeId == b
+    StreamType(streamTypeId) {
+        this.streamTypeId = streamTypeId
     }
-    if (!value) {
-      throw new IllegalArgumentException("no enum value for ${b} found.")
-    }
-    return value
-  }
 
-  byte getStreamTypeId() {
-    return streamTypeId
-  }
+    static def valueOf(byte b) {
+        def value = values().find {
+            return it.streamTypeId == b
+        }
+        if (!value) {
+            throw new IllegalArgumentException("no enum value for ${b} found.")
+        }
+        return value
+    }
+
+    byte getStreamTypeId() {
+        return streamTypeId
+    }
 }

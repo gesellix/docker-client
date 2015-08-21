@@ -11,83 +11,83 @@ import static de.gesellix.docker.client.protocolhandler.contenthandler.RawStream
  */
 class RawInputStream extends FilterInputStream {
 
-  Logger logger = LoggerFactory.getLogger(RawInputStream)
+    Logger logger = LoggerFactory.getLogger(RawInputStream)
 
-  def RawInputStream(InputStream inputStream) {
-    super(inputStream)
-  }
-
-  def multiplexStreams = true
-  def remainingFrameSize = -1
-
-  def copyFullyMultiplexed(stdout, stderr = null) {
-    if (!(stdout || stderr)) {
-      throw new IllegalArgumentException("need at least one of stdout or stderr")
+    def RawInputStream(InputStream inputStream) {
+        super(inputStream)
     }
 
-    if (!multiplexStreams) {
-      def actualOutputStream = stdout ?: stderr
-      return IOUtils.copy(super.in, actualOutputStream as OutputStream)
+    def multiplexStreams = true
+    def remainingFrameSize = -1
+
+    def copyFullyMultiplexed(stdout, stderr = null) {
+        if (!(stdout || stderr)) {
+            throw new IllegalArgumentException("need at least one of stdout or stderr")
+        }
+
+        if (!multiplexStreams) {
+            def actualOutputStream = stdout ?: stderr
+            return IOUtils.copy(super.in, actualOutputStream as OutputStream)
+        }
+
+        int sum = 0
+        int count
+        while (-1 != (count = copyFrame(stdout, stderr))) {
+            sum += count
+        }
+        return sum
     }
 
-    int sum = 0
-    int count
-    while (-1 != (count = copyFrame(stdout, stderr))) {
-      sum += count
-    }
-    return sum
-  }
+    def copyFrame(stdout, stderr) {
+        def outputStreamsByStreamType = [:]
+        outputStreamsByStreamType["${StreamType.STDOUT}"] = stdout ?: stderr;
+        outputStreamsByStreamType["${StreamType.STDERR}"] = stderr ?: stdout
 
-  def copyFrame(stdout, stderr) {
-    def outputStreamsByStreamType = [:]
-    outputStreamsByStreamType["${StreamType.STDOUT}"] = stdout ?: stderr;
-    outputStreamsByStreamType["${StreamType.STDERR}"] = stderr ?: stdout
-
-    def parsedHeader = readFrameHeader()
-    logger.trace(parsedHeader.toString())
-    if (parsedHeader == EMPTY_HEADER) {
-      return -1
-    }
-
-    int bytesToRead = parsedHeader.frameSize
-    final int DEFAULT_BUFFER_SIZE = 1024 * 4
-    def buffer = new byte[DEFAULT_BUFFER_SIZE]
-    long count = 0
-    int n
-    while (-1 != (n = super.read(buffer, 0, Math.min(DEFAULT_BUFFER_SIZE, bytesToRead)))) {
-      def outputStream = outputStreamsByStreamType["${parsedHeader.streamType}"]
-      outputStream.write(buffer, 0, n)
-      count += n
-      bytesToRead -= n
-      if (bytesToRead <= 0) {
-        return count
-      }
-    }
-    return count
-  }
-
-  @Override
-  synchronized int read(byte[] b, int off, int len) throws IOException {
-    if (multiplexStreams) {
-      if (remainingFrameSize <= 0) {
         def parsedHeader = readFrameHeader()
         logger.trace(parsedHeader.toString())
         if (parsedHeader == EMPTY_HEADER) {
-          return -1
+            return -1
         }
-        remainingFrameSize = parsedHeader.frameSize
-      }
-      def count = readRemainingFrameSize(b, off, len, remainingFrameSize)
-      remainingFrameSize -= (count >= 0 ? count : 0)
-      return count
-    }
-    return super.read(b, off, len)
-  }
 
-  def readFrameHeader() {
-    int[] headerBuf = [
-        read(), read(), read(), read(),
-        read(), read(), read(), read()]
+        int bytesToRead = parsedHeader.frameSize
+        final int DEFAULT_BUFFER_SIZE = 1024 * 4
+        def buffer = new byte[DEFAULT_BUFFER_SIZE]
+        long count = 0
+        int n
+        while (-1 != (n = super.read(buffer, 0, Math.min(DEFAULT_BUFFER_SIZE, bytesToRead)))) {
+            def outputStream = outputStreamsByStreamType["${parsedHeader.streamType}"]
+            outputStream.write(buffer, 0, n)
+            count += n
+            bytesToRead -= n
+            if (bytesToRead <= 0) {
+                return count
+            }
+        }
+        return count
+    }
+
+    @Override
+    synchronized int read(byte[] b, int off, int len) throws IOException {
+        if (multiplexStreams) {
+            if (remainingFrameSize <= 0) {
+                def parsedHeader = readFrameHeader()
+                logger.trace(parsedHeader.toString())
+                if (parsedHeader == EMPTY_HEADER) {
+                    return -1
+                }
+                remainingFrameSize = parsedHeader.frameSize
+            }
+            def count = readRemainingFrameSize(b, off, len, remainingFrameSize)
+            remainingFrameSize -= (count >= 0 ? count : 0)
+            return count
+        }
+        return super.read(b, off, len)
+    }
+
+    def readFrameHeader() {
+        int[] headerBuf = [
+                read(), read(), read(), read(),
+                read(), read(), read(), read()]
 
 //    logger.trace("header bytes: '${headerBuf}'")
 //    byte[] headerBufAsBytes = [
@@ -96,23 +96,23 @@ class RawInputStream extends FilterInputStream {
 //    logger.trace("header bytes as String: '${new String(headerBufAsBytes)}'")
 
 //    logger.trace("read header: ${headerBuf}")
-    if (headerBuf.find { it < 0 }) {
-      return EMPTY_HEADER
+        if (headerBuf.find { it < 0 }) {
+            return EMPTY_HEADER
+        }
+
+        try {
+            def parsedHeader = new RawStreamHeader(headerBuf)
+            logger.trace(parsedHeader.toString())
+            return parsedHeader
+        }
+        catch (Exception e) {
+            logger.error("could not parse header - setting multiplexStreams=false could help.", e)
+            throw e
+        }
     }
 
-    try {
-      def parsedHeader = new RawStreamHeader(headerBuf)
-      logger.trace(parsedHeader.toString())
-      return parsedHeader
+    def readRemainingFrameSize(byte[] b, int off, int len, int remainingFrameSize) {
+        def updatedLen = Math.min(len, remainingFrameSize)
+        return super.read(b, off, updatedLen)
     }
-    catch (Exception e) {
-      logger.error("could not parse header - setting multiplexStreams=false could help.", e)
-      throw e
-    }
-  }
-
-  def readRemainingFrameSize(byte[] b, int off, int len, int remainingFrameSize) {
-    def updatedLen = Math.min(len, remainingFrameSize)
-    return super.read(b, off, updatedLen)
-  }
 }
