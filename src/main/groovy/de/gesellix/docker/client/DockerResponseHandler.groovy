@@ -36,10 +36,12 @@ class DockerResponseHandler {
             def foundErrors = []
             if (content instanceof List) {
                 foundErrors.addAll content.findAll { it.error }
-            } else if (content instanceof Map && content.error) {
-                foundErrors << content.error
+            } else if (content instanceof Map) {
+                if (content.error) {
+                    foundErrors << content.error
+                }
             } else {
-                logger.info("won't search for errors in ${content.class}")
+                logger.debug("won't search for errors in ${content.getClass()}")
             }
             return foundErrors
         }
