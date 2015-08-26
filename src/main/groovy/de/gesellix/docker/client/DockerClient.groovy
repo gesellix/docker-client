@@ -94,15 +94,27 @@ interface DockerClient {
 
     def exec(container, command, execConfig)
 
+    /**
+     * @deprecated use #getArchive
+     * @see #getArchive(java.lang.String, java.lang.String)
+     */
+    @Deprecated
     def copy(container, resourceBody)
 
+    /**
+     * @deprecated use #extractFile
+     * @see #extractFile(java.lang.String, java.lang.String)
+     */
+    @Deprecated
     def copyFile(container, String filename)
 
     def getArchiveStats(container, path)
 
-    def downloadArchive(container, path)
+    def extractFile(container, String filename)
 
-    def uploadArchive(container, path, file)
+    def getArchive(container, path)
+
+    def putArchive(container, path, InputStream archive)
 
     def rename(container, newName)
 

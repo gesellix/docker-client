@@ -495,6 +495,11 @@ class DockerClientImpl implements DockerClient {
         return startExec(execId, actualExecConfig)
     }
 
+    /**
+     * @deprecated use #extractFile
+     * @see #extractFile(java.lang.String, java.lang.String)
+     */
+    @Deprecated
     @Override
     def copyFile(containerId, String filename) {
         logger.info "copy '${filename}' from '${containerId}'"
@@ -503,6 +508,11 @@ class DockerClientImpl implements DockerClient {
         return extractSingleTarEntry(response.stream as InputStream, filename)
     }
 
+    /**
+     * @deprecated use #getArchive
+     * @see #getArchive(java.lang.String, java.lang.String)
+     */
+    @Deprecated
     @Override
     def copy(containerId, resourceBody) {
         logger.info "docker cp ${containerId} ${resourceBody}"
@@ -520,7 +530,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def getArchiveStats(container, path) {
-        logger.info "docker archive info ${container}|${path}"
+        logger.info "docker archive stats ${container}|${path}"
 
         def response = getHttpClient().head([path : "/containers/${container}/archive".toString(),
                                              query: [path: path]])
@@ -543,13 +553,48 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def downloadArchive(container, path) {
-        logger.info "docker download from ${container}|${path}"
+    def extractFile(container, String filename) {
+        logger.info "extract '${filename}' from '${container}'"
+
+        def response = getArchive(container, filename)
+        return extractSingleTarEntry(response.stream as InputStream, filename)
     }
 
     @Override
-    def uploadArchive(container, path, file) {
+    def getArchive(container, path) {
+        logger.info "docker download from ${container}|${path}"
+
+        def response = getHttpClient().get([path : "/containers/${container}/archive".toString(),
+                                            query: [path: path]])
+
+        if (response.status.code == 404) {
+            logger.error("no such container ${container} or path ${path}")
+        }
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker get archive failed"))
+
+        def pathInfo = response.headers['X-Docker-Container-Path-Stat'.toLowerCase()]
+        if (pathInfo) {
+            def firstPathInfo = pathInfo.first() as String
+            logger.debug firstPathInfo
+            response['archiveStats'] = new JsonSlurper().parse(firstPathInfo.decodeBase64())
+        }
+        return response
+    }
+
+    @Override
+    def putArchive(container, path, InputStream archive) {
         logger.info "docker upload to ${container}|${path}"
+
+        def response = getHttpClient().put([path              : "/containers/${container}/archive".toString(),
+                                            query             : [path: path],
+                                            requestContentType: "application/x-tar",
+                                            body              : archive])
+
+        if (response.status.code == 404) {
+            logger.error("no such container ${container} or path ${path}")
+        }
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker put archive failed"))
+        return response
     }
 
     @Override

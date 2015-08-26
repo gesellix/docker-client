@@ -49,6 +49,12 @@ class LowLevelDockerClient {
         return request(config)
     }
 
+    def put(requestConfig) {
+        def config = ensureValidRequestConfig(requestConfig)
+        config.method = "PUT"
+        return request(config)
+    }
+
     def post(requestConfig) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "POST"

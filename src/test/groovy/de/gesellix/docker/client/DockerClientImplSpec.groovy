@@ -736,6 +736,42 @@ class DockerClientImplSpec extends Specification {
         stats == [key: 42]
     }
 
+    def "download file/folder from container"() {
+        given:
+        def tarStream = new ByteArrayInputStream("tar".bytes)
+        def containerPathStatHeader = 'X-Docker-Container-Path-Stat'.toLowerCase()
+        def expectedStats = [key: 42]
+        def encodedStats = new JsonBuilder(expectedStats).toString().bytes.encodeBase64()
+        def expectedResponse = [status : [success: true],
+                                headers: [:],
+                                stream : tarStream]
+        expectedResponse.headers[containerPathStatHeader] = [encodedStats]
+
+        when:
+        def result = dockerClient.getArchive("a-container", "/path/")
+
+        then:
+        1 * httpClient.get([path : "/containers/a-container/archive",
+                            query: [path: "/path/"]]) >> expectedResponse
+        result.archiveStats == [key: 42]
+        result.stream == tarStream
+    }
+
+    def "upload file/folder to container"() {
+        given:
+        def tarStream = new ByteArrayInputStream("tar".bytes)
+        def expectedResponse = [status: [success: true]]
+
+        when:
+        dockerClient.putArchive("a-container", "/path/", tarStream)
+
+        then:
+        1 * httpClient.put([path              : "/containers/a-container/archive",
+                            query             : [path: "/path/"],
+                            requestContentType: "application/x-tar",
+                            body              : tarStream]) >> expectedResponse
+    }
+
     def "rename container"() {
         when:
         dockerClient.rename("an-old-container", "a-new-container-name")

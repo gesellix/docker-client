@@ -152,6 +152,18 @@ class LowLevelDockerClientSpec extends Specification {
         method == "GET"
     }
 
+    def "put request uses the PUT method"() {
+        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        given:
+        client.metaClass.request = { config ->
+            config.method
+        }
+        when:
+        def method = client.put("/foo")
+        then:
+        method == "PUT"
+    }
+
     def "post request uses the POST method"() {
         def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
         given:
