@@ -128,6 +128,18 @@ class LowLevelDockerClientSpec extends Specification {
         ["foo": "bar"] | "post"
     }
 
+    def "head request uses the HEAD method"() {
+        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        given:
+        client.metaClass.request = { config ->
+            config.method
+        }
+        when:
+        def method = client.head("/foo")
+        then:
+        method == "HEAD"
+    }
+
     def "get request uses the GET method"() {
         def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
         given:

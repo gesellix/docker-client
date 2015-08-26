@@ -98,7 +98,7 @@ interface DockerClient {
 
     def copyFile(container, String filename)
 
-    def getArchiveInfo(container, path)
+    def getArchiveStats(container, path)
 
     def downloadArchive(container, path)
 

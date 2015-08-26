@@ -519,12 +519,11 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def getArchiveInfo(container, path) {
+    def getArchiveStats(container, path) {
         logger.info "docker archive info ${container}|${path}"
 
-        def response = getHttpClient().head([path              : "/containers/${container}/archive".toString(),
-                                             query             : [path: path],
-                                             requestContentType: "application/json"])
+        def response = getHttpClient().head([path : "/containers/${container}/archive".toString(),
+                                             query: [path: path]])
 
         if (response.status.code == 404) {
             logger.error("no such container ${container} or path ${path}")
@@ -539,7 +538,7 @@ class DockerClientImpl implements DockerClient {
 
         def firstPathInfo = pathInfo.first() as String
         logger.debug firstPathInfo
-        def decodedPathInfo = new JsonBuilder(new String(firstPathInfo.decodeBase64())).toPrettyString()
+        def decodedPathInfo = new JsonSlurper().parse(firstPathInfo.decodeBase64())
         return decodedPathInfo
     }
 

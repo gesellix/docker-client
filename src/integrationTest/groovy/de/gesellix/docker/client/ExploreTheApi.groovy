@@ -34,7 +34,7 @@ class ExploreTheApi {
         def runResult = dockerClient.run("gesellix/docker-client-testimage", [Cmd: cmds])
         println runResult.container.content.Id
 
-        def archiveInfo = dockerClient.getArchiveInfo(runResult.container.content.Id, '/foo/')
+        def archiveInfo = dockerClient.getArchiveStats(runResult.container.content.Id, '/foo/')
         println archiveInfo
 //        dockerClient.downloadArchive(container, path)
 //        dockerClient.uploadArchive(container, path, file)

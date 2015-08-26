@@ -718,6 +718,24 @@ class DockerClientImplSpec extends Specification {
         result == "file-content".bytes
     }
 
+    def "retrieve file/folder stats"() {
+        given:
+        def containerPathStatHeader = 'X-Docker-Container-Path-Stat'.toLowerCase()
+        def expectedStats = [key: 42]
+        def encodedStats = new JsonBuilder(expectedStats).toString().bytes.encodeBase64()
+        def expectedResponse = [status : [success: true],
+                                headers: [:]]
+        expectedResponse.headers[containerPathStatHeader] = [encodedStats]
+
+        when:
+        def stats = dockerClient.getArchiveStats("a-container", "/path/")
+
+        then:
+        1 * httpClient.head([path : "/containers/a-container/archive",
+                             query: [path: "/path/"]]) >> expectedResponse
+        stats == [key: 42]
+    }
+
     def "rename container"() {
         when:
         dockerClient.rename("an-old-container", "a-new-container-name")
