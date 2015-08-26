@@ -9,6 +9,9 @@ class ExploreTheApi {
         System.setProperty("docker.cert.path", "/Users/gesellix/.docker/machine/machines/default")
         def dockerClient = new DockerClientImpl(dockerHost: "https://192.168.99.100:2376")
 
+        println dockerClient.info().content
+        println dockerClient.version().content
+
 //    def runResult = dockerClient.run("gesellix/docker-client-testimage", [Cmd: ["ping", "127.0.0.1"]])
 //    println runResult.container.content.Id
 //    dockerClient.attach(runResult.content.Id)
@@ -24,7 +27,16 @@ class ExploreTheApi {
 //    println authConfig
 
 //    println new JsonBuilder(dockerClient.images().content).toPrettyString()
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage")
-        println imageId
+//        def imageId = dockerClient.pull("gesellix/docker-client-testimage")
+//        println imageId
+
+        def cmds = ["sh", "-c", "mkdir -p /foo; touch /foo/bar"]
+        def runResult = dockerClient.run("gesellix/docker-client-testimage", [Cmd: cmds])
+        println runResult.container.content.Id
+
+        def archiveInfo = dockerClient.getArchiveInfo(runResult.container.content.Id, '/foo/')
+        println archiveInfo
+//        dockerClient.downloadArchive(container, path)
+//        dockerClient.uploadArchive(container, path, file)
     }
 }

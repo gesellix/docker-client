@@ -519,6 +519,41 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
+    def getArchiveInfo(container, path) {
+        logger.info "docker archive info ${container}|${path}"
+
+        def response = getHttpClient().head([path              : "/containers/${container}/archive".toString(),
+                                             query             : [path: path],
+                                             requestContentType: "application/json"])
+
+        if (response.status.code == 404) {
+            logger.error("no such container ${container} or path ${path}")
+        }
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker head archive failed"))
+
+        def pathInfo = response.headers['X-Docker-Container-Path-Stat'.toLowerCase()]
+        if (!pathInfo) {
+            logger.error "didn't find 'X-Docker-Container-Path-Stat' header in response"
+            return response
+        }
+
+        def firstPathInfo = pathInfo.first() as String
+        logger.debug firstPathInfo
+        def decodedPathInfo = new JsonBuilder(new String(firstPathInfo.decodeBase64())).toPrettyString()
+        return decodedPathInfo
+    }
+
+    @Override
+    def downloadArchive(container, path) {
+        logger.info "docker download from ${container}|${path}"
+    }
+
+    @Override
+    def uploadArchive(container, path, file) {
+        logger.info "docker upload to ${container}|${path}"
+    }
+
+    @Override
     def rename(containerId, newName) {
         logger.info "docker rename"
         def response = getHttpClient().post([path : "/containers/${containerId}/rename".toString(),

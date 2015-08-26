@@ -22,37 +22,37 @@ interface DockerClient {
 
     def build(InputStream buildContext, query)
 
-    def tag(imageId, repository)
+    def tag(image, repository)
 
-    def tag(imageId, repository, force)
+    def tag(image, repository, force)
 
     def parseRepositoryTag(name)
 
-    def push(imageName)
+    def push(image)
 
-    def push(imageName, authBase64Encoded)
+    def push(image, authBase64Encoded)
 
-    def push(imageName, authBase64Encoded, registry)
+    def push(image, authBase64Encoded, registry)
 
-    def pull(imageName)
+    def pull(image)
 
-    def pull(imageName, tag)
+    def pull(image, tag)
 
-    def pull(imageName, tag, authBase64Encoded)
+    def pull(image, tag, authBase64Encoded)
 
-    def pull(imageName, tag, authBase64Encoded, registry)
+    def pull(image, tag, authBase64Encoded, registry)
 
     def ps()
 
     def ps(query)
 
-    def inspectContainer(containerId)
+    def inspectContainer(container)
 
-    def diff(containerId)
+    def diff(container)
 
-    def inspectImage(imageId)
+    def inspectImage(image)
 
-    def history(imageId)
+    def history(image)
 
     def images()
 
@@ -62,47 +62,53 @@ interface DockerClient {
 
     def createContainer(containerConfig, query)
 
-    def startContainer(containerId)
+    def startContainer(container)
 
-    def run(fromImage, containerConfig)
+    def run(image, containerConfig)
 
-    def run(fromImage, containerConfig, tag)
+    def run(image, containerConfig, tag)
 
-    def run(fromImage, containerConfig, tag, name)
+    def run(image, containerConfig, tag, name)
 
-    def restart(containerId)
+    def restart(container)
 
-    def stop(containerId)
+    def stop(container)
 
-    def kill(containerId)
+    def kill(container)
 
-    def wait(containerId)
+    def wait(container)
 
-    def pause(containerId)
+    def pause(container)
 
-    def unpause(containerId)
+    def unpause(container)
 
-    def rm(containerId)
+    def rm(container)
 
-    def rmi(imageId)
+    def rmi(image)
 
-    def createExec(containerId, execConfig)
+    def createExec(container, execConfig)
 
     def startExec(execId, execConfig)
 
-    def exec(containerId, command)
+    def exec(container, command)
 
-    def exec(containerId, command, execConfig)
+    def exec(container, command, execConfig)
 
-    def copy(containerId, resourceBody)
+    def copy(container, resourceBody)
 
-    def copyFile(containerId, String filename)
+    def copyFile(container, String filename)
 
-    def rename(containerId, newName)
+    def getArchiveInfo(container, path)
+
+    def downloadArchive(container, path)
+
+    def uploadArchive(container, path, file)
+
+    def rename(container, newName)
 
     def search(term)
 
-    def attach(containerId, query)
+    def attach(container, query)
 
-    def attachWebsocket(containerId, query, handler)
+    def attachWebsocket(container, query, handler)
 }
