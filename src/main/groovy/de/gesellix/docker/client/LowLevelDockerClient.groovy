@@ -37,6 +37,12 @@ class LowLevelDockerClient {
         sslSocketFactory = null
     }
 
+    def head(requestConfig) {
+        def config = ensureValidRequestConfig(requestConfig)
+        config.method = "HEAD"
+        return request(config)
+    }
+
     def get(requestConfig) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "GET"
