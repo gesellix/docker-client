@@ -582,11 +582,14 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def putArchive(container, path, InputStream archive) {
+    def putArchive(container, path, InputStream archive, query = [:]) {
         logger.info "docker upload to ${container}|${path}"
 
+        def finalQuery = query ?: [:]
+        finalQuery.path = path
+
         def response = getHttpClient().put([path              : "/containers/${container}/archive".toString(),
-                                            query             : [path: path],
+                                            query             : finalQuery,
                                             requestContentType: "application/x-tar",
                                             body              : archive])
 

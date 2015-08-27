@@ -116,6 +116,8 @@ interface DockerClient {
 
     def putArchive(container, path, InputStream archive)
 
+    def putArchive(container, path, InputStream archive, query)
+
     def rename(container, newName)
 
     def search(term)
