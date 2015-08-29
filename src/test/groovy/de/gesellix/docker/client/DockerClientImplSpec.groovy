@@ -753,7 +753,7 @@ class DockerClientImplSpec extends Specification {
         then:
         1 * httpClient.get([path : "/containers/a-container/archive",
                             query: [path: "/path/"]]) >> expectedResponse
-        result.archiveStats == [key: 42]
+        result.headers[containerPathStatHeader] == [encodedStats]
         result.stream == tarStream
     }
 
