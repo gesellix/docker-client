@@ -644,7 +644,11 @@ class DockerClientImpl implements DockerClient {
         logger.debug("entry size: ${entry.size}")
 
         def entryName = entry.name
-        logger.debug("entry name: ${entryName}")
+        if (!filename.endsWith(entryName)) {
+            logger.warn("entry name '${entryName}' doesn't match expected filename '${filename}'")
+        } else {
+            logger.debug("entry name: ${entryName}")
+        }
 
         byte[] content = new byte[(int) entry.size]
         logger.debug("going to read ${content.length} bytes")

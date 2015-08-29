@@ -30,13 +30,19 @@ class ExploreTheApi {
 //        def imageId = dockerClient.pull("gesellix/docker-client-testimage")
 //        println imageId
 
-        def cmds = ["sh", "-c", "mkdir -p /foo; touch /foo/bar"]
-        def runResult = dockerClient.run("gesellix/docker-client-testimage", [Cmd: cmds])
-        println runResult.container.content.Id
+//        def cmds = ["sh", "-c", "mkdir -p /foo; touch /foo/bar"]
+//        def runResult = dockerClient.run("gesellix/docker-client-testimage", [Cmd: cmds])
+//        println runResult.container.content.Id
 
-        def archiveInfo = dockerClient.getArchiveStats(runResult.container.content.Id, '/foo/')
+        def archiveInfo = dockerClient.getArchiveStats('cp-test', '/tst.txt')
         println archiveInfo
-//        dockerClient.downloadArchive(container, path)
-//        dockerClient.uploadArchive(container, path, file)
+
+//        def archive = dockerClient.getArchive('cp-test', '/tst.txt')
+//        println IOUtils.toString(archive.stream as InputStream)
+
+        def archive = dockerClient.extractFile('cp-test', '/tst.txt')
+        println new String(archive)
+
+//        dockerClient.putArchive(container, path, file)
     }
 }
