@@ -575,8 +575,7 @@ class DockerClientImpl implements DockerClient {
         def pathInfo = response.headers['X-Docker-Container-Path-Stat'.toLowerCase()]
         if (pathInfo) {
             def firstPathInfo = pathInfo.first() as String
-            logger.debug firstPathInfo
-            response['archiveStats'] = new JsonSlurper().parse(firstPathInfo.decodeBase64())
+            logger.debug "archiveStats: ${new JsonSlurper().parse(firstPathInfo.decodeBase64())}"
         }
         return response
     }
