@@ -37,11 +37,11 @@ class ExploreTheApi {
         def archiveInfo = dockerClient.getArchiveStats('cp-test', '/tst.txt')
         println archiveInfo
 
-//        def archive = dockerClient.getArchive('cp-test', '/tst.txt')
+        def archive = dockerClient.getArchive('cp-test', '/tst.txt')
 //        println IOUtils.toString(archive.stream as InputStream)
 
-        def archive = dockerClient.extractFile('cp-test', '/tst.txt')
-        println new String(archive)
+//        def archive = dockerClient.extractFile('cp-test', '/tst.txt')
+//        println new String(archive)
 
 //        dockerClient.putArchive(container, path, file)
     }

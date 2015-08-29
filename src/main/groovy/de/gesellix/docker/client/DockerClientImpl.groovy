@@ -540,7 +540,7 @@ class DockerClientImpl implements DockerClient {
         }
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker head archive failed"))
 
-        def pathInfo = response.headers['X-Docker-Container-Path-Stat'.toLowerCase()]
+        def pathInfo = response.headers['X-Docker-Container-Path-Stat'.toLowerCase()] as List
         if (!pathInfo) {
             logger.error "didn't find 'X-Docker-Container-Path-Stat' header in response"
             return response
@@ -548,7 +548,7 @@ class DockerClientImpl implements DockerClient {
 
         def firstPathInfo = pathInfo.first() as String
         logger.debug firstPathInfo
-        def decodedPathInfo = new JsonSlurper().parse(firstPathInfo.decodeBase64())
+        def decodedPathInfo = new JsonSlurper().parseText(new String(firstPathInfo.decodeBase64()))
         return decodedPathInfo
     }
 
@@ -572,10 +572,10 @@ class DockerClientImpl implements DockerClient {
         }
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker get archive failed"))
 
-        def pathInfo = response.headers['X-Docker-Container-Path-Stat'.toLowerCase()]
+        def pathInfo = response.headers['X-Docker-Container-Path-Stat'.toLowerCase()] as List
         if (pathInfo) {
             def firstPathInfo = pathInfo.first() as String
-            logger.debug "archiveStats: ${new JsonSlurper().parse(firstPathInfo.decodeBase64())}"
+            logger.debug "archiveStats: ${new JsonSlurper().parseText(new String(firstPathInfo.decodeBase64()))}"
         }
         return response
     }
