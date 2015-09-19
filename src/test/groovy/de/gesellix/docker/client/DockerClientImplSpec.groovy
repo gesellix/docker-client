@@ -380,6 +380,49 @@ class DockerClientImplSpec extends Specification {
         }
     }
 
+    def "import from url"() {
+        given:
+        def importUrl = getClass().getResource('importUrl/import-from-url.tar')
+
+        when:
+        def imageId = dockerClient.importUrl(importUrl.toString(), "imported-from-url", "foo")
+
+        then:
+        1 * httpClient.post([path   : "/images/create",
+                             query  : [fromSrc: importUrl.toString(),
+                                       repo   : "imported-from-url",
+                                       tag    : "foo"],
+                             headers: []]) >> [content: [[status: "image-id"]]]
+        and:
+        dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+            assert arguments[1]?.message == "docker import from url failed"
+        }
+        and:
+        imageId == "image-id"
+    }
+
+    def "import from stream"() {
+        given:
+        def archive = getClass().getResourceAsStream('importUrl/import-from-url.tar')
+
+        when:
+        def imageId = dockerClient.importStream(archive, "imported-from-url", "foo")
+
+        then:
+        1 * httpClient.post([path   : "/images/create",
+                             body   : archive,
+                             query  : [fromSrc: '-',
+                                       repo   : "imported-from-url",
+                                       tag    : "foo"],
+                             headers: []]) >> [content: [status: "image-id"]]
+        and:
+        dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+            assert arguments[1]?.message == "docker import from stream failed"
+        }
+        and:
+        imageId == "image-id"
+    }
+
     def "restart container"() {
         when:
         dockerClient.restart("a-container")

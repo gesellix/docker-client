@@ -16,10 +16,10 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     def setup() {
         def defaultDockerHost = System.env.DOCKER_HOST?.replaceFirst("tcp://", "http://")
-//    defaultDockerHost = "http://192.168.59.103:2376"
+//        defaultDockerHost = "http://192.168.99.100:2376"
 //    defaultDockerHost = "unix:///var/run/docker.sock"
 //    System.setProperty("docker.cert.path", "C:\\Users\\${System.getProperty('user.name')}\\.boot2docker\\certs\\boot2docker-vm")
-//    System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.boot2docker/certs/boot2docker-vm")
+//        System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
         dockerClient = new DockerClientImpl(dockerHost: defaultDockerHost ?: "http://172.17.42.1:2375")
     }
 
@@ -234,6 +234,40 @@ class DockerClientImplIntegrationSpec extends Specification {
 
         cleanup:
         dockerClient.rmi("localhost:5000/gesellix/docker-client-testimage")
+    }
+
+    def "import image from url"() {
+        given:
+        def importUrl = getClass().getResource('importUrl/import-from-url.tar')
+        def server = new TestHttpServer()
+        def serverAddress = server.start('/images/', new TestHttpServer.FileServer(importUrl))
+        def port = serverAddress.port
+        def addresses = listPublicIps()
+        def fileServerIp = addresses.first()
+
+        when:
+        def imageId = dockerClient.importUrl("http://${fileServerIp}:$port/images/${importUrl.path}", "import-from-url", "foo")
+
+        then:
+        imageId =~ "\\w+"
+
+        cleanup:
+        server.stop()
+        dockerClient.rmi(imageId)
+    }
+
+    def "import image from stream"() {
+        given:
+        def archive = getClass().getResourceAsStream('importUrl/import-from-url.tar')
+
+        when:
+        def imageId = dockerClient.importStream(archive, "import-from-url", "foo")
+
+        then:
+        imageId =~ "\\w+"
+
+        cleanup:
+        dockerClient.rmi(imageId)
     }
 
     def "list containers"() {
@@ -885,5 +919,21 @@ class DockerClientImplIntegrationSpec extends Specification {
         dockerClient.stop(containerId)
         dockerClient.wait(containerId)
         dockerClient.rm(containerId)
+    }
+
+    def matchIpv4 = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\$"
+
+    def listPublicIps() {
+        def addresses = []
+        NetworkInterface.getNetworkInterfaces()
+                .findAll { !it.loopback }
+                .each { NetworkInterface iface ->
+            iface.inetAddresses.findAll {
+                it.hostAddress.matches(matchIpv4)
+            }.each {
+                addresses.add(it.hostAddress)
+            }
+        }
+        addresses
     }
 }

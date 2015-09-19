@@ -249,6 +249,38 @@ class DockerClientImpl implements DockerClient {
         return findImageId(actualImageName, tag)
     }
 
+    @Override
+    def importUrl(url, repository = "", tag = "") {
+        logger.info "docker import '${url}' into ${repository}:${tag}"
+
+        def response = getHttpClient().post([path   : "/images/create",
+                                             query  : [fromSrc: url,
+                                                       repo   : repository ?: "",
+                                                       tag    : tag ?: ""],
+                                             headers: []])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker import from url failed"))
+
+        def responseBody = response.content
+        return responseBody.status.last()
+    }
+
+    @Override
+    def importStream(stream, repository = "", tag = "") {
+        logger.info "docker import stream into ${repository}:${tag}"
+
+        def response = getHttpClient().post([path              : "/images/create",
+                                             body              : stream,
+                                             query             : [fromSrc: "-",
+                                                                  repo   : repository ?: "",
+                                                                  tag    : tag ?: ""],
+                                             requestContentType: "application/x-tar",
+                                             headers           : []])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker import from stream failed"))
+
+        def responseBody = response.content
+        return responseBody.status
+    }
+
     // TODO we might need some authentication here for the pull(...) step
     @Override
     def createContainer(containerConfig, query = [name: ""]) {

@@ -5,7 +5,7 @@
 Since the Docker remote api tends to be backwards compatible,
 the Docker-Client currently supports most other api versions, too.
 
-Current api coverage (33/47): ![Remote API Coverage Status](http://progressed.io/bar/70)
+Current api coverage (35/48): ![Remote API Coverage Status](http://progressed.io/bar/73)
 
 This project tends to support most api endpoints, but only if there's an actual use case. If you're missing a feature, please file
 a [new issue](https://github.com/gesellix/docker-client/issues) or a [pull request](https://github.com/gesellix/docker-client/pulls)
@@ -44,7 +44,8 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker images`: List Images
 * [x] `docker build`: Build image from a Dockerfile
 * [x] `docker pull`: Create an image (from the registry)
-* [ ] `docker import`: Create an image (by import)
+* [x] `docker import`: Create an image (by import from url)
+* [x] `docker import`: Create an image (by import from stream)
 * [x] `docker inspect <image>`: Inspect an image
 * [x] `docker history <image>`: Get the history of an image
 * [x] `docker push <image>`: Push an image on the registry

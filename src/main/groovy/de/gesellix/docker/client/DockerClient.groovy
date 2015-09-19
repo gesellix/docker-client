@@ -42,6 +42,18 @@ interface DockerClient {
 
     def pull(image, tag, authBase64Encoded, registry)
 
+    def importUrl(url)
+
+    def importUrl(url, repository)
+
+    def importUrl(url, repository, tag)
+
+    def importStream(stream)
+
+    def importStream(stream, repository)
+
+    def importStream(stream, repository, tag)
+
     def ps()
 
     def ps(query)
