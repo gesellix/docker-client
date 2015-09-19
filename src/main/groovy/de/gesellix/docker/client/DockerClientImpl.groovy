@@ -281,6 +281,16 @@ class DockerClientImpl implements DockerClient {
         return responseBody.status
     }
 
+    @Override
+    def export(container) {
+        logger.info "docker export $container"
+
+        def response = getHttpClient().get([path: "/containers/$container/export"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker export failed"))
+
+        return response
+    }
+
     // TODO we might need some authentication here for the pull(...) step
     @Override
     def createContainer(containerConfig, query = [name: ""]) {

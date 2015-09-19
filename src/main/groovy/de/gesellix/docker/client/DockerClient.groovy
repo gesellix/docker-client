@@ -54,6 +54,8 @@ interface DockerClient {
 
     def importStream(stream, repository, tag)
 
+    def export(container)
+
     def ps()
 
     def ps(query)

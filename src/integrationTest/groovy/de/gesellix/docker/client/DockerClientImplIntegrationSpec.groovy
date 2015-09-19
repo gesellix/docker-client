@@ -1,5 +1,9 @@
 package de.gesellix.docker.client
 
+import groovy.util.logging.Slf4j
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
+import org.apache.commons.io.IOUtils
 import org.java_websocket.handshake.ServerHandshake
 import spock.lang.Ignore
 import spock.lang.IgnoreIf
@@ -9,6 +13,7 @@ import java.util.concurrent.CountDownLatch
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS
 
+@Slf4j
 @IgnoreIf({ !System.env.DOCKER_HOST })
 class DockerClientImplIntegrationSpec extends Specification {
 
@@ -17,8 +22,8 @@ class DockerClientImplIntegrationSpec extends Specification {
     def setup() {
         def defaultDockerHost = System.env.DOCKER_HOST?.replaceFirst("tcp://", "http://")
 //        defaultDockerHost = "http://192.168.99.100:2376"
-//    defaultDockerHost = "unix:///var/run/docker.sock"
-//    System.setProperty("docker.cert.path", "C:\\Users\\${System.getProperty('user.name')}\\.boot2docker\\certs\\boot2docker-vm")
+//        defaultDockerHost = "unix:///var/run/docker.sock"
+//        System.setProperty("docker.cert.path", "C:\\Users\\${System.getProperty('user.name')}\\.boot2docker\\certs\\boot2docker-vm")
 //        System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
         dockerClient = new DockerClientImpl(dockerHost: defaultDockerHost ?: "http://172.17.42.1:2375")
     }
@@ -267,6 +272,23 @@ class DockerClientImplIntegrationSpec extends Specification {
         imageId =~ "\\w+"
 
         cleanup:
+        dockerClient.rmi(imageId)
+    }
+
+    def "export from container"() {
+        given:
+        def archive = getClass().getResourceAsStream('importUrl/import-from-url.tar')
+        def imageId = dockerClient.importStream(archive)
+        def container = dockerClient.createContainer([Image: imageId, Cmd: ["-"]]).content.Id
+
+        when:
+        def response = dockerClient.export(container)
+
+        then:
+        listTarEntries(response.stream as InputStream).contains "something.txt"
+
+        cleanup:
+        dockerClient.rm(container)
         dockerClient.rmi(imageId)
     }
 
@@ -935,5 +957,21 @@ class DockerClientImplIntegrationSpec extends Specification {
             }
         }
         addresses
+    }
+
+    def listTarEntries(InputStream tarContent) {
+        def stream = new TarArchiveInputStream(new BufferedInputStream(tarContent))
+
+        def entryNames = []
+        TarArchiveEntry entry
+        while (entry = stream.nextTarEntry) {
+            def entryName = entry.name
+            entryNames << entryName
+
+            log.debug("entry name: ${entryName}")
+//            log.debug("entry size: ${entry.size}")
+        }
+        IOUtils.closeQuietly(stream)
+        return entryNames
     }
 }

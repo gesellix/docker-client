@@ -5,7 +5,7 @@
 Since the Docker remote api tends to be backwards compatible,
 the Docker-Client currently supports most other api versions, too.
 
-Current api coverage (35/48): ![Remote API Coverage Status](http://progressed.io/bar/73)
+Current api coverage (36/48): ![Remote API Coverage Status](http://progressed.io/bar/75)
 
 This project tends to support most api endpoints, but only if there's an actual use case. If you're missing a feature, please file
 a [new issue](https://github.com/gesellix/docker-client/issues) or a [pull request](https://github.com/gesellix/docker-client/pulls)
@@ -20,7 +20,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [ ] `docker top <container>`: List processes running inside a container
 * [ ] `docker logs <container>`: Get container logs
 * [x] `docker diff <container>`: Inspect changes on a container's filesystem
-* [ ] `docker export <container>`: Export a container
+* [x] `docker export <container>`: Export a container
 * [ ] `docker stats <container>`: Get container stats based on resource usage
 * [ ] Resize a container TTY
 * [x] `docker start <container>`: Start a container

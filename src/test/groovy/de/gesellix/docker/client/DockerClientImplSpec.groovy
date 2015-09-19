@@ -424,6 +424,20 @@ class DockerClientImplSpec extends Specification {
         imageId == "image-id"
     }
 
+    def "export container"() {
+        when:
+        def response = dockerClient.export("container-id")
+
+        then:
+        1 * httpClient.get([path: "/containers/container-id/export"]) >> [content: [status: "image-id"]]
+        and:
+        dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+            assert arguments[1]?.message == "docker export failed"
+        }
+        and:
+        response
+    }
+
     def "restart container"() {
         when:
         dockerClient.restart("a-container")

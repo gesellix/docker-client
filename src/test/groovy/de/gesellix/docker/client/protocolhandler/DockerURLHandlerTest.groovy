@@ -45,7 +45,7 @@ class DockerURLHandlerTest extends Specification {
         !assumeTls
     }
 
-    def "should fail when tlsVerify=1, but certs director doesn't exist"() {
+    def "should fail when tlsVerify=1, but certs directory doesn't exist"() {
         def dockerUrlHandler = new DockerURLHandler(
                 dockerTlsVerify: "1",
                 dockerCertPath: "/some/non-existing/path")
