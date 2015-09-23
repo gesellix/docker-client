@@ -5,7 +5,7 @@
 Since the Docker remote api tends to be backwards compatible,
 the Docker-Client currently supports most other api versions, too.
 
-Current api coverage (36/48): ![Remote API Coverage Status](http://progressed.io/bar/75)
+Current api coverage (37/48): ![Remote API Coverage Status](http://progressed.io/bar/77)
 
 This project tends to support most api endpoints, but only if there's an actual use case. If you're missing a feature, please file
 a [new issue](https://github.com/gesellix/docker-client/issues) or a [pull request](https://github.com/gesellix/docker-client/pulls)
@@ -59,7 +59,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker info`: Display system-wide information
 * [x] `docker version`: Show the docker version information
 * [x] Ping the docker server
-* [ ] `docker commit <container>`: Create a new image from a container's changes
+* [x] `docker commit <container>`: Create a new image from a container's changes
 * [ ] `docker events`: Monitor Docker's events
 * [ ] `docker save <image>`: Get a tarball containing all images in a repository
 * [ ] `docker save <image> [<image> ...]`: Get a tarball containing all images.

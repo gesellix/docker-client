@@ -875,6 +875,52 @@ class DockerClientImplSpec extends Specification {
                 wsHandler)
     }
 
+    def "commit container"() {
+        when:
+        dockerClient.commit("a-container", [
+                repo   : 'a-repo',
+                tag    : 'the-tag',
+                comment: 'a test',
+                author : 'Andrew Niccol <g@tta.ca>'
+        ])
+
+        then:
+        1 * httpClient.post([path              : "/commit",
+                             query             : [
+                                     container: "a-container",
+                                     repo     : 'a-repo',
+                                     tag      : 'the-tag',
+                                     comment  : 'a test',
+                                     author   : 'Andrew Niccol <g@tta.ca>'
+                             ],
+                             requestContentType: "application/json",
+                             body              : [:]])
+    }
+
+    def "commit container with changed container config"() {
+        when:
+        dockerClient.commit("a-container",
+                [
+                        repo   : 'a-repo',
+                        tag    : 'the-tag',
+                        comment: 'a test',
+                        author : 'Andrew Niccol <g@tta.ca>'
+                ],
+                [Cmd: "date"])
+
+        then:
+        1 * httpClient.post([path              : "/commit",
+                             query             : [
+                                     container: "a-container",
+                                     repo     : 'a-repo',
+                                     tag      : 'the-tag',
+                                     comment  : 'a test',
+                                     author   : 'Andrew Niccol <g@tta.ca>'
+                             ],
+                             requestContentType: "application/json",
+                             body              : [Cmd: "date"]])
+    }
+
     def "cleanupStorage removes exited containers"() {
         given:
         def keepContainer = { container ->

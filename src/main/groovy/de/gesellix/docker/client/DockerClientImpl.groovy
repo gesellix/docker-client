@@ -679,6 +679,22 @@ class DockerClientImpl implements DockerClient {
         return wsClient
     }
 
+    @Override
+    def commit(container, query, config = [:]) {
+        logger.info "docker commit"
+
+        def finalQuery = query ?: [:]
+        finalQuery.container = container
+
+        config = config ?: [:]
+
+        def response = getHttpClient().post([path              : "/commit",
+                                             query             : finalQuery,
+                                             requestContentType: "application/json",
+                                             body              : config])
+        return response
+    }
+
     def extractSingleTarEntry(InputStream tarContent, String filename) {
         def stream = new TarArchiveInputStream(new BufferedInputStream(tarContent))
 
