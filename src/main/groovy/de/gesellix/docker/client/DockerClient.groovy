@@ -108,6 +108,8 @@ interface DockerClient {
 
     def startExec(execId, execConfig)
 
+    def inspectExec(execId)
+
     def exec(container, command)
 
     def exec(container, command, execConfig)

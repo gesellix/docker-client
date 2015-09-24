@@ -724,6 +724,32 @@ class DockerClientImplSpec extends Specification {
         thrown(DockerClientException)
     }
 
+    def "inspect exec"() {
+        when:
+        dockerClient.inspectExec("an-exec")
+
+        then:
+        1 * httpClient.get([path: "/exec/an-exec/json"]) >> [status: [:]]
+        and:
+        dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+            assert arguments[1]?.message == "docker inspect exec failed"
+        }
+    }
+
+    def "inspect exec with missing exec"() {
+        given:
+        dockerClient.logger = Mock(Logger)
+
+        when:
+        dockerClient.inspectExec("a-missing-exec")
+
+        then:
+        1 * httpClient.get([path: "/exec/a-missing-exec/json"]) >> [status: [code: 404]]
+        1 * dockerClient.logger.error("no such exec 'a-missing-exec'")
+        and:
+        thrown(DockerClientException)
+    }
+
     def "exec"() {
         def execConfig = [:]
 

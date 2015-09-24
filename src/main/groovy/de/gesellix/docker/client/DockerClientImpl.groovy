@@ -544,6 +544,19 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
+    def inspectExec(execId) {
+        logger.info "docker inspect exec '${execId}'"
+
+        def response = getHttpClient().get([path: "/exec/${execId}/json".toString()])
+
+        if (response.status?.code == 404) {
+            logger.error("no such exec '${execId}'")
+        }
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker inspect exec failed"))
+        return response
+    }
+
+    @Override
     def exec(containerId, command, execConfig = [
             "Detach"     : false,
             "AttachStdin": false,
