@@ -253,11 +253,10 @@ class DockerClientImpl implements DockerClient {
     def importUrl(url, repository = "", tag = "") {
         logger.info "docker import '${url}' into ${repository}:${tag}"
 
-        def response = getHttpClient().post([path   : "/images/create",
-                                             query  : [fromSrc: url,
-                                                       repo   : repository ?: "",
-                                                       tag    : tag ?: ""],
-                                             headers: []])
+        def response = getHttpClient().post([path : "/images/create",
+                                             query: [fromSrc: url,
+                                                     repo   : repository ?: "",
+                                                     tag    : tag ?: ""]])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker import from url failed"))
 
         def responseBody = response.content
@@ -273,8 +272,7 @@ class DockerClientImpl implements DockerClient {
                                              query             : [fromSrc: "-",
                                                                   repo   : repository ?: "",
                                                                   tag    : tag ?: ""],
-                                             requestContentType: "application/x-tar",
-                                             headers           : []])
+                                             requestContentType: "application/x-tar"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker import from stream failed"))
 
         def responseBody = response.content
@@ -287,6 +285,33 @@ class DockerClientImpl implements DockerClient {
 
         def response = getHttpClient().get([path: "/containers/$container/export"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker export failed"))
+
+        return response
+    }
+
+    @Override
+    def save(... images) {
+        logger.info "docker save"
+
+        def response
+        if (images.length == 1) {
+            response = getHttpClient().get([path: "/images/${images.first()}/get"])
+        } else {
+            throw new UnsupportedOperationException("not yet implemented")
+        }
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker save failed"))
+
+        return response
+    }
+
+    @Override
+    def load(stream) {
+        logger.info "docker load"
+
+        def response = getHttpClient().post([path              : "/images/load",
+                                             body              : stream,
+                                             requestContentType: "application/x-tar"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker load failed"))
 
         return response
     }

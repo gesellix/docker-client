@@ -56,6 +56,10 @@ interface DockerClient {
 
     def export(container)
 
+    def save(... images)
+
+    def load(stream)
+
     def ps()
 
     def ps(query)

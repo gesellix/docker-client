@@ -388,11 +388,10 @@ class DockerClientImplSpec extends Specification {
         def imageId = dockerClient.importUrl(importUrl.toString(), "imported-from-url", "foo")
 
         then:
-        1 * httpClient.post([path   : "/images/create",
-                             query  : [fromSrc: importUrl.toString(),
-                                       repo   : "imported-from-url",
-                                       tag    : "foo"],
-                             headers: []]) >> [content: [[status: "image-id"]]]
+        1 * httpClient.post([path : "/images/create",
+                             query: [fromSrc: importUrl.toString(),
+                                     repo   : "imported-from-url",
+                                     tag    : "foo"]]) >> [content: [[status: "image-id"]]]
         and:
         dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
             assert arguments[1]?.message == "docker import from url failed"
@@ -414,14 +413,50 @@ class DockerClientImplSpec extends Specification {
                              requestContentType: "application/x-tar",
                              query             : [fromSrc: '-',
                                                   repo   : "imported-from-url",
-                                                  tag    : "foo"],
-                             headers           : []]) >> [content: [status: "image-id"]]
+                                                  tag    : "foo"]]) >> [content: [status: "image-id"]]
         and:
         dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
             assert arguments[1]?.message == "docker import from stream failed"
         }
         and:
         imageId == "image-id"
+    }
+
+    def "save one repository"() {
+        given:
+        def tarStream = new ByteArrayInputStream("tar".bytes)
+
+        when:
+        def response = dockerClient.save("image:tag")
+
+        then:
+        1 * httpClient.get([path: "/images/image:tag/get"]) >> [status: [success: true],
+                                                                stream: tarStream]
+        and:
+        dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+            assert arguments[1]?.message == "docker save failed"
+        }
+        and:
+        response.stream == tarStream
+    }
+
+    def "load"() {
+        given:
+        def archive = getClass().getResourceAsStream('importUrl/import-from-url.tar')
+
+        when:
+        def response = dockerClient.load(archive)
+
+        then:
+        1 * httpClient.post([path              : "/images/load",
+                             body              : archive,
+                             requestContentType: "application/x-tar"]) >> [status: [success: true]]
+        and:
+        dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+            assert arguments[1]?.message == "docker load failed"
+        }
+        and:
+        response.status == [success: true]
     }
 
     def "export container"() {
