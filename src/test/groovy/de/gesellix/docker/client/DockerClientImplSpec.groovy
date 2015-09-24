@@ -440,6 +440,25 @@ class DockerClientImplSpec extends Specification {
         response.stream == tarStream
     }
 
+    def "save multiple repositories"() {
+        given:
+        def tarStream = new ByteArrayInputStream("tar".bytes)
+
+        when:
+        def response = dockerClient.save("image:tag1", "an-id")
+
+        then:
+        1 * httpClient.get([path : "/images/get",
+                            query: [names: ["image:tag1", "an-id"]]]) >> [status: [success: true],
+                                                                          stream: tarStream]
+        and:
+        dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+            assert arguments[1]?.message == "docker save failed"
+        }
+        and:
+        response.stream == tarStream
+    }
+
     def "load"() {
         given:
         def archive = getClass().getResourceAsStream('importUrl/import-from-url.tar')

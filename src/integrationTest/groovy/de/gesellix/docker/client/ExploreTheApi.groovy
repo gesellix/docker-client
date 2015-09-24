@@ -1,5 +1,7 @@
 package de.gesellix.docker.client
 
+import org.apache.commons.io.IOUtils
+
 class ExploreTheApi {
 
     public static void main(String[] args) {
@@ -34,15 +36,18 @@ class ExploreTheApi {
 //        def runResult = dockerClient.run("gesellix/docker-client-testimage", [Cmd: cmds])
 //        println runResult.container.content.Id
 
-        def archiveInfo = dockerClient.getArchiveStats('cp-test', '/tst.txt')
-        println archiveInfo
+//        def archiveInfo = dockerClient.getArchiveStats('cp-test', '/tst.txt')
+//        println archiveInfo
 
-        def archive = dockerClient.getArchive('cp-test', '/tst.txt')
+//        def archive = dockerClient.getArchive('cp-test', '/tst.txt')
 //        println IOUtils.toString(archive.stream as InputStream)
 
 //        def archive = dockerClient.extractFile('cp-test', '/tst.txt')
 //        println new String(archive)
 
 //        dockerClient.putArchive(container, path, file)
+
+        def archive = dockerClient.save("a-repo:the-tag", "74c4aa413f9a")
+        println IOUtils.copy(archive.stream as InputStream, new FileOutputStream("./foo2.tar"))
     }
 }

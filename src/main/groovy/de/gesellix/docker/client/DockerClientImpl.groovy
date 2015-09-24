@@ -297,7 +297,8 @@ class DockerClientImpl implements DockerClient {
         if (images.length == 1) {
             response = getHttpClient().get([path: "/images/${images.first()}/get"])
         } else {
-            throw new UnsupportedOperationException("not yet implemented")
+            response = getHttpClient().get([path : "/images/get",
+                                            query: [names: images]])
         }
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker save failed"))
 

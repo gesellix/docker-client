@@ -88,12 +88,14 @@ class LowLevelDockerClientSpec extends Specification {
         expect:
         client.queryToString(parameters) == query
         where:
-        parameters                 | query
-        null                       | ""
-        [:]                        | ""
-        [param1: "value-1"]        | "param1=value-1"
-        ["p 1": "v 1"]             | "p+1=v+1"
-        [param1: "v 1", p2: "v-2"] | "param1=v+1&p2=v-2"
+        parameters                           | query
+        null                                 | ""
+        [:]                                  | ""
+        [param1: "value-1"]                  | "param1=value-1"
+        ["p 1": "v 1"]                       | "p+1=v+1"
+        [param1: "v 1", p2: "v-2"]           | "param1=v+1&p2=v-2"
+        [params: ["v 1", "v-2"]]             | "params=v+1&params=v-2"
+        [params: ["a 1", "a-2"] as String[]] | "params=a+1&params=a-2"
     }
 
     @Unroll

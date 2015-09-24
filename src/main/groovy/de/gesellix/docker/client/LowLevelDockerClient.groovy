@@ -289,7 +289,13 @@ class LowLevelDockerClient {
 
     def queryToString(Map queryParameters) {
         def queryAsString = queryParameters.collect { key, value ->
-            "${URLEncoder.encode("$key".toString(), "UTF-8")}=${URLEncoder.encode("$value".toString(), "UTF-8")}"
+            if (value instanceof String) {
+                "${URLEncoder.encode("$key".toString(), "UTF-8")}=${URLEncoder.encode("$value".toString(), "UTF-8")}"
+            } else {
+                value.collect {
+                    "${URLEncoder.encode("$key".toString(), "UTF-8")}=${URLEncoder.encode("$it".toString(), "UTF-8")}"
+                }.join("&")
+            }
         }
         return queryAsString.join("&")
     }
