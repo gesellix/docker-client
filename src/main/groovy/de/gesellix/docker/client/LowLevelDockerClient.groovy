@@ -102,8 +102,7 @@ class LowLevelDockerClient {
                 case "application/json":
                     def json = new JsonBuilder()
                     json config.body
-                    def bodyAsString = json.toString()
-                    def postData = bodyAsString.getBytes(Charset.forName("UTF-8"))
+                    def postData = json.toString().getBytes(Charset.forName("UTF-8"))
                     postBody = new ByteArrayInputStream(postData)
                     postDataLength = postData.length
                     connection.setRequestProperty("charset", "utf-8")

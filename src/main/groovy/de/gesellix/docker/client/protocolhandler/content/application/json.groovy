@@ -17,24 +17,19 @@ class json extends ContentHandler {
 
     @Override
     Object getContent(URLConnection connection) throws IOException {
-        try {
-            def stream = connection.getInputStream()
+        def stream = connection.getInputStream()
 
-            def jsonAsObject
-            if (connection.getHeaderField("transfer-encoding") == "chunked") {
-                def text = IOUtils.toString(stream)
-                if (text.matches(multipleChunks)) {
-                    jsonAsObject = jsonSlurper.parseText("[${text.replaceAll(chunkDelimiter, "},{")}]")
-                } else {
-                    jsonAsObject = jsonSlurper.parseText(text)
-                }
+        def jsonAsObject
+        if (connection.getHeaderField("transfer-encoding") == "chunked") {
+            def text = IOUtils.toString(stream)
+            if (text.matches(multipleChunks)) {
+                jsonAsObject = jsonSlurper.parseText("[${text.replaceAll(chunkDelimiter, "},{")}]")
             } else {
-                jsonAsObject = jsonSlurper.parse(stream)
+                jsonAsObject = jsonSlurper.parseText(text)
             }
-            return jsonAsObject
+        } else {
+            jsonAsObject = jsonSlurper.parse(stream)
         }
-        catch (IOException e) {
-            throw e
-        }
+        return jsonAsObject
     }
 }
