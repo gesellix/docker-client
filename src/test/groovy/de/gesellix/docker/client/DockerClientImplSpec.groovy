@@ -1001,6 +1001,26 @@ class DockerClientImplSpec extends Specification {
                              body              : [Cmd: "date"]])
     }
 
+    def "resize container tty"() {
+        when:
+        dockerClient.resizeTTY("a-container", 42, 31)
+
+        then:
+        1 * httpClient.post([path              : "/containers/a-container/resize",
+                             query             : [w: 31, h: 42],
+                             requestContentType: "text/plain"])
+    }
+
+    def "resize exec tty"() {
+        when:
+        dockerClient.resizeExec("an-exec", 42, 31)
+
+        then:
+        1 * httpClient.post([path              : "/exec/an-exec/resize",
+                             query             : [w: 31, h: 42],
+                             requestContentType: "text/plain"])
+    }
+
     def "cleanupStorage removes exited containers"() {
         given:
         def keepContainer = { container ->

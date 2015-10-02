@@ -149,4 +149,8 @@ interface DockerClient {
     def commit(container, query)
 
     def commit(container, query, config)
+
+    def resizeTTY(container, height, width)
+
+    def resizeExec(exec, height, width)
 }

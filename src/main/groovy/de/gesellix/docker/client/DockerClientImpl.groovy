@@ -734,6 +734,32 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
+    @Override
+    def resizeTTY(container, height, width) {
+        logger.info "docker resize container"
+//        if (!inspectContainer(container).Config.Tty) {
+//            logger.warn "container '${container}' hasn't been configured with a TTY!"
+//        }
+        def response = getHttpClient().post([path              : "/containers/${container}/resize".toString(),
+                                             query             : [h: height,
+                                                                  w: width],
+                                             requestContentType: "text/plain"])
+        return response
+    }
+
+    @Override
+    def resizeExec(exec, height, width) {
+        logger.info "docker resize exec"
+//        if (!inspectExec(exec).ProcessConfig.tty) {
+//            logger.warn "exec '${exec}' hasn't been configured with a TTY!"
+//        }
+        def response = getHttpClient().post([path              : "/exec/${exec}/resize".toString(),
+                                             query             : [h: height,
+                                                                  w: width],
+                                             requestContentType: "text/plain"])
+        return response
+    }
+
     def extractSingleTarEntry(InputStream tarContent, String filename) {
         def stream = new TarArchiveInputStream(new BufferedInputStream(tarContent))
 
