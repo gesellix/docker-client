@@ -13,9 +13,7 @@ class DockerWebsocketClient extends WebSocketClient {
     def handler
 
     DockerWebsocketClient(URI serverUri, handler) {
-        // the 'Origin' is necessary as long as Docker server verifies the header's existence
-        // see https://github.com/docker/docker/issues/14742
-        super(serverUri, new Draft_17(), ["Origin": "http://localhost"], 0)
+        super(serverUri, new Draft_17())
         this.handler = handler ?: new DefaultWebsocketHandler()
     }
 
