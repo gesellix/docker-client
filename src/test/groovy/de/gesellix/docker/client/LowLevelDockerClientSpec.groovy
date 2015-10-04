@@ -492,7 +492,9 @@ class LowLevelDockerClientSpec extends Specification {
         given:
         def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
         def contentHandler = new TestContentHandler(result: "result")
-        client.contentHandlerFactory = new TestContentHandlerFactory(contentHandler: contentHandler)
+        client.metaClass.newDockerContentHandlerFactory = { Map config ->
+            new TestContentHandlerFactory(contentHandler: contentHandler)
+        }
         def connectionMock = Mock(HttpURLConnection)
         client.metaClass.openConnection = {
             connectionMock
@@ -520,7 +522,9 @@ class LowLevelDockerClientSpec extends Specification {
         given:
         def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
         def contentHandler = new TestContentHandler(result: "result")
-        client.contentHandlerFactory = new TestContentHandlerFactory(contentHandler: contentHandler)
+        client.metaClass.newDockerContentHandlerFactory = { Map config ->
+            new TestContentHandlerFactory(contentHandler: contentHandler)
+        }
         def connectionMock = Mock(HttpURLConnection)
         client.metaClass.openConnection = {
             connectionMock
@@ -552,7 +556,9 @@ class LowLevelDockerClientSpec extends Specification {
         def responseBody = new ByteArrayInputStream((byte[]) headerAndPayload.bytes)
         def responseStream = new RawInputStream(responseBody)
         def contentHandler = new TestContentHandler(result: responseStream)
-        client.contentHandlerFactory = new TestContentHandlerFactory(contentHandler: contentHandler)
+        client.metaClass.newDockerContentHandlerFactory = { Map config ->
+            new TestContentHandlerFactory(contentHandler: contentHandler)
+        }
         def connectionMock = Mock(HttpURLConnection)
         client.metaClass.openConnection = {
             connectionMock
@@ -583,7 +589,9 @@ class LowLevelDockerClientSpec extends Specification {
         def responseBody = new ByteArrayInputStream((byte[]) headerAndPayload.bytes)
         def responseStream = new RawInputStream(responseBody)
         def contentHandler = new TestContentHandler(result: responseStream)
-        client.contentHandlerFactory = new TestContentHandlerFactory(contentHandler: contentHandler)
+        client.metaClass.newDockerContentHandlerFactory = { Map config ->
+            new TestContentHandlerFactory(contentHandler: contentHandler)
+        }
         def connectionMock = Mock(HttpURLConnection)
         client.metaClass.openConnection = {
             connectionMock

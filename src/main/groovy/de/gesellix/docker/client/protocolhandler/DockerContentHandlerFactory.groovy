@@ -7,6 +7,12 @@ import sun.net.www.content.text.plain
 
 class DockerContentHandlerFactory implements ContentHandlerFactory {
 
+    private Map requestConfig
+
+    DockerContentHandlerFactory(Map config) {
+        this.requestConfig = config
+    }
+
     @Override
     ContentHandler createContentHandler(String contentType) {
         def mimetype = contentType?.replace(" ", "")?.split(";")?.first()

@@ -19,7 +19,6 @@ class LowLevelDockerClient {
 
     def Logger logger = LoggerFactory.getLogger(LowLevelDockerClient)
 
-    ContentHandlerFactory contentHandlerFactory
     DockerURLHandler dockerURLHandler
 
     Proxy proxy
@@ -30,7 +29,6 @@ class LowLevelDockerClient {
 
     LowLevelDockerClient() {
         dockerURLHandler = new DockerURLHandler()
-        contentHandlerFactory = new DockerContentHandlerFactory()
         dockerHost = "http://127.0.0.1:2375"
         proxy = Proxy.NO_PROXY
         sslContext = null
@@ -149,6 +147,7 @@ class LowLevelDockerClient {
             return response
         }
 
+        ContentHandlerFactory contentHandlerFactory = newDockerContentHandlerFactory(config)
         def contentHandler = contentHandlerFactory.createContentHandler(response.mimeType as String)
         if (contentHandler == null) {
             if (response.stream) {
@@ -164,10 +163,9 @@ class LowLevelDockerClient {
             return response
         }
 
-        def content = contentHandler.getContent(connection)
-
         switch (response.mimeType) {
             case "application/vnd.docker.raw-stream":
+                def content = contentHandler.getContent(connection)
                 InputStream rawStream = content as InputStream
                 response.stream = rawStream
                 if (config.stdout) {
@@ -177,16 +175,20 @@ class LowLevelDockerClient {
                 }
                 break
             case "application/json":
+                def content = contentHandler.getContent(connection)
                 consumeResponseBody(response, content, config)
                 break
             case "text/html":
+                def content = contentHandler.getContent(connection)
                 consumeResponseBody(response, content, config)
                 break
             case "text/plain":
+                def content = contentHandler.getContent(connection)
                 consumeResponseBody(response, content, config)
                 break
             default:
                 logger.warn("unexpected mime type '${response.mimeType}'.")
+                def content = contentHandler.getContent(connection)
                 if (content instanceof InputStream) {
                     logger.debug("passing through via `response.stream`.")
                     if (config.stdout) {
@@ -204,6 +206,10 @@ class LowLevelDockerClient {
         }
 
         return response
+    }
+
+    def newDockerContentHandlerFactory(Map config) {
+        return new DockerContentHandlerFactory(config)
     }
 
     def readHeaders(HttpURLConnection connection) {
