@@ -209,7 +209,7 @@ class LowLevelDockerClient {
     }
 
     def newDockerContentHandlerFactory(Map config) {
-        return new DockerContentHandlerFactory(config)
+        return new DockerContentHandlerFactory(config.async as boolean)
     }
 
     def readHeaders(HttpURLConnection connection) {
@@ -251,7 +251,9 @@ class LowLevelDockerClient {
 
     def consumeResponseBody(DockerResponse response, Object content, Map config) {
         if (content instanceof InputStream) {
-            if (config.stdout) {
+            if (config.async) {
+                response.stream = content as InputStream
+            } else if (config.stdout) {
                 IOUtils.copy(content as InputStream, config.stdout as OutputStream)
                 response.stream = null
             } else if (response.contentLength && Integer.parseInt(response.contentLength) >= 0) {

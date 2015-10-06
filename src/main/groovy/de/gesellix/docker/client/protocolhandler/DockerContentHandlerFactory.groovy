@@ -7,10 +7,10 @@ import sun.net.www.content.text.plain
 
 class DockerContentHandlerFactory implements ContentHandlerFactory {
 
-    private Map requestConfig
+    def async = false
 
-    DockerContentHandlerFactory(Map config) {
-        this.requestConfig = config
+    DockerContentHandlerFactory(boolean async) {
+        this.async = async
     }
 
     @Override
@@ -21,7 +21,7 @@ class DockerContentHandlerFactory implements ContentHandlerFactory {
             case "text/html":
                 return new plain()
             case "application/json":
-                return new json()
+                return new json(async)
             case "application/octet-stream":
                 return new octet_stream()
             case "application/vnd.docker.raw-stream":

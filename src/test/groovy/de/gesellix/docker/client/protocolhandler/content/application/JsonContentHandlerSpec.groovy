@@ -10,7 +10,8 @@ class JsonContentHandlerSpec extends Specification {
     def jsonContentHandler
 
     def setup() {
-        jsonContentHandler = new json(jsonSlurper: jsonSlurper)
+        jsonContentHandler = new json(false)
+        jsonContentHandler.jsonSlurper = jsonSlurper
     }
 
     def "should convert json chunks to an array of json chunks"() {
@@ -24,6 +25,20 @@ class JsonContentHandlerSpec extends Specification {
 
         then:
         1 * jsonSlurper.parseText("[{'key':'a-value'},{'2nd':'chunk'}]") >> ["key": "a-value", "2nd": "chunk"]
+    }
+
+    def "should return underlying InputStream when async is allowed"() {
+        given:
+        def inputStream = new ByteArrayInputStream("{'key':'a-value'}\n{'2nd':'chunk'}".bytes)
+        connection.inputStream >> inputStream
+        connection.getHeaderField("transfer-encoding") >> "chunked"
+        jsonContentHandler.async = true
+
+        when:
+        def content = jsonContentHandler.getContent(connection)
+
+        then:
+        content == inputStream
     }
 
     def "should delegate to the JsonSlurper"() {

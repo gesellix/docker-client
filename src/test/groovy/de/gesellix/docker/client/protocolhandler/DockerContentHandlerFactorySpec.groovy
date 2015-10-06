@@ -11,7 +11,7 @@ class DockerContentHandlerFactorySpec extends Specification {
     DockerContentHandlerFactory contentHandlerFactory
 
     def setup() {
-        contentHandlerFactory = new DockerContentHandlerFactory([:])
+        contentHandlerFactory = new DockerContentHandlerFactory(false)
     }
 
     @Unroll
