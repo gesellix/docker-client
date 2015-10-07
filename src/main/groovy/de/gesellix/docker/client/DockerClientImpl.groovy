@@ -9,6 +9,8 @@ import org.codehaus.groovy.runtime.MethodClosure
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import java.util.concurrent.Executors
+
 class DockerClientImpl implements DockerClient {
 
     def Logger logger = LoggerFactory.getLogger(DockerClientImpl)
@@ -685,6 +687,7 @@ class DockerClientImpl implements DockerClient {
         logger.info "docker rename"
         def response = getHttpClient().post([path : "/containers/${containerId}/rename".toString(),
                                              query: [name: newName]])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker rename failed"))
         return response
     }
 
@@ -693,6 +696,7 @@ class DockerClientImpl implements DockerClient {
         logger.info "docker search"
         def response = getHttpClient().get([path : "/images/search".toString(),
                                             query: [term: term]])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker search failed"))
         return response
     }
 
@@ -731,6 +735,7 @@ class DockerClientImpl implements DockerClient {
                                              query             : finalQuery,
                                              requestContentType: "application/json",
                                              body              : config])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker commit failed"))
         return response
     }
 
@@ -744,6 +749,7 @@ class DockerClientImpl implements DockerClient {
                                              query             : [h: height,
                                                                   w: width],
                                              requestContentType: "text/plain"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker resize(tty) failed"))
         return response
     }
 
@@ -757,6 +763,40 @@ class DockerClientImpl implements DockerClient {
                                              query             : [h: height,
                                                                   w: width],
                                              requestContentType: "text/plain"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker resize(exec) failed"))
+        return response
+    }
+
+    @Override
+    def events(query) {
+        logger.info "docker events (polling)"
+
+        if (!query.since && !query.until) {
+            logger.warn "neither `since` nor `until` set, but no async callback provided. Consider using #events(DockerAsyncCallback, Map)."
+        }
+
+        jsonEncodeFilters(query)
+        def response = getHttpClient().get([path : "/events",
+                                            query: query,
+                                            async: false])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker events failed"))
+        return response
+    }
+
+    def events(DockerAsyncCallback callback, query = [:]) {
+        logger.info "docker events (streaming)"
+
+        if (query.since || query.until) {
+            logger.warn "async callback provided, but using `since`/`until` implies synchronous polling. Consider using #events(Map)."
+        }
+
+        jsonEncodeFilters(query)
+        def response = getHttpClient().get([path : "/events",
+                                            query: query,
+                                            async: true])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker events failed"))
+        def executor = Executors.newSingleThreadExecutor()
+        executor.submit(new DockerAsyncConsumer(response, callback))
         return response
     }
 

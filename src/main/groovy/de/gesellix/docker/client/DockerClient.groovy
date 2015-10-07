@@ -153,4 +153,10 @@ interface DockerClient {
     def resizeTTY(container, height, width)
 
     def resizeExec(exec, height, width)
+
+    def events(DockerAsyncCallback callback)
+
+    def events(DockerAsyncCallback callback, query)
+
+    def events(query)
 }

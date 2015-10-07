@@ -8,10 +8,10 @@ class LowLevelDockerClientExplorationTest extends Specification {
 
     def "local test"() {
         def defaultDockerHost = System.env.DOCKER_HOST
-//        defaultDockerHost = "http://192.168.99.100:2376"
 //        defaultDockerHost = "unix:///var/run/docker.sock"
+        defaultDockerHost = "http://192.168.99.100:2376"
+        System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
 //        System.setProperty("docker.cert.path", "C:\\Users\\${System.getProperty('user.name')}\\.boot2docker\\certs\\boot2docker-vm")
-//        System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
         def client = new LowLevelDockerClient(dockerHost: defaultDockerHost ?: "http://172.17.42.1:4243/")
 
         def response
@@ -34,8 +34,38 @@ class LowLevelDockerClientExplorationTest extends Specification {
 //        response = client.post([path : "/images/create",
 //                                query: [fromImage: "gesellix/docker-client-testimage", tag: "latest", "registry": ""]])
 //        println response
+        response = client.get([path : "/events",
+                               async: true])
+        new DockerStreamConsumer(response.stream as InputStream).consume(System.out)
 
         expect:
         1 == 1
+    }
+
+    static class DockerStreamConsumer {
+        private BufferedReader reader
+
+        DockerStreamConsumer(InputStream stream) {
+            this(new BufferedReader(new InputStreamReader(stream)))
+        }
+
+        DockerStreamConsumer(BufferedReader reader) {
+            this.reader = reader
+        }
+
+        def consume(PrintStream os) {
+            try {
+                String input
+
+                int count = 0
+                while ((input = reader.readLine()) != null) {
+                    count++
+                    os.println("$count | $input")
+                }
+                os.close()
+            } catch (Exception e) {
+                System.err.println("problem reading from stream: ${e.message}")
+            }
+        }
     }
 }

@@ -1,18 +1,25 @@
 package de.gesellix.docker.client
 
 import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
+import groovy.json.JsonSlurper
 import org.apache.commons.io.IOUtils
 import spock.lang.Ignore
 import spock.lang.Specification
+
+import java.util.concurrent.CountDownLatch
+
+import static java.util.concurrent.TimeUnit.SECONDS
 
 class DockerClientImplExplorationTest extends Specification {
 
     DockerClient dockerClient
 
     def setup() {
-        def defaultDockerHost = System.env.DOCKER_HOST?.replaceFirst("tcp://", "http://")
-//    System.setProperty("docker.cert.path", "C:\\Users\\gesellix\\.boot2docker\\certs\\boot2docker-vm")
-        System.setProperty("docker.cert.path", "/Users/gesellix/.boot2docker/certs/boot2docker-vm")
+        def defaultDockerHost = System.env.DOCKER_HOST
+//        defaultDockerHost = "unix:///var/run/docker.sock"
+        defaultDockerHost = "http://192.168.99.100:2376"
+        System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
+//        System.setProperty("docker.cert.path", "C:\\Users\\${System.getProperty('user.name')}\\.boot2docker\\certs\\boot2docker-vm")
         dockerClient = new DockerClientImpl(dockerHost: defaultDockerHost ?: "https://192.168.59.103:2376")
     }
 
@@ -94,5 +101,35 @@ class DockerClientImplExplorationTest extends Specification {
         and:
         attached.stream.multiplexStreams == false
         IOUtils.copy(attached.stream, System.out)
+    }
+
+    @Ignore("only for explorative testing")
+    def "events (async)"() {
+        given:
+        def latch = new CountDownLatch(1)
+        def callback = new DockerAsyncCallback() {
+            def events = []
+
+            @Override
+            def onEvent(Object event) {
+                println event
+                events << new JsonSlurper().parseText(event as String)
+                latch.countDown()
+            }
+        }
+        dockerClient.events(callback)
+
+        when:
+        def response = dockerClient.createContainer([Cmd: "-"])
+        latch.await(5, SECONDS)
+
+        then:
+        callback.events.size() == 1
+        and:
+        callback.events.first().status == "create"
+        callback.events.first().id == response.content.Id
+
+        cleanup:
+        dockerClient.rm(response.content.Id)
     }
 }

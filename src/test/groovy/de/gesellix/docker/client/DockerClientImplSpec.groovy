@@ -5,6 +5,8 @@ import org.slf4j.Logger
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import java.util.concurrent.CountDownLatch
+
 class DockerClientImplSpec extends Specification {
 
     def DockerClientImpl dockerClient = Spy(DockerClientImpl)
@@ -916,7 +918,7 @@ class DockerClientImplSpec extends Specification {
 
         then:
         1 * httpClient.post([path : "/containers/an-old-container/rename",
-                             query: [name: "a-new-container-name"]]) >> [:]
+                             query: [name: "a-new-container-name"]]) >> [status: [success: true]]
     }
 
     def "search"() {
@@ -925,7 +927,7 @@ class DockerClientImplSpec extends Specification {
 
         then:
         1 * httpClient.get([path : "/images/search",
-                            query: [term: "ubuntu"]])
+                            query: [term: "ubuntu"]]) >> [status: [success: true]]
     }
 
     def "attach"() {
@@ -974,7 +976,7 @@ class DockerClientImplSpec extends Specification {
                                      author   : 'Andrew Niccol <g@tta.ca>'
                              ],
                              requestContentType: "application/json",
-                             body              : [:]])
+                             body              : [:]]) >> [status: [success: true]]
     }
 
     def "commit container with changed container config"() {
@@ -998,7 +1000,7 @@ class DockerClientImplSpec extends Specification {
                                      author   : 'Andrew Niccol <g@tta.ca>'
                              ],
                              requestContentType: "application/json",
-                             body              : [Cmd: "date"]])
+                             body              : [Cmd: "date"]]) >> [status: [success: true]]
     }
 
     def "resize container tty"() {
@@ -1008,7 +1010,7 @@ class DockerClientImplSpec extends Specification {
         then:
         1 * httpClient.post([path              : "/containers/a-container/resize",
                              query             : [w: 31, h: 42],
-                             requestContentType: "text/plain"])
+                             requestContentType: "text/plain"]) >> [status: [success: true]]
     }
 
     def "resize exec tty"() {
@@ -1018,7 +1020,44 @@ class DockerClientImplSpec extends Specification {
         then:
         1 * httpClient.post([path              : "/exec/an-exec/resize",
                              query             : [w: 31, h: 42],
-                             requestContentType: "text/plain"])
+                             requestContentType: "text/plain"]) >> [status: [success: true]]
+    }
+
+    def "events (streaming)"() {
+        given:
+        def latch = new CountDownLatch(1)
+        def content = new ByteArrayInputStream('{"status":"created"}\n'.bytes)
+        DockerAsyncCallback callback = new DockerAsyncCallback() {
+            def events = []
+
+            @Override
+            def onEvent(Object event) {
+                events << event
+                latch.countDown()
+            }
+        }
+
+        when:
+        dockerClient.events(callback)
+        latch.await()
+
+        then:
+        1 * httpClient.get([path: "/events", query: [:], async: true]) >> new DockerResponse(
+                status: [success: true],
+                stream: content)
+        and:
+        callback.events.first() == '{"status":"created"}'
+    }
+
+    def "events (polling)"() {
+        given:
+        def since = new Date().time
+
+        when:
+        dockerClient.events([since: since])
+
+        then:
+        1 * httpClient.get([path: "/events", query: [since: since], async: false]) >> [status: [success: true]]
     }
 
     def "cleanupStorage removes exited containers"() {
