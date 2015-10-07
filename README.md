@@ -2,6 +2,7 @@
 
 A Docker HTTP client written in Groovy
 
+[![Remote API Coverage Status](http://progressed.io/bar/94?title=api%20coverage)](https://github.com/gesellix/docker-client/blob/master/roadmap.md)
 [![Build Status](https://travis-ci.org/gesellix/docker-client.svg)](https://travis-ci.org/gesellix/docker-client)
 [![Latest version](https://api.bintray.com/packages/gesellix/docker-utils/docker-client/images/download.svg) ](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion)
 
@@ -19,7 +20,7 @@ Then, you need to add the dependency, but please ensure to use the [latest versi
 
 ```
 dependencies {
-  compile 'de.gesellix:docker-client:2015-08-11T22-31-29'
+  compile 'de.gesellix:docker-client:2015-10-07T21-43-15'
 }
 ```
 

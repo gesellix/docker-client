@@ -5,8 +5,6 @@
 Since the Docker remote api tends to be backwards compatible,
 the Docker-Client currently supports most other api versions, too.
 
-Current api coverage (45/48 endpoints): ![Remote API Coverage Status](http://progressed.io/bar/94)
-
 This project tends to support most api endpoints, but it always depends on free time. If you're missing a feature, please file
 a [new issue](https://github.com/gesellix/docker-client/issues) or a [pull request](https://github.com/gesellix/docker-client/pulls)
 and we'll add it as soon as possible. If you're looking for another Java based Docker library with similar feature set,
