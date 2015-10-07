@@ -180,4 +180,15 @@ class DockerClientImplExplorationTest extends Specification {
         cleanup:
         dockerClient.rm(container2)
     }
+
+    @Ignore("only for explorative testing")
+    def top() {
+        when:
+        def top = dockerClient.top("foo").content
+
+        then:
+        top == [Titles   : ["UID", "PID", "PPID", "C", "STIME", "TTY", "TIME", "CMD"],
+                Processes: [["root", "19265", "964", "0", "21:37", "pts/0", "00:00:00", "ping 127.0.0.1"]]
+        ]
+    }
 }

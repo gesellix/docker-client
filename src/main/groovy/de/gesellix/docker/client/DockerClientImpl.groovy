@@ -780,6 +780,16 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
+    def top(container, ps_args = null) {
+        logger.info "docker top"
+
+        def query = ps_args ? [ps_args: ps_args] : [:]
+        def response = getHttpClient().get([path : "/containers/${container}/top",
+                                            query: query])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker top failed"))
+        return response
+    }
+
     def extractSingleTarEntry(InputStream tarContent, String filename) {
         def stream = new TarArchiveInputStream(new BufferedInputStream(tarContent))
 

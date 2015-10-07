@@ -157,4 +157,8 @@ interface DockerClient {
     def events(DockerAsyncCallback callback)
 
     def events(DockerAsyncCallback callback, query)
+
+    def top(container)
+
+    def top(container, ps_args)
 }

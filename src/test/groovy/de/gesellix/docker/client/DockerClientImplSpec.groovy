@@ -1085,6 +1085,15 @@ class DockerClientImplSpec extends Specification {
                 status: [success: true])
     }
 
+    def "top"() {
+        when:
+        dockerClient.top("a-container", "aux")
+
+        then:
+        1 * httpClient.get([path : "/containers/a-container/top",
+                            query: [ps_args: "aux"]]) >> [status: [success: true]]
+    }
+
     def "cleanupStorage removes exited containers"() {
         given:
         def keepContainer = { container ->
