@@ -767,28 +767,8 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
-    @Override
-    def events(query) {
-        logger.info "docker events (polling)"
-
-        if (!query.since && !query.until) {
-            logger.warn "neither `since` nor `until` set, but no async callback provided. Consider using #events(DockerAsyncCallback, Map)."
-        }
-
-        jsonEncodeFilters(query)
-        def response = getHttpClient().get([path : "/events",
-                                            query: query,
-                                            async: false])
-        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker events failed"))
-        return response
-    }
-
     def events(DockerAsyncCallback callback, query = [:]) {
-        logger.info "docker events (streaming)"
-
-        if (query.since || query.until) {
-            logger.warn "async callback provided, but using `since`/`until` implies synchronous polling. Consider using #events(Map)."
-        }
+        logger.info "docker events"
 
         jsonEncodeFilters(query)
         def response = getHttpClient().get([path : "/events",

@@ -1051,13 +1051,38 @@ class DockerClientImplSpec extends Specification {
 
     def "events (polling)"() {
         given:
+        def latch = new CountDownLatch(1)
+        def content = new ByteArrayInputStream('{"status":"created"}\n'.bytes)
+        DockerAsyncCallback callback = new DockerAsyncCallback() {
+            def events = []
+
+            @Override
+            def onEvent(Object event) {
+                events << event
+                latch.countDown()
+            }
+        }
         def since = new Date().time
 
         when:
-        dockerClient.events([since: since])
+        dockerClient.events(callback, [since: since])
+        latch.await()
 
         then:
-        1 * httpClient.get([path: "/events", query: [since: since], async: false]) >> [status: [success: true]]
+        1 * httpClient.get([path: "/events", query: [since: since], async: true]) >> new DockerResponse(
+                status: [success: true],
+                stream: content)
+        and:
+        callback.events.first() == '{"status":"created"}'
+    }
+
+    def "events (with filters)"() {
+        when:
+        dockerClient.events(Mock(DockerAsyncCallback), [filters: [container: ["foo"]]])
+
+        then:
+        1 * httpClient.get([path: "/events", query: ['filters': '{"container":["foo"]}'], async: true]) >> new DockerResponse(
+                status: [success: true])
     }
 
     def "cleanupStorage removes exited containers"() {

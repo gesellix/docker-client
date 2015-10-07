@@ -3,6 +3,7 @@ package de.gesellix.docker.client
 import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
 import groovy.json.JsonSlurper
 import org.apache.commons.io.IOUtils
+import org.joda.time.DateTime
 import spock.lang.Ignore
 import spock.lang.Specification
 
@@ -131,5 +132,52 @@ class DockerClientImplExplorationTest extends Specification {
 
         cleanup:
         dockerClient.rm(response.content.Id)
+    }
+
+    @Ignore("only for explorative testing")
+    def "events (poll)"() {
+        // meh. boot2docker/docker-machine sometimes need a time update, e.g. via:
+        // docker-machine ssh default 'sudo ntpclient -s -h pool.ntp.org'
+
+        given:
+        def dockerSystemTime = DateTime.parse(dockerClient.info().content.SystemTime as String)
+        long dockerEpoch = dockerSystemTime.millis / 1000
+
+        def localSystemTime = DateTime.now()
+        long localEpoch = localSystemTime.millis / 1000
+
+        long timeOffset = localEpoch - dockerEpoch
+
+        def latch = new CountDownLatch(1)
+        def callback = new DockerAsyncCallback() {
+            def events = []
+
+            @Override
+            def onEvent(Object event) {
+                println event
+                events << new JsonSlurper().parseText(event as String)
+                latch.countDown()
+            }
+        }
+
+        def container1 = dockerClient.createContainer([Cmd: "-"]).content.Id
+        def container2 = dockerClient.createContainer([Cmd: "-"]).content.Id
+
+        Thread.sleep(1000)
+        long epochBeforeRm = (DateTime.now().millis / 1000) + timeOffset
+        dockerClient.rm(container1)
+
+        when:
+        dockerClient.events(callback, [since: epochBeforeRm])
+        latch.await(5, SECONDS)
+
+        then:
+        callback.events.size() == 1
+        and:
+        callback.events.first().status == "destroy"
+        callback.events.first().id == container1
+
+        cleanup:
+        dockerClient.rm(container2)
     }
 }

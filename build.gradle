@@ -104,6 +104,7 @@ dependencies {
     }
     testCompile 'cglib:cglib-nodep:3.1'
     testCompile 'commons-lang:commons-lang:2.6'
+    testCompile 'joda-time:joda-time:2.8.2'
 
     testRuntime 'ch.qos.logback:logback-classic:1.1.3'
 }
