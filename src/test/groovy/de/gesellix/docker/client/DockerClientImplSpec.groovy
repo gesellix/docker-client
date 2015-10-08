@@ -1094,6 +1094,16 @@ class DockerClientImplSpec extends Specification {
                             query: [ps_args: "aux"]]) >> [status: [success: true]]
     }
 
+    def "stats"() {
+        when:
+        dockerClient.stats("a-container")
+
+        then:
+        1 * httpClient.get([path : "/containers/a-container/stats",
+                            query: [stream: false],
+                            async: false]) >> [status: [success: true]]
+    }
+
     def "cleanupStorage removes exited containers"() {
         given:
         def keepContainer = { container ->

@@ -161,4 +161,8 @@ interface DockerClient {
     def top(container)
 
     def top(container, ps_args)
+
+    def stats(container)
+
+    def stats(container, DockerAsyncCallback callback)
 }

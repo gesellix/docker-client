@@ -9,7 +9,7 @@ import org.codehaus.groovy.runtime.MethodClosure
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import java.util.concurrent.Executors
+import static java.util.concurrent.Executors.newSingleThreadExecutor
 
 class DockerClientImpl implements DockerClient {
 
@@ -775,7 +775,7 @@ class DockerClientImpl implements DockerClient {
                                             query: query,
                                             async: true])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker events failed"))
-        def executor = Executors.newSingleThreadExecutor()
+        def executor = newSingleThreadExecutor()
         executor.submit(new DockerAsyncConsumer(response, callback))
         return response
     }
@@ -787,6 +787,21 @@ class DockerClientImpl implements DockerClient {
         def response = getHttpClient().get([path : "/containers/${container}/top",
                                             query: query])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker top failed"))
+        return response
+    }
+
+    def stats(container, DockerAsyncCallback callback = null) {
+        logger.info "docker stats"
+
+        def async = callback ? true : false
+        def response = getHttpClient().get([path : "/containers/${container}/stats",
+                                            query: [stream: async],
+                                            async: async])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker stats failed"))
+        if (async) {
+            def executor = newSingleThreadExecutor()
+            executor.submit(new DockerAsyncConsumer(response, callback))
+        }
         return response
     }
 

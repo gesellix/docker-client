@@ -19,7 +19,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [ ] `docker logs <container>`: Get container logs
 * [x] `docker diff <container>`: Inspect changes on a container's filesystem
 * [x] `docker export <container>`: Export a container
-* [ ] `docker stats <container>`: Get container stats based on resource usage
+* [x] `docker stats <container>`: Get container stats based on resource usage
 * [x] Resize a container TTY
 * [x] `docker start <container>`: Start a container
 * [x] `docker stop <container>`: Stop a container

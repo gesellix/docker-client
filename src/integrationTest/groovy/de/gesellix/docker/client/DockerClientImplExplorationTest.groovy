@@ -191,4 +191,28 @@ class DockerClientImplExplorationTest extends Specification {
                 Processes: [["root", "19265", "964", "0", "21:37", "pts/0", "00:00:00", "ping 127.0.0.1"]]
         ]
     }
+
+    @Ignore("only for explorative testing")
+    def stats() {
+        given:
+        def latch = new CountDownLatch(1)
+        def callback = new DockerAsyncCallback() {
+            def stats = []
+
+            @Override
+            def onEvent(Object stat) {
+                println stat
+                stats << new JsonSlurper().parseText(stat as String)
+                latch.countDown()
+            }
+        }
+
+        when:
+        dockerClient.stats("foo", callback)
+        latch.await(5, SECONDS)
+
+        then:
+        callback.stats.size() == 1
+        callback.stats.first().blkio_stats
+    }
 }
