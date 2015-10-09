@@ -6,6 +6,25 @@ A Docker HTTP client written in Groovy
 [![Build Status](https://travis-ci.org/gesellix/docker-client.svg)](https://travis-ci.org/gesellix/docker-client)
 [![Latest version](https://api.bintray.com/packages/gesellix/docker-utils/docker-client/images/download.svg) ](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion)
 
+This client library aims at supporting all existing api endpoints, which effectively allows
+ to use it in place of the official Docker client binary. It might feel a bit less convenient, though,
+ while it gives you a bit more freedom to access the remote api and some less popular endpoints.
+ See the [roadmap.md](https://github.com/gesellix/docker-client/blob/master/roadmap.md) for details
+ about the current api coverage.
+
+Consider the client as a thin wrapper to perform HTTP requests, minimizing the need to manually configure
+ TLS or auth encoding in your code. Most commonly known environment variables will work as expected,
+ e.g. `DOCKER_HOST` or `DOCKER_CERT_PATH`. You can override existing environment variables with
+ Java system properties like this:
+
+```
+System.setProperty("docker.host", "192.168.99.100")
+System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
+```
+
+Please note that the raw responses (including headers) from the Docker daemon are returned, with the actual response body
+ being available in the `content` attribute. Some endpoints return a stream, which is then available in `stream`.
+
 ## Plain Usage
 
 For use in Gradle, add the bintray repository first:
@@ -20,11 +39,21 @@ Then, you need to add the dependency, but please ensure to use the [latest versi
 
 ```
 dependencies {
-  compile 'de.gesellix:docker-client:2015-10-07T21-43-15'
+  compile 'de.gesellix:docker-client:2015-10-09T10-09-51'
 }
 ```
 
 The tests in `DockerClientImplSpec` and `DockerClientImplIntegrationSpec` should give you an idea how to use the docker-client.
+
+### Example 1: `docker info`
+
+A basic example connecting to a Docker daemon running in a VM (boot2docker/machine) looks like this:
+
+```
+System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
+def dockerClient = new DockerClientImpl(dockerHost: System.env.DOCKER_HOST)
+def info = dockerClient.info().content
+```
 
 ## Usage with Gradle-Docker-Plugin
 
