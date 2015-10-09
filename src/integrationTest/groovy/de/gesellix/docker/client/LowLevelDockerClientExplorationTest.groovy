@@ -34,7 +34,14 @@ class LowLevelDockerClientExplorationTest extends Specification {
 //        response = client.post([path : "/images/create",
 //                                query: [fromImage: "gesellix/docker-client-testimage", tag: "latest", "registry": ""]])
 //        println response
-        response = client.get([path : "/events",
+//        response = client.get([path : "/events",
+//                               async: true])
+//        new DockerStreamConsumer(response.stream as InputStream).consume(System.out)
+//        response = client.get([path  : "/containers/foo/logs",
+//                               query : [stdout: true],
+//                               stdout: System.out])
+        response = client.get([path : "/containers/foo/logs",
+                               query: [follow: true, stdout: true, stderr: true, timestamps: true, since: 0, tail: "all"],
                                async: true])
         new DockerStreamConsumer(response.stream as InputStream).consume(System.out)
 

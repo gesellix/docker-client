@@ -165,4 +165,10 @@ interface DockerClient {
     def stats(container)
 
     def stats(container, DockerAsyncCallback callback)
+
+    def logs(container)
+
+    def logs(container, DockerAsyncCallback callback)
+
+    def logs(container, query, DockerAsyncCallback callback)
 }

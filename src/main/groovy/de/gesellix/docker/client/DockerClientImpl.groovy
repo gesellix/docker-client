@@ -805,6 +805,34 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
+    def logs(container, DockerAsyncCallback callback = null) {
+        return logs(container, [:], callback)
+    }
+
+    def logs(container, query, DockerAsyncCallback callback = null) {
+        logger.info "docker logs"
+
+        def async = callback ? true : false
+        def actualQuery = query ?: [:]
+        def defaults = [follow    : async,
+                        stdout    : true,
+                        stderr    : true,
+                        timestamps: false,
+                        since     : 0,
+                        tail      : "all"]
+        applyDefaults(actualQuery, defaults)
+
+        def response = getHttpClient().get([path : "/containers/${container}/logs",
+                                            query: actualQuery,
+                                            async: async])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker logs failed"))
+        if (async) {
+            def executor = newSingleThreadExecutor()
+            executor.submit(new DockerAsyncConsumer(response, callback))
+        }
+        return response
+    }
+
     def extractSingleTarEntry(InputStream tarContent, String filename) {
         def stream = new TarArchiveInputStream(new BufferedInputStream(tarContent))
 

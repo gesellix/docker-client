@@ -215,4 +215,28 @@ class DockerClientImplExplorationTest extends Specification {
         callback.stats.size() == 1
         callback.stats.first().blkio_stats
     }
+
+    @Ignore("only for explorative testing")
+    def logs() {
+        given:
+        def latch = new CountDownLatch(1)
+        def callback = new DockerAsyncCallback() {
+            def lines = []
+
+            @Override
+            def onEvent(Object line) {
+                println line
+                lines << line
+                latch.countDown()
+            }
+        }
+
+        when:
+        dockerClient.logs("foo", [tail: 1], callback)
+        latch.await(5, SECONDS)
+
+        then:
+        callback.lines.size() == 1
+        callback.lines.first().startsWith("64 bytes from 127.0.0.1")
+    }
 }

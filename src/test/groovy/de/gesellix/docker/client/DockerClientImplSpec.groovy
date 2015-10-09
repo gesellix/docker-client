@@ -1104,6 +1104,16 @@ class DockerClientImplSpec extends Specification {
                             async: false]) >> [status: [success: true]]
     }
 
+    def "logs"() {
+        when:
+        dockerClient.logs("a-container")
+
+        then:
+        1 * httpClient.get([path : "/containers/a-container/logs",
+                            query: [follow: false, stdout: true, stderr: true, timestamps: false, since: 0, tail: 'all'],
+                            async: false]) >> [status: [success: true]]
+    }
+
     def "cleanupStorage removes exited containers"() {
         given:
         def keepContainer = { container ->

@@ -16,7 +16,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker create`: Create a container
 * [x] `docker inspect <container>`: Inspect a container
 * [x] `docker top <container>`: List processes running inside a container
-* [ ] `docker logs <container>`: Get container logs
+* [x] `docker logs <container>`: Get container logs
 * [x] `docker diff <container>`: Inspect changes on a container's filesystem
 * [x] `docker export <container>`: Export a container
 * [x] `docker stats <container>`: Get container stats based on resource usage

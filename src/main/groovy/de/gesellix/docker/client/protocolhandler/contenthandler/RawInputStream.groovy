@@ -12,6 +12,7 @@ import static de.gesellix.docker.client.protocolhandler.contenthandler.RawStream
 class RawInputStream extends FilterInputStream {
 
     Logger logger = LoggerFactory.getLogger(RawInputStream)
+    final static int EOF = -1
 
     def RawInputStream(InputStream inputStream) {
         super(inputStream)
@@ -32,13 +33,13 @@ class RawInputStream extends FilterInputStream {
 
         int sum = 0
         int count
-        while (-1 != (count = copyFrame(stdout, stderr))) {
+        while (EOF != (count = copyFrame(stdout, stderr))) {
             sum += count
         }
         return sum
     }
 
-    def copyFrame(stdout, stderr) {
+    int copyFrame(stdout, stderr) {
         def outputStreamsByStreamType = [:]
         outputStreamsByStreamType["${StreamType.STDOUT}"] = stdout ?: stderr;
         outputStreamsByStreamType["${StreamType.STDERR}"] = stderr ?: stdout
@@ -46,7 +47,7 @@ class RawInputStream extends FilterInputStream {
         def parsedHeader = readFrameHeader()
         logger.trace(parsedHeader.toString())
         if (parsedHeader == EMPTY_HEADER) {
-            return -1
+            return EOF
         }
 
         int bytesToRead = parsedHeader.frameSize
@@ -54,7 +55,7 @@ class RawInputStream extends FilterInputStream {
         def buffer = new byte[DEFAULT_BUFFER_SIZE]
         long count = 0
         int n
-        while (-1 != (n = super.read(buffer, 0, Math.min(DEFAULT_BUFFER_SIZE, bytesToRead)))) {
+        while (EOF != (n = super.read(buffer, 0, Math.min(DEFAULT_BUFFER_SIZE, bytesToRead)))) {
             def outputStream = outputStreamsByStreamType["${parsedHeader.streamType}"]
             outputStream.write(buffer, 0, n)
             count += n
@@ -73,7 +74,7 @@ class RawInputStream extends FilterInputStream {
                 def parsedHeader = readFrameHeader()
                 logger.trace(parsedHeader.toString())
                 if (parsedHeader == EMPTY_HEADER) {
-                    return -1
+                    return EOF
                 }
                 remainingFrameSize = parsedHeader.frameSize
             }
