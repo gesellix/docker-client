@@ -1,5 +1,6 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
@@ -706,7 +707,7 @@ class DockerClientImpl implements DockerClient {
         def container = inspectContainer(containerId)
         def response = getHttpClient().post([path : "/containers/${containerId}/attach".toString(),
                                              query: query])
-        response.stream.multiplexStreams = !container.Config.Tty
+        response.stream.multiplexStreams = !container.content.Config.Tty
         return response
     }
 
@@ -822,11 +823,17 @@ class DockerClientImpl implements DockerClient {
                         tail      : "all"]
         applyDefaults(actualQuery, defaults)
 
+        def multiplexStreams = !inspectContainer(container).content.Config.Tty
         def response = getHttpClient().get([path : "/containers/${container}/logs",
                                             query: actualQuery,
                                             async: async])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker logs failed"))
         if (async) {
+            // TODO this one would work automatically, when the response content-type would be set correctly :-/
+            // TODO file an issue @docker
+            if (multiplexStreams) {
+                response.stream = new RawInputStream(response.stream as InputStream)
+            }
             def executor = newSingleThreadExecutor()
             executor.submit(new DockerAsyncConsumer(response, callback))
         }
