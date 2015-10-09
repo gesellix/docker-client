@@ -256,7 +256,7 @@ class LowLevelDockerClient {
             } else if (config.stdout) {
                 IOUtils.copy(content as InputStream, config.stdout as OutputStream)
                 response.stream = null
-            } else if (response.contentLength && Integer.parseInt(response.contentLength) >= 0) {
+            } else if (response.contentLength && Integer.parseInt(response.contentLength as String) >= 0) {
                 response.content = IOUtils.toString(content as InputStream)
                 response.stream = null
             } else {

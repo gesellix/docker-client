@@ -17,7 +17,7 @@ class DockerURLHandler {
 
     DockerURLHandler() {
         this.dockerHost = System.getProperty("docker.host", System.env.DOCKER_HOST as String)
-        this.dockerTlsVerify = System.getProperty("docker.tlsverify", System.env.DOCKER_TLS_VERIFY as String)
+        this.dockerTlsVerify = System.getProperty("docker.tls.verify", System.env.DOCKER_TLS_VERIFY as String)
         this.dockerCertPath = System.getProperty("docker.cert.path", System.env.DOCKER_CERT_PATH as String)
     }
 
