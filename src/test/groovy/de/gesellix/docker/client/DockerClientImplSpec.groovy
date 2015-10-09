@@ -932,8 +932,8 @@ class DockerClientImplSpec extends Specification {
 
     def "attach"() {
         given:
-        httpClient.get([path: "/containers/a-container/json"]) >> [status: [success: true],
-                                                                   Config: [Tty: false]]
+        httpClient.get([path: "/containers/a-container/json"]) >> [status : [success: true],
+                                                                   content: [Config: [Tty: false]]]
 
         when:
         dockerClient.attach("a-container", [stream: true])
@@ -1105,6 +1105,10 @@ class DockerClientImplSpec extends Specification {
     }
 
     def "logs"() {
+        given:
+        httpClient.get([path: "/containers/a-container/json"]) >> [status : [success: true],
+                                                                   content: [Config: [Tty: false]]]
+
         when:
         dockerClient.logs("a-container")
 
