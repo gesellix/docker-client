@@ -830,7 +830,7 @@ class DockerClientImpl implements DockerClient {
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker logs failed"))
         if (async) {
             // TODO this one would work automatically, when the response content-type would be set correctly :-/
-            // TODO file an issue @docker
+            // see https://github.com/gesellix/docker-client/issues/21
             if (multiplexStreams) {
                 response.stream = new RawInputStream(response.stream as InputStream)
             }
