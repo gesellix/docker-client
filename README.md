@@ -2,7 +2,7 @@
 
 A Docker HTTP client written in Groovy
 
-[![Remote API Coverage Status (47/48 endpoints)](http://progressed.io/bar/98?title=api%20coverage)](https://github.com/gesellix/docker-client/blob/master/roadmap.md)
+[![Remote API Coverage Status (48/48 endpoints)](http://progressed.io/bar/100?title=api%20coverage)](https://github.com/gesellix/docker-client/blob/master/roadmap.md)
 [![Build Status](https://travis-ci.org/gesellix/docker-client.svg)](https://travis-ci.org/gesellix/docker-client)
 [![Latest version](https://api.bintray.com/packages/gesellix/docker-utils/docker-client/images/download.svg) ](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion)
 
@@ -17,10 +17,8 @@ Consider the client as a thin wrapper to perform HTTP requests, minimizing the n
  e.g. `DOCKER_HOST` or `DOCKER_CERT_PATH`. You can override existing environment variables with
  Java system properties like this:
 
-```
-System.setProperty("docker.host", "192.168.99.100")
-System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
-```
+    System.setProperty("docker.host", "192.168.99.100")
+    System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
 
 Please note that the raw responses (including headers) from the Docker daemon are returned, with the actual response body
  being available in the `content` attribute. Some endpoints return a stream, which is then available in `stream`.
@@ -29,19 +27,15 @@ Please note that the raw responses (including headers) from the Docker daemon ar
 
 For use in Gradle, add the bintray repository first:
 
-```
-repositories {
-  maven { url 'http://dl.bintray.com/gesellix/docker-utils' }
-}
-```
+    repositories {
+      maven { url 'http://dl.bintray.com/gesellix/docker-utils' }
+    }
 
 Then, you need to add the dependency, but please ensure to use the [latest version](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion):
 
-```
-dependencies {
-  compile 'de.gesellix:docker-client:2015-10-09T10-09-51'
-}
-```
+    dependencies {
+      compile 'de.gesellix:docker-client:2015-10-09T10-09-51'
+    }
 
 The tests in `DockerClientImplSpec` and `DockerClientImplIntegrationSpec` should give you an idea how to use the docker-client.
 
@@ -49,11 +43,27 @@ The tests in `DockerClientImplSpec` and `DockerClientImplIntegrationSpec` should
 
 A basic example connecting to a Docker daemon running in a VM (boot2docker/machine) looks like this:
 
-```
-System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
-def dockerClient = new DockerClientImpl(dockerHost: System.env.DOCKER_HOST)
-def info = dockerClient.info().content
-```
+    System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
+    def dockerClient = new DockerClientImpl(dockerHost: System.env.DOCKER_HOST)
+    def info = dockerClient.info().content
+
+### Example 2: `docker run`
+
+Running a container being available on the host via HTTP port 4712 can be achieved like this:
+
+    System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
+    def dockerClient = new DockerClientImpl(dockerHost: System.env.DOCKER_HOST)
+            def image = "busybox"
+            def tag = "latest"
+            def cmds = ["sh", "-c", "ping 127.0.0.1"]
+            def containerConfig = ["Cmd"       : cmds,
+                                   ExposedPorts: ["4711/tcp": [:]],
+                                   "HostConfig": ["PortBindings": [
+                                           "4711/tcp": [
+                                                   ["HostIp"  : "0.0.0.0",
+                                                    "HostPort": "4712"]]
+                                   ]]]
+    def result = dockerClient.run(image, containerConfig, tag).content
 
 ## Usage with Gradle-Docker-Plugin
 
