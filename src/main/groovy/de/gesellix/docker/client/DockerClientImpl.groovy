@@ -768,6 +768,7 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
+    @Override
     def events(DockerAsyncCallback callback, query = [:]) {
         logger.info "docker events"
 
@@ -781,6 +782,7 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
+    @Override
     def top(container, ps_args = null) {
         logger.info "docker top"
 
@@ -791,6 +793,7 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
+    @Override
     def stats(container, DockerAsyncCallback callback = null) {
         logger.info "docker stats"
 
@@ -806,10 +809,12 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
+    @Override
     def logs(container, DockerAsyncCallback callback = null) {
         return logs(container, [:], callback)
     }
 
+    @Override
     def logs(container, query, DockerAsyncCallback callback = null) {
         logger.info "docker logs"
 
@@ -837,6 +842,90 @@ class DockerClientImpl implements DockerClient {
             def executor = newSingleThreadExecutor()
             executor.submit(new DockerAsyncConsumer(response, callback))
         }
+        return response
+    }
+
+    def volumes(query = [:]) {
+        logger.info "docker volume ls"
+        def actualQuery = query ?: [:]
+        jsonEncodeFilters(actualQuery)
+        def response = getHttpClient().get([path : "/volumes",
+                                            query: actualQuery])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume ls failed"))
+        return response
+    }
+
+    def volumeInspect(name) {
+        logger.info "docker volume inspect"
+        def response = getHttpClient().get([path: "/volumes/$name"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume inspect failed"))
+        return response
+    }
+
+    def volumeCreate(config = [:]) {
+        logger.info "docker volume create"
+        def response = getHttpClient().post([path              : "/volumes",
+                                             body              : config,
+                                             requestContentType: "application/json"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume create failed"))
+        return response
+    }
+
+    def volumeDelete(name) {
+        logger.info "docker volume rm"
+        def response = getHttpClient().delete([path: "/volumes/$name"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume rm failed"))
+        return response
+    }
+
+    def networks(query = [:]) {
+        logger.info "docker network ls"
+        def actualQuery = query ?: [:]
+        jsonEncodeFilters(actualQuery)
+        def response = getHttpClient().get([path : "/networks",
+                                            query: actualQuery])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network ls failed"))
+        return response
+    }
+
+    def networkInspect(name) {
+        logger.info "docker network inspect"
+        def response = getHttpClient().get([path: "/networks/$name"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network inspect failed"))
+        return response
+    }
+
+    def networkCreate(config = [:]) {
+        logger.info "docker network create"
+        def response = getHttpClient().post([path              : "/networks/create",
+                                             body              : config,
+                                             requestContentType: "application/json"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network create failed"))
+        return response
+    }
+
+    def networkConnect(network, container) {
+        logger.info "docker network connect"
+        def response = getHttpClient().post([path              : "/networks/$network/connect",
+                                             body              : [container: container],
+                                             requestContentType: "application/json"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network connect failed"))
+        return response
+    }
+
+    def networkDisconnect(network, container) {
+        logger.info "docker network disconnect"
+        def response = getHttpClient().post([path              : "/networks/$network/disconnect",
+                                             body              : [container: container],
+                                             requestContentType: "application/json"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network disconnect failed"))
+        return response
+    }
+
+    def networkRemove(name) {
+        logger.info "docker network rm"
+        def response = getHttpClient().delete([path: "/networks/$name"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network rm failed"))
         return response
     }
 
