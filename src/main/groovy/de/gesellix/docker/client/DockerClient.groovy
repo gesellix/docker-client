@@ -170,5 +170,7 @@ interface DockerClient {
 
     def logs(container, DockerAsyncCallback callback)
 
+    def logs(container, query)
+
     def logs(container, query, DockerAsyncCallback callback)
 }
