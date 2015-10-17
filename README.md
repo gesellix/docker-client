@@ -22,6 +22,8 @@ Consider the client as a thin wrapper to perform HTTP requests, minimizing the n
 
 Please note that the raw responses (including headers) from the Docker daemon are returned, with the actual response body
  being available in the `content` attribute. Some endpoints return a stream, which is then available in `stream`.
+ For some cases, like following the logs or events stream, you need to provide a callback which is called for every
+ response line, see example 3 below.
 
 ## Plain Usage
 
@@ -53,17 +55,35 @@ Running a container being available on the host via HTTP port 4712 can be achiev
 
     System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
     def dockerClient = new DockerClientImpl(dockerHost: System.env.DOCKER_HOST)
-            def image = "busybox"
-            def tag = "latest"
-            def cmds = ["sh", "-c", "ping 127.0.0.1"]
-            def containerConfig = ["Cmd"       : cmds,
-                                   ExposedPorts: ["4711/tcp": [:]],
-                                   "HostConfig": ["PortBindings": [
-                                           "4711/tcp": [
-                                                   ["HostIp"  : "0.0.0.0",
-                                                    "HostPort": "4712"]]
-                                   ]]]
+    def image = "busybox"
+    def tag = "latest"
+    def cmds = ["sh", "-c", "ping 127.0.0.1"]
+    def containerConfig = ["Cmd"       : cmds,
+                           ExposedPorts: ["4711/tcp": [:]],
+                           "HostConfig": ["PortBindings": [
+                                   "4711/tcp": [
+                                           ["HostIp"  : "0.0.0.0",
+                                            "HostPort": "4712"]]
+                           ]]]
     def result = dockerClient.run(image, containerConfig, tag).content
+
+### Example 3: `docker logs --follow`
+
+    def callback = new DockerAsyncCallback() {
+        def lines = []
+
+        @Override
+        def onEvent(Object line) {
+            println line
+            lines << line
+        }
+    }
+
+    dockerClient.logs("foo", [tail: 1], callback)
+
+    // callback.lines will now collect all log lines
+    // you might implement it as a fifo instead of the List shown above
+
 
 ## Usage with Gradle-Docker-Plugin
 
