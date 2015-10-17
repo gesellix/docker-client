@@ -180,6 +180,10 @@ interface DockerClient {
 
     def inspectVolume(name)
 
+    def createVolume()
+
+    def createVolume(config)
+
     def rmVolume(name)
 
     def networks()
@@ -187,6 +191,14 @@ interface DockerClient {
     def networks(query)
 
     def inspectNetwork(name)
+
+    def createNetwork(name)
+
+    def createNetwork(name, config)
+
+    def connectNetwork(network, container)
+
+    def disconnectNetwork(network, container)
 
     def rmNetwork(name)
 }

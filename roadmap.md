@@ -70,7 +70,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 ## Volumes
 
 * [x] `docker volume ls`: List volumes from all volume drivers
-* [ ] `docker volume create`: Create a volume
+* [x] `docker volume create`: Create a volume
 * [x] `docker volume inspect`: Return low-level information on a volume
 * [x] `docker volume rm`: Remove a volume
 
@@ -78,7 +78,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 
 * [x] `docker network ls`: Lists all networks
 * [x] `docker network inspect`: Display detailed information on a network
-* [ ] `docker network create`: Create a new network
-* [ ] `docker network connect`: Connect a container to a network
-* [ ] `docker network disconnect`: Disconnect a container from a network
+* [x] `docker network create`: Create a new network
+* [x] `docker network connect`: Connect a container to a network
+* [x] `docker network disconnect`: Disconnect a container from a network
 * [x] `docker network rm`: Remove a network

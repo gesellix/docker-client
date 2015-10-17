@@ -1140,6 +1140,20 @@ class DockerClientImplSpec extends Specification {
         1 * httpClient.get([path: "/volumes/a-volume"]) >> [status: [success: true]]
     }
 
+    def "create volume with config"() {
+        def volumeConfig = [Name      : "my-volume",
+                            Driver    : "local",
+                            DriverOpts: [:]]
+
+        when:
+        dockerClient.createVolume(volumeConfig)
+
+        then:
+        1 * httpClient.post([path              : "/volumes",
+                             body              : volumeConfig,
+                             requestContentType: "application/json"]) >> [status: [success: true]]
+    }
+
     def "rm volume"() {
         when:
         dockerClient.rmVolume("a-volume")
@@ -1168,6 +1182,45 @@ class DockerClientImplSpec extends Specification {
 
         then:
         1 * httpClient.get([path: "/networks/a-network"]) >> [status: [success: true]]
+    }
+
+    def "create network with config"() {
+        given:
+        def networkConfig = [driver         : "bridge",
+                             options        : [:],
+                             check_duplicate: true]
+        def expectedNetworkConfig = [name           : "network-name",
+                                     driver         : "bridge",
+                                     options        : [:],
+                                     check_duplicate: true]
+
+        when:
+        dockerClient.createNetwork("network-name", networkConfig)
+
+        then:
+        1 * httpClient.post([path              : "/networks/create",
+                             body              : expectedNetworkConfig,
+                             requestContentType: "application/json"]) >> [status: [success: true]]
+    }
+
+    def "connect a container to a network"() {
+        when:
+        dockerClient.connectNetwork("a-network", "a-container")
+
+        then:
+        1 * httpClient.post([path              : "/networks/a-network/connect",
+                             body              : [container: "a-container"],
+                             requestContentType: "application/json"]) >> [status: [success: true]]
+    }
+
+    def "disconnect a container from a network"() {
+        when:
+        dockerClient.disconnectNetwork("a-network", "a-container")
+
+        then:
+        1 * httpClient.post([path              : "/networks/a-network/disconnect",
+                             body              : [container: "a-container"],
+                             requestContentType: "application/json"]) >> [status: [success: true]]
     }
 
     def "rm network"() {

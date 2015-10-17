@@ -864,10 +864,12 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
-    def createColume(config = [:]) {
+    @Override
+    def createVolume(config = [:]) {
         logger.info "docker volume create"
+        // TODO see https://github.com/docker/docker/pull/17136
         def response = getHttpClient().post([path              : "/volumes",
-                                             body              : config,
+                                             body              : config ?: [:],
                                              requestContentType: "application/json"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume create failed"))
         return response
@@ -900,15 +902,20 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
-    def createNetwork(config = [:]) {
+    @Override
+    def createNetwork(name, config = [:]) {
         logger.info "docker network create"
+        def actualConfig = config ?: [:]
+        def defaults = [name: name]
+        applyDefaults(actualConfig, defaults)
         def response = getHttpClient().post([path              : "/networks/create",
-                                             body              : config,
+                                             body              : config ?: [:],
                                              requestContentType: "application/json"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network create failed"))
         return response
     }
 
+    @Override
     def connectNetwork(network, container) {
         logger.info "docker network connect"
         def response = getHttpClient().post([path              : "/networks/$network/connect",
@@ -918,6 +925,7 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
+    @Override
     def disconnectNetwork(network, container) {
         logger.info "docker network disconnect"
         def response = getHttpClient().post([path              : "/networks/$network/disconnect",
