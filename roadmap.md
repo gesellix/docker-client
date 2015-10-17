@@ -1,6 +1,6 @@
 # Supported Features
 
-*feature set based on the [Docker Remote API v1.20](https://docs.docker.com/reference/api/docker_remote_api_v1.20/)*
+*feature set based on the [Docker Remote API v1.21](https://docs.docker.com/reference/api/docker_remote_api_v1.21/)*
 
 Since the Docker remote api tends to be backwards compatible,
 the Docker-Client currently supports most other api versions, too.
@@ -66,3 +66,19 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] Exec Start (`docker exec <container> <command>`) - _interactive tty via socket hijacking currently not supported_
 * [x] Exec Resize
 * [x] Exec Inspect
+
+## Volumes
+
+* [x] `docker volume ls`: List volumes from all volume drivers
+* [ ] `docker volume create`: Create a volume
+* [ ] `docker volume inspect`: Return low-level information on a volume
+* [ ] `docker volume rm`: Remove a volume
+
+## Networks
+
+* [x] `docker network ls`: Lists all networks
+* [ ] `docker network inspect`: Display detailed information on a network
+* [ ] `docker network create`: Create a new network
+* [ ] `docker network connect`: Connect a container to a network
+* [ ] `docker network disconnect`: Disconnect a container from a network
+* [ ] `docker network rm`: Remove a network

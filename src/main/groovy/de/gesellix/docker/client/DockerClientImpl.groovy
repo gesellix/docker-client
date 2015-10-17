@@ -845,6 +845,7 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
+    @Override
     def volumes(query = [:]) {
         logger.info "docker volume ls"
         def actualQuery = query ?: [:]
@@ -878,6 +879,7 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
+    @Override
     def networks(query = [:]) {
         logger.info "docker network ls"
         def actualQuery = query ?: [:]

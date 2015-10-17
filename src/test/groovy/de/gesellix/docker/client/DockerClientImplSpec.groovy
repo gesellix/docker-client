@@ -1118,6 +1118,34 @@ class DockerClientImplSpec extends Specification {
                             async: false]) >> [status: [success: true]]
     }
 
+    def "volumes with query"() {
+        given:
+        def filters = [dangling: ["true"]]
+        def expectedFilterValue = new JsonBuilder(filters).toString()
+        def query = [filters: filters]
+
+        when:
+        dockerClient.volumes(query)
+
+        then:
+        1 * httpClient.get([path : "/volumes",
+                            query: [filters: expectedFilterValue]]) >> [status: [success: true]]
+    }
+
+    def "networks with query"() {
+        given:
+        def filters = [name: ["a-net"], id: ["a-net-id"]]
+        def expectedFilterValue = new JsonBuilder(filters).toString()
+        def query = [filters: filters]
+
+        when:
+        dockerClient.networks(query)
+
+        then:
+        1 * httpClient.get([path : "/networks",
+                            query: [filters: expectedFilterValue]]) >> [status: [success: true]]
+    }
+
     def "cleanupStorage removes exited containers"() {
         given:
         def keepContainer = { container ->
