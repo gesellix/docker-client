@@ -178,7 +178,15 @@ interface DockerClient {
 
     def volumes(query)
 
+    def inspectVolume(name)
+
+    def rmVolume(name)
+
     def networks()
 
     def networks(query)
+
+    def inspectNetwork(name)
+
+    def rmNetwork(name)
 }

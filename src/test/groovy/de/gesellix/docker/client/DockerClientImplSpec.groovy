@@ -1132,6 +1132,22 @@ class DockerClientImplSpec extends Specification {
                             query: [filters: expectedFilterValue]]) >> [status: [success: true]]
     }
 
+    def "inspect volume"() {
+        when:
+        dockerClient.inspectVolume("a-volume")
+
+        then:
+        1 * httpClient.get([path: "/volumes/a-volume"]) >> [status: [success: true]]
+    }
+
+    def "rm volume"() {
+        when:
+        dockerClient.rmVolume("a-volume")
+
+        then:
+        1 * httpClient.delete([path: "/volumes/a-volume"]) >> [status: [success: true]]
+    }
+
     def "networks with query"() {
         given:
         def filters = [name: ["a-net"], id: ["a-net-id"]]
@@ -1144,6 +1160,22 @@ class DockerClientImplSpec extends Specification {
         then:
         1 * httpClient.get([path : "/networks",
                             query: [filters: expectedFilterValue]]) >> [status: [success: true]]
+    }
+
+    def "inspect network"() {
+        when:
+        dockerClient.inspectNetwork("a-network")
+
+        then:
+        1 * httpClient.get([path: "/networks/a-network"]) >> [status: [success: true]]
+    }
+
+    def "rm network"() {
+        when:
+        dockerClient.rmNetwork("a-network")
+
+        then:
+        1 * httpClient.delete([path: "/networks/a-network"]) >> [status: [success: true]]
     }
 
     def "cleanupStorage removes exited containers"() {

@@ -856,14 +856,15 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
-    def volumeInspect(name) {
+    @Override
+    def inspectVolume(name) {
         logger.info "docker volume inspect"
         def response = getHttpClient().get([path: "/volumes/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume inspect failed"))
         return response
     }
 
-    def volumeCreate(config = [:]) {
+    def createColume(config = [:]) {
         logger.info "docker volume create"
         def response = getHttpClient().post([path              : "/volumes",
                                              body              : config,
@@ -872,7 +873,8 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
-    def volumeDelete(name) {
+    @Override
+    def rmVolume(name) {
         logger.info "docker volume rm"
         def response = getHttpClient().delete([path: "/volumes/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume rm failed"))
@@ -890,14 +892,15 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
-    def networkInspect(name) {
+    @Override
+    def inspectNetwork(name) {
         logger.info "docker network inspect"
         def response = getHttpClient().get([path: "/networks/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network inspect failed"))
         return response
     }
 
-    def networkCreate(config = [:]) {
+    def createNetwork(config = [:]) {
         logger.info "docker network create"
         def response = getHttpClient().post([path              : "/networks/create",
                                              body              : config,
@@ -906,7 +909,7 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
-    def networkConnect(network, container) {
+    def connectNetwork(network, container) {
         logger.info "docker network connect"
         def response = getHttpClient().post([path              : "/networks/$network/connect",
                                              body              : [container: container],
@@ -915,7 +918,7 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
-    def networkDisconnect(network, container) {
+    def disconnectNetwork(network, container) {
         logger.info "docker network disconnect"
         def response = getHttpClient().post([path              : "/networks/$network/disconnect",
                                              body              : [container: container],
@@ -924,7 +927,8 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
-    def networkRemove(name) {
+    @Override
+    def rmNetwork(name) {
         logger.info "docker network rm"
         def response = getHttpClient().delete([path: "/networks/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network rm failed"))

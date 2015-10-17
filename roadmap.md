@@ -71,14 +71,14 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 
 * [x] `docker volume ls`: List volumes from all volume drivers
 * [ ] `docker volume create`: Create a volume
-* [ ] `docker volume inspect`: Return low-level information on a volume
-* [ ] `docker volume rm`: Remove a volume
+* [x] `docker volume inspect`: Return low-level information on a volume
+* [x] `docker volume rm`: Remove a volume
 
 ## Networks
 
 * [x] `docker network ls`: Lists all networks
-* [ ] `docker network inspect`: Display detailed information on a network
+* [x] `docker network inspect`: Display detailed information on a network
 * [ ] `docker network create`: Create a new network
 * [ ] `docker network connect`: Connect a container to a network
 * [ ] `docker network disconnect`: Disconnect a container from a network
-* [ ] `docker network rm`: Remove a network
+* [x] `docker network rm`: Remove a network
