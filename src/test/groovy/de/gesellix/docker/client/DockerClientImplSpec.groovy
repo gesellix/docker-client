@@ -1149,7 +1149,7 @@ class DockerClientImplSpec extends Specification {
         dockerClient.createVolume(volumeConfig)
 
         then:
-        1 * httpClient.post([path              : "/volumes",
+        1 * httpClient.post([path              : "/volumes/create",
                              body              : volumeConfig,
                              requestContentType: "application/json"]) >> [status: [success: true]]
     }

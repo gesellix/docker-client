@@ -867,8 +867,7 @@ class DockerClientImpl implements DockerClient {
     @Override
     def createVolume(config = [:]) {
         logger.info "docker volume create"
-        // TODO see https://github.com/docker/docker/pull/17136
-        def response = getHttpClient().post([path              : "/volumes",
+        def response = getHttpClient().post([path              : "/volumes/create",
                                              body              : config ?: [:],
                                              requestContentType: "application/json"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume create failed"))
