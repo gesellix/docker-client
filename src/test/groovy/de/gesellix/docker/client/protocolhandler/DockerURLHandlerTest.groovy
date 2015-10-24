@@ -48,7 +48,8 @@ class DockerURLHandlerTest extends Specification {
     def "should fail when tlsVerify=1, but certs directory doesn't exist"() {
         def dockerUrlHandler = new DockerURLHandler(
                 dockerTlsVerify: "1",
-                dockerCertPath: "/some/non-existing/path")
+                dockerCertPath: "/some/non-existing/path",
+                defaultDockerCertPath: new File("/some/non-existing/default/path"))
         when:
         dockerUrlHandler.shouldUseTls(new URL("https://example.com:2375"))
         then:
@@ -60,7 +61,9 @@ class DockerURLHandlerTest extends Specification {
                 dockerTlsVerify: null,
                 dockerCertPath: "/some/non-existing/path")
         def defaultDockerCertPathExisted = Files.exists(dockerUrlHandler.defaultDockerCertPath.toPath())
-        Files.createDirectory(dockerUrlHandler.defaultDockerCertPath.toPath())
+        if (!defaultDockerCertPathExisted) {
+            Files.createDirectory(dockerUrlHandler.defaultDockerCertPath.toPath())
+        }
         when:
         def assumeTls = dockerUrlHandler.shouldUseTls(new URL("https://example.com:2376"))
         then:

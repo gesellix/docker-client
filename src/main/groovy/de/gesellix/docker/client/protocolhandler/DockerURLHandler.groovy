@@ -12,13 +12,14 @@ class DockerURLHandler {
     String dockerHost
     String dockerTlsVerify
     String dockerCertPath
+    File defaultDockerCertPath
     final int defaultDockerTlsPort = 2376
-    final File defaultDockerCertPath = new File(System.properties['user.home'] as String, ".docker")
 
     DockerURLHandler() {
         this.dockerHost = System.getProperty("docker.host", System.env.DOCKER_HOST as String)
         this.dockerTlsVerify = System.getProperty("docker.tls.verify", System.env.DOCKER_TLS_VERIFY as String)
         this.dockerCertPath = System.getProperty("docker.cert.path", System.env.DOCKER_CERT_PATH as String)
+        this.defaultDockerCertPath = new File(System.properties['user.home'] as String, ".docker")
     }
 
     def getRequestUrl(String path, String query) {
