@@ -94,8 +94,9 @@ class DockerURLHandler {
 
         def certsPathExists = dockerCertPath && new File(dockerCertPath).isDirectory()
         if (!certsPathExists) {
-            if (defaultDockerCertPath.isDirectory()) {
-                logger.debug("dockerCertPath=${defaultDockerCertPath}")
+            if (defaultDockerCertPath && defaultDockerCertPath.isDirectory()) {
+                logger.debug("defaultDockerCertPath=${defaultDockerCertPath}")
+                dockerCertPath = defaultDockerCertPath
                 certsPathExists = true
             }
         } else {
