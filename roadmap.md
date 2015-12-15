@@ -5,6 +5,10 @@
 Since the Docker remote api tends to be backwards compatible,
 the Docker-Client currently supports most other api versions, too.
 
+For most use cases the Docker-Client also works with the Docker Swarm API, but the same
+restrictions and changed behaviour apply like described in the
+official [Swarm API docs](https://docs.docker.com/swarm/api/swarm-api/).
+
 This project tends to support most api endpoints, but it always depends on free time. If you're missing a feature, please file
 a [new issue](https://github.com/gesellix/docker-client/issues) or a [pull request](https://github.com/gesellix/docker-client/pulls)
 and we'll add it as soon as possible. If you're looking for another Java based Docker library with similar feature set,
