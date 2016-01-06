@@ -62,12 +62,12 @@ class LowLevelDockerClientExplorationTest extends Specification {
 
         def consume(PrintStream os) {
             try {
-                String input
+                String line
 
                 int count = 0
-                while ((input = reader.readLine()) != null) {
+                while ((line = reader.readLine()) != null) {
                     count++
-                    os.println("$count | $input")
+                    os.println("$count | $line")
                 }
                 os.close()
             } catch (Exception e) {
