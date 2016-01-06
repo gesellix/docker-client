@@ -16,7 +16,7 @@ class TestHttpServer {
         return start('/test/', new ReverseHandler())
     }
 
-    def start(context, handler) {
+    def start(String context, HttpHandler handler) {
         InetSocketAddress addr = new InetSocketAddress(0)
         httpServer = HttpServer.create(addr, 0)
         httpServer.with {
