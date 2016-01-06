@@ -73,7 +73,7 @@ class DockerURLHandlerTest extends Specification {
     }
 
     def "should choose http for 'tcp://127.0.0.1:2375'"() {
-        def dockerUrlHandler = new DockerURLHandler()
+        def dockerUrlHandler = new DockerURLHandler(dockerTlsVerify: null)
         when:
         def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("tcp://127.0.0.1:2375")
         then:
@@ -81,7 +81,7 @@ class DockerURLHandlerTest extends Specification {
     }
 
     def "should choose http for 'http://127.0.0.1:2375'"() {
-        def dockerUrlHandler = new DockerURLHandler()
+        def dockerUrlHandler = new DockerURLHandler(dockerTlsVerify: null)
         when:
         def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("http://127.0.0.1:2375")
         then:
