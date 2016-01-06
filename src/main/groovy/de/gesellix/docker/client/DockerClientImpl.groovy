@@ -20,7 +20,9 @@ class DockerClientImpl implements DockerClient {
 
     def proxy
     def dockerHost = "http://127.0.0.1:2375"
-    def indexUrl = 'https://index.docker.io/v1/'
+    // the v1 registry still seems to be valid for authentication.
+    def indexUrl_v1 = 'https://index.docker.io/v1/'
+    def indexUrl_v2 = 'https://registry-1.docker.io'
     def dockerConfigFile = new File("${System.getProperty('user.home')}/.docker", "config.json")
     def legacyDockerConfigFile = new File("${System.getProperty('user.home')}", ".dockercfg")
 
@@ -114,7 +116,7 @@ class DockerClientImpl implements DockerClient {
         def parsedDockerCfg = new JsonSlurper().parse(dockerCfg)
 
         if (!hostname) {
-            hostname = indexUrl
+            hostname = indexUrl_v1
         }
 
         def authConfig
