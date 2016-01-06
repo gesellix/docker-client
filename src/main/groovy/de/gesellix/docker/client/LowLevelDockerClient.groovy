@@ -29,7 +29,7 @@ class LowLevelDockerClient {
 
     LowLevelDockerClient() {
         dockerURLHandler = new DockerURLHandler()
-        dockerHost = "http://127.0.0.1:2375"
+        dockerHost = System.getProperty("docker.host", System.env.DOCKER_HOST as String) ?: "http://127.0.0.1:2375"
         proxy = Proxy.NO_PROXY
         sslContext = null
         sslSocketFactory = null

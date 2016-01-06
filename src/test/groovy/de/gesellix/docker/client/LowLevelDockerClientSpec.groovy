@@ -4,6 +4,7 @@ import de.gesellix.docker.client.protocolhandler.contenthandler.RawHeaderAndPayl
 import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
 import org.apache.commons.io.IOUtils
 import org.codehaus.groovy.runtime.MethodClosure
+import spock.lang.IgnoreIf
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -14,19 +15,35 @@ import static de.gesellix.docker.client.protocolhandler.contenthandler.StreamTyp
 
 class LowLevelDockerClientSpec extends Specification {
 
-    def "dockerBaseUrl should default to http://localhost:2375"() {
+    @IgnoreIf({ System.env.DOCKER_HOST })
+    def "getRequestUrl should fallback to http://127.0.0.1:2375"() {
         def client = new LowLevelDockerClient()
         expect:
         client.getRequestUrl("", "").toString() == new URL("http://127.0.0.1:2375").toString()
     }
 
-    def "dockerBaseUrl should support tcp protocol"() {
+    @IgnoreIf({ System.env.DOCKER_HOST })
+    def "getRequestUrl should use to docker.host system property when set"() {
+        given:
+        def oldDockerHost = System.setProperty("docker.host", "http://127.0.0.1:2375")
+        def client = new LowLevelDockerClient()
+        expect:
+        client.getRequestUrl("", "").toString() == new URL("http://127.0.0.1:2375").toString()
+        cleanup:
+        if (oldDockerHost) {
+            System.setProperty("docker.host", oldDockerHost)
+        } else {
+            System.clearProperty("docker.host")
+        }
+    }
+
+    def "getRequestUrl should support tcp protocol"() {
         def client = new LowLevelDockerClient(dockerHost: "tcp://127.0.0.1:2375")
         expect:
         client.getRequestUrl("", "").toString() == new URL("http://127.0.0.1:2375").toString()
     }
 
-    def "dockerBaseUrl should support tls port"() {
+    def "getRequestUrl should support tls port"() {
         given:
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
@@ -41,7 +58,7 @@ class LowLevelDockerClientSpec extends Specification {
         }
     }
 
-    def "dockerBaseUrl should support https protocol"() {
+    def "getRequestUrl should support https protocol"() {
         given:
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
