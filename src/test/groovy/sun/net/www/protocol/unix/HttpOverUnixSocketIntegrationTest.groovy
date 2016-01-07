@@ -1,5 +1,6 @@
 package sun.net.www.protocol.unix
 
+import de.gesellix.docker.client.DockerConfig
 import de.gesellix.docker.client.LowLevelDockerClient
 import org.apache.commons.lang.SystemUtils
 import spock.lang.IgnoreIf
@@ -20,7 +21,7 @@ class HttpOverUnixSocketIntegrationTest extends Specification {
             socketFile.deleteOnExit()
         }
         def unixSocket = "unix://${socketFile.getCanonicalPath()}".toString()
-        dockerClient = new LowLevelDockerClient(dockerHost: unixSocket)
+        dockerClient = new LowLevelDockerClient(config: new DockerConfig(dockerHost: unixSocket))
     }
 
     def "info via unix socket"() {
