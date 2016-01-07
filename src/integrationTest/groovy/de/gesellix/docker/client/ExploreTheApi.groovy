@@ -9,7 +9,7 @@ class ExploreTheApi {
 //    System.setProperty("docker.cert.path", "/Users/gesellix/.boot2docker/certs/boot2docker-vm")
 //    def dockerClient = new DockerClientImpl(dockerHost: "https://192.168.59.103:2376")
         System.setProperty("docker.cert.path", "/Users/gesellix/.docker/machine/machines/default")
-        def dockerClient = new DockerClientImpl(dockerHost: "https://192.168.99.100:2376")
+        def dockerClient = new DockerClientImpl("https://192.168.99.100:2376")
 
         println dockerClient.info().content
         println dockerClient.version().content

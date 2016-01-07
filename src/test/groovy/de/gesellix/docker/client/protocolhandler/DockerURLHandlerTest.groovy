@@ -1,5 +1,6 @@
 package de.gesellix.docker.client.protocolhandler
 
+import de.gesellix.docker.client.DockerConfig
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -11,8 +12,9 @@ class DockerURLHandlerTest extends Specification {
     def "should assume TLS when tlsVerify==#tlsVerify"() {
         def certsDir = Files.createTempDirectory("certs")
         def dockerUrlHandler = new DockerURLHandler(
-                dockerTlsVerify: tlsVerify,
-                dockerCertPath: certsDir.toString())
+                config: new DockerConfig(
+                        tlsVerify: tlsVerify,
+                        certPath: certsDir.toString()))
         when:
         def assumeTls = dockerUrlHandler.shouldUseTls(new URL("https://example.com:2376"))
         then:
@@ -25,8 +27,9 @@ class DockerURLHandlerTest extends Specification {
     def "should not assume TLS when tlsVerify==#tlsVerify"() {
         def certsDir = Files.createTempDirectory("certs")
         def dockerUrlHandler = new DockerURLHandler(
-                dockerTlsVerify: tlsVerify,
-                dockerCertPath: certsDir.toString())
+                config: new DockerConfig(
+                        tlsVerify: tlsVerify,
+                        certPath: certsDir.toString()))
         when:
         def assumeTls = dockerUrlHandler.shouldUseTls(new URL("https://example.com:2376"))
         then:
@@ -37,8 +40,9 @@ class DockerURLHandlerTest extends Specification {
 
     def "should not assume TLS when port !== 2376"() {
         def dockerUrlHandler = new DockerURLHandler(
-                dockerTlsVerify: null,
-                dockerCertPath: "/some/non-existing/path")
+                config: new DockerConfig(
+                        tlsVerify: null,
+                        certPath: "/some/non-existing/path"))
         when:
         def assumeTls = dockerUrlHandler.shouldUseTls(new URL("https://example.com:2375"))
         then:
@@ -47,9 +51,10 @@ class DockerURLHandlerTest extends Specification {
 
     def "should fail when tlsVerify=1, but certs directory doesn't exist"() {
         def dockerUrlHandler = new DockerURLHandler(
-                dockerTlsVerify: "1",
-                dockerCertPath: "/some/non-existing/path",
-                defaultDockerCertPath: new File("/some/non-existing/default/path"))
+                config: new DockerConfig(
+                        tlsVerify: "1",
+                        certPath: "/some/non-existing/path",
+                        defaultCertPath: new File("/some/non-existing/default/path")))
         when:
         dockerUrlHandler.shouldUseTls(new URL("https://example.com:2375"))
         then:
@@ -58,22 +63,25 @@ class DockerURLHandlerTest extends Specification {
 
     def "should try to use the default .docker cert path"() {
         def dockerUrlHandler = new DockerURLHandler(
-                dockerTlsVerify: null,
-                dockerCertPath: "/some/non-existing/path")
-        def defaultDockerCertPathExisted = Files.exists(dockerUrlHandler.defaultDockerCertPath.toPath())
+                config: new DockerConfig(
+                        tlsVerify: null,
+                        certPath: "/some/non-existing/path"))
+        def defaultDockerCertPathExisted = Files.exists(dockerUrlHandler.config.defaultCertPath.toPath())
         if (!defaultDockerCertPathExisted) {
-            Files.createDirectory(dockerUrlHandler.defaultDockerCertPath.toPath())
+            Files.createDirectory(dockerUrlHandler.config.defaultCertPath.toPath())
         }
         when:
         def assumeTls = dockerUrlHandler.shouldUseTls(new URL("https://example.com:2376"))
         then:
         assumeTls
         cleanup:
-        defaultDockerCertPathExisted || Files.delete(dockerUrlHandler.defaultDockerCertPath.toPath())
+        defaultDockerCertPathExisted || Files.delete(dockerUrlHandler.config.defaultCertPath.toPath())
     }
 
     def "should choose http for 'tcp://127.0.0.1:2375'"() {
-        def dockerUrlHandler = new DockerURLHandler(dockerTlsVerify: null)
+        def dockerUrlHandler = new DockerURLHandler(
+                config: new DockerConfig(
+                        tlsVerify: null))
         when:
         def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("tcp://127.0.0.1:2375")
         then:
@@ -81,7 +89,9 @@ class DockerURLHandlerTest extends Specification {
     }
 
     def "should choose http for 'http://127.0.0.1:2375'"() {
-        def dockerUrlHandler = new DockerURLHandler(dockerTlsVerify: null)
+        def dockerUrlHandler = new DockerURLHandler(
+                config: new DockerConfig(
+                        tlsVerify: null))
         when:
         def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("http://127.0.0.1:2375")
         then:
@@ -89,7 +99,9 @@ class DockerURLHandlerTest extends Specification {
     }
 
     def "should choose http for 'https://127.0.0.1:2376' and disabled tls"() {
-        def dockerUrlHandler = new DockerURLHandler(dockerTlsVerify: "0")
+        def dockerUrlHandler = new DockerURLHandler(
+                config: new DockerConfig(
+                        tlsVerify: "0"))
         when:
         def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("https://127.0.0.1:2376")
         then:
@@ -99,8 +111,9 @@ class DockerURLHandlerTest extends Specification {
     def "should choose https for 'https://127.0.0.1:2376' and enabled tls"() {
         def certsDir = Files.createTempDirectory("certs")
         def dockerUrlHandler = new DockerURLHandler(
-                dockerTlsVerify: "1",
-                dockerCertPath: certsDir.toString())
+                config: new DockerConfig(
+                        tlsVerify: "1",
+                        certPath: certsDir.toString()))
         when:
         def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("https://127.0.0.1:2376")
         then:

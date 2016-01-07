@@ -1,5 +1,6 @@
 package de.gesellix.docker.client.protocolhandler
 
+import de.gesellix.docker.client.DockerConfig
 import de.gesellix.docker.client.protocolhandler.urlstreamhandler.HttpOverUnixSocketClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -9,16 +10,7 @@ class DockerURLHandler {
 
     Logger logger = LoggerFactory.getLogger(DockerURLHandler)
 
-    String dockerTlsVerify
-    String dockerCertPath
-    File defaultDockerCertPath
-    final int defaultDockerTlsPort = 2376
-
-    DockerURLHandler() {
-        this.dockerTlsVerify = System.getProperty("docker.tls.verify", System.env.DOCKER_TLS_VERIFY as String)
-        this.dockerCertPath = System.getProperty("docker.cert.path", System.env.DOCKER_CERT_PATH as String)
-        this.defaultDockerCertPath = new File(System.properties['user.home'] as String, ".docker")
-    }
+    DockerConfig config = new DockerConfig()
 
     def getRequestUrl(String dockerHost, String path, String query) {
         if (!dockerHost) {
@@ -78,27 +70,27 @@ class DockerURLHandler {
     def shouldUseTls(URL candidateURL) {
         // explicitly disabled?
         def falsyValues = ["0", "no", "false"]
-        if (falsyValues.contains(dockerTlsVerify)) {
-            logger.debug("dockerTlsVerify=${dockerTlsVerify}")
+        if (falsyValues.contains(config.tlsVerify)) {
+            logger.debug("dockerTlsVerify=${config.tlsVerify}")
             return false
         }
 
-        def certsPathExists = dockerCertPath && new File(dockerCertPath).isDirectory()
+        def certsPathExists = config.certPath && new File(config.certPath).isDirectory()
         if (!certsPathExists) {
-            if (defaultDockerCertPath && defaultDockerCertPath.isDirectory()) {
-                logger.debug("defaultDockerCertPath=${defaultDockerCertPath}")
-                dockerCertPath = defaultDockerCertPath
+            if (config.defaultCertPath && config.defaultCertPath.isDirectory()) {
+                logger.debug("defaultDockerCertPath=${config.defaultCertPath}")
+                config.certPath = config.defaultCertPath
                 certsPathExists = true
             }
         } else {
-            logger.debug("dockerCertPath=${dockerCertPath}")
+            logger.debug("dockerCertPath=${config.certPath}")
         }
 
         // explicitly enabled?
         def truthyValues = ["1", "yes", "true"]
-        if (truthyValues.contains(dockerTlsVerify)) {
+        if (truthyValues.contains(config.tlsVerify)) {
             if (!certsPathExists) {
-                throw new IllegalStateException("tlsverify=${dockerTlsVerify}, but ${dockerCertPath} doesn't exist")
+                throw new IllegalStateException("tlsverify=${config.tlsVerify}, but ${config.certPath} doesn't exist")
             } else {
                 logger.debug("certsPathExists=${certsPathExists}")
                 return true
@@ -106,7 +98,7 @@ class DockerURLHandler {
         }
 
         // make a guess if we could use tls, when it's neither explicitly enabled nor disabled
-        def isTlsPort = candidateURL.port == defaultDockerTlsPort
+        def isTlsPort = candidateURL.port == config.defaultTlsPort
         logger.debug("certsPathExists=${certsPathExists}, isTlsPort=${isTlsPort}")
         return certsPathExists && isTlsPort
     }

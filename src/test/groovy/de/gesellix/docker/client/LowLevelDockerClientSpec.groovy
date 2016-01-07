@@ -38,7 +38,9 @@ class LowLevelDockerClientSpec extends Specification {
     }
 
     def "getRequestUrl should support tcp protocol"() {
-        def client = new LowLevelDockerClient(dockerHost: "tcp://127.0.0.1:2375")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "tcp://127.0.0.1:2375"))
         expect:
         client.getRequestUrl("", "").toString() == new URL("http://127.0.0.1:2375").toString()
     }
@@ -47,7 +49,9 @@ class LowLevelDockerClientSpec extends Specification {
         given:
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
-        def client = new LowLevelDockerClient(dockerHost: "tcp://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "tcp://127.0.0.1:2376"))
         expect:
         client.getRequestUrl("", "").toString() == new URL("https://127.0.0.1:2376").toString()
         cleanup:
@@ -62,7 +66,9 @@ class LowLevelDockerClientSpec extends Specification {
         given:
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         expect:
         client.getRequestUrl("", "").toString() == new URL("https://127.0.0.1:2376").toString()
         cleanup:
@@ -74,7 +80,9 @@ class LowLevelDockerClientSpec extends Specification {
     }
 
     def "getMimeType"() {
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         expect:
         client.getMimeType(contentType) == expectedMimeType
         where:
@@ -88,7 +96,9 @@ class LowLevelDockerClientSpec extends Specification {
     }
 
     def "getCharset"() {
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         expect:
         client.getCharset(contentType) == expectedCharset
         where:
@@ -101,7 +111,9 @@ class LowLevelDockerClientSpec extends Specification {
     }
 
     def "queryToString"() {
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         expect:
         client.queryToString(parameters) == query
         where:
@@ -117,7 +129,9 @@ class LowLevelDockerClientSpec extends Specification {
 
     @Unroll
     def "generic request with bad config: #requestConfig"() {
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         when:
         client.request(requestConfig)
         then:
@@ -129,7 +143,9 @@ class LowLevelDockerClientSpec extends Specification {
 
     @Unroll
     def "#method request with bad config: #requestConfig"() {
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         when:
         new MethodClosure(client, method).call(requestConfig)
         then:
@@ -148,7 +164,9 @@ class LowLevelDockerClientSpec extends Specification {
     }
 
     def "head request uses the HEAD method"() {
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         given:
         client.metaClass.request = { config ->
             config.method
@@ -160,7 +178,9 @@ class LowLevelDockerClientSpec extends Specification {
     }
 
     def "get request uses the GET method"() {
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         given:
         client.metaClass.request = { config ->
             config.method
@@ -172,7 +192,9 @@ class LowLevelDockerClientSpec extends Specification {
     }
 
     def "put request uses the PUT method"() {
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         given:
         client.metaClass.request = { config ->
             config.method
@@ -184,7 +206,9 @@ class LowLevelDockerClientSpec extends Specification {
     }
 
     def "post request uses the POST method"() {
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         given:
         client.metaClass.request = { config ->
             config.method
@@ -196,7 +220,9 @@ class LowLevelDockerClientSpec extends Specification {
     }
 
     def "delete request uses the DELETE method"() {
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         given:
         client.metaClass.request = { config ->
             config.method
@@ -211,7 +237,9 @@ class LowLevelDockerClientSpec extends Specification {
         given:
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
 
         when:
         def wsClient = client.getWebsocketClient("/foo", Mock(DefaultWebsocketHandler))
@@ -231,7 +259,9 @@ class LowLevelDockerClientSpec extends Specification {
         given:
         def httpServer = new TestHttpServer()
         def serverAddress = httpServer.start()
-        def client = new LowLevelDockerClient(dockerHost: "http://127.0.0.1:${serverAddress.port}")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "http://127.0.0.1:${serverAddress.port}"))
         when:
         def connection = client.openConnection([method: "GET",
                                                 path  : "/foo"])
@@ -247,7 +277,10 @@ class LowLevelDockerClientSpec extends Specification {
         def httpServer = new TestHttpServer()
         def proxyAddress = httpServer.start()
         def proxy = new Proxy(Proxy.Type.HTTP, proxyAddress)
-        def client = new LowLevelDockerClient(dockerHost: "http://any.thi.ng:4711", proxy: proxy)
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "http://any.thi.ng:4711"),
+                proxy: proxy)
         when:
         def connection = client.openConnection([method: "GET",
                                                 path  : "/test/"])
@@ -259,7 +292,9 @@ class LowLevelDockerClientSpec extends Specification {
     }
 
     def "openConnection with path"() {
-        def client = new LowLevelDockerClient(dockerHost: "http://127.0.0.1:2375")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "http://127.0.0.1:2375"))
         when:
         def connection = client.openConnection([method: "GET",
                                                 path  : "/foo"])
@@ -268,7 +303,9 @@ class LowLevelDockerClientSpec extends Specification {
     }
 
     def "openConnection with path and query"() {
-        def client = new LowLevelDockerClient(dockerHost: "http://127.0.0.1:2375")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "http://127.0.0.1:2375"))
         when:
         def connection = client.openConnection([method: "GET",
                                                 path  : "/bar",
@@ -278,7 +315,9 @@ class LowLevelDockerClientSpec extends Specification {
     }
 
     def "configureConnection with plain http connection"() {
-        def client = new LowLevelDockerClient(dockerHost: "http://127.0.0.1:2375")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "http://127.0.0.1:2375"))
         def connectionMock = Mock(HttpURLConnection)
         when:
         client.configureConnection(connectionMock, [method: "HEADER"])
@@ -290,7 +329,9 @@ class LowLevelDockerClientSpec extends Specification {
         given:
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         def connectionMock = Mock(HttpsURLConnection)
 
         when:
@@ -311,7 +352,9 @@ class LowLevelDockerClientSpec extends Specification {
 
     def "request should return statusLine"() {
         given:
-        def client = new LowLevelDockerClient(dockerHost: "http://127.0.0.1:2375")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "http://127.0.0.1:2375"))
         def connectionMock = Mock(HttpURLConnection)
         client.metaClass.openConnection = {
             connectionMock
@@ -340,7 +383,9 @@ class LowLevelDockerClientSpec extends Specification {
 
     def "request should return headers"() {
         given:
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         def connectionMock = Mock(HttpURLConnection)
         client.metaClass.openConnection = {
             connectionMock
@@ -370,7 +415,9 @@ class LowLevelDockerClientSpec extends Specification {
 
     def "request should return consumed content"() {
         given:
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         def connectionMock = Mock(HttpURLConnection)
         client.metaClass.openConnection = {
             connectionMock
@@ -395,7 +442,9 @@ class LowLevelDockerClientSpec extends Specification {
 
     def "request with stdout stream and known content length"() {
         given:
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         def connectionMock = Mock(HttpURLConnection)
         client.metaClass.openConnection = {
             connectionMock
@@ -425,7 +474,9 @@ class LowLevelDockerClientSpec extends Specification {
 
     def "request with stdout stream and unknown content length"() {
         given:
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         def connectionMock = Mock(HttpURLConnection)
         client.metaClass.openConnection = {
             connectionMock
@@ -451,7 +502,9 @@ class LowLevelDockerClientSpec extends Specification {
 
     def "request with unknown mime type"() {
         given:
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         def connectionMock = Mock(HttpURLConnection)
         client.metaClass.openConnection = {
             connectionMock
@@ -477,7 +530,9 @@ class LowLevelDockerClientSpec extends Specification {
 
     def "request with unknown mime type and stdout"() {
         given:
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         def connectionMock = Mock(HttpURLConnection)
         client.metaClass.openConnection = {
             connectionMock
@@ -507,7 +562,9 @@ class LowLevelDockerClientSpec extends Specification {
 
     def "request with consumed body by ContentHandler"() {
         given:
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         def contentHandler = new TestContentHandler(result: "result")
         client.metaClass.newDockerContentHandlerFactory = { Map config ->
             new TestContentHandlerFactory(contentHandler: contentHandler)
@@ -537,7 +594,9 @@ class LowLevelDockerClientSpec extends Specification {
 
     def "request with json response"() {
         given:
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         def contentHandler = new TestContentHandler(result: "result")
         client.metaClass.newDockerContentHandlerFactory = { Map config ->
             new TestContentHandlerFactory(contentHandler: contentHandler)
@@ -567,7 +626,9 @@ class LowLevelDockerClientSpec extends Specification {
 
     def "request with docker raw-stream response"() {
         given:
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         def actualText = "holy ship"
         def headerAndPayload = new RawHeaderAndPayload(STDOUT, actualText.bytes)
         def responseBody = new ByteArrayInputStream((byte[]) headerAndPayload.bytes)
@@ -600,7 +661,9 @@ class LowLevelDockerClientSpec extends Specification {
 
     def "request with docker raw-stream response on stdout"() {
         given:
-        def client = new LowLevelDockerClient(dockerHost: "https://127.0.0.1:2376")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "https://127.0.0.1:2376"))
         def actualText = "holy ship"
         def headerAndPayload = new RawHeaderAndPayload(STDOUT, actualText.bytes)
         def responseBody = new ByteArrayInputStream((byte[]) headerAndPayload.bytes)

@@ -114,7 +114,7 @@ class DockerClientImplSpec extends Specification {
         def oldDockerConfigDir = System.setProperty("docker.config", expectedConfigDir.absolutePath)
 
         when:
-        def dockerConfigFile = dockerClient.getActualDockerConfigFile()
+        def dockerConfigFile = dockerClient.config.getDockerConfigFile()
 
         then:
         dockerConfigFile.absolutePath == new File(expectedConfigDir, 'config.json').absolutePath
@@ -131,14 +131,14 @@ class DockerClientImplSpec extends Specification {
         given:
         def oldDockerConfig = System.clearProperty("docker.config")
         def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/config.json')
-        dockerClient.dockerConfigFile = expectedConfigFile
+        dockerClient.config.configFile = expectedConfigFile
 
         when:
         dockerClient.readDefaultAuthConfig()
 
         then:
         1 * dockerClient.readAuthConfig(null, expectedConfigFile)
-        dockerClient.legacyDockerConfigFile
+        dockerClient.config.legacyConfigFile
 
         cleanup:
         if (oldDockerConfig) {
@@ -151,17 +151,17 @@ class DockerClientImplSpec extends Specification {
         def oldDockerConfig = System.clearProperty("docker.config")
         def nonExistingFile = new File('./I should not exist')
         assert !nonExistingFile.exists()
-        dockerClient.dockerConfigFile = nonExistingFile
+        dockerClient.config.configFile = nonExistingFile
         def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg')
-        dockerClient.legacyDockerConfigFile = expectedConfigFile
+        dockerClient.config.legacyConfigFile = expectedConfigFile
 
         when:
         dockerClient.readDefaultAuthConfig()
 
         then:
         1 * dockerClient.readAuthConfig(null, expectedConfigFile)
-        dockerClient.dockerConfigFile
-        dockerClient.legacyDockerConfigFile
+        dockerClient.config.configFile
+        dockerClient.config.legacyConfigFile
 
         cleanup:
         if (oldDockerConfig) {

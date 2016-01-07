@@ -46,7 +46,7 @@ The tests in `DockerClientImplSpec` and `DockerClientImplIntegrationSpec` should
 A basic example connecting to a Docker daemon running in a VM (boot2docker/machine) looks like this:
 
     System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
-    def dockerClient = new DockerClientImpl(dockerHost: System.env.DOCKER_HOST)
+    def dockerClient = new DockerClientImpl(System.env.DOCKER_HOST)
     def info = dockerClient.info().content
 
 ### Example 2: `docker run`
@@ -54,7 +54,7 @@ A basic example connecting to a Docker daemon running in a VM (boot2docker/machi
 Running a container being available on the host via HTTP port 4712 can be achieved like this:
 
     System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
-    def dockerClient = new DockerClientImpl(dockerHost: System.env.DOCKER_HOST)
+    def dockerClient = new DockerClientImpl(System.env.DOCKER_HOST)
     def image = "busybox"
     def tag = "latest"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]

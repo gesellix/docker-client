@@ -22,14 +22,13 @@ class LowLevelDockerClient {
     DockerURLHandler dockerURLHandler
 
     Proxy proxy
-    String dockerHost
+    DockerConfig config = new DockerConfig()
 
     SSLContext sslContext
     SSLSocketFactory sslSocketFactory
 
     LowLevelDockerClient() {
-        dockerURLHandler = new DockerURLHandler()
-        dockerHost = System.getProperty("docker.host", System.env.DOCKER_HOST as String) ?: "http://127.0.0.1:2375"
+        dockerURLHandler = new DockerURLHandler(config: config)
         proxy = Proxy.NO_PROXY
         sslContext = null
         sslSocketFactory = null
@@ -278,7 +277,7 @@ class LowLevelDockerClient {
     }
 
     def getRequestUrl(String path, String query) {
-        return dockerURLHandler.getRequestUrl(getDockerHost(), path, query)
+        return dockerURLHandler.getRequestUrl(config.dockerHost, path, query)
     }
 
     def getRequestUrlWithOptionalQuery(config) {
@@ -329,7 +328,7 @@ class LowLevelDockerClient {
 
     SSLContext initSSLContext() {
         if (!sslContext) {
-            def dockerCertPath = dockerURLHandler.dockerCertPath
+            def dockerCertPath = config.certPath
 
             def keyStore = KeyStoreUtil.createDockerKeyStore(new File(dockerCertPath as String).absolutePath)
             final KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(getDefaultAlgorithm())

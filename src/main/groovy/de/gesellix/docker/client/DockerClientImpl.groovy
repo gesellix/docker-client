@@ -19,44 +19,38 @@ class DockerClientImpl implements DockerClient {
     def responseHandler = new DockerResponseHandler()
 
     def proxy
-    def dockerHost = "http://127.0.0.1:2375"
-    // the v1 registry still seems to be valid for authentication.
-    def indexUrl_v1 = 'https://index.docker.io/v1/'
-    def indexUrl_v2 = 'https://registry-1.docker.io'
-    def dockerConfigFile = new File("${System.getProperty('user.home')}/.docker", "config.json")
-    def legacyDockerConfigFile = new File("${System.getProperty('user.home')}", ".dockercfg")
 
+    DockerConfig config = new DockerConfig()
     LowLevelDockerClient httpClient
     def Closure<LowLevelDockerClient> newDockerHttpClient
 
     DockerClientImpl() {
-        proxy = Proxy.NO_PROXY
+        this(new DockerConfig())
+    }
+
+    DockerClientImpl(String dockerHost) {
+        this(new DockerConfig(dockerHost: dockerHost))
+    }
+
+    DockerClientImpl(DockerConfig config) {
+        this.config = config
+        this.proxy = Proxy.NO_PROXY
         newDockerHttpClient = new MethodClosure(this, "createDockerHttpClient")
     }
 
     def getHttpClient() {
         if (!httpClient) {
-            this.httpClient = newDockerHttpClient(dockerHost, proxy)
-            logger.info "using docker at '${dockerHost}'"
+            this.httpClient = newDockerHttpClient(config.dockerHost, proxy)
+            logger.info "using docker at '${config.dockerHost}'"
         }
         return httpClient
     }
 
     def createDockerHttpClient(dockerHost, proxy) {
-        return new LowLevelDockerClient(dockerHost: dockerHost, proxy: proxy)
-    }
-
-    File getActualDockerConfigFile() {
-        String dockerConfig = System.getProperty("docker.config", System.env.DOCKER_CONFIG as String)
-        if (dockerConfig) {
-            return new File(dockerConfig, 'config.json')
+        return new LowLevelDockerClient(proxy: proxy).with {
+            it.config.dockerHost = dockerHost
+            it
         }
-        if (dockerConfigFile.exists()) {
-            return dockerConfigFile
-        } else if (legacyDockerConfigFile.exists()) {
-            return legacyDockerConfigFile
-        }
-        return null
     }
 
     @Override
@@ -98,7 +92,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def readDefaultAuthConfig() {
-        return readAuthConfig(null, getActualDockerConfigFile())
+        return readAuthConfig(null, config.getDockerConfigFile())
     }
 
     @Override
@@ -106,7 +100,7 @@ class DockerClientImpl implements DockerClient {
         logger.debug "read authConfig"
 
         if (!dockerCfg) {
-            dockerCfg = getActualDockerConfigFile()
+            dockerCfg = config.getDockerConfigFile()
         }
         if (!dockerCfg?.exists()) {
             logger.warn "${dockerCfg} doesn't exist"
@@ -116,7 +110,7 @@ class DockerClientImpl implements DockerClient {
         def parsedDockerCfg = new JsonSlurper().parse(dockerCfg)
 
         if (!hostname) {
-            hostname = indexUrl_v1
+            hostname = config.indexUrl_v1
         }
 
         def authConfig

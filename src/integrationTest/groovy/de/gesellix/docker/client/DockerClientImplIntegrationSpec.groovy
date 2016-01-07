@@ -20,12 +20,11 @@ class DockerClientImplIntegrationSpec extends Specification {
     DockerClient dockerClient
 
     def setup() {
-        def defaultDockerHost = System.env.DOCKER_HOST?.replaceFirst("tcp://", "http://")
 //        defaultDockerHost = "http://192.168.99.100:2376"
 //        defaultDockerHost = "unix:///var/run/docker.sock"
 //        System.setProperty("docker.cert.path", "C:\\Users\\${System.getProperty('user.name')}\\.boot2docker\\certs\\boot2docker-vm")
 //        System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
-        dockerClient = new DockerClientImpl(dockerHost: defaultDockerHost ?: "http://172.17.42.1:2375")
+        dockerClient = new DockerClientImpl()
     }
 
     def ping() {
