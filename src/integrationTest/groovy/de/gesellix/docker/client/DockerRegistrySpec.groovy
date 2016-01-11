@@ -1,16 +1,14 @@
 package de.gesellix.docker.client
 
+import spock.lang.IgnoreIf
 import spock.lang.Specification
 
+@IgnoreIf({ !System.env.DOCKER_HOST })
 class DockerRegistrySpec extends Specification {
 
     def "can determine registry url"() {
         given:
-        def registry = new DockerRegistry(dockerClient: new DockerClientImpl(
-                config: new DockerConfig(
-                        dockerHost: "tcp://192.168.99.100:2376",
-                        certPath: "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
-        ))
+        def registry = new DockerRegistry(dockerClient: new DockerClientImpl())
         registry.run()
         when:
         def registryUrl = registry.url()
