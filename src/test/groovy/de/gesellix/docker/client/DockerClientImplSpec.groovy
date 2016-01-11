@@ -14,7 +14,20 @@ class DockerClientImplSpec extends Specification {
 
     def setup() {
         dockerClient.responseHandler = Spy(DockerResponseHandler)
-        dockerClient.newDockerHttpClient = { dockerHost, proxy -> httpClient }
+        dockerClient.newDockerHttpClient = { dockerConfig, proxy -> httpClient }
+    }
+
+    def "passes dockerConfig and proxy to internal http client"() {
+        given:
+        def proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(4711))
+        def config = Mock(DockerConfig)
+
+        when:
+        def httpClient = dockerClient.createDockerHttpClient(config, proxy)
+
+        then:
+        httpClient.config == config
+        httpClient.proxy == proxy
     }
 
     def "read and encode authConfig (old format)"() {

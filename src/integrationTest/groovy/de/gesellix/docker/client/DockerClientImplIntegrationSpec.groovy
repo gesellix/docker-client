@@ -17,14 +17,25 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS
 @IgnoreIf({ !System.env.DOCKER_HOST })
 class DockerClientImplIntegrationSpec extends Specification {
 
-    DockerClient dockerClient
+    static DockerRegistry registry
 
-    def setup() {
+    static DockerClient dockerClient
+
+    def setupSpec() {
 //        defaultDockerHost = "http://192.168.99.100:2376"
 //        defaultDockerHost = "unix:///var/run/docker.sock"
 //        System.setProperty("docker.cert.path", "C:\\Users\\${System.getProperty('user.name')}\\.boot2docker\\certs\\boot2docker-vm")
 //        System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
-        dockerClient = new DockerClientImpl()
+        dockerClient = new DockerClientImpl(
+                config: new DockerConfig(
+                        certPath: "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
+        )
+        registry = new DockerRegistry(dockerClient: dockerClient)
+        registry.run()
+    }
+
+    def cleanupSpec() {
+        registry.rm()
     }
 
     def ping() {
@@ -60,17 +71,17 @@ class DockerClientImplIntegrationSpec extends Specification {
         info.InitPath =~ "/usr(/local)?/bin/docker"
         info.InitSha1 == ""
         info.IPv4Forwarding == true
-        info.Labels == null
+        info.Labels == ["provider=virtualbox"]
         info.LoggingDriver == "json-file"
         info.MemTotal > 0
         info.MemoryLimit == true
         info.Name =~ "\\w+"
-        info.NCPU > 2
+        info.NCPU >= 1
         info.NEventsListener == 0
         info.NFd > 0
         info.NGoroutines > 0
         info.NoProxy == ""
-        info.KernelVersion =~ "\\d.\\d{1,2}.\\d-\\w+"
+        info.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}-\\w+"
         info.OomKillDisable == true
         info.OperatingSystem =~ "\\w+"
         info.RegistryConfig == [
@@ -80,7 +91,8 @@ class DockerClientImplIntegrationSpec extends Specification {
                                       "Official": true,
                                       "Secure"  : true]
                 ],
-                "InsecureRegistryCIDRs": ["127.0.0.0/8"]
+                "InsecureRegistryCIDRs": ["127.0.0.0/8"],
+                "Mirrors"              : null
         ]
         info.SwapLimit == true
         info.SystemTime =~ "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3,}Z"
@@ -91,13 +103,13 @@ class DockerClientImplIntegrationSpec extends Specification {
         def version = dockerClient.version().content
 
         then:
-        version.ApiVersion == "1.19"
+        version.ApiVersion == "1.21"
         version.Arch == "amd64"
-        version.GitCommit == "786b29d"
-        version.GoVersion == "go1.4.2"
-        version.KernelVersion =~ "\\d.\\d{1,2}.\\d-\\w+"
+        version.GitCommit == "a34a1d5"
+        version.GoVersion == "go1.4.3"
+        version.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}-\\w+"
         version.Os == "linux"
-        version.Version == "1.7.1"
+        version.Version == "1.9.1"
     }
 
     def auth() {
@@ -186,7 +198,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         dockerClient.tag(imageId, imageName, true)
 
         when:
-        def pushResult = dockerClient.push(imageName, authBase64Encoded, "localhost:5000")
+        def pushResult = dockerClient.push(imageName, authBase64Encoded, registry.url())
 
         then:
         pushResult.status.code == 200
@@ -195,7 +207,7 @@ class DockerClientImplIntegrationSpec extends Specification {
 
         cleanup:
         dockerClient.rmi(imageName)
-        dockerClient.rmi("localhost:5000/${imageName}")
+        dockerClient.rmi("${registry.url()}/${imageName}")
     }
 
     def "push image with undefined authentication"() {
@@ -205,16 +217,16 @@ class DockerClientImplIntegrationSpec extends Specification {
         dockerClient.tag(imageId, imageName, true)
 
         when:
-        def pushResult = dockerClient.push(imageName, null, "localhost:5000")
+        def pushResult = dockerClient.push(imageName, null, registry.url())
 
         then:
         pushResult.status.code == 200
         and:
-        pushResult.content.last().status =~ "Digest: sha256:\\w+"
+        pushResult.content.last().status =~ "latest: digest: sha256:\\w+"
 
         cleanup:
         dockerClient.rmi(imageName)
-        dockerClient.rmi("localhost:5000/${imageName}")
+        dockerClient.rmi("${registry.url()}/${imageName}")
     }
 
     def "pull image"() {
@@ -222,22 +234,22 @@ class DockerClientImplIntegrationSpec extends Specification {
         def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
 
         then:
-        imageId == "3eb19b6d9332"
+        imageId == "ed9f0eb28ab34add30d4a2bfea3f548ba991d7702315b33f7309a64cd5d56390"
     }
 
     def "pull image from private registry"() {
         given:
         dockerClient.pull("gesellix/docker-client-testimage", "latest")
-        dockerClient.push("gesellix/docker-client-testimage:latest", "", "localhost:5000")
+        dockerClient.push("gesellix/docker-client-testimage:latest", "", registry.url())
 
         when:
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest", "localhost:5000")
+        def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest", "", registry.url())
 
         then:
-        imageId == "3eb19b6d9332"
+        imageId == "ed9f0eb28ab34add30d4a2bfea3f548ba991d7702315b33f7309a64cd5d56390"
 
         cleanup:
-        dockerClient.rmi("localhost:5000/gesellix/docker-client-testimage")
+        dockerClient.rmi("${registry.url()}/gesellix/docker-client-testimage")
     }
 
     def "import image from url"() {
@@ -335,7 +347,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         and:
         containerInspection.Config.Image == "inspect_container"
         and:
-        containerInspection.Image =~ "${imageId}\\w+"
+        containerInspection.Image =~ "${imageId}\\w*"
         and:
         containerInspection.Id == containerId
 
@@ -375,13 +387,13 @@ class DockerClientImplIntegrationSpec extends Specification {
         def imageInspection = dockerClient.inspectImage(imageId).content
 
         then:
-        imageInspection.Config.Image == "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc"
+        imageInspection.Config.Image == "7e54a6afe4611a9cf954d55bc131dea274f429d14f83a97c8eecda76dc057c68"
         and:
-        imageInspection.Id == "3eb19b6d933247ab513993b2b9ed43a44f0432580e6f4f974bb2071ea968b494"
+        imageInspection.Id == "ed9f0eb28ab34add30d4a2bfea3f548ba991d7702315b33f7309a64cd5d56390"
         and:
-        imageInspection.Parent == "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc"
+        imageInspection.Parent == "7e54a6afe4611a9cf954d55bc131dea274f429d14f83a97c8eecda76dc057c68"
         and:
-        imageInspection.Container == "c0c18082a03537cda7a61792e50501303051b84a90849765aa0793f69ce169b3"
+        imageInspection.Container == "35d9819965f22350e78f9648d7da286ed91b480b90aa3d2f0779e5e4be576d48"
     }
 
     def "history"() {
@@ -393,12 +405,11 @@ class DockerClientImplIntegrationSpec extends Specification {
 
         then:
         history.collect { it.Id } == [
-                "3eb19b6d933247ab513993b2b9ed43a44f0432580e6f4f974bb2071ea968b494",
-                "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc",
-                "4986bf8c15363d1c5d15512d5266f8777bfba4974ac56e3270e7760f6f0a8125",
-                "ea13149945cb6b1e746bf28032f02e9b5a793523481a0a18645fc77ad53c4ea2",
-                "df7546f9f060a2268024c8a230d8639878585defcc1bc6f79d2728a13957871b",
-                "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158"
+                "ed9f0eb28ab34add30d4a2bfea3f548ba991d7702315b33f7309a64cd5d56390",
+                "7e54a6afe4611a9cf954d55bc131dea274f429d14f83a97c8eecda76dc057c68",
+                "8c2e06607696bd4afb3d03b687e361cc43cf8ec1a4a725bc96e39f05ba97dd55",
+                "6ce2e90b0bc7224de3db1f0d646fe8e2c4dd37f1793928287f6074bc451a57ea",
+                "cf2616975b4a3cba083ca99bc3f0bf25f5f528c3c52be1596b30f60b0b1c37ff"
         ]
     }
 
@@ -411,10 +422,10 @@ class DockerClientImplIntegrationSpec extends Specification {
 
         then:
         def imageById = images.find {
-            it.Id == "3eb19b6d933247ab513993b2b9ed43a44f0432580e6f4f974bb2071ea968b494"
+            it.Id == "ed9f0eb28ab34add30d4a2bfea3f548ba991d7702315b33f7309a64cd5d56390"
         }
-        imageById.Created == 1423607478
-        imageById.ParentId == "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc"
+        imageById.Created == 1439657333
+        imageById.ParentId == "7e54a6afe4611a9cf954d55bc131dea274f429d14f83a97c8eecda76dc057c68"
         imageById.RepoTags.contains "gesellix/test:latest"
     }
 
@@ -425,11 +436,11 @@ class DockerClientImplIntegrationSpec extends Specification {
         then:
         def imageIds = images.collect { image -> image.Id }
         imageIds.containsAll([
-                "3eb19b6d933247ab513993b2b9ed43a44f0432580e6f4f974bb2071ea968b494",
-                "3cac76e73e2b43058355dadc14cd24a4a3a8388e0041b4298372732b27d2f4bc",
-                "4986bf8c15363d1c5d15512d5266f8777bfba4974ac56e3270e7760f6f0a8125",
-                "ea13149945cb6b1e746bf28032f02e9b5a793523481a0a18645fc77ad53c4ea2",
-                "df7546f9f060a2268024c8a230d8639878585defcc1bc6f79d2728a13957871b",
+                "ed9f0eb28ab34add30d4a2bfea3f548ba991d7702315b33f7309a64cd5d56390",
+                "7e54a6afe4611a9cf954d55bc131dea274f429d14f83a97c8eecda76dc057c68",
+                "8c2e06607696bd4afb3d03b687e361cc43cf8ec1a4a725bc96e39f05ba97dd55",
+                "6ce2e90b0bc7224de3db1f0d646fe8e2c4dd37f1793928287f6074bc451a57ea",
+                "cf2616975b4a3cba083ca99bc3f0bf25f5f528c3c52be1596b30f60b0b1c37ff",
                 "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158"
         ])
     }
@@ -492,8 +503,8 @@ class DockerClientImplIntegrationSpec extends Specification {
         then:
         DockerClientException ex = thrown()
         ex.cause.message == 'docker pull failed'
-        ex.detail.content.last() == [error      : "Tag unkown not found in repository gesellix/docker-client-testimage",
-                                     errorDetail: [message: "Tag unkown not found in repository gesellix/docker-client-testimage"]]
+        ex.detail.content.last() == [error      : "Tag unkown not found in repository docker.io/gesellix/docker-client-testimage",
+                                     errorDetail: [message: "Tag unkown not found in repository docker.io/gesellix/docker-client-testimage"]]
     }
 
     def "start container"() {
@@ -800,6 +811,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         dockerClient.rm(name)
     }
 
+    @Ignore
     def "exec start"() {
         given:
         def imageName = "gesellix/docker-client-testimage"
@@ -885,11 +897,12 @@ class DockerClientImplIntegrationSpec extends Specification {
 
         then:
         searchResult.content.contains([
-                description: "",
-                is_official: false,
-                is_trusted : true,
-                name       : "gesellix/docker-client-testimage",
-                star_count : 0
+                description : "",
+                is_automated: true,
+                is_official : false,
+                is_trusted  : true,
+                name        : "gesellix/docker-client-testimage",
+                star_count  : 0
         ])
     }
 

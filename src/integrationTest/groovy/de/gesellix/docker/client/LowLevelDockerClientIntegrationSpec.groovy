@@ -9,14 +9,18 @@ import spock.lang.Specification
 class LowLevelDockerClientIntegrationSpec extends Specification {
 
     def "should allow GET requests"() {
-        def client = new LowLevelDockerClient(dockerHost: System.env.DOCKER_HOST)
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: System.env.DOCKER_HOST))
         expect:
         client.get("/_ping").content == "OK"
     }
 
     def "should allow POST requests"() {
         given:
-        def client = new LowLevelDockerClient(dockerHost: System.env.DOCKER_HOST)
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: System.env.DOCKER_HOST))
         def request = [path : "/images/create",
                        query: [fromImage: "gesellix/docker-client-testimage",
                                tag      : "latest",
@@ -31,7 +35,9 @@ class LowLevelDockerClientIntegrationSpec extends Specification {
     @Ignore("the password needs to be set before running this test")
     def "should allow POST requests with body"() {
         given:
-        def client = new LowLevelDockerClient(dockerHost: System.env.DOCKER_HOST)
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: System.env.DOCKER_HOST))
         def authDetails = ["username"     : "gesellix",
                            "password"     : "-yet-another-password-",
                            "email"        : "tobias@gesellix.de",
@@ -46,7 +52,9 @@ class LowLevelDockerClientIntegrationSpec extends Specification {
     }
 
     def "should optionally stream a response"() {
-        def client = new LowLevelDockerClient(dockerHost: System.env.DOCKER_HOST)
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: System.env.DOCKER_HOST))
         def outputStream = new ByteArrayOutputStream()
         when:
         client.get([path  : "/_ping",
@@ -56,23 +64,27 @@ class LowLevelDockerClientIntegrationSpec extends Specification {
     }
 
     def "should parse application/json"() {
-        def client = new LowLevelDockerClient(dockerHost: System.env.DOCKER_HOST)
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: System.env.DOCKER_HOST))
         when:
         def response = client.get("/version")
         then:
         def content = response.content
-        content.ApiVersion == "1.19"
+        content.ApiVersion == "1.21"
         content.Arch == "amd64"
-        content.GitCommit == "786b29d"
-        content.GoVersion == "go1.4.2"
-        content.KernelVersion =~ "\\d.\\d{1,2}.\\d-\\w+"
+        content.GitCommit == "a34a1d5"
+        content.GoVersion == "go1.4.3"
+        content.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}-\\w+"
         content.Os == "linux"
-        content.Version == "1.7.1"
+        content.Version == "1.9.1"
     }
 
     @IgnoreIf({ !SystemUtils.IS_OS_LINUX || !new File("/var/run/docker.sock").exists() })
     def "should support unix socket connections"() {
-        def client = new LowLevelDockerClient(dockerHost: "unix:///var/run/docker.sock")
+        def client = new LowLevelDockerClient(
+                config: new DockerConfig(
+                        dockerHost: "unix:///var/run/docker.sock"))
         when:
         def response = client.request([method: "GET",
                                        path  : "/info"])

@@ -41,8 +41,14 @@ class LowLevelDockerClientSpec extends Specification {
         def client = new LowLevelDockerClient(
                 config: new DockerConfig(
                         dockerHost: "tcp://127.0.0.1:2375"))
-        expect:
-        client.getRequestUrl("", "").toString() == new URL("http://127.0.0.1:2375").toString()
+        when:
+        def requestUrl = client.getRequestUrl("", "")
+        then:
+        requestUrl.protocol =~ /https?/
+        and:
+        requestUrl.host == "127.0.0.1"
+        and:
+        requestUrl.port == 2375
     }
 
     def "getRequestUrl should support tls port"() {
@@ -52,8 +58,14 @@ class LowLevelDockerClientSpec extends Specification {
         def client = new LowLevelDockerClient(
                 config: new DockerConfig(
                         dockerHost: "tcp://127.0.0.1:2376"))
-        expect:
-        client.getRequestUrl("", "").toString() == new URL("https://127.0.0.1:2376").toString()
+        when:
+        def requestUrl = client.getRequestUrl("", "")
+        then:
+        requestUrl.protocol == "https"
+        and:
+        requestUrl.host == "127.0.0.1"
+        and:
+        requestUrl.port == 2376
         cleanup:
         if (oldDockerCertPath) {
             System.setProperty("docker.cert.path", oldDockerCertPath)
@@ -261,7 +273,8 @@ class LowLevelDockerClientSpec extends Specification {
         def serverAddress = httpServer.start()
         def client = new LowLevelDockerClient(
                 config: new DockerConfig(
-                        dockerHost: "http://127.0.0.1:${serverAddress.port}"))
+                        dockerHost: "http://127.0.0.1:${serverAddress.port}",
+                        tlsVerify: 0))
         when:
         def connection = client.openConnection([method: "GET",
                                                 path  : "/foo"])
@@ -279,7 +292,8 @@ class LowLevelDockerClientSpec extends Specification {
         def proxy = new Proxy(Proxy.Type.HTTP, proxyAddress)
         def client = new LowLevelDockerClient(
                 config: new DockerConfig(
-                        dockerHost: "http://any.thi.ng:4711"),
+                        dockerHost: "http://any.thi.ng:4711",
+                        tlsVerify: 0),
                 proxy: proxy)
         when:
         def connection = client.openConnection([method: "GET",
@@ -299,7 +313,13 @@ class LowLevelDockerClientSpec extends Specification {
         def connection = client.openConnection([method: "GET",
                                                 path  : "/foo"])
         then:
-        connection.URL == new URL("http://127.0.0.1:2375/foo")
+        connection.URL.protocol =~ /https?/
+        and:
+        connection.URL.host == "127.0.0.1"
+        and:
+        connection.URL.port == 2375
+        and:
+        connection.URL.file == "/foo"
     }
 
     def "openConnection with path and query"() {
@@ -311,7 +331,13 @@ class LowLevelDockerClientSpec extends Specification {
                                                 path  : "/bar",
                                                 query : [baz: "la/la", answer: 42]])
         then:
-        connection.URL == new URL("http://127.0.0.1:2375/bar?baz=la%2Fla&answer=42")
+        connection.URL.protocol =~ /https?/
+        and:
+        connection.URL.host == "127.0.0.1"
+        and:
+        connection.URL.port == 2375
+        and:
+        connection.URL.file == "/bar?baz=la%2Fla&answer=42"
     }
 
     def "configureConnection with plain http connection"() {

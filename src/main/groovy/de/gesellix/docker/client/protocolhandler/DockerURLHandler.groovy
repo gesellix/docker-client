@@ -75,7 +75,7 @@ class DockerURLHandler {
             return false
         }
 
-        def certsPathExists = config.certPath && new File(config.certPath).isDirectory()
+        def certsPathExists = config.certPath && new File(config.certPath, "").isDirectory()
         if (!certsPathExists) {
             if (config.defaultCertPath && config.defaultCertPath.isDirectory()) {
                 logger.debug("defaultDockerCertPath=${config.defaultCertPath}")

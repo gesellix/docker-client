@@ -10,6 +10,7 @@ import org.codehaus.groovy.runtime.MethodClosure
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import static java.net.Proxy.NO_PROXY
 import static java.util.concurrent.Executors.newSingleThreadExecutor
 
 class DockerClientImpl implements DockerClient {
@@ -34,23 +35,20 @@ class DockerClientImpl implements DockerClient {
 
     DockerClientImpl(DockerConfig config) {
         this.config = config
-        this.proxy = Proxy.NO_PROXY
+        this.proxy = NO_PROXY
         newDockerHttpClient = new MethodClosure(this, "createDockerHttpClient")
     }
 
     def getHttpClient() {
         if (!httpClient) {
-            this.httpClient = newDockerHttpClient(config.dockerHost, proxy)
+            this.httpClient = newDockerHttpClient(config, proxy)
             logger.info "using docker at '${config.dockerHost}'"
         }
         return httpClient
     }
 
-    def createDockerHttpClient(dockerHost, proxy) {
-        return new LowLevelDockerClient(proxy: proxy).with {
-            it.config.dockerHost = dockerHost
-            it
-        }
+    def createDockerHttpClient(dockerConfig, proxy) {
+        return new LowLevelDockerClient(config: dockerConfig, proxy: proxy)
     }
 
     @Override

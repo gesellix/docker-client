@@ -28,7 +28,6 @@ class LowLevelDockerClient {
     SSLSocketFactory sslSocketFactory
 
     LowLevelDockerClient() {
-        dockerURLHandler = new DockerURLHandler(config: config)
         proxy = Proxy.NO_PROXY
         sslContext = null
         sslSocketFactory = null
@@ -277,7 +276,7 @@ class LowLevelDockerClient {
     }
 
     def getRequestUrl(String path, String query) {
-        return dockerURLHandler.getRequestUrl(config.dockerHost, path, query)
+        return getDockerURLHandler().getRequestUrl(config.dockerHost, path, query)
     }
 
     def getRequestUrlWithOptionalQuery(config) {
@@ -317,6 +316,13 @@ class LowLevelDockerClient {
             SSLSocketFactory sslSocketFactory = initSSLSocketFactory()
             ((HttpsURLConnection) connection).setSSLSocketFactory(sslSocketFactory)
         }
+    }
+
+    def getDockerURLHandler() {
+        if (!dockerURLHandler) {
+            dockerURLHandler = new DockerURLHandler(config: config)
+        }
+        dockerURLHandler
     }
 
     SSLSocketFactory initSSLSocketFactory() {
