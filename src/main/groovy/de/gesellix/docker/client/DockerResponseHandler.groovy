@@ -1,11 +1,9 @@
 package de.gesellix.docker.client
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import groovy.util.logging.Slf4j
 
+@Slf4j
 class DockerResponseHandler {
-
-    final Logger logger = LoggerFactory.getLogger(DockerResponseHandler)
 
     def ensureSuccessfulResponse(def response, Throwable context) {
         if (!response || !response.status.success || hasError(response)) {
@@ -16,9 +14,9 @@ class DockerResponseHandler {
 
     def logError(response) {
         if (response?.content instanceof String) {
-            logger.error "request failed: '${response?.content}'"
+            log.error "request failed: '${response?.content}'"
         } else {
-            logger.error "request failed: ${getErrors(response)}"
+            log.error "request failed: ${getErrors(response)}"
         }
     }
 
@@ -41,7 +39,7 @@ class DockerResponseHandler {
                     foundErrors << content.error
                 }
             } else {
-                logger.debug("won't search for errors in ${content.getClass()}")
+                log.debug("won't search for errors in ${content.getClass()}")
             }
             return foundErrors
         }

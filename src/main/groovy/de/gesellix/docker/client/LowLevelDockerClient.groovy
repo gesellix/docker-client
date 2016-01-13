@@ -3,10 +3,9 @@ package de.gesellix.docker.client
 import de.gesellix.docker.client.protocolhandler.DockerContentHandlerFactory
 import de.gesellix.docker.client.protocolhandler.DockerURLHandler
 import groovy.json.JsonBuilder
+import groovy.util.logging.Slf4j
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.output.NullOutputStream
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 import javax.net.ssl.*
 import java.nio.charset.Charset
@@ -15,9 +14,8 @@ import java.util.regex.Pattern
 import static de.gesellix.docker.client.KeyStoreUtil.KEY_STORE_PASSWORD
 import static javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm
 
+@Slf4j
 class LowLevelDockerClient {
-
-    def Logger logger = LoggerFactory.getLogger(LowLevelDockerClient)
 
     DockerURLHandler dockerURLHandler
 
@@ -70,7 +68,7 @@ class LowLevelDockerClient {
         def requestUrl = getRequestUrlWithOptionalQuery(config).toExternalForm()
         requestUrl = requestUrl.replaceFirst("^http", "ws")
 
-        logger.debug "websocket uri: '$requestUrl'"
+        log.debug "websocket uri: '$requestUrl'"
 
         def websocketClient
         if (requestUrl.startsWith("wss://")) {
@@ -149,13 +147,13 @@ class LowLevelDockerClient {
         def contentHandler = contentHandlerFactory.createContentHandler(response.mimeType as String)
         if (contentHandler == null) {
             if (response.stream) {
-                logger.warn("couldn't find a specific ContentHandler for '${response.contentType}'.")
+                log.warn("couldn't find a specific ContentHandler for '${response.contentType}'.")
                 if (config.stdout) {
-                    logger.debug("redirecting to stdout.")
+                    log.debug("redirecting to stdout.")
                     IOUtils.copy(response.stream as InputStream, config.stdout as OutputStream)
                     response.stream = null
                 } else {
-                    logger.warn("stream won't be consumed.")
+                    log.warn("stream won't be consumed.")
                 }
             }
             return response
@@ -167,7 +165,7 @@ class LowLevelDockerClient {
                 InputStream rawStream = content as InputStream
                 response.stream = rawStream
                 if (config.stdout) {
-                    logger.debug("redirecting to stdout.")
+                    log.debug("redirecting to stdout.")
                     IOUtils.copy(response.stream as InputStream, config.stdout as OutputStream)
                     response.stream = null
                 }
@@ -185,10 +183,10 @@ class LowLevelDockerClient {
                 consumeResponseBody(response, content, config)
                 break
             default:
-                logger.warn("unexpected mime type '${response.mimeType}'.")
+                log.warn("unexpected mime type '${response.mimeType}'.")
                 def content = contentHandler.getContent(connection)
                 if (content instanceof InputStream) {
-                    logger.debug("passing through via `response.stream`.")
+                    log.debug("passing through via `response.stream`.")
                     if (config.stdout) {
                         IOUtils.copy(content as InputStream, config.stdout as OutputStream)
                         response.stream = null
@@ -196,7 +194,7 @@ class LowLevelDockerClient {
                         response.stream = content as InputStream
                     }
                 } else {
-                    logger.debug("passing through via `response.content`.")
+                    log.debug("passing through via `response.content`.")
                     response.content = content
                     response.stream = null
                 }
@@ -214,7 +212,7 @@ class LowLevelDockerClient {
         def response = new DockerResponse()
 
         def statusLine = connection.headerFields[null]
-        logger.info("status: ${statusLine}")
+        log.debug("status: ${statusLine}")
         response.status = [text   : statusLine,
                            code   : connection.responseCode,
                            success: 200 <= connection.responseCode && connection.responseCode < 300]
@@ -224,19 +222,19 @@ class LowLevelDockerClient {
         }.collectEntries { key, value ->
             [key.toLowerCase(), value]
         }
-        logger.debug("headers: ${headers}")
+        log.debug("headers: ${headers}")
         response.headers = headers
 
         String contentType = headers['content-type']?.first()
-        logger.trace("content-type: ${contentType}")
+        log.trace("content-type: ${contentType}")
         response.contentType = contentType
 
         String contentLength = headers['content-length']?.first() ?: "-1"
-        logger.trace("content-length: ${contentLength}")
+        log.trace("content-length: ${contentLength}")
         response.contentLength = contentLength
 
         String mimeType = getMimeType(contentType)
-        logger.trace("mime type: ${mimeType}")
+        log.trace("mime type: ${mimeType}")
         response.mimeType = mimeType
 
         if (response.status.success) {
@@ -269,7 +267,7 @@ class LowLevelDockerClient {
     def ensureValidRequestConfig(Object config) {
         def validConfig = (config instanceof String) ? [path: config] : config
         if (!validConfig?.path) {
-            logger.error("bad request config: ${config}")
+            log.error("bad request config: ${config}")
             throw new IllegalArgumentException("bad request config")
         }
         return validConfig
@@ -286,7 +284,7 @@ class LowLevelDockerClient {
 
     def openConnection(config) {
         def requestUrl = getRequestUrlWithOptionalQuery(config)
-        logger.info("${config.method} ${requestUrl} using proxy: ${proxy}")
+        log.debug("${config.method} ${requestUrl} using proxy: ${proxy}")
 
         def connection = requestUrl.openConnection(proxy)
         return connection as HttpURLConnection

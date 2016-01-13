@@ -1,12 +1,10 @@
 package de.gesellix.docker.client
 
+import groovy.util.logging.Slf4j
 import org.java_websocket.handshake.ServerHandshake
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+@Slf4j
 class DefaultWebsocketHandler {
-
-    final Logger log = LoggerFactory.getLogger(DefaultWebsocketHandler)
 
     void onOpen(ServerHandshake handshakedata) {
         log.debug "[onOpen]"

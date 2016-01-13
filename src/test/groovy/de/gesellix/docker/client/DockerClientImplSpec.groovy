@@ -1,11 +1,16 @@
 package de.gesellix.docker.client
 
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.spi.ILoggingEvent
 import groovy.json.JsonBuilder
-import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.util.concurrent.CountDownLatch
+
+import static ch.qos.logback.classic.Level.ERROR
+import static org.slf4j.Logger.ROOT_LOGGER_NAME
 
 class DockerClientImplSpec extends Specification {
 
@@ -695,15 +700,18 @@ class DockerClientImplSpec extends Specification {
         httpClient.post([path              : "/containers/a-missing-container/exec",
                          body              : execCreateConfig,
                          requestContentType: "application/json"]) >> [status: [code: 404]]
-        dockerClient.logger = Mock(Logger)
+        getMemoryAppender().clearLoggedEvents()
 
         when:
         dockerClient.createExec("a-missing-container", execCreateConfig)
 
         then:
-        1 * dockerClient.logger.error("no such container 'a-missing-container'")
+        findLoggedEvent(getMemoryAppender(), [level: ERROR, message: "no such container 'a-missing-container'"])
         and:
         thrown(DockerClientException)
+
+        cleanup:
+        getMemoryAppender().clearLoggedEvents()
     }
 
     def "start exec"() {
@@ -728,15 +736,18 @@ class DockerClientImplSpec extends Specification {
         httpClient.post([path              : "/exec/a-missing-exec/start",
                          body              : execStartConfig,
                          requestContentType: "application/json"]) >> [status: [code: 404]]
-        dockerClient.logger = Mock(Logger)
+        getMemoryAppender().clearLoggedEvents()
 
         when:
         dockerClient.startExec("a-missing-exec", execStartConfig)
 
         then:
-        1 * dockerClient.logger.error("no such exec 'a-missing-exec'")
+        findLoggedEvent(getMemoryAppender(), [level: ERROR, message: "no such exec 'a-missing-exec'"])
         and:
         thrown(DockerClientException)
+
+        cleanup:
+        getMemoryAppender().clearLoggedEvents()
     }
 
     def "inspect exec"() {
@@ -753,16 +764,20 @@ class DockerClientImplSpec extends Specification {
 
     def "inspect exec with missing exec"() {
         given:
-        dockerClient.logger = Mock(Logger)
+        getMemoryAppender().clearLoggedEvents()
 
         when:
         dockerClient.inspectExec("a-missing-exec")
 
         then:
         1 * httpClient.get([path: "/exec/a-missing-exec/json"]) >> [status: [code: 404]]
-        1 * dockerClient.logger.error("no such exec 'a-missing-exec'")
+        and:
+        findLoggedEvent(getMemoryAppender(), [level: ERROR, message: "no such exec 'a-missing-exec'"])
         and:
         thrown(DockerClientException)
+
+        cleanup:
+        getMemoryAppender().clearLoggedEvents()
     }
 
     def "exec"() {
@@ -1297,5 +1312,20 @@ class DockerClientImplSpec extends Specification {
         ]
         then:
         1 * dockerClient.rmi("image-id-1")
+    }
+
+    def findLoggedEvent(MemoryAppender memoryAppender, needle) {
+        def events = memoryAppender.getLoggedEvents()
+        events.find { ILoggingEvent e -> e.level == needle.level && e.message == needle.message }
+        return events
+    }
+
+    MemoryAppender getMemoryAppender() {
+        Logger rootLogger = LoggerFactory.getLogger(ROOT_LOGGER_NAME) as Logger
+        def memoryAppender = rootLogger.iteratorForAppenders().find { it instanceof MemoryAppender }
+        if (!memoryAppender) {
+            throw new IllegalStateException("Didn't find MemoryAppender. Please check your logback(-test) config.")
+        }
+        return memoryAppender as MemoryAppender
     }
 }

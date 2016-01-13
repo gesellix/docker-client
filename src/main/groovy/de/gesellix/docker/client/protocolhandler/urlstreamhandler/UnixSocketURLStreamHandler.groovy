@@ -1,7 +1,6 @@
 package de.gesellix.docker.client.protocolhandler.urlstreamhandler
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import groovy.util.logging.Slf4j
 
 /**
  * This is class marked as abstract, because it is normally
@@ -9,12 +8,11 @@ import org.slf4j.LoggerFactory
  * @see sun.net.www.protocol.unix.Handler
  * @see URLStreamHandler
  */
+@Slf4j
 abstract class UnixSocketURLStreamHandler extends URLStreamHandler {
 
-    Logger logger = LoggerFactory.getLogger(UnixSocketURLStreamHandler)
-
     UnixSocketURLStreamHandler() {
-        logger.debug "initialize unix protocol support"
+        log.debug "initialize unix protocol support"
     }
 
     @Override

@@ -1,17 +1,16 @@
 package de.gesellix.docker.client.protocolhandler.contenthandler
 
+import groovy.util.logging.Slf4j
 import org.apache.commons.io.IOUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 import static de.gesellix.docker.client.protocolhandler.contenthandler.RawStreamHeader.EMPTY_HEADER
 
 /**
  * see https://docs.docker.com/reference/api/docker_remote_api_v1.17/#attach-to-a-container.
  */
+@Slf4j
 class RawInputStream extends FilterInputStream {
 
-    Logger logger = LoggerFactory.getLogger(RawInputStream)
     final static int EOF = -1
 
     def RawInputStream(InputStream inputStream) {
@@ -45,7 +44,7 @@ class RawInputStream extends FilterInputStream {
         outputStreamsByStreamType["${StreamType.STDERR}"] = stderr ?: stdout
 
         def parsedHeader = readFrameHeader()
-        logger.trace(parsedHeader.toString())
+        log.trace(parsedHeader.toString())
         if (parsedHeader == EMPTY_HEADER) {
             return EOF
         }
@@ -72,7 +71,7 @@ class RawInputStream extends FilterInputStream {
         if (multiplexStreams) {
             if (remainingFrameSize <= 0) {
                 def parsedHeader = readFrameHeader()
-                logger.trace(parsedHeader.toString())
+                log.trace(parsedHeader.toString())
                 if (parsedHeader == EMPTY_HEADER) {
                     return EOF
                 }
@@ -90,24 +89,24 @@ class RawInputStream extends FilterInputStream {
                 read(), read(), read(), read(),
                 read(), read(), read(), read()]
 
-//    logger.trace("header bytes: '${headerBuf}'")
+//    log.trace("header bytes: '${headerBuf}'")
 //    byte[] headerBufAsBytes = [
 //        (byte) headerBuf[0], (byte) headerBuf[1], (byte) headerBuf[2], (byte) headerBuf[3],
 //        (byte) headerBuf[4], (byte) headerBuf[5], (byte) headerBuf[6], (byte) headerBuf[7]]
-//    logger.trace("header bytes as String: '${new String(headerBufAsBytes)}'")
+//    log.trace("header bytes as String: '${new String(headerBufAsBytes)}'")
 
-//    logger.trace("read header: ${headerBuf}")
+//    log.trace("read header: ${headerBuf}")
         if (headerBuf.find { it < 0 }) {
             return EMPTY_HEADER
         }
 
         try {
             def parsedHeader = new RawStreamHeader(headerBuf)
-            logger.trace(parsedHeader.toString())
+            log.trace(parsedHeader.toString())
             return parsedHeader
         }
         catch (Exception e) {
-            logger.error("could not parse header - setting multiplexStreams=false could help.", e)
+            log.error("could not parse header - setting multiplexStreams=false could help.", e)
             throw e
         }
     }

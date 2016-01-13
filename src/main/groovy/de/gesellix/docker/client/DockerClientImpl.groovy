@@ -3,19 +3,17 @@ package de.gesellix.docker.client
 import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
+import groovy.util.logging.Slf4j
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.io.IOUtils
 import org.codehaus.groovy.runtime.MethodClosure
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 import static java.net.Proxy.NO_PROXY
 import static java.util.concurrent.Executors.newSingleThreadExecutor
 
+@Slf4j
 class DockerClientImpl implements DockerClient {
-
-    def Logger logger = LoggerFactory.getLogger(DockerClientImpl)
 
     def responseHandler = new DockerResponseHandler()
 
@@ -42,7 +40,7 @@ class DockerClientImpl implements DockerClient {
     def getHttpClient() {
         if (!httpClient) {
             this.httpClient = newDockerHttpClient(config, proxy)
-            logger.info "using docker at '${config.dockerHost}'"
+            log.info "using docker at '${config.dockerHost}'"
         }
         return httpClient
     }
@@ -57,33 +55,33 @@ class DockerClientImpl implements DockerClient {
         allContainers.findAll { Map container ->
             !shouldKeepContainer(container)
         }.each { container ->
-            logger.info "docker rm ${container.Id} (${container.Names.first()})"
+            log.debug "docker rm ${container.Id} (${container.Names.first()})"
             rm(container.Id)
         }
 
         images([filters: [dangling: ["true"]]]).content.each { image ->
-            logger.info "docker rmi ${image.Id}"
+            log.debug "docker rmi ${image.Id}"
             rmi(image.Id)
         }
     }
 
     @Override
     def ping() {
-        logger.info "docker ping"
+        log.info "docker ping"
         def response = getHttpClient().get([path: "/_ping"])
         return response
     }
 
     @Override
     def info() {
-        logger.info "docker info"
+        log.info "docker info"
         def response = getHttpClient().get([path: "/info"])
         return response
     }
 
     @Override
     def version() {
-        logger.info "docker version"
+        log.info "docker version"
         def response = getHttpClient().get([path: "/version"])
         return response
     }
@@ -95,16 +93,16 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def readAuthConfig(def hostname, File dockerCfg) {
-        logger.debug "read authConfig"
+        log.debug "read authConfig"
 
         if (!dockerCfg) {
             dockerCfg = config.getDockerConfigFile()
         }
         if (!dockerCfg?.exists()) {
-            logger.warn "${dockerCfg} doesn't exist"
+            log.warn "${dockerCfg} doesn't exist"
             return [:]
         }
-        logger.debug "reading auth info from ${dockerCfg}"
+        log.debug "reading auth info from ${dockerCfg}"
         def parsedDockerCfg = new JsonSlurper().parse(dockerCfg)
 
         if (!hostname) {
@@ -139,13 +137,13 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def encodeAuthConfig(def authConfig) {
-        logger.debug "encode authConfig for ${authConfig.username}@${authConfig.serveraddress}"
+        log.debug "encode authConfig for ${authConfig.username}@${authConfig.serveraddress}"
         return new JsonBuilder(authConfig).toString().bytes.encodeBase64().toString()
     }
 
     @Override
     def auth(def authDetails) {
-        logger.info "docker login"
+        log.info "docker login"
         def response = getHttpClient().post([path              : "/auth",
                                              body              : authDetails,
                                              requestContentType: "application/json"])
@@ -154,7 +152,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def build(InputStream buildContext, query = ["rm": true]) {
-        logger.info "docker build"
+        log.info "docker build"
         def response = getHttpClient().post([path              : "/build",
                                              query             : query,
                                              body              : buildContext,
@@ -167,7 +165,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def tag(imageId, repository, force = false) {
-        logger.info "docker tag"
+        log.info "docker tag"
         def repoAndTag = parseRepositoryTag(repository)
         def response = getHttpClient().post([path : "/images/${imageId}/tag".toString(),
                                              query: [repo : repoAndTag.repo,
@@ -178,7 +176,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def push(imageName, authBase64Encoded = ".", registry = "") {
-        logger.info "docker push '${imageName}'"
+        log.info "docker push '${imageName}'"
 
         def actualImageName = imageName
         if (registry) {
@@ -229,7 +227,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def pull(imageName, tag = "", authBase64Encoded = ".", registry = "") {
-        logger.info "docker pull '${imageName}:${tag}'"
+        log.info "docker pull '${imageName}:${tag}'"
 
         def actualImageName = imageName
         if (registry) {
@@ -248,7 +246,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def importUrl(url, repository = "", tag = "") {
-        logger.info "docker import '${url}' into ${repository}:${tag}"
+        log.info "docker import '${url}' into ${repository}:${tag}"
 
         def response = getHttpClient().post([path : "/images/create",
                                              query: [fromSrc: url,
@@ -262,7 +260,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def importStream(stream, repository = "", tag = "") {
-        logger.info "docker import stream into ${repository}:${tag}"
+        log.info "docker import stream into ${repository}:${tag}"
 
         def response = getHttpClient().post([path              : "/images/create",
                                              body              : stream,
@@ -278,7 +276,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def export(container) {
-        logger.info "docker export $container"
+        log.info "docker export $container"
 
         def response = getHttpClient().get([path: "/containers/$container/export"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker export failed"))
@@ -288,7 +286,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def save(... images) {
-        logger.info "docker save"
+        log.info "docker save"
 
         def response
         if (images.length == 1) {
@@ -304,7 +302,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def load(stream) {
-        logger.info "docker load"
+        log.info "docker load"
 
         def response = getHttpClient().post([path              : "/images/load",
                                              body              : stream,
@@ -317,7 +315,7 @@ class DockerClientImpl implements DockerClient {
     // TODO we might need some authentication here for the pull(...) step
     @Override
     def createContainer(containerConfig, query = [name: ""]) {
-        logger.info "docker create"
+        log.info "docker create"
         def actualContainerConfig = [:] + containerConfig
 
         def response = getHttpClient().post([path              : "/containers/create".toString(),
@@ -328,7 +326,7 @@ class DockerClientImpl implements DockerClient {
         if (!response.status.success) {
             if (response.status?.code == 404) {
                 def repoAndTag = parseRepositoryTag(containerConfig.Image)
-                logger.info "'${repoAndTag.repo}:${repoAndTag.tag}' not found."
+                log.info "'${repoAndTag.repo}:${repoAndTag.tag}' not found."
                 pull(repoAndTag.repo, repoAndTag.tag)
                 // retry...
                 response = getHttpClient().post([path              : "/containers/create".toString(),
@@ -344,7 +342,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def startContainer(containerId) {
-        logger.info "docker start"
+        log.info "docker start"
         def response = getHttpClient().post([path              : "/containers/${containerId}/start".toString(),
                                              requestContentType: "application/json"])
         return response
@@ -352,7 +350,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def run(fromImage, containerConfig, tag = "", name = "") {
-        logger.info "docker run"
+        log.info "docker run"
 /*
     http://docs.docker.com/reference/api/docker_remote_api_v1.13/#31-inside-docker-run
 
@@ -380,7 +378,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def restart(containerId) {
-        logger.info "docker restart"
+        log.info "docker restart"
         def response = getHttpClient().post([path : "/containers/${containerId}/restart".toString(),
                                              query: [t: 10]])
         return response
@@ -388,56 +386,56 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def stop(containerId) {
-        logger.info "docker stop"
+        log.info "docker stop"
         def response = getHttpClient().post([path: "/containers/${containerId}/stop".toString()])
         return response
     }
 
     @Override
     def kill(containerId) {
-        logger.info "docker kill"
+        log.info "docker kill"
         def response = getHttpClient().post([path: "/containers/${containerId}/kill".toString()])
         return response
     }
 
     @Override
     def wait(containerId) {
-        logger.info "docker wait"
+        log.info "docker wait"
         def response = getHttpClient().post([path: "/containers/${containerId}/wait".toString()])
         return response
     }
 
     @Override
     def pause(containerId) {
-        logger.info "docker pause"
+        log.info "docker pause"
         def response = getHttpClient().post([path: "/containers/${containerId}/pause".toString()])
         return response
     }
 
     @Override
     def unpause(containerId) {
-        logger.info "docker unpause"
+        log.info "docker unpause"
         def response = getHttpClient().post([path: "/containers/${containerId}/unpause".toString()])
         return response
     }
 
     @Override
     def rm(containerId) {
-        logger.info "docker rm"
+        log.info "docker rm"
         def response = getHttpClient().delete([path: "/containers/${containerId}".toString()])
         return response
     }
 
     @Override
     def rmi(imageId) {
-        logger.info "docker rmi"
+        log.info "docker rmi"
         def response = getHttpClient().delete([path: "/images/${imageId}".toString()])
         return response
     }
 
     @Override
     def ps(query = [:]) {
-        logger.info "docker ps"
+        log.info "docker ps"
         def actualQuery = query ?: [:]
         def defaults = [all: true, size: false]
         applyDefaults(actualQuery, defaults)
@@ -450,7 +448,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def inspectContainer(containerId) {
-        logger.info "docker inspect container"
+        log.info "docker inspect container"
         def response = getHttpClient().get([path: "/containers/${containerId}/json"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker inspect failed"))
         return response
@@ -458,28 +456,28 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def diff(containerId) {
-        logger.info "docker diff"
+        log.info "docker diff"
         def response = getHttpClient().get([path: "/containers/${containerId}/changes"])
         return response
     }
 
     @Override
     def inspectImage(imageId) {
-        logger.info "docker inspect image"
+        log.info "docker inspect image"
         def response = getHttpClient().get([path: "/images/${imageId}/json"])
         return response
     }
 
     @Override
     def history(imageId) {
-        logger.info "docker history"
+        log.info "docker history"
         def response = getHttpClient().get([path: "/images/${imageId}/history"])
         return response
     }
 
     @Override
     def images(query = [:]) {
-        logger.info "docker images"
+        log.info "docker images"
         def actualQuery = query ?: [:]
         def defaults = [all: false]
         applyDefaults(actualQuery, defaults)
@@ -503,14 +501,14 @@ class DockerClientImpl implements DockerClient {
         if (imageIdsByName[canonicalImageName]) {
             return imageIdsByName[canonicalImageName]
         } else {
-            logger.warn("couldn't find imageId for `${canonicalImageName}` via `docker images`")
+            log.warn("couldn't find imageId for `${canonicalImageName}` via `docker images`")
             return canonicalImageName
         }
     }
 
     @Override
     def createExec(containerId, execConfig) {
-        logger.info "docker create exec on '${containerId}'"
+        log.info "docker create exec on '${containerId}'"
 
         def response = getHttpClient().post([path              : "/containers/${containerId}/exec".toString(),
                                              body              : execConfig,
@@ -518,7 +516,7 @@ class DockerClientImpl implements DockerClient {
 
 
         if (response.status?.code == 404) {
-            logger.error("no such container '${containerId}'")
+            log.error("no such container '${containerId}'")
         }
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker exec create failed"))
         return response
@@ -526,7 +524,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def startExec(execId, execConfig) {
-        logger.info "docker start exec '${execId}'"
+        log.info "docker start exec '${execId}'"
 
         def response = getHttpClient().post([path              : "/exec/${execId}/start".toString(),
                                              body              : execConfig,
@@ -534,7 +532,7 @@ class DockerClientImpl implements DockerClient {
 
 
         if (response.status?.code == 404) {
-            logger.error("no such exec '${execId}'")
+            log.error("no such exec '${execId}'")
         }
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker exec start failed"))
         return response
@@ -542,12 +540,12 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def inspectExec(execId) {
-        logger.info "docker inspect exec '${execId}'"
+        log.info "docker inspect exec '${execId}'"
 
         def response = getHttpClient().get([path: "/exec/${execId}/json".toString()])
 
         if (response.status?.code == 404) {
-            logger.error("no such exec '${execId}'")
+            log.error("no such exec '${execId}'")
         }
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker inspect exec failed"))
         return response
@@ -558,7 +556,7 @@ class DockerClientImpl implements DockerClient {
             "Detach"     : false,
             "AttachStdin": false,
             "Tty"        : false]) {
-        logger.info "docker exec '${containerId}' '${command}'"
+        log.info "docker exec '${containerId}' '${command}'"
 
         def actualExecConfig = [
                 "AttachStdin" : execConfig.AttachStdin ?: false,
@@ -580,7 +578,7 @@ class DockerClientImpl implements DockerClient {
     @Deprecated
     @Override
     def copyFile(containerId, String filename) {
-        logger.info "copy '${filename}' from '${containerId}'"
+        log.info "copy '${filename}' from '${containerId}'"
 
         def response = copy(containerId, [Resource: filename])
         return extractSingleTarEntry(response.stream as InputStream, filename)
@@ -593,14 +591,14 @@ class DockerClientImpl implements DockerClient {
     @Deprecated
     @Override
     def copy(containerId, resourceBody) {
-        logger.info "docker cp ${containerId} ${resourceBody}"
+        log.info "docker cp ${containerId} ${resourceBody}"
 
         def response = getHttpClient().post([path              : "/containers/${containerId}/copy".toString(),
                                              body              : resourceBody,
                                              requestContentType: "application/json"])
 
         if (response.status.code == 404) {
-            logger.error("no such container ${containerId}")
+            log.error("no such container ${containerId}")
         }
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker cp failed"))
         return response
@@ -608,31 +606,31 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def getArchiveStats(container, path) {
-        logger.info "docker archive stats ${container}|${path}"
+        log.info "docker archive stats ${container}|${path}"
 
         def response = getHttpClient().head([path : "/containers/${container}/archive".toString(),
                                              query: [path: path]])
 
         if (response.status.code == 404) {
-            logger.error("no such container ${container} or path ${path}")
+            log.error("no such container ${container} or path ${path}")
         }
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker head archive failed"))
 
         def pathInfo = response.headers['X-Docker-Container-Path-Stat'.toLowerCase()] as List
         if (!pathInfo) {
-            logger.error "didn't find 'X-Docker-Container-Path-Stat' header in response"
+            log.error "didn't find 'X-Docker-Container-Path-Stat' header in response"
             return response
         }
 
         def firstPathInfo = pathInfo.first() as String
-        logger.debug firstPathInfo
+        log.debug firstPathInfo
         def decodedPathInfo = new JsonSlurper().parseText(new String(firstPathInfo.decodeBase64()))
         return decodedPathInfo
     }
 
     @Override
     def extractFile(container, String filename) {
-        logger.info "extract '${filename}' from '${container}'"
+        log.info "extract '${filename}' from '${container}'"
 
         def response = getArchive(container, filename)
         return extractSingleTarEntry(response.stream as InputStream, filename)
@@ -640,27 +638,27 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def getArchive(container, path) {
-        logger.info "docker download from ${container}|${path}"
+        log.info "docker download from ${container}|${path}"
 
         def response = getHttpClient().get([path : "/containers/${container}/archive".toString(),
                                             query: [path: path]])
 
         if (response.status.code == 404) {
-            logger.error("no such container ${container} or path ${path}")
+            log.error("no such container ${container} or path ${path}")
         }
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker get archive failed"))
 
         def pathInfo = response.headers['X-Docker-Container-Path-Stat'.toLowerCase()] as List
         if (pathInfo) {
             def firstPathInfo = pathInfo.first() as String
-            logger.debug "archiveStats: ${new JsonSlurper().parseText(new String(firstPathInfo.decodeBase64()))}"
+            log.debug "archiveStats: ${new JsonSlurper().parseText(new String(firstPathInfo.decodeBase64()))}"
         }
         return response
     }
 
     @Override
     def putArchive(container, path, InputStream archive, query = [:]) {
-        logger.info "docker upload to ${container}|${path}"
+        log.info "docker upload to ${container}|${path}"
 
         def finalQuery = query ?: [:]
         finalQuery.path = path
@@ -671,7 +669,7 @@ class DockerClientImpl implements DockerClient {
                                             body              : archive])
 
         if (response.status.code == 404) {
-            logger.error("no such container ${container} or path ${path}")
+            log.error("no such container ${container} or path ${path}")
         }
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker put archive failed"))
         return response
@@ -679,7 +677,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def rename(containerId, newName) {
-        logger.info "docker rename"
+        log.info "docker rename"
         def response = getHttpClient().post([path : "/containers/${containerId}/rename".toString(),
                                              query: [name: newName]])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker rename failed"))
@@ -688,7 +686,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def search(term) {
-        logger.info "docker search"
+        log.info "docker search"
         def response = getHttpClient().get([path : "/images/search".toString(),
                                             query: [term: term]])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker search failed"))
@@ -697,7 +695,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def attach(containerId, query) {
-        logger.info "docker attach"
+        log.info "docker attach"
         def container = inspectContainer(containerId)
         def response = getHttpClient().post([path : "/containers/${containerId}/attach".toString(),
                                              query: query])
@@ -707,7 +705,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def attachWebsocket(containerId, query, handler) {
-        logger.info "docker attach via websocket"
+        log.info "docker attach via websocket"
         DockerWebsocketClient wsClient = getHttpClient().getWebsocketClient(
                 [path : "/containers/${containerId}/attach/ws".toString(),
                  query: query],
@@ -719,7 +717,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def commit(container, query, config = [:]) {
-        logger.info "docker commit"
+        log.info "docker commit"
 
         def finalQuery = query ?: [:]
         finalQuery.container = container
@@ -736,9 +734,9 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def resizeTTY(container, height, width) {
-        logger.info "docker resize container"
+        log.info "docker resize container"
 //        if (!inspectContainer(container).Config.Tty) {
-//            logger.warn "container '${container}' hasn't been configured with a TTY!"
+//            log.warn "container '${container}' hasn't been configured with a TTY!"
 //        }
         def response = getHttpClient().post([path              : "/containers/${container}/resize".toString(),
                                              query             : [h: height,
@@ -750,9 +748,9 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def resizeExec(exec, height, width) {
-        logger.info "docker resize exec"
+        log.info "docker resize exec"
 //        if (!inspectExec(exec).ProcessConfig.tty) {
-//            logger.warn "exec '${exec}' hasn't been configured with a TTY!"
+//            log.warn "exec '${exec}' hasn't been configured with a TTY!"
 //        }
         def response = getHttpClient().post([path              : "/exec/${exec}/resize".toString(),
                                              query             : [h: height,
@@ -764,7 +762,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def events(DockerAsyncCallback callback, query = [:]) {
-        logger.info "docker events"
+        log.info "docker events"
 
         jsonEncodeFilters(query)
         def response = getHttpClient().get([path : "/events",
@@ -778,7 +776,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def top(container, ps_args = null) {
-        logger.info "docker top"
+        log.info "docker top"
 
         def query = ps_args ? [ps_args: ps_args] : [:]
         def response = getHttpClient().get([path : "/containers/${container}/top",
@@ -789,7 +787,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def stats(container, DockerAsyncCallback callback = null) {
-        logger.info "docker stats"
+        log.info "docker stats"
 
         def async = callback ? true : false
         def response = getHttpClient().get([path : "/containers/${container}/stats",
@@ -810,7 +808,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def logs(container, query, DockerAsyncCallback callback = null) {
-        logger.info "docker logs"
+        log.info "docker logs"
 
         def async = callback ? true : false
         def actualQuery = query ?: [:]
@@ -841,7 +839,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def volumes(query = [:]) {
-        logger.info "docker volume ls"
+        log.info "docker volume ls"
         def actualQuery = query ?: [:]
         jsonEncodeFilters(actualQuery)
         def response = getHttpClient().get([path : "/volumes",
@@ -852,7 +850,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def inspectVolume(name) {
-        logger.info "docker volume inspect"
+        log.info "docker volume inspect"
         def response = getHttpClient().get([path: "/volumes/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume inspect failed"))
         return response
@@ -860,7 +858,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def createVolume(config = [:]) {
-        logger.info "docker volume create"
+        log.info "docker volume create"
         def response = getHttpClient().post([path              : "/volumes/create",
                                              body              : config ?: [:],
                                              requestContentType: "application/json"])
@@ -870,7 +868,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def rmVolume(name) {
-        logger.info "docker volume rm"
+        log.info "docker volume rm"
         def response = getHttpClient().delete([path: "/volumes/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume rm failed"))
         return response
@@ -878,7 +876,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def networks(query = [:]) {
-        logger.info "docker network ls"
+        log.info "docker network ls"
         def actualQuery = query ?: [:]
         jsonEncodeFilters(actualQuery)
         def response = getHttpClient().get([path : "/networks",
@@ -889,7 +887,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def inspectNetwork(name) {
-        logger.info "docker network inspect"
+        log.info "docker network inspect"
         def response = getHttpClient().get([path: "/networks/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network inspect failed"))
         return response
@@ -897,7 +895,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def createNetwork(name, config = [:]) {
-        logger.info "docker network create"
+        log.info "docker network create"
         def actualConfig = config ?: [:]
         def defaults = [name: name]
         applyDefaults(actualConfig, defaults)
@@ -910,7 +908,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def connectNetwork(network, container) {
-        logger.info "docker network connect"
+        log.info "docker network connect"
         def response = getHttpClient().post([path              : "/networks/$network/connect",
                                              body              : [container: container],
                                              requestContentType: "application/json"])
@@ -920,7 +918,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def disconnectNetwork(network, container) {
-        logger.info "docker network disconnect"
+        log.info "docker network disconnect"
         def response = getHttpClient().post([path              : "/networks/$network/disconnect",
                                              body              : [container: container],
                                              requestContentType: "application/json"])
@@ -930,7 +928,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def rmNetwork(name) {
-        logger.info "docker network rm"
+        log.info "docker network rm"
         def response = getHttpClient().delete([path: "/networks/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network rm failed"))
         return response
@@ -940,17 +938,17 @@ class DockerClientImpl implements DockerClient {
         def stream = new TarArchiveInputStream(new BufferedInputStream(tarContent))
 
         TarArchiveEntry entry = stream.nextTarEntry
-        logger.debug("entry size: ${entry.size}")
+        log.debug("entry size: ${entry.size}")
 
         def entryName = entry.name
         if (!filename.endsWith(entryName)) {
-            logger.warn("entry name '${entryName}' doesn't match expected filename '${filename}'")
+            log.warn("entry name '${entryName}' doesn't match expected filename '${filename}'")
         } else {
-            logger.debug("entry name: ${entryName}")
+            log.debug("entry name: ${entryName}")
         }
 
         byte[] content = new byte[(int) entry.size]
-        logger.debug("going to read ${content.length} bytes")
+        log.debug("going to read ${content.length} bytes")
 
         stream.read(content, 0, content.length)
         IOUtils.closeQuietly(stream)

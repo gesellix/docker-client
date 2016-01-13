@@ -1,16 +1,14 @@
 package de.gesellix.docker.client.protocolhandler.urlstreamhandler
 
+import groovy.util.logging.Slf4j
 import org.newsclub.net.unix.AFUNIXSocket
 import org.newsclub.net.unix.AFUNIXSocketAddress
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import sun.net.www.http.HttpClient
 
 // behave like the sun internal HttpClient,
 // but connect via unix socket to the docker daemon.
+@Slf4j
 class HttpOverUnixSocketClient extends HttpClient {
-
-    final static Logger logger = LoggerFactory.getLogger(HttpOverUnixSocketClient)
 
     static String dockerUnixSocket
 
@@ -20,10 +18,10 @@ class HttpOverUnixSocketClient extends HttpClient {
 
     @Override
     protected Socket doConnect(String host, int port) throws IOException, UnknownHostException {
-        logger.debug "connect via '${dockerUnixSocket}'..."
+        log.debug "connect via '${dockerUnixSocket}'..."
 
         File socketFile = new File(dockerUnixSocket)
-        logger.debug "unix socket exists/canRead/canWrite: ${socketFile.exists()}/${socketFile.canRead()}/${socketFile.canWrite()}"
+        log.debug "unix socket exists/canRead/canWrite: ${socketFile.exists()}/${socketFile.canRead()}/${socketFile.canWrite()}"
 
         Socket socket = AFUNIXSocket.newInstance()
 
