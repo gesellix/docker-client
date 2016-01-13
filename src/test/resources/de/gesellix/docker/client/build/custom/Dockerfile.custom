@@ -1,0 +1,4 @@
+FROM busybox:latest
+MAINTAINER Tobias Gesellchen <tobias@gesellix.de>
+
+RUN echo 'custom'

@@ -1,7 +1,5 @@
 package de.gesellix.docker.client
 
-import org.apache.commons.io.IOUtils
-
 class ExploreTheApi {
 
     public static void main(String[] args) {
@@ -47,7 +45,12 @@ class ExploreTheApi {
 
 //        dockerClient.putArchive(container, path, file)
 
-        def archive = dockerClient.save("a-repo:the-tag", "74c4aa413f9a")
-        println IOUtils.copy(archive.stream as InputStream, new FileOutputStream("./foo2.tar"))
+//        def archive = dockerClient.save("a-repo:the-tag", "74c4aa413f9a")
+//        println IOUtils.copy(archive.stream as InputStream, new FileOutputStream("./foo2.tar"))
+
+        def buildContext = dockerClient.class.getResourceAsStream("build/custom.tar")
+        def buildResult = dockerClient.build(buildContext, [rm: true, dockerfile: './Dockerfile.custom'])
+        assert dockerClient.history(buildResult).content.first().CreatedBy.endsWith("'custom'")
+        dockerClient.rmi(buildResult)
     }
 }
