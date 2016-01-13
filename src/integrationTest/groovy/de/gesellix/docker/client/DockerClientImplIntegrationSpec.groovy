@@ -152,6 +152,20 @@ class DockerClientImplIntegrationSpec extends Specification {
                                      errorDetail: [message: "Error: image missing/image:latest not found"]]
     }
 
+    def "build image with custom Dockerfile"() {
+        given:
+        def buildContext = getClass().getResourceAsStream("build/custom.tar")
+
+        when:
+        def buildResult = dockerClient.build(buildContext, [rm: true, dockerfile: './Dockerfile.custom'])
+
+        then:
+        dockerClient.history(buildResult).content.first().CreatedBy.endsWith("'custom'")
+
+        cleanup:
+        dockerClient.rmi(buildResult)
+    }
+
     def "tag image"() {
         given:
         def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
