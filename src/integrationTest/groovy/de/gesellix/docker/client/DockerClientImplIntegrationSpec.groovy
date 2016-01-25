@@ -196,7 +196,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         then:
         pushResult.status.code == 200
         and:
-        pushResult.content.last().status =~ "Digest: sha256:\\w+"
+        pushResult.content.last().status =~ "latest: digest: sha256:\\w+"
 
         cleanup:
         dockerClient.rmi(imageName)
@@ -217,7 +217,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         then:
         pushResult.status.code == 200
         and:
-        pushResult.content.last().status =~ "Digest: sha256:\\w+"
+        pushResult.content.last().status =~ "latest: digest: sha256:\\w+"
 
         cleanup:
         dockerClient.rmi(imageName)
