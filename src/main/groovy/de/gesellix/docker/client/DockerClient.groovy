@@ -82,6 +82,10 @@ interface DockerClient {
 
     def startContainer(container)
 
+    def updateContainer(container, containerConfig)
+
+    def updateContainers(List containers, containerConfig)
+
     def run(image, containerConfig)
 
     def run(image, containerConfig, tag)

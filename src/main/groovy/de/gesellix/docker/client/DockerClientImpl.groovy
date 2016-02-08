@@ -249,7 +249,7 @@ class DockerClientImpl implements DockerClient {
         log.info "docker import '${url}' into ${repository}:${tag}"
 
         def response = getHttpClient().post([path : "/images/create",
-                                             query: [fromSrc: url,
+                                             query: [fromSrc: url.toString(),
                                                      repo   : repository ?: "",
                                                      tag    : tag ?: ""]])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker import from url failed"))
@@ -346,6 +346,29 @@ class DockerClientImpl implements DockerClient {
         def response = getHttpClient().post([path              : "/containers/${containerId}/start".toString(),
                                              requestContentType: "application/json"])
         return response
+    }
+
+    @Override
+    def updateContainer(container, updateConfig) {
+        return updateContainers([container], updateConfig)[container]
+    }
+
+    @Override
+    def updateContainers(List containers, updateConfig) {
+        log.info "docker update '${containers}'"
+
+        def responses = containers.collectEntries { container ->
+            def response = getHttpClient().post([path              : "/containers/${container}/update".toString(),
+                                                 body              : updateConfig,
+                                                 requestContentType: "application/json"])
+            if (response.status?.code != 200) {
+                log.error("error updating container '${container}': {}", response.content)
+            }
+            def updateResult = [:]
+            updateResult[container] = response
+            return updateResult
+        }
+        return responses
     }
 
     @Override

@@ -103,13 +103,14 @@ class DockerClientImplIntegrationSpec extends Specification {
         def version = dockerClient.version().content
 
         then:
-        version.ApiVersion == "1.21"
+        version.ApiVersion == "1.22"
         version.Arch == "amd64"
-        version.GitCommit == "a34a1d5"
-        version.GoVersion == "go1.4.3"
+        version.BuildTime == "2016-02-04T19:55:25.696148927+00:00"
+        version.GitCommit == "590d5108"
+        version.GoVersion == "go1.5.3"
         version.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}-\\w+"
         version.Os == "linux"
-        version.Version == "1.9.1"
+        version.Version == "1.10.0"
     }
 
     def auth() {
@@ -148,8 +149,8 @@ class DockerClientImplIntegrationSpec extends Specification {
         then:
         DockerClientException ex = thrown()
         ex.cause.message == 'docker build failed'
-        ex.detail.content.last() == [error      : "Error: image missing/image:latest not found",
-                                     errorDetail: [message: "Error: image missing/image:latest not found"]]
+        ex.detail.content.last() == [error      : "Error: image missing/image not found",
+                                     errorDetail: [message: "Error: image missing/image not found"]]
     }
 
     def "build image with custom Dockerfile"() {
@@ -169,7 +170,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def "tag image"() {
         given:
         def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
-        def imageName = "yetAnotherTag"
+        def imageName = "yet-another-tag"
 
         when:
         def buildResult = dockerClient.tag(imageId, imageName)
@@ -196,7 +197,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         then:
         pushResult.status.code == 200
         and:
-        pushResult.content.last().status =~ "latest: digest: sha256:\\w+"
+        pushResult.content.last().aux.Digest =~ "sha256:\\w+"
 
         cleanup:
         dockerClient.rmi(imageName)
@@ -217,7 +218,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         then:
         pushResult.status.code == 200
         and:
-        pushResult.content.last().status =~ "latest: digest: sha256:\\w+"
+        pushResult.content.last().aux.Digest =~ "sha256:\\w+"
 
         cleanup:
         dockerClient.rmi(imageName)
@@ -236,7 +237,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         then:
         pushResult.status.code == 200
         and:
-        pushResult.content.last().status =~ "latest: digest: sha256:\\w+"
+        pushResult.content.last().aux.Digest =~ "sha256:\\w+"
 
         cleanup:
         dockerClient.rmi(imageName)
@@ -248,7 +249,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
 
         then:
-        imageId == "ed9f0eb28ab34add30d4a2bfea3f548ba991d7702315b33f7309a64cd5d56390"
+        imageId == "sha256:6b552ee013ffc56b05df78b83a7b9717ebb99aa32224cf012c5dbea811b42334"
     }
 
     def "pull image from private registry"() {
@@ -260,7 +261,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest", "", registry.url())
 
         then:
-        imageId == "ed9f0eb28ab34add30d4a2bfea3f548ba991d7702315b33f7309a64cd5d56390"
+        imageId == "shd256:6b552ee013ffc56b05df78b83a7b9717ebb99aa32224cf012c5dbea811b42334"
 
         cleanup:
         dockerClient.rmi("${registry.url()}/gesellix/docker-client-testimage")
@@ -401,13 +402,13 @@ class DockerClientImplIntegrationSpec extends Specification {
         def imageInspection = dockerClient.inspectImage(imageId).content
 
         then:
-        imageInspection.Config.Image == "7e54a6afe4611a9cf954d55bc131dea274f429d14f83a97c8eecda76dc057c68"
+        imageInspection.Config.Image == "d3ca5fb4cded236f37a1aca37b81059378bcb6e39f6386d538a3cb630d7d6c4e"
         and:
-        imageInspection.Id == "ed9f0eb28ab34add30d4a2bfea3f548ba991d7702315b33f7309a64cd5d56390"
+        imageInspection.Id == "sha256:6b552ee013ffc56b05df78b83a7b9717ebb99aa32224cf012c5dbea811b42334"
         and:
-        imageInspection.Parent == "7e54a6afe4611a9cf954d55bc131dea274f429d14f83a97c8eecda76dc057c68"
+        imageInspection.Parent == ""
         and:
-        imageInspection.Container == "35d9819965f22350e78f9648d7da286ed91b480b90aa3d2f0779e5e4be576d48"
+        imageInspection.Container == "bb3a2d1eb5404835149e3639f6f8a220555a8640f4f8fe6e8877c5618ba5cd40"
     }
 
     def "history"() {
@@ -419,28 +420,27 @@ class DockerClientImplIntegrationSpec extends Specification {
 
         then:
         history.collect { it.Id } == [
-                "ed9f0eb28ab34add30d4a2bfea3f548ba991d7702315b33f7309a64cd5d56390",
-                "7e54a6afe4611a9cf954d55bc131dea274f429d14f83a97c8eecda76dc057c68",
-                "8c2e06607696bd4afb3d03b687e361cc43cf8ec1a4a725bc96e39f05ba97dd55",
-                "6ce2e90b0bc7224de3db1f0d646fe8e2c4dd37f1793928287f6074bc451a57ea",
-                "cf2616975b4a3cba083ca99bc3f0bf25f5f528c3c52be1596b30f60b0b1c37ff"
+                "sha256:6b552ee013ffc56b05df78b83a7b9717ebb99aa32224cf012c5dbea811b42334",
+                "<missing>",
+                "<missing>",
+                "<missing>"
         ]
     }
 
     def "list images"() {
         given:
-        dockerClient.pull("gesellix/test:latest")
+        dockerClient.pull("gesellix/docker-client-testimage:latest")
 
         when:
         def images = dockerClient.images().content
 
         then:
         def imageById = images.find {
-            it.Id == "ed9f0eb28ab34add30d4a2bfea3f548ba991d7702315b33f7309a64cd5d56390"
+            it.Id == "sha256:6b552ee013ffc56b05df78b83a7b9717ebb99aa32224cf012c5dbea811b42334"
         }
-        imageById.Created == 1439657333
-        imageById.ParentId == "7e54a6afe4611a9cf954d55bc131dea274f429d14f83a97c8eecda76dc057c68"
-        imageById.RepoTags.contains "gesellix/test:latest"
+        imageById.Created == 1454887777
+        imageById.ParentId == ""
+        imageById.RepoTags.contains "gesellix/docker-client-testimage:latest"
     }
 
     def "list images with intermediate layers"() {
@@ -450,12 +450,11 @@ class DockerClientImplIntegrationSpec extends Specification {
         then:
         def imageIds = images.collect { image -> image.Id }
         imageIds.containsAll([
-                "ed9f0eb28ab34add30d4a2bfea3f548ba991d7702315b33f7309a64cd5d56390",
-                "7e54a6afe4611a9cf954d55bc131dea274f429d14f83a97c8eecda76dc057c68",
-                "8c2e06607696bd4afb3d03b687e361cc43cf8ec1a4a725bc96e39f05ba97dd55",
-                "6ce2e90b0bc7224de3db1f0d646fe8e2c4dd37f1793928287f6074bc451a57ea",
-                "cf2616975b4a3cba083ca99bc3f0bf25f5f528c3c52be1596b30f60b0b1c37ff",
-                "511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158"
+                "sha256:6b552ee013ffc56b05df78b83a7b9717ebb99aa32224cf012c5dbea811b42334",
+                "sha256:0712ca76565c4751693329d66677f65a83f75a977016ae7ffde6c847b09816ac",
+                "sha256:f092d1e584ad2a4107ebbff491d70ebfad6e23a6220a3afd43c77b950826af90",
+                "sha256:544797b9561937d012948c981a74f6c100b5ebb75b83ebab89d8d1b8f2082b4e",
+                "sha256:08734419d8e20848f61ab5a22df4f12904c4ea38faa354ce1c9f03c8319860e9"
         ])
     }
 
@@ -538,6 +537,30 @@ class DockerClientImplIntegrationSpec extends Specification {
         dockerClient.stop(containerId)
         dockerClient.wait(containerId)
         dockerClient.rm(containerId)
+    }
+
+    def "update container"() {
+        given:
+        def imageName = "gesellix/docker-client-testimage"
+        def tag = "latest"
+        def cmds = ["sh", "-c", "ping 127.0.0.1"]
+        def containerConfig = ["Cmd": cmds]
+        def name = "update-container"
+        def containerStatus = dockerClient.run(imageName, containerConfig, tag, name)
+
+        when:
+        def updateConfig = [
+                "Memory"    : 314572800,
+                "MemorySwap": 514288000]
+        def updateResult = dockerClient.updateContainer(containerStatus.container.content.Id, updateConfig)
+
+        then:
+        updateResult.status.success
+
+        cleanup:
+        dockerClient.stop(name)
+        dockerClient.wait(name)
+        dockerClient.rm(name)
     }
 
     def "run container with existing base image"() {

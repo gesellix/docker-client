@@ -1,6 +1,6 @@
 # Supported Features
 
-*feature set based on the [Docker Remote API v1.21](https://docs.docker.com/reference/api/docker_remote_api_v1.21/)*
+*feature set based on the [Docker Remote API v1.22](https://docs.docker.com/reference/api/docker_remote_api_v1.22/)*
 
 Since the Docker remote api tends to be backwards compatible,
 the Docker-Client currently supports most other api versions, too.
@@ -40,6 +40,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] Retrieve information about files and folders in a container
 * [x] `docker cp <container>:<path> <hostpath>`: Get an archive of a filesystem resource in a container
 * [x] `docker cp <hostpath> <container>:<path>`: Extract an archive of files or folders to a directory in a container
+* [x] `docker update <container> [<container>...]`: Update resources of one or more containers
 
 ## Images
 

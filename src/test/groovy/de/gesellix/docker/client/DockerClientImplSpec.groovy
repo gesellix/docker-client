@@ -841,6 +841,41 @@ class DockerClientImplSpec extends Specification {
                              requestContentType: "application/json"])
     }
 
+    def "update a container's resources"() {
+        def containerConfig = [:]
+
+        when:
+        dockerClient.updateContainer("a-container", containerConfig)
+
+        then:
+        1 * httpClient.post([path              : "/containers/a-container/update",
+                             body              : containerConfig,
+                             requestContentType: "application/json"]) >> [status: [:]]
+        and:
+        dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+            assert arguments[1]?.message == "docker update failed"
+        }
+    }
+
+    def "update multiple containers' resources"() {
+        def containerConfig = [:]
+
+        when:
+        dockerClient.updateContainers(["container1", "container2"], containerConfig)
+
+        then:
+        1 * httpClient.post([path              : "/containers/container1/update",
+                             body              : containerConfig,
+                             requestContentType: "application/json"]) >> [status: [:]]
+        1 * httpClient.post([path              : "/containers/container2/update",
+                             body              : containerConfig,
+                             requestContentType: "application/json"]) >> [status: [:]]
+        and:
+        dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+            assert arguments[1]?.message == "docker update failed"
+        }
+    }
+
     def "run container with defaults"() {
         when:
         dockerClient.run("an-image", [:])
