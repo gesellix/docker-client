@@ -22,16 +22,10 @@ class DockerClientImplIntegrationSpec extends Specification {
     static DockerClient dockerClient
 
     def setupSpec() {
-//        defaultDockerHost = "http://192.168.99.100:2376"
-//        defaultDockerHost = "unix:///var/run/docker.sock"
-//        System.setProperty("docker.cert.path", "C:\\Users\\${System.getProperty('user.name')}\\.boot2docker\\certs\\boot2docker-vm")
-//        System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
-//        dockerClient = new DockerClientImpl(
-//                config: new DockerConfig(
-//                        dockerHost: "unix:///var/tmp/docker.sock"))
         dockerClient = new DockerClientImpl(
-                config: new DockerConfig(
-                        certPath: "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
+//                config: new DockerConfig(
+//                        dockerHost: "http://192.168.99.100:2376",
+//                        certPath: "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
         )
         registry = new DockerRegistry(dockerClient: dockerClient)
         registry.run()
@@ -106,14 +100,14 @@ class DockerClientImplIntegrationSpec extends Specification {
         def version = dockerClient.version().content
 
         then:
-        version.ApiVersion == "1.22"
+        version.ApiVersion == "1.23"
         version.Arch == "amd64"
-        version.BuildTime == "2016-03-10T21:49:11.235199091+00:00"
-        version.GitCommit == "20f81dd"
+        version.BuildTime == "2016-04-04T15:24:07.494419993+00:00"
+        version.GitCommit == "9b9022a"
         version.GoVersion == "go1.5.3"
         version.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"
         version.Os == "linux"
-        version.Version == "1.10.3"
+        version.Version == "1.11.0-rc3"
     }
 
     def auth() {

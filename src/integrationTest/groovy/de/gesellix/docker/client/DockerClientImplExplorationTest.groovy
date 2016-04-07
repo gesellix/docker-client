@@ -16,12 +16,11 @@ class DockerClientImplExplorationTest extends Specification {
     DockerClient dockerClient
 
     def setup() {
-        def defaultDockerHost = System.env.DOCKER_HOST
-//        defaultDockerHost = "unix:///var/run/docker.sock"
-        defaultDockerHost = "https://192.168.99.100:2376"
-        System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
-//        System.setProperty("docker.cert.path", "C:\\Users\\${System.getProperty('user.name')}\\.boot2docker\\certs\\boot2docker-vm")
-        dockerClient = new DockerClientImpl(defaultDockerHost)
+        dockerClient = new DockerClientImpl(
+//                config: new DockerConfig(
+//                        dockerHost: "http://192.168.99.100:2376",
+//                        certPath: "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
+        )
     }
 
     @Ignore("only for explorative testing")

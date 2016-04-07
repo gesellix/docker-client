@@ -2,7 +2,7 @@ package de.gesellix.docker.client
 
 class DockerConfig {
 
-    def dockerHost = System.getProperty("docker.host", System.env.DOCKER_HOST as String) ?: "http://127.0.0.1:2375"
+    def dockerHost = System.getProperty("docker.host", System.env.DOCKER_HOST as String) ?: "unix:///var/run/docker.sock"
 
     def defaultTlsPort = 2376
 

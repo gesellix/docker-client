@@ -20,8 +20,8 @@ class DockerClientImpl implements DockerClient {
     def proxy
 
     DockerConfig config = new DockerConfig()
-    LowLevelDockerClient httpClient
-    def Closure<LowLevelDockerClient> newDockerHttpClient
+    HttpClient httpClient
+    def Closure<HttpClient> newDockerHttpClient
 
     DockerClientImpl() {
         this(new DockerConfig())
@@ -46,7 +46,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     def createDockerHttpClient(dockerConfig, proxy) {
-        return new LowLevelDockerClient(config: dockerConfig, proxy: proxy)
+        return new HttpClient(config: dockerConfig, proxy: proxy)
     }
 
     @Override

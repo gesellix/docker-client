@@ -15,7 +15,7 @@ import static de.gesellix.docker.client.KeyStoreUtil.KEY_STORE_PASSWORD
 import static javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm
 
 @Slf4j
-class LowLevelDockerClient {
+class HttpClient {
 
     DockerURLHandler dockerURLHandler
 
@@ -25,7 +25,7 @@ class LowLevelDockerClient {
     SSLContext sslContext
     SSLSocketFactory sslSocketFactory
 
-    LowLevelDockerClient() {
+    HttpClient() {
         proxy = Proxy.NO_PROXY
         sslContext = null
         sslSocketFactory = null

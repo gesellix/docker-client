@@ -15,7 +15,7 @@ import static org.slf4j.Logger.ROOT_LOGGER_NAME
 class DockerClientImplSpec extends Specification {
 
     def DockerClientImpl dockerClient = Spy(DockerClientImpl)
-    def LowLevelDockerClient httpClient = Mock(LowLevelDockerClient)
+    def HttpClient httpClient = Mock(HttpClient)
 
     def setup() {
         dockerClient.responseHandler = Spy(DockerResponseHandler)

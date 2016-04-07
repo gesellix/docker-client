@@ -1,7 +1,7 @@
 package sun.net.www.protocol.unix
 
 import de.gesellix.docker.client.DockerConfig
-import de.gesellix.docker.client.LowLevelDockerClient
+import de.gesellix.docker.client.HttpClient
 import org.apache.commons.lang.SystemUtils
 import spock.lang.IgnoreIf
 import spock.lang.Specification
@@ -12,7 +12,7 @@ class HttpOverUnixSocketIntegrationTest extends Specification {
     File defaultDockerSocket = new File("/var/run/docker.sock")
     def runDummyDaemon = !defaultDockerSocket.exists()
     File socketFile = defaultDockerSocket
-    LowLevelDockerClient dockerClient
+    HttpClient httpClient
 
     def setup() {
         if (true || !defaultDockerSocket.exists()) {
@@ -21,7 +21,7 @@ class HttpOverUnixSocketIntegrationTest extends Specification {
             socketFile.deleteOnExit()
         }
         def unixSocket = "unix://${socketFile.getCanonicalPath()}".toString()
-        dockerClient = new LowLevelDockerClient(config: new DockerConfig(dockerHost: unixSocket))
+        httpClient = new HttpClient(config: new DockerConfig(dockerHost: unixSocket))
     }
 
     def "info via unix socket"() {
@@ -47,7 +47,7 @@ class HttpOverUnixSocketIntegrationTest extends Specification {
         }
 
         when:
-        def ping = dockerClient.get([path: "/_ping"])
+        def ping = httpClient.get([path: "/_ping"])
 
         then:
         ping.content == ["a-key": 42, "another-key": 4711]
