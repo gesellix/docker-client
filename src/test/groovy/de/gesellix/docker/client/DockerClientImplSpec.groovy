@@ -96,7 +96,7 @@ class DockerClientImplSpec extends Specification {
         dockerClient.ping()
 
         then:
-        1 * httpClient.get([path: "/_ping"])
+        1 * httpClient.get([path: "/_ping", timeout: 2000])
     }
 
     def "info"() {
