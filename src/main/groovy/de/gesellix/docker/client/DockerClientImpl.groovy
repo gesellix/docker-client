@@ -68,7 +68,7 @@ class DockerClientImpl implements DockerClient {
     @Override
     def ping() {
         log.info "docker ping"
-        def response = getHttpClient().get([path: "/_ping"])
+        def response = getHttpClient().get([path: "/_ping", timeout: 2000])
         return response
     }
 

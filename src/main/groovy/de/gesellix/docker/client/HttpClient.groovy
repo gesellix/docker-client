@@ -85,9 +85,11 @@ class HttpClient {
         HttpURLConnection connection = openConnection(config as Map)
         configureConnection(connection, config as Map)
 
-        // since we listen to a stream we disable the timeout
-//    connection.setConnectTimeout(0)
-//    connection.setReadTimeout(0)
+        // do we need to disable the timeout for streaming?
+        if (config.timeout) {
+            connection.setConnectTimeout(config.timeout)
+            connection.setReadTimeout(config.timeout)
+        }
 
         if (config.body) {
             InputStream postBody
