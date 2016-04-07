@@ -3,10 +3,10 @@ package sun.net.www.protocol.unix
 import de.gesellix.docker.client.DockerConfig
 import de.gesellix.docker.client.HttpClient
 import org.apache.commons.lang.SystemUtils
-import spock.lang.IgnoreIf
+import spock.lang.Requires
 import spock.lang.Specification
 
-@IgnoreIf({ !SystemUtils.IS_OS_LINUX })
+@Requires({ new File("/var/run/docker.sock").exists() || SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC })
 class HttpOverUnixSocketIntegrationTest extends Specification {
 
     File defaultDockerSocket = new File("/var/run/docker.sock")

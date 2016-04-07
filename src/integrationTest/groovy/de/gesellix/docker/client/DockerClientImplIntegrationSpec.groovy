@@ -6,7 +6,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.io.IOUtils
 import org.java_websocket.handshake.ServerHandshake
 import spock.lang.Ignore
-import spock.lang.IgnoreIf
+import spock.lang.Requires
 import spock.lang.Specification
 
 import java.util.concurrent.CountDownLatch
@@ -14,7 +14,7 @@ import java.util.concurrent.CountDownLatch
 import static java.util.concurrent.TimeUnit.MILLISECONDS
 
 @Slf4j
-@IgnoreIf({ !System.env.DOCKER_HOST })
+@Requires({ LocalDocker.available() })
 class DockerClientImplIntegrationSpec extends Specification {
 
     static DockerRegistry registry

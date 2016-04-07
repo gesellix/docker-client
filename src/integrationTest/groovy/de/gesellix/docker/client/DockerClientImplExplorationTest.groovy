@@ -5,12 +5,14 @@ import groovy.json.JsonSlurper
 import org.apache.commons.io.IOUtils
 import org.joda.time.DateTime
 import spock.lang.Ignore
+import spock.lang.Requires
 import spock.lang.Specification
 
 import java.util.concurrent.CountDownLatch
 
 import static java.util.concurrent.TimeUnit.SECONDS
 
+@Requires({ LocalDocker.available() })
 class DockerClientImplExplorationTest extends Specification {
 
     DockerClient dockerClient

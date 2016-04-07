@@ -1,9 +1,9 @@
 package de.gesellix.docker.client
 
-import spock.lang.IgnoreIf
+import spock.lang.Requires
 import spock.lang.Specification
 
-@IgnoreIf({ !System.env.DOCKER_HOST })
+@Requires({ LocalDocker.available() })
 class DockerRegistrySpec extends Specification {
 
     def "can determine registry url"() {
