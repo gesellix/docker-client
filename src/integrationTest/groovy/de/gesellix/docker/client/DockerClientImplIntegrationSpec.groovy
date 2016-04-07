@@ -127,10 +127,10 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     def "build image"() {
         given:
-        def buildContext = getClass().getResourceAsStream("build/build.tar")
+        def inputDirectory = new ResourceReader().getClasspathResourceAsFile('build/build/Dockerfile').parentFile
 
         when:
-        def buildResult = dockerClient.build(buildContext)
+        def buildResult = dockerClient.build(newBuildContext(inputDirectory))
 
         then:
         buildResult =~ "\\w{12}"
@@ -141,10 +141,18 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     def "build image with unknown base image"() {
         given:
-        def buildContext = getClass().getResourceAsStream("build/build_with_unknown_base_image.tar")
+        def buildContextDir = File.createTempDir()
+        def dockerfile = new File(buildContextDir, "Dockerfile")
+
+        def inputDirectory = new ResourceReader().getClasspathResourceAsFile('build/build_with_unknown_base_image/Dockerfile.template').parentFile
+        new File(inputDirectory, "Dockerfile.template").newReader().transformLine(dockerfile.newWriter()) { line ->
+            line.replaceAll("\\{\\{registry}}", "")
+            // TODO using the local registry only works without certificates when it's available on 'localhost'
+//            line.replaceAll("\\{\\{registry}}", "${registry.url()}/")
+        }
 
         when:
-        dockerClient.build(buildContext)
+        dockerClient.build(newBuildContext(buildContextDir))
 
         then:
         DockerClientException ex = thrown()
@@ -155,10 +163,10 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     def "build image with custom Dockerfile"() {
         given:
-        def buildContext = getClass().getResourceAsStream("build/custom.tar")
+        def inputDirectory = new ResourceReader().getClasspathResourceAsFile('build/custom/Dockerfile').parentFile
 
         when:
-        def buildResult = dockerClient.build(buildContext, [rm: true, dockerfile: './Dockerfile.custom'])
+        def buildResult = dockerClient.build(newBuildContext(inputDirectory), [rm: true, dockerfile: './Dockerfile.custom'])
 
         then:
         dockerClient.history(buildResult).content.first().CreatedBy.endsWith("'custom'")
@@ -990,6 +998,13 @@ class DockerClientImplIntegrationSpec extends Specification {
         dockerClient.stop(containerId)
         dockerClient.wait(containerId)
         dockerClient.rm(containerId)
+    }
+
+    InputStream newBuildContext(File baseDirectory) {
+        def buildContext = File.createTempFile("buildContext", ".tar")
+        buildContext.deleteOnExit()
+        BuildContextBuilder.archiveTarFilesRecursively(baseDirectory, buildContext)
+        return new FileInputStream(buildContext)
     }
 
     def matchIpv4 = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\$"

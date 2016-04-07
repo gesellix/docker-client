@@ -18,6 +18,10 @@ class DockerRegistry {
 //        String dockerHost = dockerClient.config.dockerHost
 //        return dockerHost.replaceAll("^(tcp|http|https)://", "").replaceAll(":\\d+\$", "")
 
+//        def registryContainer = dockerClient.inspectContainer(registryId).content
+//        def portBinding = registryContainer.NetworkSettings.Ports["5000/tcp"]
+//        return portBinding[0].HostIp as String
+
         // 'localhost' allows to use the registry without TLS
         return "localhost"
     }

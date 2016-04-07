@@ -1,4 +1,4 @@
-FROM busybox:latest
+FROM alpine:edge
 MAINTAINER Tobias Gesellchen <tobias@gesellix.de>
 
 RUN echo 'custom'

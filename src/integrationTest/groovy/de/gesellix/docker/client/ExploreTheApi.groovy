@@ -8,7 +8,7 @@ class ExploreTheApi {
 //    def dockerClient = new DockerClientImpl(dockerHost: "https://192.168.59.103:2376")
 //        System.setProperty("docker.cert.path", "/Users/gesellix/.docker/machine/machines/default")
 //        def dockerClient = new DockerClientImpl("https://192.168.99.100:2376")
-        def dockerClient = new DockerClientImpl("unix:///var/tmp/docker.sock")
+        def dockerClient = new DockerClientImpl("unix:///var/run/docker.sock")
 
         println dockerClient.info().content
         println dockerClient.version().content
@@ -48,10 +48,5 @@ class ExploreTheApi {
 
 //        def archive = dockerClient.save("a-repo:the-tag", "74c4aa413f9a")
 //        println IOUtils.copy(archive.stream as InputStream, new FileOutputStream("./foo2.tar"))
-
-//        def buildContext = dockerClient.class.getResourceAsStream("build/custom.tar")
-//        def buildResult = dockerClient.build(buildContext, [rm: true, dockerfile: './Dockerfile.custom'])
-//        assert dockerClient.history(buildResult).content.first().CreatedBy.endsWith("'custom'")
-//        dockerClient.rmi(buildResult)
     }
 }
