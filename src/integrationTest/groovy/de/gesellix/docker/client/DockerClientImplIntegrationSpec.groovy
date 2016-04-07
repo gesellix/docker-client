@@ -49,38 +49,41 @@ class DockerClientImplIntegrationSpec extends Specification {
         def info = dockerClient.info().content
 
         then:
+        new ArrayList<>(info.keySet()) == [
+                "Architecture",
+                "BridgeNfIp6tables", "BridgeNfIptables",
+                "CPUSet", "CPUShares", "CgroupDriver", "ClusterAdvertise", "ClusterStore", "Containers", "ContainersPaused", "ContainersRunning", "ContainersStopped", "CpuCfsPeriod", "CpuCfsQuota",
+                "Debug", "DockerRootDir", "Driver", "DriverStatus",
+                "ExecutionDriver", "ExperimentalBuild",
+                "HttpProxy", "HttpsProxy",
+                "ID", "IPv4Forwarding", "Images", "IndexServerAddress",
+                "KernelMemory", "KernelVersion",
+                "Labels", "LoggingDriver",
+                "MemTotal", "MemoryLimit",
+                "NCPU", "NEventsListener", "NFd", "NGoroutines", "Name", "NoProxy",
+                "OSType", "OomKillDisable", "OperatingSystem",
+                "Plugins",
+                "RegistryConfig",
+                "ServerVersion", "SwapLimit", "SystemStatus", "SystemTime"]
+        and:
         info.Containers >= 0
-        info.CpuCfsPeriod == true
-        info.CpuCfsQuota == true
-        info.Debug == true
         info.DockerRootDir =~ "(/mnt/sda1)?/var/lib/docker"
-        info.Driver == "aufs"
         info.DriverStatus.findAll {
             it[0] == "Root Dir" || it[0] == "Backing Filesystem" || it[0] == "Dirs" || it[0] == "Dirperm1 Supported"
         }.size() == 4
-        info.ExecutionDriver == "native-0.2"
         info.ExperimentalBuild == false
         info.HttpProxy == ""
         info.HttpsProxy == ""
         info.ID =~ "([0-9A-Z]{4}:?){12}"
         info.Images > 0
         info.IndexServerAddress == "https://index.docker.io/v1/"
-        info.InitPath =~ "/usr(/local)?/bin/docker"
-        info.InitSha1 == ""
         info.IPv4Forwarding == true
         info.Labels == null
         info.LoggingDriver == "json-file"
         info.MemTotal > 0
         info.MemoryLimit == true
-        info.Name =~ "\\w+"
-        info.NCPU >= 1
-        info.NEventsListener == 0
-        info.NFd > 0
-        info.NGoroutines > 0
         info.NoProxy == ""
-        info.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"
         info.OomKillDisable == true
-        info.OperatingSystem =~ "\\w+"
         info.RegistryConfig == [
                 "IndexConfigs"         : [
                         "docker.io": ["Mirrors" : null,
@@ -258,7 +261,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest", "", registry.url())
 
         then:
-        imageId == "shd256:6b552ee013ffc56b05df78b83a7b9717ebb99aa32224cf012c5dbea811b42334"
+        imageId == "sha256:6b552ee013ffc56b05df78b83a7b9717ebb99aa32224cf012c5dbea811b42334"
 
         cleanup:
         dockerClient.rmi("${registry.url()}/gesellix/docker-client-testimage")
@@ -450,8 +453,7 @@ class DockerClientImplIntegrationSpec extends Specification {
                 "sha256:6b552ee013ffc56b05df78b83a7b9717ebb99aa32224cf012c5dbea811b42334",
                 "sha256:6f609da577b75550c2bc0675b8bac417e6562ea3194df0ead08a7df396dfecdc",
                 "sha256:87c510941a8397225fd9630ceb76764fefd922d6dd5417688afb1525d55e81b4",
-                "sha256:c32d227e5de13b840fab946f29a7124efecec9c69902309b0de627611a1fdaf9",
-                "sha256:e72321c86cbe03cacd4b2d55be205f3a8d1a6c2cb496d0b801088a3d18665694"
+                "sha256:c32d227e5de13b840fab946f29a7124efecec9c69902309b0de627611a1fdaf9"
         ])
     }
 
@@ -940,6 +942,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         ])
     }
 
+    @Requires({ LocalDocker.isTcpSocket() })
     def "attach (websocket)"() {
         given:
         def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")

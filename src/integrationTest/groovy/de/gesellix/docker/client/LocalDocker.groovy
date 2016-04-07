@@ -10,4 +10,14 @@ class LocalDocker {
             return false
         }
     }
+
+    static def isUnixSocket() {
+        def dockerHost = new DockerClientImpl().config.dockerHost
+        return dockerHost.startsWith("unix://")
+    }
+
+    static def isTcpSocket() {
+        def dockerHost = new DockerClientImpl().config.dockerHost
+        return dockerHost.startsWith("tcp://") || dockerHost.startsWith("http://") || dockerHost.startsWith("https://")
+    }
 }
