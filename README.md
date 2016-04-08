@@ -20,8 +20,6 @@ Consider the client as a thin wrapper to perform HTTP requests, minimizing the n
     System.setProperty("docker.host", "192.168.99.100")
     System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
 
-[Docker for Mac](https://beta.docker.com/) users: you need to configure your `DOCKER_HOST` to be set to `unix:///var/tmp/docker.sock`.
-
 Please note that the raw responses (including headers) from the Docker daemon are returned, with the actual response body
  being available in the `content` attribute. Some endpoints return a stream, which is then available in `stream`.
  For some cases, like following the logs or events stream, you need to provide a callback which is called for every
