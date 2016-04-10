@@ -36,7 +36,7 @@ For use in Gradle, add the bintray repository first:
 Then, you need to add the dependency, but please ensure to use the [latest version](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion):
 
     dependencies {
-      compile 'de.gesellix:docker-client:2016-04-07T22-50-17'
+      compile 'de.gesellix:docker-client:2016-04-10T19-27-03'
     }
 
 The tests in `DockerClientImplSpec` and `DockerClientImplIntegrationSpec` should give you an idea how to use the docker-client.
