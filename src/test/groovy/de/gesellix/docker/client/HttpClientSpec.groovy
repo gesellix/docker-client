@@ -17,9 +17,15 @@ class HttpClientSpec extends Specification {
 
     @IgnoreIf({ System.env.DOCKER_HOST })
     def "getRequestUrl should fallback to unix:///var/run/docker.sock"() {
+        given:
         def client = new HttpClient()
+        def isWindows = System.properties['os.name'].toLowerCase().contains('windows')
+        def expectedScheme = isWindows ? "npipe://" : "unix://"
+        def defaultHost = isWindows ? "//./pipe/docker_engine" : "/var/run/docker.sock"
+        def expectedHost = URLEncoder.encode(defaultHost, 'UTF-8')
+
         expect:
-        client.getRequestUrl("", "").toString() == new URL("unix://${URLEncoder.encode('/var/run/docker.sock', 'UTF-8')}").toString()
+        client.getRequestUrl("", "").toString() == new URL("${expectedScheme}${expectedHost}").toString()
     }
 
     @IgnoreIf({ System.env.DOCKER_HOST })
