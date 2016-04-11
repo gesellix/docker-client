@@ -15,9 +15,17 @@ class DockerURLHandler {
         }
         def dockerBaseUrl = getURLWithActualProtocol(dockerHost)
         if (["npipe", "unix"].contains(dockerBaseUrl.protocol)) {
-            return new URL(dockerBaseUrl.protocol, dockerBaseUrl.host, -1, "${path}${query}", new Handler())
+            return new URL(dockerBaseUrl.protocol, dockerBaseUrl.host, -1, "${path}${query}", newHandler(dockerBaseUrl.protocol))
         }
         return new URL("${dockerBaseUrl}${path}${query}")
+    }
+
+    def newHandler(String protocol){
+        switch (protocol) {
+            case "unix": return new Handler()
+            case "npipe": return new sun.net.www.protocol.npipe.Handler()
+            default: throw new IllegalStateException("cannot handle '${protocol}'")
+        }
     }
 
     URL getURLWithActualProtocol(String dockerHost) {
