@@ -46,12 +46,31 @@ class DockerURLHandler {
                     result = new URL("unix", "socket", dockerUnixSocket)
                 }
                 catch (MalformedURLException ignored) {
-                    log.warn("could not use the 'unix' protocol to connect to $dockerUnixSocket - retry.")
+                    log.info("retrying to connect to '$dockerUnixSocket'")
                     try {
                         result = new URL("unix", "socket", -1, dockerUnixSocket, new Handler())
                     }
                     catch (MalformedURLException finalException) {
-                        log.error("retry failed", finalException)
+                        log.error("could not use the 'unix' protocol to connect to $dockerUnixSocket - retry failed.", finalException)
+                        throw finalException
+                    }
+                }
+                break
+            case "npipe":
+                log.debug("is 'named pipe'")
+                def dockerNamedPipe = dockerHost.replaceFirst("npipe://", "")
+                // slashes need to be escaped, because the pipe name is used as host name
+                dockerNamedPipe = URLEncoder.encode(dockerNamedPipe, "UTF-8")
+                try {
+                    result = new URL("npipe", dockerNamedPipe, "")
+                }
+                catch (MalformedURLException ignored) {
+                    log.info("retrying to connect to '$dockerNamedPipe'")
+                    try {
+                        result = new URL("npipe", dockerNamedPipe, -1, "", new sun.net.www.protocol.npipe.Handler())
+                    }
+                    catch (MalformedURLException finalException) {
+                        log.error("could not use the 'npipe' protocol to connect to $dockerNamedPipe - retry failed.", finalException)
                         throw finalException
                     }
                 }

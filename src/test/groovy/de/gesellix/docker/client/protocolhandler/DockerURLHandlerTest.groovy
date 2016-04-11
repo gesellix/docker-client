@@ -120,12 +120,20 @@ class DockerURLHandlerTest extends Specification {
         finalDockerHost.toString() == "https://127.0.0.1:2376"
     }
 
-    def "should choose unix socket for 'unix:///var/lib/socket.example'"() {
+    def "should choose unix socket for 'unix:///var/run/socket.example'"() {
         def dockerUrlHandler = new DockerURLHandler()
         when:
-        def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("unix:///var/lib/socket.example")
+        def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("unix:///var/run/socket.example")
         then:
-        finalDockerHost.toString() == "unix://socket/var/lib/socket.example"
+        finalDockerHost.toString() == "unix://socket/var/run/socket.example"
+    }
+
+    def "should choose named pipe for 'npipe:////./pipe/docker_engine'"() {
+        def dockerUrlHandler = new DockerURLHandler()
+        when:
+        def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("npipe:////./pipe/docker_engine")
+        then:
+        finalDockerHost.toString() == "npipe://%2F%2F.%2Fpipe%2Fdocker_engine"
     }
 
     def "should ignore unknown protocol"() {

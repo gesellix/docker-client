@@ -10,9 +10,11 @@ class DockerConfig {
             return configuredDockerHost
         } else {
             if (System.properties['os.name'].toLowerCase().contains('windows')) {
-                // or use a named pipe, e.g.:
-                // http://%2F%2F.%2Fpipe%2Fdocker_engine/v1.23/containers/json
-                return "tcp://localhost:2375"
+                // default to non-tls http
+                //return "tcp://localhost:2375"
+
+                // or use a named pipe:
+                return "npipe:////./pipe/docker_engine"
             } else {
                 return "unix:///var/run/docker.sock"
             }
