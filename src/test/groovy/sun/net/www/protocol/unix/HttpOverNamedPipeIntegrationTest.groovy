@@ -3,10 +3,12 @@ package sun.net.www.protocol.unix
 import de.gesellix.docker.client.DockerConfig
 import de.gesellix.docker.client.HttpClient
 import org.apache.commons.lang.SystemUtils
+import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
 
-@Requires({ SystemUtils.IS_OS_WINDOWS })
+@Ignore
+//@Requires({ SystemUtils.IS_OS_WINDOWS })
 class HttpOverNamedPipeIntegrationTest extends Specification {
 
     def "info via named pipe"() {
