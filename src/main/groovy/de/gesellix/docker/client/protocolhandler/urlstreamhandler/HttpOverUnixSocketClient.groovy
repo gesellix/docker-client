@@ -10,17 +10,16 @@ import sun.net.www.http.HttpClient
 @Slf4j
 class HttpOverUnixSocketClient extends HttpClient {
 
-    static String dockerUnixSocket
-
     protected HttpOverUnixSocketClient(URL url) throws IOException {
         super(url, true)
     }
 
     @Override
     protected Socket doConnect(String host, int port) throws IOException, UnknownHostException {
-        log.debug "connect via '${dockerUnixSocket}'..."
+        host = URLDecoder.decode(host, "UTF-8")
+        log.debug "connect via '${host}'..."
 
-        File socketFile = new File(dockerUnixSocket)
+        File socketFile = new File(host)
         log.debug "unix socket exists/canRead/canWrite: ${socketFile.exists()}/${socketFile.canRead()}/${socketFile.canWrite()}"
 
         Socket socket = AFUNIXSocket.newInstance()

@@ -1,7 +1,6 @@
 package de.gesellix.docker.client.protocolhandler
 
 import de.gesellix.docker.client.DockerConfig
-import de.gesellix.docker.client.protocolhandler.urlstreamhandler.HttpOverUnixSocketClient
 import groovy.util.logging.Slf4j
 import sun.net.www.protocol.unix.Handler
 
@@ -41,14 +40,15 @@ class DockerURLHandler {
             case "unix":
                 log.debug("is 'unix'")
                 def dockerUnixSocket = dockerHost.replaceFirst("unix://", "")
-                HttpOverUnixSocketClient.dockerUnixSocket = dockerUnixSocket
+                // slashes need to be escaped, because the unix socket file name is used as host name
+                dockerUnixSocket = URLEncoder.encode(dockerUnixSocket, "UTF-8")
                 try {
-                    result = new URL("unix", "socket", dockerUnixSocket)
+                    result = new URL("unix", dockerUnixSocket, "")
                 }
                 catch (MalformedURLException ignored) {
                     log.info("retrying to connect to '$dockerUnixSocket'")
                     try {
-                        result = new URL("unix", "socket", -1, dockerUnixSocket, new Handler())
+                        result = new URL("unix", dockerUnixSocket, -1, "", new Handler())
                     }
                     catch (MalformedURLException finalException) {
                         log.error("could not use the 'unix' protocol to connect to $dockerUnixSocket - retry failed.", finalException)
