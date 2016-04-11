@@ -14,23 +14,7 @@ This client library aims at supporting all existing api endpoints, which effecti
 
 Consider the client as a thin wrapper to perform HTTP requests, minimizing the need to manually configure
  TLS or auth encoding in your code. Most commonly known environment variables will work as expected,
- e.g. `DOCKER_HOST` or `DOCKER_CERT_PATH`. You can override existing environment variables with
- Java system properties like this:
-
-    System.setProperty("docker.host", "192.168.99.100")
-    System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
-
-The default Docker host is expected to be available at `unix:///var/run/docker.sock`.
- When using Docker Machine the existing environment variables should be enough. Even for the upcoming
- _Docker for Mac_ package you'll be able to rely on the default configuration. Only the upcoming
- _Docker for Windows_ is a bit special due to the lack of Unix domain socket support.
- This Docker client assumes a named pipe to be available at `//./pipe/docker_engine` on Windows systems
- without explicit `DOCKER_HOST`, but you can override its value with `tcp://127.0.0.1:2375`.
-
-Please note that the raw responses (including headers) from the Docker daemon are returned, with the actual response body
- being available in the `content` attribute. Some endpoints return a stream, which is then available in `stream`.
- For some cases, like following the logs or events stream, you need to provide a callback which is called for every
- response line, see example 3 below.
+ e.g. `DOCKER_HOST` or `DOCKER_CERT_PATH`.
 
 ## Plain Usage
 
@@ -43,10 +27,26 @@ For use in Gradle, add the bintray repository first:
 Then, you need to add the dependency, but please ensure to use the [latest version](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion):
 
     dependencies {
-      compile 'de.gesellix:docker-client:2016-04-10T19-27-03'
+      compile 'de.gesellix:docker-client:2016-04-11T22-50-38'
     }
 
 The tests in `DockerClientImplSpec` and `DockerClientImplIntegrationSpec` should give you an idea how to use the docker-client.
+
+The default Docker host is expected to be available at `unix:///var/run/docker.sock`.
+ When using Docker Machine the existing environment variables should be enough. Even for the upcoming
+ _Docker for Mac_ package you'll be able to rely on the default configuration. Only the upcoming
+ _Docker for Windows_ is a bit special due to the lack of Unix domain socket support.
+ This Docker client assumes a named pipe to be available at `//./pipe/docker_engine` on Windows systems
+ without explicit `DOCKER_HOST`, but you can override its value with `tcp://127.0.0.1:2375`.
+ You can override existing `DOCKER_*` environment variables with Java system properties like this:
+
+    System.setProperty("docker.host", "192.168.99.100")
+    System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
+
+Please note that the raw responses (including headers) from the Docker daemon are returned, with the actual response body
+ being available in the `content` attribute. Some endpoints return a stream, which is then available in `stream`.
+ For some cases, like following the logs or events stream, you need to provide a callback which is called for every
+ response line, see example 3 below.
 
 ### Example 1: `docker info`
 
