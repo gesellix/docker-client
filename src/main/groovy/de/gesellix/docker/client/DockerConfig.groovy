@@ -2,7 +2,22 @@ package de.gesellix.docker.client
 
 class DockerConfig {
 
-    def dockerHost = System.getProperty("docker.host", System.env.DOCKER_HOST as String) ?: "unix:///var/run/docker.sock"
+    def dockerHost = getDockerHostOrDefault()
+
+    static def getDockerHostOrDefault(){
+        def configuredDockerHost = System.getProperty("docker.host", System.env.DOCKER_HOST as String)
+        if (configuredDockerHost) {
+            return configuredDockerHost
+        } else {
+            if (System.properties['os.name'].toLowerCase().contains('windows')) {
+                // or use a named pipe, e.g.:
+                // http://%2F%2F.%2Fpipe%2Fdocker_engine/v1.23/containers/json
+                return "tcp://localhost:2375"
+            } else {
+                return "unix:///var/run/docker.sock"
+            }
+        }
+    }
 
     def defaultTlsPort = 2376
 
