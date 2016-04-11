@@ -125,7 +125,7 @@ class DockerURLHandlerTest extends Specification {
         when:
         def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("unix:///var/run/socket.example")
         then:
-        finalDockerHost.toString() == "unix://socket/var/run/socket.example"
+        finalDockerHost.toString() == "unix://${URLEncoder.encode('/var/run/socket.example', 'UTF-8')}".toString()
     }
 
     def "should choose named pipe for 'npipe:////./pipe/docker_engine'"() {
@@ -133,7 +133,7 @@ class DockerURLHandlerTest extends Specification {
         when:
         def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("npipe:////./pipe/docker_engine")
         then:
-        finalDockerHost.toString() == "npipe://%2F%2F.%2Fpipe%2Fdocker_engine"
+        finalDockerHost.toString() == "npipe://${URLEncoder.encode('//./pipe/docker_engine', 'UTF-8')}".toString()
     }
 
     def "should ignore unknown protocol"() {
