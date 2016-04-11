@@ -19,7 +19,7 @@ class HttpClientSpec extends Specification {
     def "getRequestUrl should fallback to unix:///var/run/docker.sock"() {
         def client = new HttpClient()
         expect:
-        client.getRequestUrl("", "").toString() == new URL("unix://socket").toString()
+        client.getRequestUrl("", "").toString() == new URL("unix://${URLEncoder.encode('/var/run/docker.sock', 'UTF-8')}").toString()
     }
 
     @IgnoreIf({ System.env.DOCKER_HOST })
