@@ -14,7 +14,7 @@ class DockerURLHandler {
             throw new IllegalStateException("dockerHost must be set")
         }
         def dockerBaseUrl = getURLWithActualProtocol(dockerHost)
-        if (dockerBaseUrl.protocol == "unix") {
+        if (["npipe", "unix"].contains(dockerBaseUrl.protocol)) {
             return new URL(dockerBaseUrl.protocol, dockerBaseUrl.host, -1, "${path}${query}", new Handler())
         }
         return new URL("${dockerBaseUrl}${path}${query}")
