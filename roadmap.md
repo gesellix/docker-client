@@ -1,6 +1,6 @@
 # Supported Features
 
-*feature set based on the [Docker Remote API v1.22](https://docs.docker.com/engine/reference/api/docker_remote_api_v1.22/)*
+*feature set based on the [Docker Remote API v1.23](https://docs.docker.com/engine/reference/api/docker_remote_api_v1.23/)*
 
 Since the Docker remote api tends to be backwards compatible,
 the Docker-Client currently supports most other api versions, too.
