@@ -1,5 +1,7 @@
 package de.gesellix.docker.client
 
+import org.apache.commons.io.IOUtils
+
 class ExploreTheApi {
 
     public static void main(String[] args) {
@@ -8,7 +10,8 @@ class ExploreTheApi {
 //    def dockerClient = new DockerClientImpl(dockerHost: "https://192.168.59.103:2376")
 //        System.setProperty("docker.cert.path", "/Users/gesellix/.docker/machine/machines/default")
 //        def dockerClient = new DockerClientImpl("https://192.168.99.100:2376")
-        def dockerClient = new DockerClientImpl("unix:///var/run/docker.sock")
+//        def dockerClient = new DockerClientImpl("unix:///var/run/docker.sock")
+        def dockerClient = new DockerClientImpl()
 
         println dockerClient.info().content
         println dockerClient.version().content
@@ -48,5 +51,15 @@ class ExploreTheApi {
 
 //        def archive = dockerClient.save("a-repo:the-tag", "74c4aa413f9a")
 //        println IOUtils.copy(archive.stream as InputStream, new FileOutputStream("./foo2.tar"))
+
+        try {
+            dockerClient.run("alpine:edge", [Cmd: ["id"], Tty: true], "", "run-me")
+            def logs = dockerClient.logs("run-me")
+            println IOUtils.toString(logs.stream as InputStream)
+        } catch (Exception e) {
+            e.printStackTrace()
+        } finally {
+            dockerClient.rm("run-me")
+        }
     }
 }
