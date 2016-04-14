@@ -62,11 +62,11 @@ class HttpClientIntegrationSpec extends Specification {
         def content = response.content
         content.ApiVersion == "1.23"
         content.Arch == "amd64"
-        content.GitCommit == "9b9022a"
-        content.GoVersion == "go1.5.3"
+        content.GitCommit == "a5315b8"
+        content.GoVersion == "go1.5.4"
         content.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"
         content.Os == "linux"
-        content.Version == "1.11.0-rc3"
+        content.Version == "1.11.0"
     }
 
     @Requires({ new File("/var/run/docker.sock").exists() })
