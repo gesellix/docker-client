@@ -1,4 +1,4 @@
-# docker-client
+# Docker Client
 
 A Docker HTTP client written in Groovy
 
@@ -65,9 +65,9 @@ Running a container being available on the host via HTTP port 4712 can be achiev
     def image = "busybox"
     def tag = "latest"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
-    def containerConfig = ["Cmd"       : cmds,
-                           ExposedPorts: ["4711/tcp": [:]],
-                           "HostConfig": ["PortBindings": [
+    def containerConfig = ["Cmd"         : cmds,
+                           "ExposedPorts": ["4711/tcp": [:]],
+                           "HostConfig"  : ["PortBindings": [
                                    "4711/tcp": [
                                            ["HostIp"  : "0.0.0.0",
                                             "HostPort": "4712"]]
