@@ -1,10 +1,14 @@
 package de.gesellix.docker.client
 
+/**
+ * Configuration via environment variables should work like
+ * described in the official <a href="https://docs.docker.com/engine/reference/commandline/cli/#environment-variables">cli docs</a>.
+ */
 class DockerConfig {
 
     def dockerHost = getDockerHostOrDefault()
 
-    static def getDockerHostOrDefault(){
+    static def getDockerHostOrDefault() {
         def configuredDockerHost = System.getProperty("docker.host", System.env.DOCKER_HOST as String)
         if (configuredDockerHost) {
             return configuredDockerHost
@@ -38,6 +42,10 @@ class DockerConfig {
     def legacyConfigFile = new File("${System.getProperty('user.home')}", ".dockercfg")
 
     def dockerConfigFile = null
+
+    def apiVersion = System.getProperty("docker.api.version", System.env.DOCKER_API_VERSION as String)
+
+    def tmpdir = System.getProperty("docker.tmpdir", System.env.DOCKER_TMPDIR as String)
 
     def setDockerConfigFile(File dockerConfigFile) {
         this.dockerConfigFile = dockerConfigFile
