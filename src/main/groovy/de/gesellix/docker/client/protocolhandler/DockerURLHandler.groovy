@@ -93,10 +93,13 @@ class DockerURLHandler {
     }
 
     def shouldUseTls(URL candidateURL) {
+        // Setting env.DOCKER_TLS_VERIFY to the empty string disables tls verification,
+        // while any other value enables tls verification.
+        // See https://docs.docker.com/engine/reference/commandline/cli/#environment-variables
+
         // explicitly disabled?
-        def falsyValues = ["0", "no", "false"]
-        if (falsyValues.contains(config.tlsVerify)) {
-            log.debug("dockerTlsVerify=${config.tlsVerify}")
+        if (config.tlsVerify == "") {
+            log.debug("dockerTlsVerify='${config.tlsVerify}'")
             return false
         }
 
@@ -112,10 +115,9 @@ class DockerURLHandler {
         }
 
         // explicitly enabled?
-        def truthyValues = ["1", "yes", "true"]
-        if (truthyValues.contains(config.tlsVerify)) {
+        if (config.tlsVerify) {
             if (!certsPathExists) {
-                throw new IllegalStateException("tlsverify=${config.tlsVerify}, but ${config.certPath} doesn't exist")
+                throw new IllegalStateException("tlsverify='${config.tlsVerify}', but '${config.certPath}' doesn't exist")
             } else {
                 log.debug("certsPathExists=${certsPathExists}")
                 return true

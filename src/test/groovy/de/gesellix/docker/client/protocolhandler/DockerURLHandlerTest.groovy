@@ -20,7 +20,8 @@ class DockerURLHandlerTest extends Specification {
         then:
         assumeTls
         where:
-        tlsVerify << ["1", "true", "yes"]
+        // yes, even the falsy values (0, false, no) actually enable tls-verify
+        tlsVerify << ["1", "true", "yes", "0", "false", "no"]
     }
 
     @Unroll
@@ -35,7 +36,7 @@ class DockerURLHandlerTest extends Specification {
         then:
         !assumeTls
         where:
-        tlsVerify << ["0", "false", "no"]
+        tlsVerify << [""]
     }
 
     def "should not assume TLS when port !== 2376"() {
@@ -101,7 +102,7 @@ class DockerURLHandlerTest extends Specification {
     def "should choose http for 'https://127.0.0.1:2376' and disabled tls"() {
         def dockerUrlHandler = new DockerURLHandler(
                 config: new DockerConfig(
-                        tlsVerify: "0"))
+                        tlsVerify: ""))
         when:
         def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("https://127.0.0.1:2376")
         then:
