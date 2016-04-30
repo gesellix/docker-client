@@ -59,6 +59,8 @@ class ExploreTheApi {
         } catch (Exception e) {
             e.printStackTrace()
         } finally {
+            dockerClient.stop("run-me")
+            dockerClient.wait("run-me")
             dockerClient.rm("run-me")
         }
     }
