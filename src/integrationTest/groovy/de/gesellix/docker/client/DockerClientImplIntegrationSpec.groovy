@@ -27,6 +27,7 @@ class DockerClientImplIntegrationSpec extends Specification {
 //                        dockerHost: "http://192.168.99.100:2376",
 //                        certPath: "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
         )
+//        dockerClient.config.apiVersion = "v1.23"
         registry = new DockerRegistry(dockerClient: dockerClient)
         registry.run()
     }
@@ -106,7 +107,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         then:
         version.ApiVersion == "1.23"
         version.Arch == "amd64"
-        version.BuildTime == "2016-04-14T10:19:52.451935082+00:00"
+        version.BuildTime == "2016-04-26T15:23:39.748128544+00:00"
         version.GitCommit == "a5315b8"
         version.GoVersion == "go1.5.4"
         version.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"

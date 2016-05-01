@@ -144,4 +144,29 @@ class DockerURLHandlerTest extends Specification {
         then:
         finalDockerHost.toString() == "ftp://example/foo"
     }
+
+    def "create a request url with null query"() {
+        def dockerUrlHandler = new DockerURLHandler()
+        when:
+        def url = dockerUrlHandler.getRequestUrl("unix:///var/run/socket.example", "/a-path", null)
+        then:
+        url.toString() == "unix://${URLEncoder.encode('/var/run/socket.example', 'UTF-8')}/a-path".toString()
+    }
+
+    def "create a request url without explicit api version"() {
+        def dockerUrlHandler = new DockerURLHandler()
+        when:
+        def url = dockerUrlHandler.getRequestUrl("unix:///var/run/socket.example", "/a-path")
+        then:
+        url.toString() == "unix://${URLEncoder.encode('/var/run/socket.example', 'UTF-8')}/a-path".toString()
+    }
+
+    def "create a request url with configured api version"() {
+        def dockerUrlHandler = new DockerURLHandler()
+        dockerUrlHandler.config.apiVersion = "v4.711"
+        when:
+        def url = dockerUrlHandler.getRequestUrl("unix:///var/run/socket.example", "/a-path")
+        then:
+        url.toString() == "unix://${URLEncoder.encode('/var/run/socket.example', 'UTF-8')}/v4.711/a-path".toString()
+    }
 }

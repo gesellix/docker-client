@@ -9,10 +9,14 @@ class DockerURLHandler {
 
     DockerConfig config = new DockerConfig()
 
-    def getRequestUrl(String dockerHost, String path, String query) {
+    def getRequestUrl(String dockerHost, String path, String query = "") {
         if (!dockerHost) {
             throw new IllegalStateException("dockerHost must be set")
         }
+        if (config.apiVersion) {
+            path = "/${config.apiVersion}${path}".toString()
+        }
+        query = query ?: ""
         def dockerBaseUrl = getURLWithActualProtocol(dockerHost)
         if (["npipe", "unix"].contains(dockerBaseUrl.protocol)) {
             return new URL(dockerBaseUrl.protocol, dockerBaseUrl.host, -1, "${path}${query}", newHandler(dockerBaseUrl.protocol))
@@ -20,7 +24,7 @@ class DockerURLHandler {
         return new URL("${dockerBaseUrl}${path}${query}")
     }
 
-    def newHandler(String protocol){
+    def newHandler(String protocol) {
         switch (protocol) {
             case "unix": return new Handler()
             case "npipe": return new sun.net.www.protocol.npipe.Handler()
