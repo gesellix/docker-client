@@ -240,6 +240,7 @@ class DockerClientImpl implements DockerClient {
                                                        registry : registry],
                                              headers: ["X-Registry-Auth": authBase64Encoded ?: "."]])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker pull failed"))
+//        println new JsonBuilder(response.content).toString()
 
         return findImageId(actualImageName, tag)
     }
@@ -512,18 +513,35 @@ class DockerClientImpl implements DockerClient {
     }
 
     def findImageId(imageName, tag = "") {
-        def images = images().content
+        def isDigest = imageName.contains '@'
+        def images = images((isDigest) ? [digests: '1'] : [:]).content
+//        println new JsonBuilder(images).toString()
+        def imageIdsByRepoDigest = images.collectEntries { image ->
+            image.RepoDigests?.collectEntries { repoDigest ->
+                def idByDigest = [:]
+                idByDigest[repoDigest] = image.Id
+                idByDigest
+            } ?: [:]
+        }
         def imageIdsByName = images.collectEntries { image ->
-            image.RepoTags.collectEntries { repoTag ->
+            image.RepoTags?.collectEntries { repoTag ->
                 def idByName = [:]
                 idByName[repoTag] = image.Id
                 idByName
-            }
+            } ?: [:]
         }
-        def canonicalImageName = "$imageName:${tag ?: 'latest'}".toString()
-        if (imageIdsByName[canonicalImageName]) {
-            return imageIdsByName[canonicalImageName]
+
+        if (isDigest) {
+            if (imageIdsByRepoDigest[imageName.toString()]) {
+                return imageIdsByRepoDigest[imageName.toString()]
+            }
+            log.warn("couldn't find imageId for `${imageName}` via `docker images`")
+            return imageName
         } else {
+            def canonicalImageName = "$imageName:${tag ?: 'latest'}".toString()
+            if (imageIdsByName[canonicalImageName]) {
+                return imageIdsByName[canonicalImageName]
+            }
             log.warn("couldn't find imageId for `${canonicalImageName}` via `docker images`")
             return canonicalImageName
         }

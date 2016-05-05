@@ -5,11 +5,15 @@ class DockerRegistry {
     DockerClient dockerClient
     def registryId
 
+    DockerRegistry() {
+        this.dockerClient = new DockerClientImpl()
+    }
+
     def run() {
         def registryStatus = dockerClient.run(
                 "registry",
-                [ExposedPorts: ["5000/tcp": [:]],
-                 "HostConfig": ["PublishAllPorts": true]],
+                ["ExposedPorts": ["5000/tcp": [:]],
+                 "HostConfig"  : ["PublishAllPorts": true]],
                 "2")
         registryId = registryStatus.container.content.Id
     }

@@ -262,6 +262,14 @@ class DockerClientImplIntegrationSpec extends Specification {
         imageId == "sha256:6b552ee013ffc56b05df78b83a7b9717ebb99aa32224cf012c5dbea811b42334"
     }
 
+    def "pull image by digest"() {
+        when:
+        def imageId = dockerClient.pull("nginx@sha256:b555f8c64ab4e85405e0d8b03f759b73ce88deb802892a3b155ef55e3e832806")
+
+        then:
+        imageId == "sha256:3c69047c6034e48a93cc1c4a769a680045104ef6d51306720409029d6e1fa364"
+    }
+
     def "pull image from private registry"() {
         given:
         dockerClient.pull("gesellix/docker-client-testimage", "latest")
