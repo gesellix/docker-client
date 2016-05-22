@@ -1,11 +1,15 @@
 package de.gesellix.docker.client
 
-import spock.lang.Ignore
+import spock.lang.IgnoreIf
 import spock.lang.Requires
 import spock.lang.Specification
 
 @Requires({ LocalDocker.available() })
 class HttpClientIntegrationSpec extends Specification {
+
+    final static def dockerHubUsername = "gesellix"
+    final static def dockerHubPassword = "-yet-another-password-"
+    final static def dockerHubEmail = "tobias@gesellix.de"
 
     def "should allow GET requests"() {
         def client = new HttpClient()
@@ -27,17 +31,17 @@ class HttpClientIntegrationSpec extends Specification {
         response.content.last() == [status: "Status: Image is up to date for gesellix/docker-client-testimage:latest"]
     }
 
-    @Ignore("the password needs to be set before running this test")
+    @IgnoreIf({ dockerHubPassword == "-yet-another-password-" })
     def "should allow POST requests with body"() {
         given:
         def client = new HttpClient()
-        def authDetails = ["username"     : "gesellix",
-                           "password"     : "-yet-another-password-",
-                           "email"        : "tobias@gesellix.de",
+        def authDetails = ["username"     : dockerHubUsername,
+                           "password"     : dockerHubPassword,
+                           "email"        : dockerHubEmail,
                            "serveraddress": "https://index.docker.io/v1/"]
-        def request = [path       : "/auth",
-                       body       : authDetails,
-                       contentType: "application/json"]
+        def request = [path              : "/auth",
+                       body              : authDetails,
+                       requestContentType: "application/json"]
         when:
         def response = client.post(request)
         then:
@@ -62,18 +66,30 @@ class HttpClientIntegrationSpec extends Specification {
         def content = response.content
         content.ApiVersion == "1.23"
         content.Arch == "amd64"
-        content.GitCommit == "a5315b8"
+        content.GitCommit == "8b63c77"
         content.GoVersion == "go1.5.4"
         content.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"
         content.Os == "linux"
-        content.Version == "1.11.0"
+        content.Version == "1.11.1"
     }
 
-    @Requires({ new File("/var/run/docker.sock").exists() })
-    def "should support unix socket connections (Linux native or Docker for Mac/Windows)"() {
+    @Requires({ LocalDocker.isUnixSocket() })
+    def "should support unix socket connections (Linux native or Docker for Mac)"() {
         def client = new HttpClient(
                 config: new DockerConfig(
                         dockerHost: "unix:///var/run/docker.sock"))
+        when:
+        def response = client.request([method: "GET",
+                                       path  : "/info"])
+        then:
+        response.status.code == 200
+    }
+
+    @Requires({ LocalDocker.isNamedPipe() })
+    def "should support named pipe socket connections (Docker for Windows)"() {
+        def client = new HttpClient(
+                config: new DockerConfig(
+                        dockerHost: "npipe:////./pipe/docker_engine"))
         when:
         def response = client.request([method: "GET",
                                        path  : "/info"])
