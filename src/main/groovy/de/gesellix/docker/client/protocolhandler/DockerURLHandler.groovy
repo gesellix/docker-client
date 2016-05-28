@@ -10,18 +10,23 @@ class DockerURLHandler {
     DockerConfig config = new DockerConfig()
 
     def getRequestUrl(String dockerHost, String path, String query = "") {
-        if (!dockerHost) {
-            throw new IllegalStateException("dockerHost must be set")
-        }
+        def (String protocol, String host) = getProtocolAndHost(dockerHost)
         if (config.apiVersion) {
             path = "/${config.apiVersion}${path}".toString()
         }
         query = query ?: ""
-        def dockerBaseUrl = getURLWithActualProtocol(dockerHost)
-        if (["npipe", "unix"].contains(dockerBaseUrl.protocol)) {
-            return new URL(dockerBaseUrl.protocol, dockerBaseUrl.host, -1, "${path}${query}", newHandler(dockerBaseUrl.protocol))
+        if (["npipe", "unix"].contains(protocol)) {
+            return new URL(protocol, host, -1, "${path}${query}", newHandler(protocol))
         }
-        return new URL("${dockerBaseUrl}${path}${query}")
+        return new URL("${protocol}://${host}${path}${query}")
+    }
+
+    def getProtocolAndHost(String dockerHost) {
+        if (!dockerHost) {
+            throw new IllegalStateException("dockerHost must be set")
+        }
+        def dockerBaseUrl = getURLWithActualProtocol(dockerHost)
+        return [dockerBaseUrl.protocol, dockerBaseUrl.host]
     }
 
     def newHandler(String protocol) {
@@ -33,6 +38,9 @@ class DockerURLHandler {
     }
 
     URL getURLWithActualProtocol(String dockerHost) {
+        if (!dockerHost) {
+            throw new IllegalStateException("dockerHost must be set")
+        }
         def result
         def oldProtocol = dockerHost.split("://", 2)[0]
         def protocol = oldProtocol
@@ -53,7 +61,7 @@ class DockerURLHandler {
                 log.debug("is 'unix'")
                 def dockerUnixSocket = dockerHost.replaceFirst("unix://", "")
                 // slashes need to be escaped, because the unix socket file name is used as host name
-                dockerUnixSocket = URLEncoder.encode(dockerUnixSocket, "UTF-8")
+//                dockerUnixSocket = URLEncoder.encode(dockerUnixSocket, "UTF-8")
                 try {
                     result = new URL("unix", dockerUnixSocket, "")
                 }
