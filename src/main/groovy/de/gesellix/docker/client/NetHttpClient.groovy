@@ -1,36 +1,34 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.client.OkHttpClient
 import de.gesellix.docker.client.protocolhandler.DockerContentHandlerFactory
 import de.gesellix.docker.client.protocolhandler.DockerURLHandler
-import de.gesellix.docker.client.protocolhandler.content.application.json
 import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
-import okhttp3.*
-import okhttp3.internal.http.HttpMethod
 import org.apache.commons.io.IOUtils
-import org.apache.commons.io.input.ReaderInputStream
 import org.apache.commons.io.output.NullOutputStream
 
+import javax.net.ssl.*
+import java.nio.charset.Charset
 import java.util.regex.Pattern
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS
+import static de.gesellix.docker.client.KeyStoreUtil.KEY_STORE_PASSWORD
+import static javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm
 
 @Slf4j
-class OkHttpClient implements HttpClient {
-
-    okhttp3.OkHttpClient client
+class NetHttpClient implements HttpClient {
 
     DockerURLHandler dockerURLHandler
 
     Proxy proxy
     DockerConfig config = new DockerConfig()
-    DockerSslSocketFactory.DockerSslSocket dockerSslSocket
 
-    OkHttpClient() {
-        client = new okhttp3.OkHttpClient.Builder().build()
+    SSLContext sslContext
+    SSLSocketFactory sslSocketFactory
+
+    NetHttpClient() {
         proxy = Proxy.NO_PROXY
-        dockerSslSocket = null
+        sslContext = null
+        sslSocketFactory = null
     }
 
     @Override
@@ -104,7 +102,7 @@ class OkHttpClient implements HttpClient {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "GET"
 
-        def requestUrl = getRequestUrlWithOptionalQuery(config).toString()
+        def requestUrl = getRequestUrlWithOptionalQuery(config).toExternalForm()
         requestUrl = requestUrl.replaceFirst("^http", "ws")
 
         log.debug "websocket uri: '$requestUrl'"
@@ -121,61 +119,13 @@ class OkHttpClient implements HttpClient {
     def request(Map config) {
         config = ensureValidRequestConfig(config)
 
-        def requestBuilder = new Request.Builder()
-
-        def (String protocol, String host, int port) = getDockerURLHandler().getProtocolAndHost(this.config.dockerHost)
-        String queryAsString = (config.query) ? "${queryToString(config.query as Map)}" : ""
-        if (protocol == "unix") {
-            def unixSocketFactory = new UnixSocketFactory()
-            client = client.newBuilder()
-                    .socketFactory(unixSocketFactory)
-                    .dns(unixSocketFactory)
-                    .build()
-
-            requestBuilder.url(new HttpUrl.Builder()
-                    .scheme("http")
-                    .host(UnixSocketFactory.UnixSocket.encodeHostname(host))
-                    .addPathSegments(config.path as String)
-                    .encodedQuery(queryAsString)
-                    .build())
-        } else if (protocol == "npipe") {
-            throw new UnsupportedOperationException("not yet implemented")
-        } else {
-            requestBuilder.url(new HttpUrl.Builder()
-                    .scheme(protocol)
-                    .host(host)
-                    .port(port)
-                    .addPathSegments(config.path as String)
-                    .query(queryAsString)
-                    .build())
-        }
-
-        if (protocol == 'https') {
-            def dockerSslSocket = getSslContext()
-            client = client.newBuilder()
-                    .sslSocketFactory(
-                    dockerSslSocket.sslSocketFactory,
-                    dockerSslSocket.trustManager)
-                    .build()
-        }
-
-        client = client.newBuilder()
-                .proxy(proxy)
-                .build()
-
-        requestBuilder.cacheControl(CacheControl.FORCE_NETWORK)
+        HttpURLConnection connection = openConnection(config as Map)
+        configureConnection(connection, config as Map)
 
         // do we need to disable the timeout for streaming?
         if (config.timeout) {
-            client = client.newBuilder()
-                    .connectTimeout(config.timeout as int, MILLISECONDS)
-                    .readTimeout(config.timeout as int, MILLISECONDS)
-                    .build()
-        }
-
-        def requestBody = null
-        if (HttpMethod.requiresRequestBody(config.method)) {
-            requestBody = RequestBody.create(MediaType.parse("application/json"), "{}")
+            connection.setConnectTimeout(config.timeout)
+            connection.setReadTimeout(config.timeout)
         }
 
         if (config.body) {
@@ -185,7 +135,10 @@ class OkHttpClient implements HttpClient {
                 case "application/json":
                     def json = new JsonBuilder()
                     json config.body
-                    requestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
+                    def postData = json.toString().getBytes(Charset.forName("UTF-8"))
+                    postBody = new ByteArrayInputStream(postData)
+                    postDataLength = postData.length
+                    connection.setRequestProperty("charset", "utf-8")
                     break
                 case "application/octet-stream":
                     postBody = config.body
@@ -210,24 +163,16 @@ class OkHttpClient implements HttpClient {
             IOUtils.copy(postBody, connection.getOutputStream())
         }
 
-//        config.headers?.each { String key, String value ->
-//            requestBuilder.header(key, value)
-//        }
+        config.headers?.each { key, value ->
+            connection.setRequestProperty(key, value)
+        }
 
-        requestBuilder.method(config.method as String, requestBody)
-        def request = requestBuilder.build()
-        log.debug("${request.method()} ${request.url()} using proxy: ${client.proxy()}")
-//        log.info("request: ${request.toString()}")
-
-        def response = client.newCall(request).execute()
-        log.debug("response: ${response.toString()}")
-        def dockerResponse = handleResponse(response, config)
-//        dockerResponse.content = response.body().string()
-        return dockerResponse
+        def response = handleResponse(connection, config as Map)
+        return response
     }
 
-    DockerResponse handleResponse(Response httpResponse, Map config) {
-        def response = readHeaders(httpResponse)
+    def handleResponse(HttpURLConnection connection, Map config) {
+        def response = readHeaders(connection)
 
         if (response.status.code == 204) {
             if (response.stream) {
@@ -265,9 +210,7 @@ class OkHttpClient implements HttpClient {
                 }
                 break
             case "application/json":
-                def content = new json(config.async as boolean).getContent(
-                        httpResponse.body().charStream(),
-                        httpResponse.header("transfer-encoding") == "chunked")
+                def content = contentHandler.getContent(connection)
                 consumeResponseBody(response, content, config)
                 break
             case "text/html":
@@ -275,7 +218,7 @@ class OkHttpClient implements HttpClient {
                 consumeResponseBody(response, content, config)
                 break
             case "text/plain":
-                def content = httpResponse.body().charStream()
+                def content = contentHandler.getContent(connection)
                 consumeResponseBody(response, content, config)
                 break
             default:
@@ -304,42 +247,44 @@ class OkHttpClient implements HttpClient {
         return new DockerContentHandlerFactory(config.async as boolean)
     }
 
-    def readHeaders(Response httpResponse) {
-        def dockerResponse = new DockerResponse()
+    def readHeaders(HttpURLConnection connection) {
+        def response = new DockerResponse()
 
-        dockerResponse.status = [text   : httpResponse.message(),
-                                 code   : httpResponse.code(),
-                                 success: httpResponse.successful]
-        log.debug("status: ${dockerResponse.status}")
+        def statusLine = connection.headerFields[null]
+        log.debug("status: ${statusLine}")
+        response.status = [text   : statusLine,
+                           code   : connection.responseCode,
+                           success: 200 <= connection.responseCode && connection.responseCode < 300]
 
-        def headers = httpResponse.headers()
+        def headers = connection.headerFields.findAll { key, value ->
+            key != null
+        }.collectEntries { key, value ->
+            [key.toLowerCase(), value]
+        }
         log.debug("headers: ${headers}")
-        dockerResponse.headers = headers
+        response.headers = headers
 
-        String contentType = headers['content-type']
+        String contentType = headers['content-type']?.first()
         log.trace("content-type: ${contentType}")
-        dockerResponse.contentType = contentType
+        response.contentType = contentType
 
-        String contentLength = headers['content-length'] ?: "-1"
+        String contentLength = headers['content-length']?.first() ?: "-1"
         log.trace("content-length: ${contentLength}")
-        dockerResponse.contentLength = contentLength
+        response.contentLength = contentLength
 
         String mimeType = getMimeType(contentType)
         log.trace("mime type: ${mimeType}")
-        dockerResponse.mimeType = mimeType
+        response.mimeType = mimeType
 
-        if (dockerResponse.status.success) {
-            dockerResponse.stream = new ReaderInputStream(httpResponse.body().charStream())
+        if (response.status.success) {
+            response.stream = connection.inputStream
         } else {
-            dockerResponse.stream = null
+            response.stream = null
         }
-        return dockerResponse
+        return response
     }
 
     def consumeResponseBody(DockerResponse response, Object content, Map config) {
-        if (content instanceof Reader) {
-            content = new ReaderInputStream(content as Reader)
-        }
         if (content instanceof InputStream) {
             if (config.async) {
                 response.stream = content as InputStream
@@ -358,37 +303,33 @@ class OkHttpClient implements HttpClient {
         }
     }
 
-    Map ensureValidRequestConfig(String path) {
+    def ensureValidRequestConfig(String path) {
         return ensureValidRequestConfig([path: path])
     }
 
-    Map ensureValidRequestConfig(Map config) {
+    def ensureValidRequestConfig(Map config) {
         if (!config?.path) {
             log.error("bad request config: ${config}")
             throw new IllegalArgumentException("bad request config")
         }
-        if (config.path.startsWith("/")) {
-            config.path = config.path.substring("/".length())
-        }
         return config
     }
 
-    HttpUrl getRequestUrl(String path, String query) {
-        def (String protocol, String host, int port) = getDockerURLHandler().getProtocolAndHost(config.dockerHost)
-        return new HttpUrl.Builder()
-                .scheme("http")
-                .host(host)
-                .port(port)
-                .addPathSegment(path)
-                .query(query)
-                .build()
-
-//        return getDockerURLHandler().getRequestUrl(config.dockerHost, path, query)
+    def getRequestUrl(String path, String query) {
+        return getDockerURLHandler().getRequestUrl(config.dockerHost, path, query)
     }
 
-    HttpUrl getRequestUrlWithOptionalQuery(config) {
+    def getRequestUrlWithOptionalQuery(config) {
         String queryAsString = (config.query) ? "?${queryToString(config.query)}" : ""
         return getRequestUrl(config.path as String, queryAsString)
+    }
+
+    def openConnection(config) {
+        def requestUrl = getRequestUrlWithOptionalQuery(config)
+        log.debug("${config.method} ${requestUrl} using proxy: ${proxy}")
+
+        def connection = requestUrl.openConnection(proxy)
+        return connection as HttpURLConnection
     }
 
     def queryToString(Map queryParameters) {
@@ -404,6 +345,19 @@ class OkHttpClient implements HttpClient {
         return queryAsString.join("&")
     }
 
+    def configureConnection(HttpURLConnection connection, Map config) {
+        connection.setUseCaches(false)
+        connection.setRequestMethod(config.method as String)
+        configureSSL(connection)
+    }
+
+    def configureSSL(HttpURLConnection connection) {
+        if (connection instanceof HttpsURLConnection) {
+            SSLSocketFactory sslSocketFactory = initSSLSocketFactory()
+            ((HttpsURLConnection) connection).setSSLSocketFactory(sslSocketFactory)
+        }
+    }
+
     def getDockerURLHandler() {
         if (!dockerURLHandler) {
             dockerURLHandler = new DockerURLHandler(config: config)
@@ -411,11 +365,28 @@ class OkHttpClient implements HttpClient {
         dockerURLHandler
     }
 
-    DockerSslSocketFactory.DockerSslSocket getSslContext() {
-        if (!dockerSslSocket) {
-            dockerSslSocket = new DockerSslSocketFactory().createDockerSslSocket(config.certPath)
+    SSLSocketFactory initSSLSocketFactory() {
+        if (!sslSocketFactory) {
+            sslSocketFactory = initSSLContext().socketFactory
         }
-        return dockerSslSocket
+        return sslSocketFactory
+    }
+
+    SSLContext initSSLContext() {
+        if (!sslContext) {
+            def dockerCertPath = config.certPath
+
+            def keyStore = KeyStoreUtil.createDockerKeyStore(new File(dockerCertPath as String).absolutePath)
+            final KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(getDefaultAlgorithm())
+            kmfactory.init(keyStore, KEY_STORE_PASSWORD as char[])
+
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(getDefaultAlgorithm())
+            tmf.init(keyStore)
+
+            sslContext = SSLContext.getInstance("TLS")
+            sslContext.init(kmfactory.keyManagers, tmf.trustManagers, null)
+        }
+        return sslContext
     }
 
     String getMimeType(String contentTypeHeader) {

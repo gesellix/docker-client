@@ -31,7 +31,7 @@ class DockerConfig {
 
     def certPath = System.getProperty("docker.cert.path", System.env.DOCKER_CERT_PATH as String)
 
-    def defaultCertPath = new File(System.properties['user.home'] as String, ".docker")
+    def defaultCertPath = new File(System.properties['user.home'] as String, ".docker").absolutePath
 
     // the v1 registry still seems to be valid for authentication.
     def indexUrl_v1 = 'https://index.docker.io/v1/'

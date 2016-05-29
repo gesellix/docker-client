@@ -10,7 +10,10 @@ class DockerURLHandler {
     DockerConfig config = new DockerConfig()
 
     def getRequestUrl(String dockerHost, String path, String query = "") {
-        def (String protocol, String host) = getProtocolAndHost(dockerHost)
+        def (String protocol, String host, int port) = getProtocolAndHost(dockerHost)
+        if (path && !path.startsWith("/")) {
+            path = "/$path"
+        }
         if (config.apiVersion) {
             path = "/${config.apiVersion}${path}".toString()
         }
@@ -19,7 +22,7 @@ class DockerURLHandler {
             // slashes need to be escaped, because the file name is used as host name
             return new URL(protocol, URLEncoder.encode(host, "UTF-8"), -1, "${path}${query}", newHandler(protocol))
         }
-        return new URL("${protocol}://${host}${path}${query}")
+        return new URL("${protocol}://${host}:${port}${path}${query}")
     }
 
     def getProtocolAndHost(String dockerHost) {
@@ -27,7 +30,7 @@ class DockerURLHandler {
             throw new IllegalStateException("dockerHost must be set")
         }
         def dockerBaseUrl = getURLWithActualProtocol(dockerHost)
-        return [dockerBaseUrl.protocol, dockerBaseUrl.host]
+        return [dockerBaseUrl.protocol, dockerBaseUrl.host, dockerBaseUrl.port]
     }
 
     def newHandler(String protocol) {
@@ -114,7 +117,7 @@ class DockerURLHandler {
 
         def certsPathExists = config.certPath && new File(config.certPath, "").isDirectory()
         if (!certsPathExists) {
-            if (config.defaultCertPath && config.defaultCertPath.isDirectory()) {
+            if (config.defaultCertPath && new File(config.defaultCertPath, "").isDirectory()) {
                 log.debug("defaultDockerCertPath=${config.defaultCertPath}")
                 config.certPath = config.defaultCertPath
                 certsPathExists = true

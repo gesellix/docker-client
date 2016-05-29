@@ -2,9 +2,8 @@ package sun.net.www.protocol.npipe
 
 import de.gesellix.docker.client.DockerConfig
 import de.gesellix.docker.client.HttpClient
-import org.apache.commons.lang.SystemUtils
+import de.gesellix.docker.client.NetHttpClient
 import spock.lang.Ignore
-import spock.lang.Requires
 import spock.lang.Specification
 
 @Ignore
@@ -16,7 +15,7 @@ class HttpOverNamedPipeIntegrationTest extends Specification {
         File namedPipeFile = File.createTempFile("named-pipe", null)
         namedPipeFile.deleteOnExit()
         def namedPipe = "npipe://${namedPipeFile.getCanonicalPath()}".toString()
-        HttpClient httpClient = new HttpClient(config: new DockerConfig(dockerHost: namedPipe))
+        HttpClient httpClient = new NetHttpClient(config: new DockerConfig(dockerHost: namedPipe))
 
         def responseBody = '{"a-key":42,"another-key":4711}'
         def expectedResponse = [

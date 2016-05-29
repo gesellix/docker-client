@@ -2,6 +2,7 @@ package sun.net.www.protocol.unix
 
 import de.gesellix.docker.client.DockerConfig
 import de.gesellix.docker.client.HttpClient
+import de.gesellix.docker.client.NetHttpClient
 import org.apache.commons.lang.SystemUtils
 import spock.lang.Requires
 import spock.lang.Specification
@@ -21,7 +22,7 @@ class HttpOverUnixSocketIntegrationTest extends Specification {
             socketFile.deleteOnExit()
         }
         def unixSocket = "unix://${socketFile.getCanonicalPath()}".toString()
-        httpClient = new HttpClient(config: new DockerConfig(dockerHost: unixSocket))
+        httpClient = new NetHttpClient(config: new DockerConfig(dockerHost: unixSocket))
     }
 
     def "info via unix socket"() {
