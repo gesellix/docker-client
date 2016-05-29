@@ -1,12 +1,15 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.client.OkHttpClient
 import de.gesellix.docker.client.protocolhandler.DockerContentHandlerFactory
 import de.gesellix.docker.client.protocolhandler.DockerURLHandler
+import de.gesellix.docker.client.protocolhandler.content.application.json
+import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
-import okhttp3.CacheControl
-import okhttp3.HttpUrl
-import okhttp3.Request
+import okhttp3.*
+import okhttp3.internal.http.HttpMethod
 import org.apache.commons.io.IOUtils
+import org.apache.commons.io.input.ReaderInputStream
 import org.apache.commons.io.output.NullOutputStream
 
 import java.util.regex.Pattern
@@ -30,37 +33,62 @@ class OkHttpClient {
         dockerSslSocket = null
     }
 
-    def head(requestConfig) {
+    def head(String path) {
+        return head(ensureValidRequestConfig(path))
+    }
+
+    def head(Map requestConfig) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "HEAD"
         return request(config)
     }
 
-    def get(requestConfig) {
+    def get(String path) {
+        return get(ensureValidRequestConfig(path))
+    }
+
+    def get(Map requestConfig) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "GET"
         return request(config)
     }
 
-    def put(requestConfig) {
+    def put(String path) {
+        return put(ensureValidRequestConfig(path))
+    }
+
+    def put(Map requestConfig) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "PUT"
         return request(config)
     }
 
-    def post(requestConfig) {
+    def post(String path) {
+        return post(ensureValidRequestConfig(path))
+    }
+
+    def post(Map requestConfig) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "POST"
         return request(config)
     }
 
-    def delete(requestConfig) {
+    def delete(String path) {
+        return delete(ensureValidRequestConfig(path))
+    }
+
+    def delete(Map requestConfig) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "DELETE"
         return request(config)
     }
 
-    def getWebsocketClient(requestConfig, handler) {
+    def getWebsocketClient(String path, handler) {
+        def config = ensureValidRequestConfig(path)
+        return getWebsocketClient(config, handler)
+    }
+
+    def getWebsocketClient(Map requestConfig, handler) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "GET"
 
@@ -78,13 +106,13 @@ class OkHttpClient {
         return websocketClient
     }
 
-    def request(config) {
+    def request(Map config) {
         config = ensureValidRequestConfig(config)
 
         def requestBuilder = new Request.Builder()
 
         def (String protocol, String host) = getDockerURLHandler().getProtocolAndHost(this.config.dockerHost)
-        String queryAsString = (config.query) ? "${queryToString(config.query)}" : ""
+        String queryAsString = (config.query) ? "${queryToString(config.query as Map)}" : ""
         if (protocol == "unix") {
             def unixSocketFactory = new UnixSocketFactory()
             client = client.newBuilder()
@@ -95,8 +123,8 @@ class OkHttpClient {
             requestBuilder.url(new HttpUrl.Builder()
                     .scheme("http")
                     .host(UnixSocketFactory.UnixSocket.encodeHostname(host))
-                    .addPathSegment(config.path as String)
-                    .query(queryAsString)
+                    .addPathSegments(config.path as String)
+                    .encodedQuery(queryAsString)
                     .build())
         } else if (protocol == "npipe") {
             throw new UnsupportedOperationException("not yet implemented")
@@ -104,7 +132,7 @@ class OkHttpClient {
             requestBuilder.url(new HttpUrl.Builder()
                     .scheme(protocol)
                     .host(host)
-                    .addPathSegment(config.path as String)
+                    .addPathSegments(config.path as String)
                     .query(queryAsString)
                     .build())
         }
@@ -121,7 +149,6 @@ class OkHttpClient {
         client = client.newBuilder()
                 .proxy(proxy)
                 .build()
-//        log.debug("${config.method} ${requestUrl} using proxy: ${proxy}")
 
         requestBuilder.cacheControl(CacheControl.FORCE_NETWORK)
 
@@ -133,60 +160,61 @@ class OkHttpClient {
                     .build()
         }
 
-//        if (config.body) {
-//            InputStream postBody
-//            int postDataLength
-//            switch (config.requestContentType) {
-//                case "application/json":
-//                    def json = new JsonBuilder()
-//                    json config.body
-//                    def postData = json.toString().getBytes(Charset.forName("UTF-8"))
-//                    postBody = new ByteArrayInputStream(postData)
-//                    postDataLength = postData.length
-//                    connection.setRequestProperty("charset", "utf-8")
-//                    break
-//                case "application/octet-stream":
-//                    postBody = config.body
-//                    postDataLength = -1
-//                    break
-//                default:
-//                    postBody = config.body
-//                    postDataLength = -1
-//                    break
-//            }
-//
-//            connection.setDoOutput(true)
-//            connection.setDoInput(true)
-//            connection.setInstanceFollowRedirects(false)
-//
-//            if (config.requestContentType) {
-//                connection.setRequestProperty("Content-Type", config.requestContentType as String)
-//            }
-//            if (postDataLength >= 0) {
-//                connection.setRequestProperty("Content-Length", Integer.toString(postDataLength))
-//            }
-//            IOUtils.copy(postBody, connection.getOutputStream())
-//        }
+        def requestBody = null
+        if (HttpMethod.requiresRequestBody(config.method)) {
+            requestBody = RequestBody.create(MediaType.parse("application/json"), "{}")
+        }
+
+        if (config.body) {
+            InputStream postBody
+            int postDataLength
+            switch (config.requestContentType) {
+                case "application/json":
+                    def json = new JsonBuilder()
+                    json config.body
+                    requestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
+                    break
+                case "application/octet-stream":
+                    postBody = config.body
+                    postDataLength = -1
+                    break
+                default:
+                    postBody = config.body
+                    postDataLength = -1
+                    break
+            }
+
+            connection.setDoOutput(true)
+            connection.setDoInput(true)
+            connection.setInstanceFollowRedirects(false)
+
+            if (config.requestContentType) {
+                connection.setRequestProperty("Content-Type", config.requestContentType as String)
+            }
+            if (postDataLength >= 0) {
+                connection.setRequestProperty("Content-Length", Integer.toString(postDataLength))
+            }
+            IOUtils.copy(postBody, connection.getOutputStream())
+        }
 
 //        config.headers?.each { String key, String value ->
 //            requestBuilder.header(key, value)
 //        }
 
-        requestBuilder.method(config.method as String, null)
+        requestBuilder.method(config.method as String, requestBody)
         def request = requestBuilder.build()
+        log.debug("${request.method()} ${request.url()} using proxy: ${client.proxy()}")
+//        log.info("request: ${request.toString()}")
 
-//        def response = handleResponse(connection, config as Map)
         def response = client.newCall(request).execute()
-        def dockerResponse = new DockerResponse()
-        dockerResponse.content = response.body().string()
-        dockerResponse.status = [text   : response.message(),
-                                 code   : response.code(),
-                                 success: response.successful]
+        log.debug("response: ${response.toString()}")
+        def dockerResponse = handleResponse(response, config)
+//        dockerResponse.content = response.body().string()
         return dockerResponse
     }
 
-    def handleResponse(HttpURLConnection connection, Map config) {
-        def response = readHeaders(connection)
+    DockerResponse handleResponse(Response httpResponse, Map config) {
+        def response = readHeaders(httpResponse)
 
         if (response.status.code == 204) {
             if (response.stream) {
@@ -224,7 +252,9 @@ class OkHttpClient {
                 }
                 break
             case "application/json":
-                def content = contentHandler.getContent(connection)
+                def content = new json(config.async as boolean).getContent(
+                        httpResponse.body().charStream(),
+                        httpResponse.header("transfer-encoding") == "chunked")
                 consumeResponseBody(response, content, config)
                 break
             case "text/html":
@@ -232,7 +262,7 @@ class OkHttpClient {
                 consumeResponseBody(response, content, config)
                 break
             case "text/plain":
-                def content = contentHandler.getContent(connection)
+                def content = httpResponse.body().charStream()
                 consumeResponseBody(response, content, config)
                 break
             default:
@@ -261,46 +291,42 @@ class OkHttpClient {
         return new DockerContentHandlerFactory(config.async as boolean)
     }
 
-    def readHeaders(HttpURLConnection connection) {
-        def response = new DockerResponse()
+    def readHeaders(Response httpResponse) {
+        def dockerResponse = new DockerResponse()
 
-        client.newCall(request)
+        dockerResponse.status = [text   : httpResponse.message(),
+                                 code   : httpResponse.code(),
+                                 success: httpResponse.successful]
+        log.debug("status: ${dockerResponse.status}")
 
-        def statusLine = connection.headerFields[null]
-        log.debug("status: ${statusLine}")
-        response.status = [text   : statusLine,
-                           code   : connection.responseCode,
-                           success: 200 <= connection.responseCode && connection.responseCode < 300]
-
-        def headers = connection.headerFields.findAll { key, value ->
-            key != null
-        }.collectEntries { key, value ->
-            [key.toLowerCase(), value]
-        }
+        def headers = httpResponse.headers()
         log.debug("headers: ${headers}")
-        response.headers = headers
+        dockerResponse.headers = headers
 
-        String contentType = headers['content-type']?.first()
+        String contentType = headers['content-type']
         log.trace("content-type: ${contentType}")
-        response.contentType = contentType
+        dockerResponse.contentType = contentType
 
-        String contentLength = headers['content-length']?.first() ?: "-1"
+        String contentLength = headers['content-length'] ?: "-1"
         log.trace("content-length: ${contentLength}")
-        response.contentLength = contentLength
+        dockerResponse.contentLength = contentLength
 
         String mimeType = getMimeType(contentType)
         log.trace("mime type: ${mimeType}")
-        response.mimeType = mimeType
+        dockerResponse.mimeType = mimeType
 
-        if (response.status.success) {
-            response.stream = connection.inputStream
+        if (dockerResponse.status.success) {
+            dockerResponse.stream = new ReaderInputStream(httpResponse.body().charStream())
         } else {
-            response.stream = null
+            dockerResponse.stream = null
         }
-        return response
+        return dockerResponse
     }
 
     def consumeResponseBody(DockerResponse response, Object content, Map config) {
+        if (content instanceof Reader) {
+            content = new ReaderInputStream(content as Reader)
+        }
         if (content instanceof InputStream) {
             if (config.async) {
                 response.stream = content as InputStream
@@ -319,13 +345,19 @@ class OkHttpClient {
         }
     }
 
-    def ensureValidRequestConfig(Object config) {
-        def validConfig = (config instanceof String) ? [path: config] : config
-        if (!validConfig?.path) {
+    Map ensureValidRequestConfig(String path) {
+        return ensureValidRequestConfig([path: path])
+    }
+
+    Map ensureValidRequestConfig(Map config) {
+        if (!config?.path) {
             log.error("bad request config: ${config}")
             throw new IllegalArgumentException("bad request config")
         }
-        return validConfig
+        if (config.path.startsWith("/")) {
+            config.path = config.path.substring("/".length())
+        }
+        return config
     }
 
     HttpUrl getRequestUrl(String path, String query) {

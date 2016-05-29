@@ -1,5 +1,6 @@
 package de.gesellix.docker.client
 
+import groovy.util.logging.Slf4j
 import okhttp3.Dns
 import okhttp3.HttpUrl
 import okio.ByteString
@@ -54,16 +55,17 @@ class UnixSocketFactory extends SocketFactory implements Dns {
         throw new UnsupportedOperationException()
     }
 
+    @Slf4j
     static class UnixSocket extends Socket {
 
         public static final String SOCKET_MARKER = ".socket"
         private AFUNIXSocket socket
 
-         static String encodeHostname(String path) {
+        static String encodeHostname(String path) {
             return "${Encoder.encode(path)}${SOCKET_MARKER}"
         }
 
-         static String decodeHostname(InetAddress address) {
+        static String decodeHostname(InetAddress address) {
             String hostName = address.getHostName()
             return Encoder.decode(hostName.substring(0, hostName.indexOf(SOCKET_MARKER)))
         }
@@ -73,7 +75,7 @@ class UnixSocketFactory extends SocketFactory implements Dns {
             InetAddress address = ((InetSocketAddress) endpoint).getAddress()
             String socketPath = decodeHostname(address)
 
-            System.out.println("connect via '" + socketPath + "'...")
+            log.debug "connect via '${socketPath}'..."
             File socketFile = new File(socketPath)
 
             socket = AFUNIXSocket.newInstance()

@@ -16,7 +16,8 @@ class DockerURLHandler {
         }
         query = query ?: ""
         if (["npipe", "unix"].contains(protocol)) {
-            return new URL(protocol, host, -1, "${path}${query}", newHandler(protocol))
+            // slashes need to be escaped, because the file name is used as host name
+            return new URL(protocol, URLEncoder.encode(host, "UTF-8"), -1, "${path}${query}", newHandler(protocol))
         }
         return new URL("${protocol}://${host}${path}${query}")
     }
@@ -60,8 +61,6 @@ class DockerURLHandler {
             case "unix":
                 log.debug("is 'unix'")
                 def dockerUnixSocket = dockerHost.replaceFirst("unix://", "")
-                // slashes need to be escaped, because the unix socket file name is used as host name
-//                dockerUnixSocket = URLEncoder.encode(dockerUnixSocket, "UTF-8")
                 try {
                     result = new URL("unix", dockerUnixSocket, "")
                 }
@@ -79,8 +78,6 @@ class DockerURLHandler {
             case "npipe":
                 log.debug("is 'named pipe'")
                 def dockerNamedPipe = dockerHost.replaceFirst("npipe://", "")
-                // slashes need to be escaped, because the pipe name is used as host name
-                dockerNamedPipe = URLEncoder.encode(dockerNamedPipe, "UTF-8")
                 try {
                     result = new URL("npipe", dockerNamedPipe, "")
                 }

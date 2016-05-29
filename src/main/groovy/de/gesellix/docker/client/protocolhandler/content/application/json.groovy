@@ -2,6 +2,7 @@ package de.gesellix.docker.client.protocolhandler.content.application
 
 import groovy.json.JsonSlurper
 import org.apache.commons.io.IOUtils
+import org.apache.commons.io.input.ReaderInputStream
 
 import java.util.regex.Pattern
 
@@ -22,16 +23,25 @@ class json extends ContentHandler {
         this.async = async
     }
 
+    Object getContent(Reader reader, boolean chunked) throws IOException {
+        def stream = new ReaderInputStream(reader)
+        return readJsonObject(stream, chunked)
+    }
+
     @Override
     Object getContent(URLConnection connection) throws IOException {
         def stream = connection.getInputStream()
+        def chunked = connection.getHeaderField("transfer-encoding") == "chunked"
+        return readJsonObject(stream, chunked)
+    }
 
+    private Object readJsonObject(InputStream stream, boolean chunked) {
         if (async) {
             return stream
         }
 
         def jsonAsObject
-        if (connection.getHeaderField("transfer-encoding") == "chunked") {
+        if (chunked) {
             def text = IOUtils.toString(stream)
             if (text.matches(multipleChunks)) {
                 jsonAsObject = jsonSlurper.parseText("[${text.replaceAll(chunkDelimiter, "},{")}]")
