@@ -8,6 +8,7 @@ import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
 import okhttp3.*
 import okhttp3.internal.http.HttpMethod
+import okio.Okio
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.input.ReaderInputStream
 import org.apache.commons.io.output.NullOutputStream
@@ -179,8 +180,8 @@ class OkHttpClient implements HttpClient {
         }
 
         if (config.body) {
-            InputStream postBody
-            int postDataLength
+//            InputStream postBody
+//            int postDataLength
             switch (config.requestContentType) {
                 case "application/json":
                     def json = new JsonBuilder()
@@ -188,26 +189,23 @@ class OkHttpClient implements HttpClient {
                     requestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
                     break
                 case "application/octet-stream":
-                    postBody = config.body
-                    postDataLength = -1
+//                    postBody = config.body
+//                    postDataLength = -1
+
+                    def source = Okio.source(config.body as InputStream)
+                    def buffer = Okio.buffer(source)
+                    requestBody = RequestBody.create(MediaType.parse("application/octet-stream"), buffer.readByteArray())
                     break
                 default:
-                    postBody = config.body
-                    postDataLength = -1
+//                    postBody = config.body
+//                    postDataLength = -1
+
+                    def source = Okio.source(config.body as InputStream)
+                    def buffer = Okio.buffer(source)
+                    requestBody = RequestBody.create(MediaType.parse(config.requestContentType), buffer.readByteArray())
                     break
             }
-
-            connection.setDoOutput(true)
-            connection.setDoInput(true)
-            connection.setInstanceFollowRedirects(false)
-
-            if (config.requestContentType) {
-                connection.setRequestProperty("Content-Type", config.requestContentType as String)
-            }
-            if (postDataLength >= 0) {
-                connection.setRequestProperty("Content-Length", Integer.toString(postDataLength))
-            }
-            IOUtils.copy(postBody, connection.getOutputStream())
+//            connection.setInstanceFollowRedirects(false)
         }
 
 //        config.headers?.each { String key, String value ->
