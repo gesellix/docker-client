@@ -15,7 +15,7 @@ class JsonContentHandlerSpec extends Specification {
         jsonContentHandler.jsonSlurper = jsonSlurper
     }
 
-    def "should convert json chunks from InputStream to an array of json chunks"() {
+    def "should convert json chunks from Connection to an array of json chunks"() {
         given:
         def inputStream = new ByteArrayInputStream("{'key':'a-value'}\n{'2nd':'chunk'}".bytes)
         connection.inputStream >> inputStream
@@ -28,13 +28,13 @@ class JsonContentHandlerSpec extends Specification {
         1 * jsonSlurper.parseText("[{'key':'a-value'},{'2nd':'chunk'}]") >> ["key": "a-value", "2nd": "chunk"]
     }
 
-    def "should convert json chunks from Reader to an array of json chunks"() {
+    def "should convert json chunks from InputStream to an array of json chunks"() {
         given:
-        def reader = new StringReader("{'key':'a-value'}\n{'2nd':'chunk'}")
+        def inputStream = new ByteArrayInputStream("{'key':'a-value'}\n{'2nd':'chunk'}".bytes)
         def chunked = true
 
         when:
-        jsonContentHandler.getContent(reader, chunked)
+        jsonContentHandler.getContent(inputStream, chunked)
 
         then:
         1 * jsonSlurper.parseText("[{'key':'a-value'},{'2nd':'chunk'}]") >> ["key": "a-value", "2nd": "chunk"]
@@ -54,14 +54,14 @@ class JsonContentHandlerSpec extends Specification {
         content == inputStream
     }
 
-    def "should return underlying InputStream of Reader when async is allowed"() {
+    def "should return InputStream when async is allowed"() {
         given:
-        def reader = new StringReader("{'key':'a-value'}\n{'2nd':'chunk'}")
+        def inputStream = new ByteArrayInputStream("{'key':'a-value'}\n{'2nd':'chunk'}".bytes)
         def chunked = true
         jsonContentHandler.async = true
 
         when:
-        def content = jsonContentHandler.getContent(reader, chunked)
+        def content = jsonContentHandler.getContent(inputStream, chunked)
 
         then:
         content instanceof InputStream
@@ -69,7 +69,7 @@ class JsonContentHandlerSpec extends Specification {
         IOUtils.toString(content as InputStream) == "{'key':'a-value'}\n{'2nd':'chunk'}"
     }
 
-    def "should delegate InputStream to the JsonSlurper"() {
+    def "should delegate the connection's InputStream to the JsonSlurper"() {
         given:
         def inputStream = new ByteArrayInputStream("{'key':'a-value'}".bytes)
         connection.inputStream >> inputStream
@@ -82,14 +82,14 @@ class JsonContentHandlerSpec extends Specification {
         content == ["key": "a-value"]
     }
 
-    def "should delegate Reader to the JsonSlurper"() {
+    def "should delegate InputStream to the JsonSlurper"() {
         given:
-        def reader = new StringReader("{'key':'a-value'}\n{'2nd':'chunk'}")
+        def inputStream = new ByteArrayInputStream("{'key':'a-value'}".bytes)
         def chunked = false
         1 * jsonSlurper.parse(_) >> ["key": "a-value"]
 
         when:
-        def content = jsonContentHandler.getContent(reader, chunked)
+        def content = jsonContentHandler.getContent(inputStream, chunked)
 
         then:
         content == ["key": "a-value"]

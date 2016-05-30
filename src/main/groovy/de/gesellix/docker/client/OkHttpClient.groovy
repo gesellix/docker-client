@@ -1,9 +1,9 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.client.OkHttpClient
 import de.gesellix.docker.client.protocolhandler.DockerContentHandlerFactory
 import de.gesellix.docker.client.protocolhandler.DockerURLHandler
 import de.gesellix.docker.client.protocolhandler.content.application.json
+import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
 import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
 import okhttp3.*
@@ -167,21 +167,19 @@ class OkHttpClient implements HttpClient {
         requestBuilder.cacheControl(CacheControl.FORCE_NETWORK)
 
         // do we need to disable the timeout for streaming?
-        if (config.timeout) {
-            client = client.newBuilder()
-                    .connectTimeout(config.timeout as int, MILLISECONDS)
-                    .readTimeout(config.timeout as int, MILLISECONDS)
-                    .build()
-        }
+        def defaultTimeout = 0
+        def currentTimeout = config.timeout ?: defaultTimeout
+        client = client.newBuilder()
+                .connectTimeout(currentTimeout as int, MILLISECONDS)
+                .readTimeout(currentTimeout as int, MILLISECONDS)
+                .build()
 
         def requestBody = null
-        if (HttpMethod.requiresRequestBody(config.method)) {
+        if (HttpMethod.requiresRequestBody(config.method as String)) {
             requestBody = RequestBody.create(MediaType.parse("application/json"), "{}")
         }
 
         if (config.body) {
-//            InputStream postBody
-//            int postDataLength
             switch (config.requestContentType) {
                 case "application/json":
                     def json = new JsonBuilder()
@@ -189,38 +187,34 @@ class OkHttpClient implements HttpClient {
                     requestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
                     break
                 case "application/octet-stream":
-//                    postBody = config.body
-//                    postDataLength = -1
-
                     def source = Okio.source(config.body as InputStream)
                     def buffer = Okio.buffer(source)
                     requestBody = RequestBody.create(MediaType.parse("application/octet-stream"), buffer.readByteArray())
                     break
                 default:
-//                    postBody = config.body
-//                    postDataLength = -1
-
                     def source = Okio.source(config.body as InputStream)
                     def buffer = Okio.buffer(source)
                     requestBody = RequestBody.create(MediaType.parse(config.requestContentType), buffer.readByteArray())
                     break
             }
-//            connection.setInstanceFollowRedirects(false)
         }
 
-//        config.headers?.each { String key, String value ->
-//            requestBuilder.header(key, value)
-//        }
+        config.headers?.each { String key, String value ->
+            requestBuilder.header(key, value)
+        }
 
         requestBuilder.method(config.method as String, requestBody)
         def request = requestBuilder.build()
         log.debug("${request.method()} ${request.url()} using proxy: ${client.proxy()}")
-//        log.info("request: ${request.toString()}")
 
         def response = client.newCall(request).execute()
         log.debug("response: ${response.toString()}")
         def dockerResponse = handleResponse(response, config)
-//        dockerResponse.content = response.body().string()
+        if (!dockerResponse.stream) {
+//            log.warn("closing response...")
+            response.close()
+        }
+
         return dockerResponse
     }
 
@@ -253,8 +247,7 @@ class OkHttpClient implements HttpClient {
 
         switch (response.mimeType) {
             case "application/vnd.docker.raw-stream":
-                def content = contentHandler.getContent(connection)
-                InputStream rawStream = content as InputStream
+                InputStream rawStream = new RawInputStream(httpResponse.body().byteStream())
                 response.stream = rawStream
                 if (config.stdout) {
                     log.debug("redirecting to stdout.")
@@ -264,32 +257,43 @@ class OkHttpClient implements HttpClient {
                 break
             case "application/json":
                 def content = new json(config.async as boolean).getContent(
-                        httpResponse.body().charStream(),
+                        httpResponse.body().byteStream(),
                         httpResponse.header("transfer-encoding") == "chunked")
                 consumeResponseBody(response, content, config)
                 break
             case "text/html":
-                def content = contentHandler.getContent(connection)
-                consumeResponseBody(response, content, config)
+                def stream = httpResponse.body().byteStream()
+                consumeResponseBody(response, stream, config)
                 break
             case "text/plain":
-                def content = httpResponse.body().charStream()
-                consumeResponseBody(response, content, config)
+                def stream = httpResponse.body().byteStream()
+                consumeResponseBody(response, stream, config)
+                break
+            case "application/octet-stream":
+                def stream = httpResponse.body().byteStream()
+                log.debug("passing through via `response.stream`.")
+                if (config.stdout) {
+                    IOUtils.copy(stream, config.stdout as OutputStream)
+                    response.stream = null
+                } else {
+                    response.stream = stream
+                }
                 break
             default:
                 log.warn("unexpected mime type '${response.mimeType}'.")
-                def content = contentHandler.getContent(connection)
-                if (content instanceof InputStream) {
+                def body = httpResponse.body()
+                if (body.contentLength() == -1) {
+                    def stream = body.byteStream()
                     log.debug("passing through via `response.stream`.")
                     if (config.stdout) {
-                        IOUtils.copy(content as InputStream, config.stdout as OutputStream)
+                        IOUtils.copy(stream, config.stdout as OutputStream)
                         response.stream = null
                     } else {
-                        response.stream = content as InputStream
+                        response.stream = stream
                     }
                 } else {
                     log.debug("passing through via `response.content`.")
-                    response.content = content
+                    response.content = body.string()
                     response.stream = null
                 }
                 break
@@ -327,7 +331,7 @@ class OkHttpClient implements HttpClient {
         dockerResponse.mimeType = mimeType
 
         if (dockerResponse.status.success) {
-            dockerResponse.stream = new ReaderInputStream(httpResponse.body().charStream())
+            dockerResponse.stream = httpResponse.body().byteStream()
         } else {
             dockerResponse.stream = null
         }
@@ -369,6 +373,10 @@ class OkHttpClient implements HttpClient {
             config.path = config.path.substring("/".length())
         }
         return config
+    }
+
+    def getProtocolAndHost() {
+        return getDockerURLHandler().getProtocolAndHost(this.config.dockerHost)
     }
 
     HttpUrl getRequestUrl(String path, String query) {

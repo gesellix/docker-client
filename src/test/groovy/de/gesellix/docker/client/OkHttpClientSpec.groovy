@@ -16,25 +16,24 @@ import static de.gesellix.docker.client.protocolhandler.contenthandler.StreamTyp
 class OkHttpClientSpec extends Specification {
 
     @IgnoreIf({ System.env.DOCKER_HOST })
-    def "getRequestUrl should fallback to unix:///var/run/docker.sock"() {
+    def "getProtocolAndHost should fallback to unix:///var/run/docker.sock (npipe on Windows)"() {
         given:
         def client = new OkHttpClient()
         def isWindows = System.properties['os.name'].toLowerCase().contains('windows')
-        def expectedScheme = isWindows ? "npipe://" : "unix://"
+        def expectedScheme = isWindows ? "npipe" : "unix"
         def defaultHost = isWindows ? "//./pipe/docker_engine" : "/var/run/docker.sock"
-        def expectedHost = URLEncoder.encode(defaultHost, 'UTF-8')
 
         expect:
-        client.getRequestUrl("", "").toString() == new URL("${expectedScheme}${expectedHost}").toString()
+        client.getProtocolAndHost() == [expectedScheme, defaultHost, -1]
     }
 
     @IgnoreIf({ System.env.DOCKER_HOST })
-    def "getRequestUrl should use to docker.host system property when set"() {
+    def "getProtocolAndHost should use to docker.host system property when set"() {
         given:
         def oldDockerHost = System.setProperty("docker.host", "http://127.0.0.1:2375")
         def client = new OkHttpClient()
         expect:
-        client.getRequestUrl("", "").toString() == new URL("http://127.0.0.1:2375").toString()
+        client.getProtocolAndHost() == ["http", "127.0.0.1", 2375]
         cleanup:
         if (oldDockerHost) {
             System.setProperty("docker.host", oldDockerHost)
@@ -43,21 +42,21 @@ class OkHttpClientSpec extends Specification {
         }
     }
 
-    def "getRequestUrl should support tcp protocol"() {
+    def "getProtocolAndHost should support tcp protocol"() {
         def client = new OkHttpClient(
                 config: new DockerConfig(
                         dockerHost: "tcp://127.0.0.1:2375"))
         when:
-        def requestUrl = client.getRequestUrl("", "")
+        def (protocol, host, port) = client.getProtocolAndHost()
         then:
-        requestUrl.protocol =~ /https?/
+        protocol =~ /https?/
         and:
-        requestUrl.host == "127.0.0.1"
+        host == "127.0.0.1"
         and:
-        requestUrl.port == 2375
+        port == 2375
     }
 
-    def "getRequestUrl should support tls port"() {
+    def "getProtocolAndHost should support tls port"() {
         given:
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
@@ -65,13 +64,13 @@ class OkHttpClientSpec extends Specification {
                 config: new DockerConfig(
                         dockerHost: "tcp://127.0.0.1:2376"))
         when:
-        def requestUrl = client.getRequestUrl("", "")
+        def (protocol, host, port) = client.getProtocolAndHost()
         then:
-        requestUrl.protocol == "https"
+        protocol == "https"
         and:
-        requestUrl.host == "127.0.0.1"
+        host == "127.0.0.1"
         and:
-        requestUrl.port == 2376
+        port == 2376
         cleanup:
         if (oldDockerCertPath) {
             System.setProperty("docker.cert.path", oldDockerCertPath)
@@ -80,7 +79,7 @@ class OkHttpClientSpec extends Specification {
         }
     }
 
-    def "getRequestUrl should support https protocol"() {
+    def "getProtocolAndHost should support https protocol"() {
         given:
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
@@ -88,7 +87,7 @@ class OkHttpClientSpec extends Specification {
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         expect:
-        client.getRequestUrl("", "").toString() == new URL("https://127.0.0.1:2376").toString()
+        client.getProtocolAndHost() == ["https", "127.0.0.1", 2376]
         cleanup:
         if (oldDockerCertPath) {
             System.setProperty("docker.cert.path", oldDockerCertPath)

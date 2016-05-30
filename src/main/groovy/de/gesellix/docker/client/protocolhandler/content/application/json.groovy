@@ -2,7 +2,6 @@ package de.gesellix.docker.client.protocolhandler.content.application
 
 import groovy.json.JsonSlurper
 import org.apache.commons.io.IOUtils
-import org.apache.commons.io.input.ReaderInputStream
 
 import java.util.regex.Pattern
 
@@ -23,8 +22,7 @@ class json extends ContentHandler {
         this.async = async
     }
 
-    Object getContent(Reader reader, boolean chunked) throws IOException {
-        def stream = new ReaderInputStream(reader)
+    Object getContent(InputStream stream, boolean chunked) throws IOException {
         return readJsonObject(stream, chunked)
     }
 
