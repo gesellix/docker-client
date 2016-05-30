@@ -79,6 +79,10 @@ class UnixSocketFactory extends SocketFactory implements Dns {
             File socketFile = new File(socketPath)
 
             socket = AFUNIXSocket.newInstance()
+
+            if (timeout < 0) {
+                timeout = 0
+            }
             socket.connect(new AFUNIXSocketAddress(socketFile), timeout)
             socket.setSoTimeout(timeout)
         }
