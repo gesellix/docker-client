@@ -85,7 +85,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         info.LoggingDriver == "json-file"
         info.MemTotal > 0
         info.MemoryLimit == true
-        info.NoProxy == ""
+        info.NoProxy == "" || info.NoProxy == "*.local, 169.254/16"
         info.OomKillDisable == true
         info.RegistryConfig == [
                 "IndexConfigs"         : [
