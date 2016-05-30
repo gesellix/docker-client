@@ -404,8 +404,8 @@ class DockerClientImpl implements DockerClient {
     @Override
     def restart(containerId) {
         log.info "docker restart"
-        def response = getHttpClient().post([path : "/containers/${containerId}/restart".toString(),
-                                             query: [t: 10]])
+        def response = getHttpClient().post([path   : "/containers/${containerId}/restart".toString(),
+                                             query  : [t: 5]])
         return response
     }
 
