@@ -5,21 +5,21 @@ import spock.lang.Requires
 import spock.lang.Specification
 
 @Requires({ LocalDocker.available() })
-class OkHttpClientIntegrationSpec extends Specification {
+class OkDockerClientIntegrationSpec extends Specification {
 
     final static def dockerHubUsername = "gesellix"
     final static def dockerHubPassword = "-yet-another-password-"
     final static def dockerHubEmail = "tobias@gesellix.de"
 
     def "should allow GET requests"() {
-        def client = new OkHttpClient()
+        def client = new OkDockerClient()
         expect:
         client.get("/_ping").content == "OK"
     }
 
     def "should allow POST requests"() {
         given:
-        def client = new OkHttpClient()
+        def client = new OkDockerClient()
         def request = [path : "/images/create",
                        query: [fromImage: "gesellix/docker-client-testimage",
                                tag      : "latest",
@@ -34,7 +34,7 @@ class OkHttpClientIntegrationSpec extends Specification {
     @IgnoreIf({ dockerHubPassword == "-yet-another-password-" })
     def "should allow POST requests with body"() {
         given:
-        def client = new OkHttpClient()
+        def client = new OkDockerClient()
         def authDetails = ["username"     : dockerHubUsername,
                            "password"     : dockerHubPassword,
                            "email"        : dockerHubEmail,
@@ -49,7 +49,7 @@ class OkHttpClientIntegrationSpec extends Specification {
     }
 
     def "should optionally stream a response"() {
-        def client = new OkHttpClient()
+        def client = new OkDockerClient()
         def outputStream = new ByteArrayOutputStream()
         when:
         client.get([path  : "/_ping",
@@ -59,7 +59,7 @@ class OkHttpClientIntegrationSpec extends Specification {
     }
 
     def "should parse application/json"() {
-        def client = new OkHttpClient()
+        def client = new OkDockerClient()
         when:
         def response = client.get("/version")
         then:
@@ -75,7 +75,7 @@ class OkHttpClientIntegrationSpec extends Specification {
 
     @Requires({ LocalDocker.isUnixSocket() })
     def "should support unix socket connections (Linux native or Docker for Mac)"() {
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "unix:///var/run/docker.sock"))
         when:
@@ -87,7 +87,7 @@ class OkHttpClientIntegrationSpec extends Specification {
 
     @Requires({ LocalDocker.isNamedPipe() })
     def "should support named pipe socket connections (Docker for Windows)"() {
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "npipe:////./pipe/docker_engine"))
         when:

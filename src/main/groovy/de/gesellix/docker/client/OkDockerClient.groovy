@@ -9,6 +9,7 @@ import groovy.util.logging.Slf4j
 import okhttp3.CacheControl
 import okhttp3.HttpUrl
 import okhttp3.MediaType
+import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
@@ -23,7 +24,7 @@ import java.util.regex.Pattern
 import static java.util.concurrent.TimeUnit.MILLISECONDS
 
 @Slf4j
-class OkHttpClient implements HttpClient {
+class OkDockerClient implements HttpClient {
 
     DockerURLHandler dockerURLHandler
 
@@ -31,7 +32,7 @@ class OkHttpClient implements HttpClient {
     DockerConfig config = new DockerConfig()
     DockerSslSocketFactory dockerSslSocketFactory
 
-    OkHttpClient() {
+    OkDockerClient() {
         proxy = Proxy.NO_PROXY
         dockerSslSocketFactory = new DockerSslSocketFactory()
     }
@@ -142,26 +143,8 @@ class OkHttpClient implements HttpClient {
 
         def urlBuilder = new HttpUrl.Builder()
                 .addPathSegments(path)
-                .encodedQuery(queryAsString)
+                .encodedQuery(queryAsString ?: null)
         def httpUrl = createUrl(urlBuilder, protocol, host, port)
-
-        def clientBuilder = new okhttp3.OkHttpClient.Builder()
-        if (protocol == "unix") {
-            def unixSocketFactory = new UnixSocketFactory()
-            clientBuilder
-                    .socketFactory(unixSocketFactory)
-                    .dns(unixSocketFactory)
-                    .build()
-        } else if (protocol == 'https') {
-            def dockerSslSocket = dockerSslSocketFactory.createDockerSslSocket(certPath)
-            clientBuilder
-                    .sslSocketFactory(dockerSslSocket.sslSocketFactory, dockerSslSocket.trustManager)
-                    .build()
-        }
-        clientBuilder
-                .connectTimeout(currentTimeout as int, MILLISECONDS)
-                .readTimeout(currentTimeout as int, MILLISECONDS)
-                .proxy(proxy)
 
         def requestBody = createRequestBody(config)
         def requestBuilder = new Request.Builder()
@@ -176,7 +159,29 @@ class OkHttpClient implements HttpClient {
         def request = requestBuilder.build()
         log.debug("${request.method()} ${request.url()} using proxy: ${proxy}")
 
-        def response = clientBuilder.build().newCall(request).execute()
+        def clientBuilder = new OkHttpClient.Builder()
+        if (protocol == "unix") {
+            def unixSocketFactory = new UnixSocketFactory()
+            clientBuilder
+                    .socketFactory(unixSocketFactory)
+                    .dns(unixSocketFactory)
+                    .build()
+        } else if (protocol == 'https') {
+            def dockerSslSocket = dockerSslSocketFactory.createDockerSslSocket(certPath)
+            // warn, if null?
+            if (dockerSslSocket) {
+                clientBuilder
+                        .sslSocketFactory(dockerSslSocket.sslSocketFactory, dockerSslSocket.trustManager)
+                        .build()
+            }
+        }
+        clientBuilder
+                .connectTimeout(currentTimeout as int, MILLISECONDS)
+                .readTimeout(currentTimeout as int, MILLISECONDS)
+                .proxy(proxy)
+        def client = newClient(clientBuilder)
+
+        def response = client.newCall(request).execute()
         log.debug("response: ${response.toString()}")
         def dockerResponse = handleResponse(response, config)
         if (!dockerResponse.stream) {
@@ -185,6 +190,10 @@ class OkHttpClient implements HttpClient {
         }
 
         return dockerResponse
+    }
+
+    def OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+        clientBuilder.build()
     }
 
     private HttpUrl createUrl(HttpUrl.Builder urlBuilder, String protocol, String host, int port) {

@@ -47,7 +47,7 @@ class DockerClientImpl implements DockerClient {
 
     def createDockerHttpClient(dockerConfig, proxy) {
 //        return new NetHttpClient(config: dockerConfig, proxy: proxy)
-        return new OkHttpClient(config: dockerConfig, proxy: proxy)
+        return new OkDockerClient(config: dockerConfig, proxy: proxy)
     }
 
     @Override

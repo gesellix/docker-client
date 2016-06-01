@@ -2,6 +2,12 @@ package de.gesellix.docker.client
 
 import de.gesellix.docker.client.protocolhandler.contenthandler.RawHeaderAndPayload
 import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
+import okhttp3.Interceptor
+import okhttp3.MediaType
+import okhttp3.OkHttpClient
+import okhttp3.Protocol
+import okhttp3.Response
+import okhttp3.ResponseBody
 import org.apache.commons.io.IOUtils
 import org.codehaus.groovy.runtime.MethodClosure
 import spock.lang.IgnoreIf
@@ -13,12 +19,12 @@ import javax.net.ssl.SSLSocketFactory
 
 import static de.gesellix.docker.client.protocolhandler.contenthandler.StreamType.STDOUT
 
-class OkHttpClientSpec extends Specification {
+class OkDockerClientSpec extends Specification {
 
     @IgnoreIf({ System.env.DOCKER_HOST })
     def "getProtocolAndHost should fallback to unix:///var/run/docker.sock (npipe on Windows)"() {
         given:
-        def client = new OkHttpClient()
+        def client = new OkDockerClient()
         def isWindows = System.properties['os.name'].toLowerCase().contains('windows')
         def expectedScheme = isWindows ? "npipe" : "unix"
         def defaultHost = isWindows ? "//./pipe/docker_engine" : "/var/run/docker.sock"
@@ -31,7 +37,7 @@ class OkHttpClientSpec extends Specification {
     def "getProtocolAndHost should use to docker.host system property when set"() {
         given:
         def oldDockerHost = System.setProperty("docker.host", "http://127.0.0.1:2375")
-        def client = new OkHttpClient()
+        def client = new OkDockerClient()
         expect:
         client.getProtocolAndHost() == ["http", "127.0.0.1", 2375]
         cleanup:
@@ -43,7 +49,7 @@ class OkHttpClientSpec extends Specification {
     }
 
     def "getProtocolAndHost should support tcp protocol"() {
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "tcp://127.0.0.1:2375"))
         when:
@@ -60,7 +66,7 @@ class OkHttpClientSpec extends Specification {
         given:
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "tcp://127.0.0.1:2376"))
         when:
@@ -83,7 +89,7 @@ class OkHttpClientSpec extends Specification {
         given:
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         expect:
@@ -97,7 +103,7 @@ class OkHttpClientSpec extends Specification {
     }
 
     def "getMimeType"() {
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         expect:
@@ -113,7 +119,7 @@ class OkHttpClientSpec extends Specification {
     }
 
     def "getCharset"() {
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         expect:
@@ -128,7 +134,7 @@ class OkHttpClientSpec extends Specification {
     }
 
     def "queryToString"() {
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         expect:
@@ -146,7 +152,7 @@ class OkHttpClientSpec extends Specification {
 
     @Unroll
     def "generic request with bad config: #requestConfig"() {
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         when:
@@ -160,7 +166,7 @@ class OkHttpClientSpec extends Specification {
 
     @Unroll
     def "#method request with bad config: #requestConfig"() {
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         when:
@@ -179,7 +185,7 @@ class OkHttpClientSpec extends Specification {
     }
 
     def "head request uses the HEAD method"() {
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         given:
@@ -193,7 +199,7 @@ class OkHttpClientSpec extends Specification {
     }
 
     def "get request uses the GET method"() {
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         given:
@@ -207,7 +213,7 @@ class OkHttpClientSpec extends Specification {
     }
 
     def "put request uses the PUT method"() {
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         given:
@@ -221,7 +227,7 @@ class OkHttpClientSpec extends Specification {
     }
 
     def "post request uses the POST method"() {
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         given:
@@ -235,7 +241,7 @@ class OkHttpClientSpec extends Specification {
     }
 
     def "delete request uses the DELETE method"() {
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         given:
@@ -252,7 +258,7 @@ class OkHttpClientSpec extends Specification {
         given:
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
 
@@ -274,7 +280,7 @@ class OkHttpClientSpec extends Specification {
         given:
         def httpServer = new TestHttpServer()
         def serverAddress = httpServer.start()
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "http://127.0.0.1:${serverAddress.port}",
                         tlsVerify: 0))
@@ -293,7 +299,7 @@ class OkHttpClientSpec extends Specification {
         def httpServer = new TestHttpServer()
         def proxyAddress = httpServer.start()
         def proxy = new Proxy(Proxy.Type.HTTP, proxyAddress)
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "http://any.thi.ng:4711",
                         tlsVerify: 0),
@@ -309,7 +315,7 @@ class OkHttpClientSpec extends Specification {
     }
 
     def "openConnection with path"() {
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "http://127.0.0.1:2375"))
         when:
@@ -326,7 +332,7 @@ class OkHttpClientSpec extends Specification {
     }
 
     def "openConnection with path and query"() {
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "http://127.0.0.1:2375"))
         when:
@@ -344,7 +350,7 @@ class OkHttpClientSpec extends Specification {
     }
 
     def "configureConnection with plain http connection"() {
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "http://127.0.0.1:2375"))
         def connectionMock = Mock(HttpURLConnection)
@@ -358,7 +364,7 @@ class OkHttpClientSpec extends Specification {
         given:
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         def connectionMock = Mock(HttpsURLConnection)
@@ -381,7 +387,7 @@ class OkHttpClientSpec extends Specification {
 
     def "request should return statusLine"() {
         given:
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "http://127.0.0.1:2375"))
         def connectionMock = Mock(HttpURLConnection)
@@ -412,7 +418,7 @@ class OkHttpClientSpec extends Specification {
 
     def "request should return headers"() {
         given:
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         def connectionMock = Mock(HttpURLConnection)
@@ -444,7 +450,7 @@ class OkHttpClientSpec extends Specification {
 
     def "request should return consumed content"() {
         given:
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         def connectionMock = Mock(HttpURLConnection)
@@ -471,7 +477,7 @@ class OkHttpClientSpec extends Specification {
 
     def "request with stdout stream and known content length"() {
         given:
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         def connectionMock = Mock(HttpURLConnection)
@@ -503,7 +509,7 @@ class OkHttpClientSpec extends Specification {
 
     def "request with stdout stream and unknown content length"() {
         given:
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         def connectionMock = Mock(HttpURLConnection)
@@ -531,7 +537,7 @@ class OkHttpClientSpec extends Specification {
 
     def "request with unknown mime type"() {
         given:
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         def connectionMock = Mock(HttpURLConnection)
@@ -559,7 +565,7 @@ class OkHttpClientSpec extends Specification {
 
     def "request with unknown mime type and stdout"() {
         given:
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         def connectionMock = Mock(HttpURLConnection)
@@ -591,9 +597,9 @@ class OkHttpClientSpec extends Specification {
 
     def "request with consumed body by ContentHandler"() {
         given:
-        def client = new OkHttpClient(
+        def client = new OkDockerClient(
                 config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
+                        dockerHost: "http://127.0.0.1:2375"))
         def contentHandler = new TestContentHandler(result: "result")
         client.metaClass.newDockerContentHandlerFactory = { Map config ->
             new TestContentHandlerFactory(contentHandler: contentHandler)
@@ -623,25 +629,16 @@ class OkHttpClientSpec extends Specification {
 
     def "request with json response"() {
         given:
-        def client = new OkHttpClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
-        def contentHandler = new TestContentHandler(result: "result")
-        client.metaClass.newDockerContentHandlerFactory = { Map config ->
-            new TestContentHandlerFactory(contentHandler: contentHandler)
+        def mediaType = MediaType.parse("application/json")
+        def client = new OkDockerClient() {
+            @Override
+            OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+                clientBuilder
+                        .addInterceptor(new ConstantResponseInterceptor(ResponseBody.create(mediaType, '{"holy":"ship"}')))
+                        .build()
+            }
         }
-        def connectionMock = Mock(HttpURLConnection)
-        client.metaClass.openConnection = {
-            connectionMock
-        }
-        def headerFields = [:]
-        headerFields[null] = ["HTTP/1.1 200 OK"]
-        headerFields["Content-Type"] = ["application/json"]
-        headerFields["Content-Length"] = ['{"holy":"ship"}'.length()]
-        connectionMock.getHeaderFields() >> headerFields
-        connectionMock.responseCode >> 200
-        def responseBody = new ByteArrayInputStream('{"holy":"ship"}'.bytes)
-        connectionMock.inputStream >> responseBody
+        client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
 
         when:
         def response = client.request([method: "HEADER",
@@ -650,68 +647,58 @@ class OkHttpClientSpec extends Specification {
         then:
         response.stream == null
         and:
-        response.content == "result"
+        response.content == [holy: 'ship']
     }
 
     def "request with docker raw-stream response"() {
         given:
-        def client = new OkHttpClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
         def actualText = "holy ship"
         def headerAndPayload = new RawHeaderAndPayload(STDOUT, actualText.bytes)
         def responseBody = new ByteArrayInputStream((byte[]) headerAndPayload.bytes)
-        def responseStream = new RawInputStream(responseBody)
-        def contentHandler = new TestContentHandler(result: responseStream)
-        client.metaClass.newDockerContentHandlerFactory = { Map config ->
-            new TestContentHandlerFactory(contentHandler: contentHandler)
+        def mediaType = MediaType.parse("application/vnd.docker.raw-stream")
+        def client = new OkDockerClient() {
+            @Override
+            OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+                clientBuilder
+                        .addInterceptor(new ConstantResponseInterceptor(ResponseBody.create(mediaType, responseBody.bytes)))
+                        .build()
+            }
         }
-        def connectionMock = Mock(HttpURLConnection)
-        client.metaClass.openConnection = {
-            connectionMock
-        }
-        def headerFields = [:]
-        headerFields[null] = ["HTTP/1.1 200 OK"]
-        headerFields["Content-Type"] = ["application/vnd.docker.raw-stream"]
-        headerFields["Content-Length"] = [headerAndPayload.bytes.size()]
-        connectionMock.getHeaderFields() >> headerFields
-        connectionMock.responseCode >> 200
-        connectionMock.inputStream >> responseBody
+        client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
 
         when:
         def response = client.request([method: "HEADER",
                                        path  : "/a-resource"])
 
         then:
-        response.stream == responseStream
+        response.stream instanceof RawInputStream
+        and:
+        IOUtils.toByteArray(response.stream as RawInputStream) == actualText.bytes
         and:
         response.content == null
     }
 
     def "request with docker raw-stream response on stdout"() {
         given:
-        def client = new OkHttpClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
         def actualText = "holy ship"
         def headerAndPayload = new RawHeaderAndPayload(STDOUT, actualText.bytes)
         def responseBody = new ByteArrayInputStream((byte[]) headerAndPayload.bytes)
-        def responseStream = new RawInputStream(responseBody)
-        def contentHandler = new TestContentHandler(result: responseStream)
-        client.metaClass.newDockerContentHandlerFactory = { Map config ->
-            new TestContentHandlerFactory(contentHandler: contentHandler)
+        def mediaType = MediaType.parse("application/vnd.docker.raw-stream")
+        def client = new OkDockerClient() {
+            @Override
+            OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+                clientBuilder
+                        .addInterceptor(new ConstantResponseInterceptor(ResponseBody.create(mediaType, responseBody.bytes)))
+                        .build()
+            }
         }
-        def connectionMock = Mock(HttpURLConnection)
-        client.metaClass.openConnection = {
-            connectionMock
+        client.config = new DockerConfig(dockerHost: "https://127.0.0.1:2376")
+        client.dockerSslSocketFactory = new DockerSslSocketFactory() {
+            @Override
+            def createDockerSslSocket(String certPath) {
+                return null
+            }
         }
-        def headerFields = [:]
-        headerFields[null] = ["HTTP/1.1 200 OK"]
-        headerFields["Content-Type"] = ["application/vnd.docker.raw-stream"]
-        headerFields["Content-Length"] = [headerAndPayload.bytes.size()]
-        connectionMock.getHeaderFields() >> headerFields
-        connectionMock.responseCode >> 200
-        connectionMock.inputStream >> responseBody
         def stdout = new ByteArrayOutputStream()
 
         when:
@@ -746,6 +733,27 @@ class OkHttpClientSpec extends Specification {
         @Override
         Object getContent(URLConnection urlc) throws IOException {
             return result
+        }
+    }
+
+    static class ConstantResponseInterceptor implements Interceptor {
+        def ResponseBody responseBody
+
+        ConstantResponseInterceptor(ResponseBody responseBody) {
+            this.responseBody = responseBody
+        }
+
+        @Override
+        Response intercept(Interceptor.Chain chain) throws IOException {
+            new Response.Builder()
+                    .request(chain.request())
+                    .protocol(Protocol.HTTP_1_1)
+                    .code(200)
+                    .message("OK")
+                    .body(responseBody)
+                    .addHeader("Content-Type", responseBody.contentType().toString())
+                    .addHeader("Content-Length", Long.toString(responseBody.contentLength()))
+                    .build()
         }
     }
 }
