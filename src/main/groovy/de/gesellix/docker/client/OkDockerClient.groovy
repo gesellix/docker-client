@@ -253,22 +253,6 @@ class OkDockerClient implements HttpClient {
             return response
         }
 
-        ContentHandlerFactory contentHandlerFactory = newDockerContentHandlerFactory(config)
-        def contentHandler = contentHandlerFactory.createContentHandler(response.mimeType as String)
-        if (contentHandler == null) {
-            if (response.stream) {
-                log.warn("couldn't find a specific ContentHandler for '${response.contentType}'.")
-                if (config.stdout) {
-                    log.debug("redirecting to stdout.")
-                    IOUtils.copy(response.stream as InputStream, config.stdout as OutputStream)
-                    response.stream = null
-                } else {
-                    log.warn("stream won't be consumed.")
-                }
-            }
-            return response
-        }
-
         switch (response.mimeType) {
             case "application/vnd.docker.raw-stream":
                 InputStream rawStream = new RawInputStream(httpResponse.body().byteStream())
@@ -286,9 +270,6 @@ class OkDockerClient implements HttpClient {
                 consumeResponseBody(response, content, config)
                 break
             case "text/html":
-                def stream = httpResponse.body().byteStream()
-                consumeResponseBody(response, stream, config)
-                break
             case "text/plain":
                 def stream = httpResponse.body().byteStream()
                 consumeResponseBody(response, stream, config)
@@ -324,10 +305,6 @@ class OkDockerClient implements HttpClient {
         }
 
         return response
-    }
-
-    def newDockerContentHandlerFactory(Map config) {
-        return new DockerContentHandlerFactory(config.async as boolean)
     }
 
     def readHeaders(Response httpResponse) {

@@ -8,6 +8,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody
+import okio.Buffer
 import org.apache.commons.io.IOUtils
 import org.codehaus.groovy.runtime.MethodClosure
 import spock.lang.IgnoreIf
@@ -418,27 +419,27 @@ class OkDockerClientSpec extends Specification {
 
     def "request should return headers"() {
         given:
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
-        def connectionMock = Mock(HttpURLConnection)
-        client.metaClass.openConnection = {
-            connectionMock
+        def mediaType = MediaType.parse("text/plain")
+        def responseBody = "holy ship"
+        def client = new OkDockerClient() {
+            @Override
+            OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+                clientBuilder
+                        .addInterceptor(new ConstantResponseInterceptor(ResponseBody.create(mediaType, responseBody)))
+                        .build()
+            }
         }
-        def headerFields = [:]
-        headerFields[null] = ["HTTP/1.1 200 OK"]
-        headerFields["Content-Type"] = ["text/plain;encoding=utf-8"]
-        headerFields["Content-Length"] = ["${"123456789".length()}"]
-        connectionMock.getHeaderFields() >> headerFields
-        connectionMock.responseCode >> 200
-        connectionMock.inputStream >> new ByteArrayInputStream("123456789".bytes)
+        client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
+//        headerFields["Content-Type"] = ["text/plain;encoding=utf-8"]
+//        headerFields["Content-Length"] = ["${"123456789".length()}"]
+//        connectionMock.inputStream >> new ByteArrayInputStream("123456789".bytes)
 
         when:
         def response = client.request([method: "HEADER",
                                        path  : "/a-resource"])
 
         then:
-        response.headers == ['content-type'  : ["text/plain;encoding=utf-8"],
+        response.headers == ['content-type'  : ["text/plain; encoding=utf-8"],
                              'content-length': ["9"]]
         and:
         response.contentType == "text/plain;encoding=utf-8"
@@ -450,20 +451,17 @@ class OkDockerClientSpec extends Specification {
 
     def "request should return consumed content"() {
         given:
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
-        def connectionMock = Mock(HttpURLConnection)
-        client.metaClass.openConnection = {
-            connectionMock
+        def mediaType = MediaType.parse("text/plain")
+        def responseBody = "holy ship"
+        def client = new OkDockerClient() {
+            @Override
+            OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+                clientBuilder
+                        .addInterceptor(new ConstantResponseInterceptor(ResponseBody.create(mediaType, responseBody)))
+                        .build()
+            }
         }
-        def headerFields = [:]
-        headerFields[null] = ["HTTP/1.1 200 OK"]
-        headerFields["Content-Type"] = ["text/plain"]
-        headerFields["Content-Length"] = ["holy ship".length()]
-        connectionMock.getHeaderFields() >> headerFields
-        connectionMock.responseCode >> 200
-        connectionMock.inputStream >> new ByteArrayInputStream("holy ship".bytes)
+        client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
 
         when:
         def response = client.request([method: "HEADER",
@@ -477,21 +475,17 @@ class OkDockerClientSpec extends Specification {
 
     def "request with stdout stream and known content length"() {
         given:
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
-        def connectionMock = Mock(HttpURLConnection)
-        client.metaClass.openConnection = {
-            connectionMock
+        def mediaType = MediaType.parse("text/html")
+        def responseBody = "holy ship"
+        def client = new OkDockerClient() {
+            @Override
+            OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+                clientBuilder
+                        .addInterceptor(new ConstantResponseInterceptor(ResponseBody.create(mediaType, responseBody)))
+                        .build()
+            }
         }
-        def headerFields = [:]
-        headerFields[null] = ["HTTP/1.1 200 OK"]
-        headerFields["Content-Type"] = ["text/plain"]
-        headerFields["Content-Length"] = ["holy ship".length()]
-        connectionMock.getHeaderFields() >> headerFields
-        connectionMock.responseCode >> 200
-        def responseBody = new ByteArrayInputStream("holy ship".bytes)
-        connectionMock.inputStream >> responseBody
+        client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
         def stdout = new ByteArrayOutputStream()
 
         when:
@@ -502,28 +496,22 @@ class OkDockerClientSpec extends Specification {
         then:
         stdout.toByteArray() == "holy ship".bytes
         and:
-        responseBody.available() == 0
-        and:
         response.stream == null
     }
 
     def "request with stdout stream and unknown content length"() {
         given:
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
-        def connectionMock = Mock(HttpURLConnection)
-        client.metaClass.openConnection = {
-            connectionMock
+        def mediaType = MediaType.parse("text/html")
+        def responseBody = "holy ship"
+        def client = new OkDockerClient() {
+            @Override
+            OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+                clientBuilder
+                        .addInterceptor(new ConstantResponseInterceptor(ResponseBody.create(mediaType, -1, new Buffer().write(responseBody.bytes))))
+                        .build()
+            }
         }
-        def headerFields = [:]
-        headerFields[null] = ["HTTP/1.1 200 OK"]
-        headerFields["Content-Type"] = ["text/html"]
-        headerFields["Content-Length"] = [-1]
-        connectionMock.getHeaderFields() >> headerFields
-        connectionMock.responseCode >> 200
-        def responseBody = new ByteArrayInputStream("holy ship".bytes)
-        connectionMock.inputStream >> responseBody
+        client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
 
         when:
         def response = client.request([method: "HEADER",
@@ -537,21 +525,17 @@ class OkDockerClientSpec extends Specification {
 
     def "request with unknown mime type"() {
         given:
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
-        def connectionMock = Mock(HttpURLConnection)
-        client.metaClass.openConnection = {
-            connectionMock
+        def mediaType = MediaType.parse("unknown/mime-type")
+        def responseBody = "holy ship"
+        def client = new OkDockerClient() {
+            @Override
+            OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+                clientBuilder
+                        .addInterceptor(new ConstantResponseInterceptor(ResponseBody.create(mediaType, -1, new Buffer().write(responseBody.bytes))))
+                        .build()
+            }
         }
-        def headerFields = [:]
-        headerFields[null] = ["HTTP/1.1 200 OK"]
-        headerFields["Content-Type"] = ["unknown/mime-type"]
-        headerFields["Content-Length"] = ["holy ship".length()]
-        connectionMock.getHeaderFields() >> headerFields
-        connectionMock.responseCode >> 200
-        def responseBody = new ByteArrayInputStream("holy ship".bytes)
-        connectionMock.inputStream >> responseBody
+        client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
 
         when:
         def response = client.request([method: "HEADER",
@@ -565,21 +549,17 @@ class OkDockerClientSpec extends Specification {
 
     def "request with unknown mime type and stdout"() {
         given:
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
-        def connectionMock = Mock(HttpURLConnection)
-        client.metaClass.openConnection = {
-            connectionMock
+        def mediaType = MediaType.parse("unknown/mime-type")
+        def responseBody = "holy ship"
+        def client = new OkDockerClient() {
+            @Override
+            OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+                clientBuilder
+                        .addInterceptor(new ConstantResponseInterceptor(ResponseBody.create(mediaType, -1, new Buffer().write(responseBody.bytes))))
+                        .build()
+            }
         }
-        def headerFields = [:]
-        headerFields[null] = ["HTTP/1.1 200 OK"]
-        headerFields["Content-Type"] = ["unknown/mime-type"]
-        headerFields["Content-Length"] = ["holy ship".length()]
-        connectionMock.getHeaderFields() >> headerFields
-        connectionMock.responseCode >> 200
-        def responseBody = new ByteArrayInputStream("holy ship".bytes)
-        connectionMock.inputStream >> responseBody
+        client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
         def stdout = new ByteArrayOutputStream()
 
         when:
@@ -590,51 +570,18 @@ class OkDockerClientSpec extends Specification {
         then:
         stdout.toByteArray() == "holy ship".bytes
         and:
-        responseBody.available() == 0
-        and:
         response.stream == null
-    }
-
-    def "request with consumed body by ContentHandler"() {
-        given:
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "http://127.0.0.1:2375"))
-        def contentHandler = new TestContentHandler(result: "result")
-        client.metaClass.newDockerContentHandlerFactory = { Map config ->
-            new TestContentHandlerFactory(contentHandler: contentHandler)
-        }
-        def connectionMock = Mock(HttpURLConnection)
-        client.metaClass.openConnection = {
-            connectionMock
-        }
-        def headerFields = [:]
-        headerFields[null] = ["HTTP/1.1 200 OK"]
-        headerFields["Content-Type"] = ["text/plain"]
-        headerFields["Content-Length"] = ["holy ship".length()]
-        connectionMock.getHeaderFields() >> headerFields
-        connectionMock.responseCode >> 200
-        def responseBody = new ByteArrayInputStream("holy ship".bytes)
-        connectionMock.inputStream >> responseBody
-
-        when:
-        def response = client.request([method: "HEADER",
-                                       path  : "/a-resource"])
-
-        then:
-        response.stream == null
-        and:
-        response.content == "result"
     }
 
     def "request with json response"() {
         given:
         def mediaType = MediaType.parse("application/json")
+        def responseBody = '{"holy":"ship"}'
         def client = new OkDockerClient() {
             @Override
             OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
                 clientBuilder
-                        .addInterceptor(new ConstantResponseInterceptor(ResponseBody.create(mediaType, '{"holy":"ship"}')))
+                        .addInterceptor(new ConstantResponseInterceptor(ResponseBody.create(mediaType, responseBody)))
                         .build()
             }
         }
