@@ -388,17 +388,19 @@ class OkDockerClientSpec extends Specification {
 
     def "request should return statusLine"() {
         given:
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "http://127.0.0.1:2375"))
-        def connectionMock = Mock(HttpURLConnection)
-        client.metaClass.openConnection = {
-            connectionMock
+        def code = statusCode
+        def message = statusMessage
+        def mediaType = MediaType.parse("text/plain")
+        def responseBody = "holy ship"
+        def client = new OkDockerClient() {
+            @Override
+            OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+                clientBuilder
+                        .addInterceptor(new ConstantResponseInterceptor(code, message, ResponseBody.create(mediaType, responseBody)))
+                        .build()
+            }
         }
-        def headerFields = [:]
-        headerFields[null] = [statusLine]
-        connectionMock.getHeaderFields() >> headerFields
-        connectionMock.responseCode >> statusCode
+        client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
 
         when:
         def response = client.request([method: "OPTIONS",
@@ -408,13 +410,13 @@ class OkDockerClientSpec extends Specification {
         response.status == expectedStatusLine
 
         where:
-        statusLine                           | statusCode | expectedStatusLine
-        "HTTP/1.1 100 Continue"              | 100        | [text: ["HTTP/1.1 100 Continue"], code: 100, success: false]
-        "HTTP/1.1 200 OK"                    | 200        | [text: ["HTTP/1.1 200 OK"], code: 200, success: true]
-        "HTTP/1.1 204 No Content"            | 204        | [text: ["HTTP/1.1 204 No Content"], code: 204, success: true]
-        "HTTP/1.1 302 Found"                 | 302        | [text: ["HTTP/1.1 302 Found"], code: 302, success: false]
-        "HTTP/1.1 404 Not Found"             | 404        | [text: ["HTTP/1.1 404 Not Found"], code: 404, success: false]
-        "HTTP/1.1 500 Internal Server Error" | 500        | [text: ["HTTP/1.1 500 Internal Server Error"], code: 500, success: false]
+        statusMessage           | statusCode | expectedStatusLine
+        "Continue"              | 100        | [text: "Continue", code: 100, success: false]
+        "OK"                    | 200        | [text: "OK", code: 200, success: true]
+        "No Content"            | 204        | [text: "No Content", code: 204, success: true]
+        "Found"                 | 302        | [text: "Found", code: 302, success: false]
+        "Not Found"             | 404        | [text: "Not Found", code: 404, success: false]
+        "Internal Server Error" | 500        | [text: "Internal Server Error", code: 500, success: false]
     }
 
     def "request should return headers"() {
@@ -430,19 +432,16 @@ class OkDockerClientSpec extends Specification {
             }
         }
         client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
-//        headerFields["Content-Type"] = ["text/plain;encoding=utf-8"]
-//        headerFields["Content-Length"] = ["${"123456789".length()}"]
-//        connectionMock.inputStream >> new ByteArrayInputStream("123456789".bytes)
 
         when:
         def response = client.request([method: "HEADER",
                                        path  : "/a-resource"])
 
         then:
-        response.headers == ['content-type'  : ["text/plain; encoding=utf-8"],
-                             'content-length': ["9"]]
+        response.headers['Content-Type'] == "text/plain; charset=utf-8"
+        response.headers['Content-Length'] == "9"
         and:
-        response.contentType == "text/plain;encoding=utf-8"
+        response.contentType == "text/plain; charset=utf-8"
         and:
         response.mimeType == "text/plain"
         and:
@@ -684,9 +683,17 @@ class OkDockerClientSpec extends Specification {
     }
 
     static class ConstantResponseInterceptor implements Interceptor {
+        def statusCode
+        def statusMessage
         def ResponseBody responseBody
 
         ConstantResponseInterceptor(ResponseBody responseBody) {
+            this(200, "OK", responseBody)
+        }
+
+        ConstantResponseInterceptor(int statusCode, String statusMessage, ResponseBody responseBody) {
+            this.statusCode = statusCode
+            this.statusMessage = statusMessage
             this.responseBody = responseBody
         }
 
@@ -695,8 +702,8 @@ class OkDockerClientSpec extends Specification {
             new Response.Builder()
                     .request(chain.request())
                     .protocol(Protocol.HTTP_1_1)
-                    .code(200)
-                    .message("OK")
+                    .code(statusCode)
+                    .message(statusMessage)
                     .body(responseBody)
                     .addHeader("Content-Type", responseBody.contentType().toString())
                     .addHeader("Content-Length", Long.toString(responseBody.contentLength()))
