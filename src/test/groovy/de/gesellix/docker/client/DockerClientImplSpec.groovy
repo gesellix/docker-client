@@ -518,7 +518,7 @@ class DockerClientImplSpec extends Specification {
 
         then:
         1 * httpClient.post([path : "/containers/a-container/restart",
-                             query: [t: 10]])
+                             query: [t: 5]])
     }
 
     def "stop container"() {
