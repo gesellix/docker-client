@@ -463,16 +463,15 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     def "list images with intermediate layers"() {
         when:
-        def images = dockerClient.images([all: true]).content
+        def images = dockerClient.images([:]).content
+        def fullImages = dockerClient.images([all: true]).content
 
         then:
         def imageIds = images.collect { image -> image.Id }
-        imageIds.containsAll([
-                "sha256:6b552ee013ffc56b05df78b83a7b9717ebb99aa32224cf012c5dbea811b42334",
-                "sha256:6f609da577b75550c2bc0675b8bac417e6562ea3194df0ead08a7df396dfecdc",
-                "sha256:87c510941a8397225fd9630ceb76764fefd922d6dd5417688afb1525d55e81b4",
-                "sha256:c32d227e5de13b840fab946f29a7124efecec9c69902309b0de627611a1fdaf9"
-        ])
+        def fullImageIds = fullImages.collect { image -> image.Id }
+        imageIds != fullImageIds
+        and:
+        fullImageIds.size() > imageIds.size()
     }
 
     def "list images filtered"() {
