@@ -8,6 +8,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
 import okio.Buffer
 import org.apache.commons.io.IOUtils
 import org.codehaus.groovy.runtime.MethodClosure
@@ -15,8 +17,8 @@ import spock.lang.IgnoreIf
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import javax.net.ssl.HttpsURLConnection
-import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.HostnameVerifier
+import javax.net.ssl.SSLSession
 
 import static de.gesellix.docker.client.protocolhandler.contenthandler.StreamType.STDOUT
 
@@ -351,34 +353,75 @@ class OkDockerClientSpec extends Specification {
     }
 
     def "configureConnection with plain http connection"() {
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "http://127.0.0.1:2375"))
-        def connectionMock = Mock(HttpURLConnection)
+        given:
+        def mockWebServer = new MockWebServer()
+        mockWebServer.enqueue(new MockResponse().setBody("mock-response"))
+        mockWebServer.start()
+
+        def Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
+            if (response.handshake()) {
+                throw new AssertionError("expected no SSL handshake, but got ${response.handshake()}")
+            }
+            true
+        }
+        def client = new OkDockerClient() {
+            @Override
+            OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+                clientBuilder
+                        .addInterceptor(new TestInterceptor({ true }, verifyResponse))
+                        .build()
+            }
+        }
+        client.config = new DockerConfig(
+                dockerHost: mockWebServer.url("/").toString())
+
         when:
-        client.configureConnection(connectionMock, [method: "HEADER"])
+        def response = client.request([method: "OPTIONS",
+                                       path  : "/a-resource"])
         then:
-        1 * connectionMock.setRequestMethod("HEADER")
+        response.status.success
+        cleanup:
+        mockWebServer.shutdown()
     }
 
     def "configureConnection with https connection"() {
         given:
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
-        def connectionMock = Mock(HttpsURLConnection)
+
+        def mockWebServer = new MockWebServer()
+        mockWebServer.useHttps(new DockerSslSocketFactory().createDockerSslSocket(certsPath).sslSocketFactory, false)
+        mockWebServer.enqueue(new MockResponse().setBody("mock-response"))
+        mockWebServer.start()
+
+        def Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
+            if (!(response.handshake())) {
+                throw new AssertionError("expected a proper SSL handshake, but got ${response.handshake()}")
+            }
+            true
+        }
+        def client = new OkDockerClient() {
+            @Override
+            OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+                clientBuilder
+                        .hostnameVerifier(new LocalhostHostnameVerifier())
+                        .addInterceptor(new TestInterceptor({ true }, verifyResponse))
+                        .build()
+            }
+        }
+        client.config = new DockerConfig(
+                dockerHost: mockWebServer.url("/").toString(),
+                tlsVerify: "1")
 
         when:
-        client.configureConnection(connectionMock, [method: "HEADER"])
+        def response = client.request([method: "OPTIONS",
+                                       path  : "/a-resource"])
 
         then:
-        1 * connectionMock.setRequestMethod("HEADER")
-        and:
-        1 * connectionMock.setSSLSocketFactory(_ as SSLSocketFactory)
+        response.status.success
 
         cleanup:
+        mockWebServer.shutdown()
         if (oldDockerCertPath) {
             System.setProperty("docker.cert.path", oldDockerCertPath)
         } else {
@@ -683,9 +726,9 @@ class OkDockerClientSpec extends Specification {
     }
 
     static class ConstantResponseInterceptor implements Interceptor {
-        def statusCode
-        def statusMessage
-        def ResponseBody responseBody
+        int statusCode
+        String statusMessage
+        ResponseBody responseBody
 
         ConstantResponseInterceptor(ResponseBody responseBody) {
             this(200, "OK", responseBody)
@@ -708,6 +751,38 @@ class OkDockerClientSpec extends Specification {
                     .addHeader("Content-Type", responseBody.contentType().toString())
                     .addHeader("Content-Length", Long.toString(responseBody.contentLength()))
                     .build()
+        }
+    }
+
+    static class TestInterceptor implements Interceptor {
+        Closure<Boolean> requestVerifier
+        Closure<Boolean> responseVerifier
+
+        int statusCode
+        String statusMessage
+        ResponseBody responseBody
+
+        TestInterceptor(Closure<Boolean> requestVerifier, Closure<Boolean> responseVerifier) {
+            this.requestVerifier = requestVerifier
+            this.responseVerifier = responseVerifier
+            this.statusCode = 200
+            this.statusMessage = "OK"
+            this.responseBody = ResponseBody.create(MediaType.parse("text/plain"), "ok by ${getClass().simpleName}")
+        }
+
+        @Override
+        Response intercept(Interceptor.Chain chain) throws IOException {
+            requestVerifier(chain)
+            def response = chain.proceed(chain.request())
+            responseVerifier(response, chain)
+            return response
+        }
+    }
+
+    static class LocalhostHostnameVerifier implements HostnameVerifier {
+        @Override
+        boolean verify(String host, SSLSession sslSession) {
+            return host == "localhost"
         }
     }
 }
