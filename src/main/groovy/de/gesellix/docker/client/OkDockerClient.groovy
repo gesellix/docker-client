@@ -1,6 +1,5 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.client.protocolhandler.DockerContentHandlerFactory
 import de.gesellix.docker.client.protocolhandler.DockerURLHandler
 import de.gesellix.docker.client.protocolhandler.content.application.json
 import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
