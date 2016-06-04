@@ -282,7 +282,7 @@ class OkDockerClientSpec extends Specification {
         }
     }
 
-    def "openConnection uses DIRECT proxy by default"() {
+    def "uses DIRECT proxy by default"() {
         given:
         def mockWebServer = new MockWebServer()
         mockWebServer.enqueue(new MockResponse().setBody("mock-response"))
@@ -319,7 +319,7 @@ class OkDockerClientSpec extends Specification {
         mockWebServer.shutdown()
     }
 
-    def "openConnection uses configured proxy"() {
+    def "uses configured proxy"() {
         def mockWebServer = new MockWebServer()
         mockWebServer.enqueue(new MockResponse().setBody("mock-response"))
         mockWebServer.start()
@@ -360,7 +360,7 @@ class OkDockerClientSpec extends Specification {
         mockWebServer.shutdown()
     }
 
-    def "openConnection with path"() {
+    def "request with path"() {
         given:
         def mockWebServer = new MockWebServer()
         mockWebServer.enqueue(new MockResponse().setBody("mock-response"))
@@ -401,7 +401,7 @@ class OkDockerClientSpec extends Specification {
         mockWebServer.shutdown()
     }
 
-    def "openConnection with path and query"() {
+    def "request with path and query"() {
         given:
         def mockWebServer = new MockWebServer()
         mockWebServer.enqueue(new MockResponse().setBody("mock-response"))
@@ -444,7 +444,7 @@ class OkDockerClientSpec extends Specification {
         mockWebServer.shutdown()
     }
 
-    def "configureConnection with plain http connection"() {
+    def "connect via plain http connection"() {
         given:
         def mockWebServer = new MockWebServer()
         mockWebServer.enqueue(new MockResponse().setBody("mock-response"))
@@ -481,7 +481,7 @@ class OkDockerClientSpec extends Specification {
         mockWebServer.shutdown()
     }
 
-    def "configureConnection with https connection"() {
+    def "connect via https connection"() {
         given:
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
