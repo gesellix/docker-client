@@ -5,6 +5,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.nio.file.Files
+import java.nio.file.Paths
 
 class DockerURLHandlerTest extends Specification {
 
@@ -67,16 +68,16 @@ class DockerURLHandlerTest extends Specification {
                 config: new DockerConfig(
                         tlsVerify: null,
                         certPath: "/some/non-existing/path"))
-        def defaultDockerCertPathExisted = Files.exists(dockerUrlHandler.config.defaultCertPath.toPath())
+        def defaultDockerCertPathExisted = Files.exists(Paths.get(dockerUrlHandler.config.defaultCertPath))
         if (!defaultDockerCertPathExisted) {
-            Files.createDirectory(dockerUrlHandler.config.defaultCertPath.toPath())
+            Files.createDirectory(Paths.get(dockerUrlHandler.config.defaultCertPath))
         }
         when:
         def assumeTls = dockerUrlHandler.shouldUseTls(new URL("https://example.com:2376"))
         then:
         assumeTls
         cleanup:
-        defaultDockerCertPathExisted || Files.delete(dockerUrlHandler.config.defaultCertPath.toPath())
+        defaultDockerCertPathExisted || Files.delete(Paths.get(dockerUrlHandler.config.defaultCertPath))
     }
 
     def "should choose http for 'tcp://127.0.0.1:2375'"() {
