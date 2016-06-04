@@ -19,8 +19,11 @@ import spock.lang.Unroll
 
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLSession
+import javax.net.ssl.SSLSocket
 
 import static de.gesellix.docker.client.protocolhandler.contenthandler.StreamType.STDOUT
+import static java.net.Proxy.Type.DIRECT
+import static java.net.Proxy.Type.HTTP
 
 class OkDockerClientSpec extends Specification {
 
@@ -281,94 +284,23 @@ class OkDockerClientSpec extends Specification {
 
     def "openConnection uses DIRECT proxy by default"() {
         given:
-        def httpServer = new TestHttpServer()
-        def serverAddress = httpServer.start()
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "http://127.0.0.1:${serverAddress.port}",
-                        tlsVerify: 0))
-        when:
-        def connection = client.openConnection([method: "GET",
-                                                path  : "/foo"])
-        connection.connect()
-        then:
-        !connection.usingProxy()
-        cleanup:
-        httpServer.stop()
-    }
-
-    def "openConnection uses configured proxy"() {
-        given:
-        def httpServer = new TestHttpServer()
-        def proxyAddress = httpServer.start()
-        def proxy = new Proxy(Proxy.Type.HTTP, proxyAddress)
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "http://any.thi.ng:4711",
-                        tlsVerify: 0),
-                proxy: proxy)
-        when:
-        def connection = client.openConnection([method: "GET",
-                                                path  : "/test/"])
-        connection.connect()
-        then:
-        connection.usingProxy()
-        cleanup:
-        httpServer.stop()
-    }
-
-    def "openConnection with path"() {
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "http://127.0.0.1:2375"))
-        when:
-        def connection = client.openConnection([method: "GET",
-                                                path  : "/foo"])
-        then:
-        connection.URL.protocol =~ /https?/
-        and:
-        connection.URL.host == "127.0.0.1"
-        and:
-        connection.URL.port == 2375
-        and:
-        connection.URL.file == "/foo"
-    }
-
-    def "openConnection with path and query"() {
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "http://127.0.0.1:2375"))
-        when:
-        def connection = client.openConnection([method: "GET",
-                                                path  : "/bar",
-                                                query : [baz: "la/la", answer: 42]])
-        then:
-        connection.URL.protocol =~ /https?/
-        and:
-        connection.URL.host == "127.0.0.1"
-        and:
-        connection.URL.port == 2375
-        and:
-        connection.URL.file == "/bar?baz=la%2Fla&answer=42"
-    }
-
-    def "configureConnection with plain http connection"() {
-        given:
         def mockWebServer = new MockWebServer()
         mockWebServer.enqueue(new MockResponse().setBody("mock-response"))
         mockWebServer.start()
 
+        def hasVerified = false
         def Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
-            if (response.handshake()) {
-                throw new AssertionError("expected no SSL handshake, but got ${response.handshake()}")
+            if (chain.connection()?.route()?.proxy()?.type() != DIRECT) {
+                throw new AssertionError("got ${chain.connection()?.route()?.proxy()}")
             }
+            hasVerified = true
             true
         }
         def client = new OkDockerClient() {
             @Override
             OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
                 clientBuilder
-                        .addInterceptor(new TestInterceptor({ true }, verifyResponse))
+                        .addNetworkInterceptor(new TestInterceptor({ true }, verifyResponse))
                         .build()
             }
         }
@@ -380,6 +312,171 @@ class OkDockerClientSpec extends Specification {
                                        path  : "/a-resource"])
         then:
         response.status.success
+        and:
+        hasVerified
+
+        cleanup:
+        mockWebServer.shutdown()
+    }
+
+    def "openConnection uses configured proxy"() {
+        def mockWebServer = new MockWebServer()
+        mockWebServer.enqueue(new MockResponse().setBody("mock-response"))
+        mockWebServer.start()
+
+        def serverUrl = mockWebServer.url("/")
+        def proxy = new Proxy(HTTP, new InetSocketAddress(serverUrl.host(), serverUrl.port()))
+
+        def hasVerified = false
+        def Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
+            def actualProxy = chain.connection()?.route()?.proxy()
+            if (actualProxy != proxy) {
+                throw new AssertionError("got ${actualProxy}")
+            }
+            hasVerified = true
+            true
+        }
+        def client = new OkDockerClient() {
+            @Override
+            OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+                clientBuilder
+                        .addNetworkInterceptor(new TestInterceptor({ true }, verifyResponse))
+                        .build()
+            }
+        }
+        client.proxy = proxy
+        client.config = new DockerConfig(
+                dockerHost: "http://any.thi.ng:4711")
+
+        when:
+        def response = client.request([method: "OPTIONS",
+                                       path  : "/a-resource"])
+        then:
+        response.status.success
+        and:
+        hasVerified
+
+        cleanup:
+        mockWebServer.shutdown()
+    }
+
+    def "openConnection with path"() {
+        given:
+        def mockWebServer = new MockWebServer()
+        mockWebServer.enqueue(new MockResponse().setBody("mock-response"))
+        mockWebServer.start()
+
+        def serverUrl = mockWebServer.url("/")
+        def hasVerified = false
+        def Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
+            def expectedUrl = serverUrl.newBuilder()
+                    .encodedPath("/a-resource")
+                    .build()
+            if (!expectedUrl.equals(chain.request().url())) {
+                throw new AssertionError("expected ${expectedUrl}, got ${chain.request().url()}")
+            }
+            hasVerified = true
+            true
+        }
+        def client = new OkDockerClient() {
+            @Override
+            OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+                clientBuilder
+                        .addNetworkInterceptor(new TestInterceptor({ true }, verifyResponse))
+                        .build()
+            }
+        }
+        client.config = new DockerConfig(
+                dockerHost: mockWebServer.url("/").toString())
+
+        when:
+        def response = client.request([method: "OPTIONS",
+                                       path  : "/a-resource"])
+        then:
+        response.status.success
+        and:
+        hasVerified
+
+        cleanup:
+        mockWebServer.shutdown()
+    }
+
+    def "openConnection with path and query"() {
+        given:
+        def mockWebServer = new MockWebServer()
+        mockWebServer.enqueue(new MockResponse().setBody("mock-response"))
+        mockWebServer.start()
+
+        def serverUrl = mockWebServer.url("/")
+        def hasVerified = false
+        def Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
+            def expectedUrl = serverUrl.newBuilder()
+                    .encodedPath("/a-resource")
+                    .encodedQuery("baz=la%2Fla&answer=42")
+                    .build()
+            if (!expectedUrl.equals(chain.request().url())) {
+                throw new AssertionError("expected ${expectedUrl}, got ${chain.request().url()}")
+            }
+            hasVerified = true
+            true
+        }
+        def client = new OkDockerClient() {
+            @Override
+            OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+                clientBuilder
+                        .addNetworkInterceptor(new TestInterceptor({ true }, verifyResponse))
+                        .build()
+            }
+        }
+        client.config = new DockerConfig(
+                dockerHost: mockWebServer.url("/").toString())
+
+        when:
+        def response = client.request([method: "OPTIONS",
+                                       path  : "/a-resource",
+                                       query : [baz: "la/la", answer: 42]])
+        then:
+        response.status.success
+        and:
+        hasVerified
+
+        cleanup:
+        mockWebServer.shutdown()
+    }
+
+    def "configureConnection with plain http connection"() {
+        given:
+        def mockWebServer = new MockWebServer()
+        mockWebServer.enqueue(new MockResponse().setBody("mock-response"))
+        mockWebServer.start()
+
+        def hasVerified = false
+        def Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
+            if (chain.connection()?.socket() instanceof SSLSocket) {
+                throw new AssertionError("didn't expect a SSLSocket, got ${chain.connection()?.socket()}")
+            }
+            hasVerified = true
+            true
+        }
+        def client = new OkDockerClient() {
+            @Override
+            OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+                clientBuilder
+                        .addNetworkInterceptor(new TestInterceptor({ true }, verifyResponse))
+                        .build()
+            }
+        }
+        client.config = new DockerConfig(
+                dockerHost: mockWebServer.url("/").toString())
+
+        when:
+        def response = client.request([method: "OPTIONS",
+                                       path  : "/a-resource"])
+        then:
+        response.status.success
+        and:
+        hasVerified
+
         cleanup:
         mockWebServer.shutdown()
     }
@@ -394,10 +491,12 @@ class OkDockerClientSpec extends Specification {
         mockWebServer.enqueue(new MockResponse().setBody("mock-response"))
         mockWebServer.start()
 
+        def hasVerified = false
         def Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
-            if (!(response.handshake())) {
-                throw new AssertionError("expected a proper SSL handshake, but got ${response.handshake()}")
+            if (!(chain.connection()?.socket() instanceof SSLSocket)) {
+                throw new AssertionError("expected a SSLSocket, got ${chain.connection()?.socket()}")
             }
+            hasVerified = true
             true
         }
         def client = new OkDockerClient() {
@@ -405,7 +504,7 @@ class OkDockerClientSpec extends Specification {
             OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
                 clientBuilder
                         .hostnameVerifier(new LocalhostHostnameVerifier())
-                        .addInterceptor(new TestInterceptor({ true }, verifyResponse))
+                        .addNetworkInterceptor(new TestInterceptor({ true }, verifyResponse))
                         .build()
             }
         }
@@ -419,6 +518,8 @@ class OkDockerClientSpec extends Specification {
 
         then:
         response.status.success
+        and:
+        hasVerified
 
         cleanup:
         mockWebServer.shutdown()
