@@ -283,6 +283,17 @@ class OkDockerClient implements HttpClient {
                     response.stream = stream
                 }
                 break
+            case "application/x-tar":
+                if (response.stream) {
+                    if (config.stdout) {
+                        log.debug("redirecting to stdout.")
+                        IOUtils.copy(response.stream as InputStream, config.stdout as OutputStream)
+                        response.stream = null
+                    } else {
+                        log.warn("stream won't be consumed.")
+                    }
+                }
+                break
             default:
                 log.warn("unexpected mime type '${response.mimeType}'.")
                 def body = httpResponse.body()
