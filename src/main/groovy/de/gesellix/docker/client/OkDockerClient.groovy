@@ -136,10 +136,6 @@ class OkDockerClient implements HttpClient {
         def path = config.path as String
         def (String protocol, String host, int port) = getDockerURLHandler().getProtocolAndHost(dockerHost)
 
-        if (protocol == "npipe") {
-            throw new UnsupportedOperationException("not yet implemented")
-        }
-
         def urlBuilder = new HttpUrl.Builder()
                 .addPathSegments(path)
                 .encodedQuery(queryAsString ?: null)
@@ -164,6 +160,12 @@ class OkDockerClient implements HttpClient {
             clientBuilder
                     .socketFactory(unixSocketFactory)
                     .dns(unixSocketFactory)
+                    .build()
+        } else if (protocol == 'npipe') {
+            def npipeSocketFactory = new NpipeSocketFactory()
+            clientBuilder
+                    .socketFactory(npipeSocketFactory)
+                    .dns(npipeSocketFactory)
                     .build()
         } else if (protocol == 'https') {
             def dockerSslSocket = dockerSslSocketFactory.createDockerSslSocket(certPath)
@@ -202,6 +204,12 @@ class OkDockerClient implements HttpClient {
                     .scheme("http")
                     .host(UnixSocketFactory.UnixSocket.encodeHostname(host))
 //                    .port(/not/allowed/for/unix/socket/)
+                    .build()
+        } else if (protocol == "npipe") {
+            httpUrl = urlBuilder
+                    .scheme("http")
+                    .host(NpipeSocketFactory.NamedPipeSocket.encodeHostname(host))
+//                    .port(/not/allowed/for/npipe/socket/)
                     .build()
         } else {
             httpUrl = urlBuilder
