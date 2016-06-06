@@ -1,7 +1,6 @@
 package de.gesellix.docker.client
 
 import groovy.util.logging.Slf4j
-import okhttp3.MediaType
 import okhttp3.RequestBody
 import okhttp3.Response
 import okhttp3.ResponseBody
@@ -991,7 +990,7 @@ class DockerClientImplIntegrationSpec extends Specification {
                 executor.execute(new Runnable() {
                     @Override
                     void run() {
-                        webSocket.sendMessage(RequestBody.create(MediaType.parse("text/plain"), ourMessage))
+                        webSocket.sendMessage(RequestBody.create(WebSocket.TEXT, ourMessage))
                     }
                 })
             }
@@ -1017,7 +1016,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         receivedMessages.contains ourMessage
 
         cleanup:
-        webSocketReference.get().close(200, "cleanup")
+        webSocketReference.get().close(1000, "cleanup")
         dockerClient.stop(containerId)
         dockerClient.wait(containerId)
         dockerClient.rm(containerId)
