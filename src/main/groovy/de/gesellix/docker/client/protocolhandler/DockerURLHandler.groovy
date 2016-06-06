@@ -2,7 +2,6 @@ package de.gesellix.docker.client.protocolhandler
 
 import de.gesellix.docker.client.DockerConfig
 import groovy.util.logging.Slf4j
-import sun.net.www.protocol.unix.Handler
 
 @Slf4j
 class DockerURLHandler {
@@ -35,7 +34,7 @@ class DockerURLHandler {
 
     def newHandler(String protocol) {
         switch (protocol) {
-            case "unix": return new Handler()
+            case "unix": return new sun.net.www.protocol.unix.Handler()
             case "npipe": return new sun.net.www.protocol.npipe.Handler()
             default: throw new IllegalStateException("cannot handle '${protocol}'")
         }
@@ -70,7 +69,7 @@ class DockerURLHandler {
                 catch (MalformedURLException ignored) {
                     log.info("retrying to connect to '$dockerUnixSocket'")
                     try {
-                        result = new URL("unix", dockerUnixSocket, -1, "", new Handler())
+                        result = new URL("unix", dockerUnixSocket, -1, "", new sun.net.www.protocol.unix.Handler())
                     }
                     catch (MalformedURLException finalException) {
                         log.error("could not use the 'unix' protocol to connect to $dockerUnixSocket - retry failed.", finalException)

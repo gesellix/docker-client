@@ -1,15 +1,22 @@
 package de.gesellix.docker.client
 
 import groovy.util.logging.Slf4j
+import okhttp3.MediaType
+import okhttp3.RequestBody
+import okhttp3.Response
+import okhttp3.ResponseBody
+import okhttp3.ws.WebSocket
+import okhttp3.ws.WebSocketCall
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.io.IOUtils
-import org.java_websocket.handshake.ServerHandshake
 import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
 
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicReference
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS
 
@@ -107,7 +114,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         then:
         version.ApiVersion == "1.23"
         version.Arch == "amd64"
-        version.BuildTime == "2016-05-28T11:54:55.896081209+00:00"
+        version.BuildTime == "2016-06-03T08:34:52.695511840+00:00"
         version.GitCommit == "8b63c77"
         version.GoVersion == "go1.5.4"
         version.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"
@@ -969,40 +976,48 @@ class DockerClientImplIntegrationSpec extends Specification {
         ]
         def containerId = dockerClient.run(imageId, containerConfig).container.content.Id
 
+        def executor = Executors.newSingleThreadExecutor()
+        def ourMessage = "hallo welt ${UUID.randomUUID()}!".toString()
+
         def openConnection = new CountDownLatch(1)
+        def AtomicReference<WebSocket> webSocketReference = new AtomicReference<>()
         def receiveMessage = new CountDownLatch(1)
         def receivedMessages = []
-        def handler = new DefaultWebsocketHandler() {
+        def listener = new DefaultWebSocketListener() {
             @Override
-            void onOpen(ServerHandshake handshakedata) {
+            void onOpen(WebSocket webSocket, Response response) {
+                webSocketReference.set(webSocket)
                 openConnection.countDown()
+                executor.execute(new Runnable() {
+                    @Override
+                    void run() {
+                        webSocket.sendMessage(RequestBody.create(MediaType.parse("text/plain"), ourMessage))
+                    }
+                })
             }
 
             @Override
-            void onMessage(String message) {
-                receivedMessages << message
+            void onMessage(ResponseBody message) throws IOException {
+                receivedMessages << message.string()
                 receiveMessage.countDown()
             }
         }
 
         when:
-        DockerWebsocketClient wsClient = dockerClient.attachWebsocket(
+        WebSocketCall wsCall = dockerClient.attachWebsocket(
                 containerId,
                 [stream: 1, stdin: 1, stdout: 1, stderr: 1],
-                handler) as DockerWebsocketClient
+                listener)
 
-        def ourMessage = "hallo welt ${UUID.randomUUID()}!".toString()
 
-        wsClient.connectBlocking()
         openConnection.await(500, MILLISECONDS)
-        wsClient.send(ourMessage)
         receiveMessage.await(500, MILLISECONDS)
 
         then:
         receivedMessages.contains ourMessage
 
         cleanup:
-        wsClient.close()
+        webSocketReference.get().close(200, "cleanup")
         dockerClient.stop(containerId)
         dockerClient.wait(containerId)
         dockerClient.rm(containerId)

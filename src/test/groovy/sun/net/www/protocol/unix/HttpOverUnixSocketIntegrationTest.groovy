@@ -2,7 +2,7 @@ package sun.net.www.protocol.unix
 
 import de.gesellix.docker.client.DockerConfig
 import de.gesellix.docker.client.HttpClient
-import de.gesellix.docker.client.NetHttpClient
+import de.gesellix.docker.client.OkDockerClient
 import org.apache.commons.lang.SystemUtils
 import spock.lang.Requires
 import spock.lang.Specification
@@ -16,21 +16,25 @@ class HttpOverUnixSocketIntegrationTest extends Specification {
     HttpClient httpClient
 
     def setup() {
-        if (true || !defaultDockerSocket.exists()) {
+        def unixSocket
+        if (socketFile.exists() && socketFile.canRead()) {
+            unixSocket = "unix://${socketFile}".toString()
+        } else {
+//        if (true || !defaultDockerSocket.exists()) {
             runDummyDaemon = true
             socketFile = new File(new File(System.getProperty("java.io.tmpdir")), "unixsocket-dummy.sock")
             socketFile.deleteOnExit()
+            unixSocket = "unix://${socketFile.getCanonicalPath()}".toString()
         }
-        def unixSocket = "unix://${socketFile.getCanonicalPath()}".toString()
-        httpClient = new NetHttpClient(config: new DockerConfig(dockerHost: unixSocket))
+        httpClient = new OkDockerClient(config: new DockerConfig(dockerHost: unixSocket))
     }
 
     def "info via unix socket"() {
         given:
-        def responseBody = '{"a-key":42,"another-key":4711}'
+        def responseBody = 'OK'
         def expectedResponse = [
                 "HTTP/1.1 200 OK",
-                "Content-Type: application/json",
+                "Content-Type: text/plain",
                 "Job-Name: unix socket test",
                 "Date: Thu, 08 Jan 2015 23:05:55 GMT",
                 "Content-Length: ${responseBody.length()}",
@@ -51,7 +55,7 @@ class HttpOverUnixSocketIntegrationTest extends Specification {
         def ping = httpClient.get([path: "/_ping"])
 
         then:
-        ping.content == ["a-key": 42, "another-key": 4711]
+        ping.content == "OK"
 
         cleanup:
         testserver?.stop()

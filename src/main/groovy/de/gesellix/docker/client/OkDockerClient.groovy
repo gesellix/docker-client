@@ -13,9 +13,9 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
 import okhttp3.internal.http.HttpMethod
+import okhttp3.ws.WebSocketCall
 import okio.Okio
 import org.apache.commons.io.IOUtils
-import org.apache.commons.io.input.ReaderInputStream
 import org.apache.commons.io.output.NullOutputStream
 
 import java.util.regex.Pattern
@@ -28,12 +28,13 @@ class OkDockerClient implements HttpClient {
     DockerURLHandler dockerURLHandler
 
     Proxy proxy
-    DockerConfig config = new DockerConfig()
+    DockerConfig config
     DockerSslSocketFactory dockerSslSocketFactory
 
     OkDockerClient() {
-        proxy = Proxy.NO_PROXY
         dockerSslSocketFactory = new DockerSslSocketFactory()
+        config = new DockerConfig()
+        proxy = Proxy.NO_PROXY
     }
 
     @Override
@@ -97,90 +98,40 @@ class OkDockerClient implements HttpClient {
     }
 
     @Override
-    def getWebsocketClient(String path, handler) {
-        def config = ensureValidRequestConfig(path)
-        return getWebsocketClient(config, handler)
+    def getWebsocketClient(String path, Object handler) {
+        throw new UnsupportedOperationException("not implemented")
     }
 
     @Override
-    def getWebsocketClient(Map requestConfig, handler) {
+    def getWebsocketClient(Map requestConfig, Object handler) {
+        throw new UnsupportedOperationException("not implemented")
+    }
+
+    @Override
+    WebSocketCall webSocketCall(Map requestConfig) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "GET"
 
-        def requestUrl = getRequestUrlWithOptionalQuery(config).toString()
-        requestUrl = requestUrl.replaceFirst("^http", "ws")
+        Request.Builder requestBuilder = prepareRequest(new Request.Builder(), config)
+        def request = requestBuilder.build()
 
-        log.debug "websocket uri: '$requestUrl'"
+        OkHttpClient.Builder clientBuilder = prepareClient(new OkHttpClient.Builder(), config.timeout ?: 0)
+        def client = newClient(clientBuilder)
 
-        def websocketClient
-        if (requestUrl.startsWith("wss://")) {
-            websocketClient = new DockerWebsocketClient(new URI(requestUrl), handler, initSSLContext())
-        } else {
-            websocketClient = new DockerWebsocketClient(new URI(requestUrl), handler)
-        }
-        return websocketClient
+        def wsCall = WebSocketCall.create(client, request)
+        wsCall
     }
 
-    def request(Map config) {
-        config = ensureValidRequestConfig(config)
+    def request(Map requestConfig) {
+        def config = ensureValidRequestConfig(requestConfig)
 
-        def dockerHost = this.config.dockerHost
-        def certPath = this.config.certPath as String
-        def proxy = proxy
-
-        // do we need to disable the timeout for streaming?
-        def defaultTimeout = 0
-        def currentTimeout = config.timeout ?: defaultTimeout
-
-        String queryAsString = (config.query) ? "${queryToString(config.query as Map)}" : ""
-        def path = config.path as String
-        def (String protocol, String host, int port) = getDockerURLHandler().getProtocolAndHost(dockerHost)
-
-        def urlBuilder = new HttpUrl.Builder()
-                .addPathSegments(path)
-                .encodedQuery(queryAsString ?: null)
-        def httpUrl = createUrl(urlBuilder, protocol, host, port)
-
-        def requestBody = createRequestBody(config)
-        def requestBuilder = new Request.Builder()
-                .method(config.method as String, requestBody)
-                .url(httpUrl)
-                .cacheControl(CacheControl.FORCE_NETWORK)
-
-        config.headers?.each { String key, String value ->
-            requestBuilder.header(key, value)
-        }
-
+        Request.Builder requestBuilder = prepareRequest(new Request.Builder(), config)
         def request = requestBuilder.build()
-        log.debug("${request.method()} ${request.url()} using proxy: ${proxy}")
 
-        def clientBuilder = new OkHttpClient.Builder()
-        if (protocol == "unix") {
-            def unixSocketFactory = new UnixSocketFactory()
-            clientBuilder
-                    .socketFactory(unixSocketFactory)
-                    .dns(unixSocketFactory)
-                    .build()
-        } else if (protocol == 'npipe') {
-            def npipeSocketFactory = new NpipeSocketFactory()
-            clientBuilder
-                    .socketFactory(npipeSocketFactory)
-                    .dns(npipeSocketFactory)
-                    .build()
-        } else if (protocol == 'https') {
-            def dockerSslSocket = dockerSslSocketFactory.createDockerSslSocket(certPath)
-            // warn, if null?
-            if (dockerSslSocket) {
-                clientBuilder
-                        .sslSocketFactory(dockerSslSocket.sslSocketFactory, dockerSslSocket.trustManager)
-                        .build()
-            }
-        }
-        clientBuilder
-                .connectTimeout(currentTimeout as int, MILLISECONDS)
-                .readTimeout(currentTimeout as int, MILLISECONDS)
-                .proxy(proxy)
+        OkHttpClient.Builder clientBuilder = prepareClient(new OkHttpClient.Builder(), config.timeout ?: 0)
         def client = newClient(clientBuilder)
+
+        log.debug("${request.method()} ${request.url()} using proxy: ${client.proxy()}")
 
         def response = client.newCall(request).execute()
         log.debug("response: ${response.toString()}")
@@ -191,6 +142,71 @@ class OkDockerClient implements HttpClient {
         }
 
         return dockerResponse
+    }
+
+    def prepareRequest(Request.Builder builder, Map config) {
+        def method = config.method as String
+        def contentType = config.requestContentType as String
+        def additionalHeaders = config.headers
+        def body = config.body
+
+        def (String protocol, String host, int port) = getProtocolAndHost()
+        def path = config.path as String
+        if (config.apiVersion) {
+            path = "/${config.apiVersion}${path}".toString()
+        }
+        String queryAsString = (config.query) ? "${queryToString(config.query as Map)}" : ""
+
+        def urlBuilder = new HttpUrl.Builder()
+                .addPathSegments(path)
+                .encodedQuery(queryAsString ?: null)
+        def httpUrl = createUrl(urlBuilder, protocol, host, port)
+
+
+        def requestBody = createRequestBody(method, contentType, body)
+        builder
+                .method(method, requestBody)
+                .url(httpUrl)
+                .cacheControl(CacheControl.FORCE_NETWORK)
+
+        additionalHeaders?.each { String key, String value ->
+            builder.header(key, value)
+        }
+        builder
+    }
+
+    private OkHttpClient.Builder prepareClient(OkHttpClient.Builder builder, int currentTimeout) {
+        def (String protocol, String host, int port) = getProtocolAndHost()
+        if (protocol == "unix") {
+            def unixSocketFactory = new UnixSocketFactory()
+            builder
+                    .socketFactory(unixSocketFactory)
+                    .dns(unixSocketFactory)
+                    .build()
+        } else if (protocol == 'npipe') {
+            def npipeSocketFactory = new NpipeSocketFactory()
+            builder
+                    .socketFactory(npipeSocketFactory)
+                    .dns(npipeSocketFactory)
+                    .build()
+        } else if (protocol == 'https') {
+            def certPath = this.config.certPath as String
+            def dockerSslSocket = dockerSslSocketFactory.createDockerSslSocket(certPath)
+            // warn, if null?
+            if (dockerSslSocket) {
+                builder
+                        .sslSocketFactory(dockerSslSocket.sslSocketFactory, dockerSslSocket.trustManager)
+                        .build()
+            }
+        }
+        builder
+                .proxy(proxy)
+
+        // do we need to disable the timeout for streaming?
+        builder
+                .connectTimeout(currentTimeout as int, MILLISECONDS)
+                .readTimeout(currentTimeout as int, MILLISECONDS)
+        builder
     }
 
     def OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
@@ -221,28 +237,28 @@ class OkDockerClient implements HttpClient {
         httpUrl
     }
 
-    def createRequestBody(Map config) {
-        def requestBody = null
-        if (HttpMethod.requiresRequestBody(config.method as String)) {
-            requestBody = RequestBody.create(MediaType.parse("application/json"), "{}")
+    def createRequestBody(String method, String contentType, def body) {
+        if (!body && HttpMethod.requiresRequestBody(method)) {
+            return RequestBody.create(MediaType.parse("application/json"), "{}")
         }
 
-        if (config.body) {
-            switch (config.requestContentType) {
+        def requestBody = null
+        if (body) {
+            switch (contentType) {
                 case "application/json":
                     def json = new JsonBuilder()
-                    json config.body
+                    json body
                     requestBody = RequestBody.create(MediaType.parse("application/json"), json.toString())
                     break
                 case "application/octet-stream":
-                    def source = Okio.source(config.body as InputStream)
+                    def source = Okio.source(body as InputStream)
                     def buffer = Okio.buffer(source)
                     requestBody = RequestBody.create(MediaType.parse("application/octet-stream"), buffer.readByteArray())
                     break
                 default:
-                    def source = Okio.source(config.body as InputStream)
+                    def source = Okio.source(body as InputStream)
                     def buffer = Okio.buffer(source)
-                    requestBody = RequestBody.create(MediaType.parse(config.requestContentType as String), buffer.readByteArray())
+                    requestBody = RequestBody.create(MediaType.parse(contentType), buffer.readByteArray())
                     break
             }
         }
@@ -358,9 +374,6 @@ class OkDockerClient implements HttpClient {
     }
 
     def consumeResponseBody(DockerResponse response, Object content, Map config) {
-        if (content instanceof Reader) {
-            content = new ReaderInputStream(content as Reader)
-        }
         if (content instanceof InputStream) {
             if (config.async) {
                 response.stream = content as InputStream
@@ -396,24 +409,6 @@ class OkDockerClient implements HttpClient {
 
     def getProtocolAndHost() {
         return getDockerURLHandler().getProtocolAndHost(this.config.dockerHost)
-    }
-
-    HttpUrl getRequestUrl(String path, String query) {
-        def (String protocol, String host, int port) = getDockerURLHandler().getProtocolAndHost(config.dockerHost)
-        return new HttpUrl.Builder()
-                .scheme("http")
-                .host(host)
-                .port(port)
-                .addPathSegment(path)
-                .query(query)
-                .build()
-
-//        return getDockerURLHandler().getRequestUrl(config.dockerHost, path, query)
-    }
-
-    HttpUrl getRequestUrlWithOptionalQuery(config) {
-        String queryAsString = (config.query) ? "?${queryToString(config.query)}" : ""
-        return getRequestUrl(config.path as String, queryAsString)
     }
 
     def queryToString(Map queryParameters) {

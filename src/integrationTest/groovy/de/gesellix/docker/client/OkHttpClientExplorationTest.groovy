@@ -4,7 +4,7 @@ import spock.lang.Ignore
 import spock.lang.Specification
 
 @Ignore
-class NetHttpClientExplorationTest extends Specification {
+class OkHttpClientExplorationTest extends Specification {
 
     def "local test"() {
         def defaultDockerHost = System.env.DOCKER_HOST
@@ -12,7 +12,7 @@ class NetHttpClientExplorationTest extends Specification {
         defaultDockerHost = "http://192.168.99.100:2376"
         System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
 //        System.setProperty("docker.cert.path", "C:\\Users\\${System.getProperty('user.name')}\\.boot2docker\\certs\\boot2docker-vm")
-        def client = new NetHttpClient(dockerHost: defaultDockerHost ?: "http://172.17.42.1:4243/")
+        def client = new OkDockerClient(dockerHost: defaultDockerHost ?: "http://172.17.42.1:4243/")
 
         def response
 //        response = client.get("/_ping")

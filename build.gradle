@@ -86,6 +86,7 @@ dependencies {
     compile 'org.codehaus.groovy:groovy-json:2.4.5'
 
     compile 'com.squareup.okhttp3:okhttp:3.3.1'
+    compile 'com.squareup.okhttp3:okhttp-ws:3.3.1'
     testCompile 'com.squareup.okhttp3:mockwebserver:3.3.1'
 
     compile 'org.apache.commons:commons-compress:1.10'

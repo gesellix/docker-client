@@ -4,6 +4,7 @@ import de.gesellix.docker.client.protocolhandler.DockerContentHandlerFactory
 import de.gesellix.docker.client.protocolhandler.DockerURLHandler
 import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
+import okhttp3.ws.WebSocketCall
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.output.NullOutputStream
 
@@ -114,6 +115,11 @@ class NetHttpClient implements HttpClient {
             websocketClient = new DockerWebsocketClient(new URI(requestUrl), handler)
         }
         return websocketClient
+    }
+
+    @Override
+    WebSocketCall webSocketCall(Map requestConfig) {
+        throw new UnsupportedOperationException("not implemented")
     }
 
     def request(Map config) {

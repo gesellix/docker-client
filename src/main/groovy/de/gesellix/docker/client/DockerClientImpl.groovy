@@ -4,6 +4,8 @@ import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
+import okhttp3.ws.WebSocketCall
+import okhttp3.ws.WebSocketListener
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.io.IOUtils
@@ -20,6 +22,7 @@ class DockerClientImpl implements DockerClient {
     def proxy
 
     DockerConfig config = new DockerConfig()
+
     HttpClient httpClient
     def Closure<HttpClient> newDockerHttpClient
 
@@ -404,8 +407,8 @@ class DockerClientImpl implements DockerClient {
     @Override
     def restart(containerId) {
         log.info "docker restart"
-        def response = getHttpClient().post([path   : "/containers/${containerId}/restart".toString(),
-                                             query  : [t: 5]])
+        def response = getHttpClient().post([path : "/containers/${containerId}/restart".toString(),
+                                             query: [t: 5]])
         return response
     }
 
@@ -755,6 +758,18 @@ class DockerClientImpl implements DockerClient {
         // TODO we should connect here, shouldn't we?
 //    wsClient.connectBlocking()
         return wsClient
+    }
+
+    @Override
+    def attachWebsocket(containerId, query, WebSocketListener listener) {
+        log.info "docker attach via websocket"
+        WebSocketCall webSocketCall = getHttpClient().webSocketCall(
+                [path : "/containers/${containerId}/attach/ws".toString(),
+                 query: query]
+        )
+
+        webSocketCall.enqueue(listener)
+        return webSocketCall
     }
 
     @Override
