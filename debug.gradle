@@ -1,0 +1,47 @@
+task checkDockerClient(type: JavaExec) {
+
+    main = 'de.gesellix.docker.client.LocalDocker'
+    classpath = sourceSets.main.runtimeClasspath + sourceSets.integrationTest.runtimeClasspath
+
+    standardOutput = new ByteArrayOutputStream()
+
+    def environmentVariables = [
+            "DOCKER_HOST",
+            "DOCKER_TLS_VERIFY"
+    ]
+    def systemProperties = [
+            "java.version",
+            "java.vendor",
+            "os.name",
+            "os.arch",
+            "os.version"
+    ]
+    def summary = {
+        def result = ["\nenvironment:\n"]
+        result += environmentVariables.collect {
+            "- ${it}: ${environment[it]}"
+        }
+        result += systemProperties.collect {
+            "- ${it}: ${System.properties[it]}"
+        }
+        result.join("\n")
+    }
+
+    doFirst {
+        logger.lifecycle "running availability check..."
+    }
+    doLast {
+        def log = standardOutput.toString()
+        if (log =~ "connection success") {
+            logger.info log
+            logger.lifecycle "\n* success * ${summary()}"
+        } else {
+            logger.lifecycle log
+            logger.lifecycle "\n* failed * ${summary()}"
+        }
+
+        logger.lifecycle "" +
+                "\nThank you for testing, please leave some feedback at https://github.com/gesellix/docker-client/issues/26" +
+                "\nIf possible, please also share the log output above!"
+    }
+}

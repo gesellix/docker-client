@@ -193,3 +193,5 @@ task wrapper(type: Wrapper) {
     gradleVersion = '2.12'
     distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
+
+apply from: 'debug.gradle'
