@@ -1,5 +1,6 @@
 package de.gesellix.docker.client
 
+import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import okhttp3.RequestBody
 import okhttp3.Response
@@ -9,6 +10,7 @@ import okhttp3.ws.WebSocketCall
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.io.IOUtils
+import org.joda.time.DateTime
 import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
@@ -18,6 +20,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS
+import static java.util.concurrent.TimeUnit.SECONDS
 
 @Slf4j
 @Requires({ LocalDocker.available() })
@@ -962,6 +965,169 @@ class DockerClientImplIntegrationSpec extends Specification {
                 name        : "gesellix/docker-client-testimage",
                 star_count  : 0
         ])
+    }
+
+    def "events (async)"() {
+        given:
+        def latch = new CountDownLatch(1)
+        def callback = new DockerAsyncCallback() {
+            def events = []
+
+            @Override
+            def onEvent(Object event) {
+                println event
+                events << new JsonSlurper().parseText(event as String)
+                latch.countDown()
+            }
+        }
+        dockerClient.events(callback)
+
+        when:
+        def response = dockerClient.createContainer([Cmd: "-"])
+        latch.await(5, SECONDS)
+
+        then:
+        callback.events.size() == 1
+        and:
+        callback.events.first().status == "create"
+        callback.events.first().id == response.content.Id
+
+        cleanup:
+        dockerClient.rm(response.content.Id)
+    }
+
+    def "events (poll)"() {
+        // meh. boot2docker/docker-machine sometimes need a time update, e.g. via:
+        // docker-machine ssh default 'sudo ntpclient -s -h pool.ntp.org'
+
+        given:
+        def dockerSystemTime = DateTime.parse(dockerClient.info().content.SystemTime as String)
+        long dockerEpoch = dockerSystemTime.millis / 1000
+
+        def localSystemTime = DateTime.now()
+        long localEpoch = localSystemTime.millis / 1000
+
+        long timeOffset = localEpoch - dockerEpoch
+
+        def latch = new CountDownLatch(1)
+        def callback = new DockerAsyncCallback() {
+            def events = []
+
+            @Override
+            def onEvent(Object event) {
+                println event
+                events << new JsonSlurper().parseText(event as String)
+                latch.countDown()
+            }
+        }
+
+        def container1 = dockerClient.createContainer([Cmd: "-"]).content.Id
+        def container2 = dockerClient.createContainer([Cmd: "-"]).content.Id
+
+        Thread.sleep(1000)
+        long epochBeforeRm = (DateTime.now().millis / 1000) + timeOffset
+        dockerClient.rm(container1)
+
+        when:
+        dockerClient.events(callback, [since: epochBeforeRm])
+        latch.await(5, SECONDS)
+
+        then:
+        callback.events.size() == 1
+        and:
+        callback.events.first().status == "destroy"
+        callback.events.first().id == container1
+
+        cleanup:
+        dockerClient.rm(container2)
+    }
+
+    def "top"() {
+        given:
+        def imageName = "gesellix/docker-client-testimage"
+        def containerConfig = ["Cmd": ["sh", "-c", "ping 127.0.0.1"]]
+        def containerStatus = dockerClient.run(imageName, containerConfig, "latest", "top-example")
+        def containerId = containerStatus.container.content.Id
+
+        when:
+        def top = dockerClient.top(containerId).content
+
+        then:
+        top.Titles == ["PID", "USER", "TIME", "COMMAND"]
+        and:
+        top.Processes.last()[0] =~ "\\d{4}"
+        top.Processes.last()[1] == "root"
+        top.Processes.last()[2] == "0:00"
+        top.Processes.last()[3] == "ping 127.0.0.1"
+
+        cleanup:
+        dockerClient.stop(containerId)
+        dockerClient.wait(containerId)
+        dockerClient.rm(containerId)
+    }
+
+    def "stats"() {
+        given:
+        def latch = new CountDownLatch(1)
+        def callback = new DockerAsyncCallback() {
+            def stats = []
+
+            @Override
+            def onEvent(Object stat) {
+                println stat
+                stats << new JsonSlurper().parseText(stat as String)
+                latch.countDown()
+            }
+        }
+        def imageName = "gesellix/docker-client-testimage"
+        def containerConfig = ["Cmd": ["sh", "-c", "ping 127.0.0.1"]]
+        def containerStatus = dockerClient.run(imageName, containerConfig, "latest", "stats-example")
+        def containerId = containerStatus.container.content.Id
+
+        when:
+        dockerClient.stats(containerId, callback)
+        latch.await(5, SECONDS)
+
+        then:
+        callback.stats.size() == 1
+        callback.stats.first().blkio_stats
+
+        cleanup:
+        dockerClient.stop(containerId)
+        dockerClient.wait(containerId)
+        dockerClient.rm(containerId)
+    }
+
+    def "logs"() {
+        given:
+        def latch = new CountDownLatch(1)
+        def callback = new DockerAsyncCallback() {
+            def lines = []
+
+            @Override
+            def onEvent(Object line) {
+                println line
+                lines << line
+                latch.countDown()
+            }
+        }
+        def imageName = "gesellix/docker-client-testimage"
+        def containerConfig = ["Cmd": ["sh", "-c", "ping 127.0.0.1"]]
+        def containerStatus = dockerClient.run(imageName, containerConfig, "latest", "logs-example")
+        def containerId = containerStatus.container.content.Id
+
+        when:
+        dockerClient.logs(containerId, [tail: 1], callback)
+        latch.await(5, SECONDS)
+
+        then:
+        callback.lines.size() == 1
+        callback.lines.first().startsWith("64 bytes from 127.0.0.1")
+
+        cleanup:
+        dockerClient.stop(containerId)
+        dockerClient.wait(containerId)
+        dockerClient.rm(containerId)
     }
 
     @Requires({ LocalDocker.isTcpSocket() })
