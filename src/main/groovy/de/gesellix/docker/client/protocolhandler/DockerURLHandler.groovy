@@ -8,45 +8,21 @@ class DockerURLHandler {
 
     DockerConfig config = new DockerConfig()
 
-    def getRequestUrl(String dockerHost, String path, String query = "") {
-        def (String protocol, String host, int port) = getProtocolAndHost(dockerHost)
-        if (path && !path.startsWith("/")) {
-            path = "/$path"
-        }
-        if (config.apiVersion) {
-            path = "/${config.apiVersion}${path}".toString()
-        }
-        query = query ?: ""
-        if (["npipe", "unix"].contains(protocol)) {
-            // slashes need to be escaped, because the file name is used as host name
-            return new URL(protocol, URLEncoder.encode(host, "UTF-8"), -1, "${path}${query}", newHandler(protocol))
-        }
-        return new URL("${protocol}://${host}:${port}${path}${query}")
-    }
-
     def getProtocolAndHost(String dockerHost) {
         if (!dockerHost) {
             throw new IllegalStateException("dockerHost must be set")
         }
-        def dockerBaseUrl = getURLWithActualProtocol(dockerHost)
+        def dockerBaseUrl = getBaseURLWithActualProtocol(dockerHost)
         return [dockerBaseUrl.protocol, dockerBaseUrl.host, dockerBaseUrl.port]
     }
 
-    def newHandler(String protocol) {
-        switch (protocol) {
-            case "unix": return new sun.net.www.protocol.unix.Handler()
-            case "npipe": return new sun.net.www.protocol.npipe.Handler()
-            default: throw new IllegalStateException("cannot handle '${protocol}'")
-        }
-    }
-
-    URL getURLWithActualProtocol(String dockerHost) {
+    def getBaseURLWithActualProtocol(String dockerHost) {
         if (!dockerHost) {
             throw new IllegalStateException("dockerHost must be set")
         }
-        def result
         def oldProtocol = dockerHost.split("://", 2)[0]
         def protocol = oldProtocol
+        def result = [:]
         switch (protocol) {
             case "http":
             case "https":
@@ -58,45 +34,31 @@ class DockerURLHandler {
                     log.debug("assume 'http'")
                     protocol = "http"
                 }
-                result = new URL(dockerHost.replaceFirst("^${oldProtocol}://", "${protocol}://"))
+                def tcpUrl = new URL(dockerHost.replaceFirst("^${oldProtocol}://", "${protocol}://"))
+                result.protocol = tcpUrl.protocol
+                result.host = tcpUrl.host
+                result.port = tcpUrl.port
                 break
             case "unix":
                 log.debug("is 'unix'")
                 def dockerUnixSocket = dockerHost.replaceFirst("unix://", "")
-                try {
-                    result = new URL("unix", dockerUnixSocket, "")
-                }
-                catch (MalformedURLException ignored) {
-                    log.info("retrying to connect to '$dockerUnixSocket'")
-                    try {
-                        result = new URL("unix", dockerUnixSocket, -1, "", new sun.net.www.protocol.unix.Handler())
-                    }
-                    catch (MalformedURLException finalException) {
-                        log.error("could not use the 'unix' protocol to connect to $dockerUnixSocket - retry failed.", finalException)
-                        throw finalException
-                    }
-                }
+                result.protocol = 'unix'
+                result.host = dockerUnixSocket
+                result.port = -1
                 break
             case "npipe":
                 log.debug("is 'named pipe'")
                 def dockerNamedPipe = dockerHost.replaceFirst("npipe://", "")
-                try {
-                    result = new URL("npipe", dockerNamedPipe, "")
-                }
-                catch (MalformedURLException ignored) {
-                    log.info("retrying to connect to '$dockerNamedPipe'")
-                    try {
-                        result = new URL("npipe", dockerNamedPipe, -1, "", new sun.net.www.protocol.npipe.Handler())
-                    }
-                    catch (MalformedURLException finalException) {
-                        log.error("could not use the 'npipe' protocol to connect to $dockerNamedPipe - retry failed.", finalException)
-                        throw finalException
-                    }
-                }
+                result.protocol = 'npipe'
+                result.host = dockerNamedPipe
+                result.port = -1
                 break
             default:
                 log.warn("protocol '${protocol}' not supported")
-                result = new URL(dockerHost)
+                def url = new URL(dockerHost)
+                result.protocol = url.protocol
+                result.host = url.host
+                result.port = url.port
                 break
         }
         log.debug("selected dockerHost at '${result}'")

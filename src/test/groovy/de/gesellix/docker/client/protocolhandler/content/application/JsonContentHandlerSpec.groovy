@@ -11,7 +11,7 @@ class JsonContentHandlerSpec extends Specification {
     def jsonContentHandler
 
     def setup() {
-        jsonContentHandler = new json(false)
+        jsonContentHandler = new JsonContentHandler(false)
         jsonContentHandler.jsonSlurper = jsonSlurper
     }
 

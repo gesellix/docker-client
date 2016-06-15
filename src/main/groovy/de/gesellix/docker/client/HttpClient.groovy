@@ -24,9 +24,5 @@ public interface HttpClient {
 
     def delete(Map requestConfig)
 
-    def getWebsocketClient(String path, handler)
-
-    def getWebsocketClient(Map requestConfig, handler)
-
     WebSocketCall webSocketCall(Map requestConfig)
 }

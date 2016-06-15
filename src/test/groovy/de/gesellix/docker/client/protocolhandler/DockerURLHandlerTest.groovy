@@ -85,9 +85,9 @@ class DockerURLHandlerTest extends Specification {
                 config: new DockerConfig(
                         tlsVerify: null))
         when:
-        def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("tcp://127.0.0.1:2375")
+        def finalDockerHost = dockerUrlHandler.getBaseURLWithActualProtocol("tcp://127.0.0.1:2375")
         then:
-        finalDockerHost.toString() == "http://127.0.0.1:2375"
+        finalDockerHost == [protocol: "http", host: "127.0.0.1", port: 2375]
     }
 
     def "should choose http for 'http://127.0.0.1:2375'"() {
@@ -95,9 +95,9 @@ class DockerURLHandlerTest extends Specification {
                 config: new DockerConfig(
                         tlsVerify: null))
         when:
-        def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("http://127.0.0.1:2375")
+        def finalDockerHost = dockerUrlHandler.getBaseURLWithActualProtocol("http://127.0.0.1:2375")
         then:
-        finalDockerHost.toString() == "http://127.0.0.1:2375"
+        finalDockerHost == [protocol: "http", host: "127.0.0.1", port: 2375]
     }
 
     def "should choose http for 'https://127.0.0.1:2376' and disabled tls"() {
@@ -105,9 +105,9 @@ class DockerURLHandlerTest extends Specification {
                 config: new DockerConfig(
                         tlsVerify: ""))
         when:
-        def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("https://127.0.0.1:2376")
+        def finalDockerHost = dockerUrlHandler.getBaseURLWithActualProtocol("https://127.0.0.1:2376")
         then:
-        finalDockerHost.toString() == "http://127.0.0.1:2376"
+        finalDockerHost == [protocol: "http", host: "127.0.0.1", port: 2376]
     }
 
     def "should choose https for 'https://127.0.0.1:2376' and enabled tls"() {
@@ -117,57 +117,32 @@ class DockerURLHandlerTest extends Specification {
                         tlsVerify: "1",
                         certPath: certsDir.toString()))
         when:
-        def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("https://127.0.0.1:2376")
+        def finalDockerHost = dockerUrlHandler.getBaseURLWithActualProtocol("https://127.0.0.1:2376")
         then:
-        finalDockerHost.toString() == "https://127.0.0.1:2376"
+        finalDockerHost == [protocol: "https", host: "127.0.0.1", port: 2376]
     }
 
     def "should choose unix socket for 'unix:///var/run/socket.example'"() {
         def dockerUrlHandler = new DockerURLHandler()
         when:
-        def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("unix:///var/run/socket.example")
+        def finalDockerHost = dockerUrlHandler.getBaseURLWithActualProtocol("unix:///var/run/socket.example")
         then:
-        finalDockerHost.toString() == "unix:///var/run/socket.example".toString()
+        finalDockerHost == [protocol: "unix", host: "/var/run/socket.example", port: -1]
     }
 
     def "should choose named pipe for 'npipe:////./pipe/docker_engine'"() {
         def dockerUrlHandler = new DockerURLHandler()
         when:
-        def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("npipe:////./pipe/docker_engine")
+        def finalDockerHost = dockerUrlHandler.getBaseURLWithActualProtocol("npipe:////./pipe/docker_engine")
         then:
-        finalDockerHost.toString() == "npipe:////./pipe/docker_engine".toString()
+        finalDockerHost == [protocol: "npipe", host: "//./pipe/docker_engine", port: -1]
     }
 
     def "should ignore unknown protocol"() {
         def dockerUrlHandler = new DockerURLHandler()
         when:
-        def finalDockerHost = dockerUrlHandler.getURLWithActualProtocol("ftp://example/foo")
+        def finalDockerHost = dockerUrlHandler.getBaseURLWithActualProtocol("ftp://example/foo")
         then:
-        finalDockerHost.toString() == "ftp://example/foo"
-    }
-
-    def "create a request url with null query"() {
-        def dockerUrlHandler = new DockerURLHandler()
-        when:
-        def url = dockerUrlHandler.getRequestUrl("unix:///var/run/socket.example", "/a-path", null)
-        then:
-        url.toString() == "unix://${URLEncoder.encode('/var/run/socket.example', 'UTF-8')}/a-path".toString()
-    }
-
-    def "create a request url without explicit api version"() {
-        def dockerUrlHandler = new DockerURLHandler()
-        when:
-        def url = dockerUrlHandler.getRequestUrl("unix:///var/run/socket.example", "/a-path")
-        then:
-        url.toString() == "unix://${URLEncoder.encode('/var/run/socket.example', 'UTF-8')}/a-path".toString()
-    }
-
-    def "create a request url with configured api version"() {
-        def dockerUrlHandler = new DockerURLHandler()
-        dockerUrlHandler.config.apiVersion = "v4.711"
-        when:
-        def url = dockerUrlHandler.getRequestUrl("unix:///var/run/socket.example", "/a-path")
-        then:
-        url.toString() == "unix://${URLEncoder.encode('/var/run/socket.example', 'UTF-8')}/v4.711/a-path".toString()
+        finalDockerHost == [protocol: "ftp", host: "example", port: -1]
     }
 }

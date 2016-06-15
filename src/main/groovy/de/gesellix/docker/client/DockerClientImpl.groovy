@@ -49,7 +49,6 @@ class DockerClientImpl implements DockerClient {
     }
 
     def createDockerHttpClient(dockerConfig, proxy) {
-//        return new NetHttpClient(config: dockerConfig, proxy: proxy)
         return new OkDockerClient(config: dockerConfig, proxy: proxy)
     }
 
@@ -746,18 +745,6 @@ class DockerClientImpl implements DockerClient {
                                              query: query])
         response.stream.multiplexStreams = !container.content.Config.Tty
         return response
-    }
-
-    @Override
-    def attachWebsocket(containerId, query, handler) {
-        log.info "docker attach via websocket"
-        DockerWebsocketClient wsClient = getHttpClient().getWebsocketClient(
-                [path : "/containers/${containerId}/attach/ws".toString(),
-                 query: query],
-                handler)
-        // TODO we should connect here, shouldn't we?
-//    wsClient.connectBlocking()
-        return wsClient
     }
 
     @Override

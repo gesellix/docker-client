@@ -5,7 +5,7 @@ import org.apache.commons.io.IOUtils
 
 import java.util.regex.Pattern
 
-class json extends ContentHandler {
+class JsonContentHandler {
 
     def jsonSlurper
     def async = false
@@ -13,11 +13,7 @@ class json extends ContentHandler {
     def chunkDelimiter = "\\}[\\n\\r]*\\{"
     Pattern multipleChunks = Pattern.compile(".*${chunkDelimiter}.*", Pattern.DOTALL)
 
-    json() {
-        this(false)
-    }
-
-    json(boolean async) {
+    JsonContentHandler(boolean async) {
         this.jsonSlurper = new JsonSlurper()
         this.async = async
     }
@@ -26,7 +22,6 @@ class json extends ContentHandler {
         return readJsonObject(stream, chunked)
     }
 
-    @Override
     Object getContent(URLConnection connection) throws IOException {
         def stream = connection.getInputStream()
         def chunked = connection.getHeaderField("transfer-encoding") == "chunked"

@@ -1,7 +1,7 @@
 package de.gesellix.docker.client
 
 import de.gesellix.docker.client.protocolhandler.DockerURLHandler
-import de.gesellix.docker.client.protocolhandler.content.application.json
+import de.gesellix.docker.client.protocolhandler.content.application.JsonContentHandler
 import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
 import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
@@ -95,16 +95,6 @@ class OkDockerClient implements HttpClient {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "DELETE"
         return request(config)
-    }
-
-    @Override
-    def getWebsocketClient(String path, Object handler) {
-        throw new UnsupportedOperationException("not implemented")
-    }
-
-    @Override
-    def getWebsocketClient(Map requestConfig, Object handler) {
-        throw new UnsupportedOperationException("not implemented")
     }
 
     @Override
@@ -287,7 +277,7 @@ class OkDockerClient implements HttpClient {
                 }
                 break
             case "application/json":
-                def content = new json(config.async as boolean).getContent(
+                def content = new JsonContentHandler(config.async as boolean).getContent(
                         httpResponse.body().byteStream(),
                         httpResponse.header("transfer-encoding") == "chunked")
                 consumeResponseBody(response, content, config)
