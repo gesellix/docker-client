@@ -71,14 +71,8 @@ ext {
 }
 
 def dependencyVersions = [
-        'commons-io:commons-io:2.4',
-        'commons-lang:commons-lang:2.6',
-        'joda-time:joda-time:2.9.1',
-        'junit:junit:4.12',
-        'org.apache.commons:commons-compress:1.10',
-        'org.bouncycastle:bcprov-jdk15on:1.52',
-        'org.hamcrest:hamcrest-core:1.3',
-        'org.slf4j:slf4j-api:1.7.13'
+        'org.bouncycastle:bcprov-jdk15on:1.54',
+        'org.slf4j:slf4j-api:1.7.21'
 ]
 
 dependencies {
@@ -89,12 +83,12 @@ dependencies {
     compile 'com.squareup.okhttp3:okhttp-ws:3.3.1'
     testCompile 'com.squareup.okhttp3:mockwebserver:3.3.1'
 
-    compile 'org.apache.commons:commons-compress:1.10'
-    compile 'commons-io:commons-io:2.4'
+    compile 'org.apache.commons:commons-compress:1.11'
+    compile 'commons-io:commons-io:2.5'
 
-    compile 'org.slf4j:slf4j-api:1.7.13'
+    compile 'org.slf4j:slf4j-api:1.7.21'
 
-    compile 'org.bouncycastle:bcpkix-jdk15on:1.52'
+    compile 'org.bouncycastle:bcpkix-jdk15on:1.54'
     compile('com.kohlschutter.junixsocket:junixsocket-native-common:2.0.4') {
         exclude module: 'log4j'
     }
@@ -108,11 +102,11 @@ dependencies {
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
         exclude module: 'groovy-all'
     }
-    testCompile 'cglib:cglib-nodep:3.2.0'
+    testCompile 'cglib:cglib-nodep:3.2.3'
     testCompile 'commons-lang:commons-lang:2.6'
-    testCompile 'joda-time:joda-time:2.9.1'
+    testCompile 'joda-time:joda-time:2.9.4'
 
-    testCompile 'ch.qos.logback:logback-classic:1.1.3'
+    testCompile 'ch.qos.logback:logback-classic:1.1.7'
 }
 
 configurations {
