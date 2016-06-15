@@ -19,6 +19,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 
+import static de.gesellix.docker.client.WebsocketStatusCode.NORMAL_CLOSURE
 import static java.util.concurrent.TimeUnit.MILLISECONDS
 import static java.util.concurrent.TimeUnit.SECONDS
 
@@ -1182,7 +1183,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         receivedMessages.contains ourMessage
 
         cleanup:
-        webSocketReference.get().close(1000, "cleanup")
+        webSocketReference.get().close(NORMAL_CLOSURE.code, "cleanup")
         dockerClient.stop(containerId)
         dockerClient.wait(containerId)
         dockerClient.rm(containerId)
