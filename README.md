@@ -27,7 +27,7 @@ For use in Gradle, add the bintray repository first:
 Then, you need to add the dependency, but please ensure to use the [latest version](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion):
 
     dependencies {
-      compile 'de.gesellix:docker-client:2016-05-05T11-03-00'
+      compile 'de.gesellix:docker-client:2016-06-15T21-46-51'
     }
 
 The tests in `DockerClientImplSpec` and `DockerClientImplIntegrationSpec` should give you an idea how to use the docker-client.
@@ -92,8 +92,8 @@ Running a container being available on the host via HTTP port 4712 can be achiev
     // you might implement it as a fifo instead of the List shown above
 
 
-## Usage with Gradle-Docker-Plugin
+## Usage with Gradle Docker Plugin
 
 My personal focus implementing this Docker client was to leverage the Docker remote API in our Gradle scripts.
-A convenient integration in Gradle is possible by using the [Gradle-Docker-Plugin](https://github.com/gesellix/gradle-docker-plugin),
+A convenient integration in Gradle is possible by using the [Gradle Docker Plugin](https://github.com/gesellix/gradle-docker-plugin),
 which will be developed along with the Docker client library.
