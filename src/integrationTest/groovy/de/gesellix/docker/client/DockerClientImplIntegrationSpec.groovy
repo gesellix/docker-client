@@ -116,12 +116,12 @@ class DockerClientImplIntegrationSpec extends Specification {
         then:
         version.ApiVersion == "1.23"
         version.Arch == "amd64"
-        version.BuildTime == "2016-06-03T08:34:52.695511840+00:00"
-        version.GitCommit == "8b63c77"
+        version.BuildTime == "2016-06-06T23:57:32.306881674+00:00"
+        version.GitCommit == "56888bf"
         version.GoVersion == "go1.5.4"
         version.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"
         version.Os == "linux"
-        version.Version == "1.11.1"
+        version.Version == "1.11.2"
     }
 
     def auth() {

@@ -66,11 +66,11 @@ class NetHttpClientIntegrationSpec extends Specification {
         def content = response.content
         content.ApiVersion == "1.23"
         content.Arch == "amd64"
-        content.GitCommit == "8b63c77"
+        content.GitCommit == "56888bf"
         content.GoVersion == "go1.5.4"
         content.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"
         content.Os == "linux"
-        content.Version == "1.11.1"
+        content.Version == "1.11.2"
     }
 
     @Requires({ LocalDocker.isUnixSocket() })
