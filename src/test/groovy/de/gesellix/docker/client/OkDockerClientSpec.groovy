@@ -1,7 +1,7 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.client.protocolhandler.contenthandler.RawHeaderAndPayload
-import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
+import de.gesellix.docker.client.rawstream.RawHeaderAndPayload
+import de.gesellix.docker.client.rawstream.RawInputStream
 import okhttp3.Interceptor
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
@@ -21,7 +21,7 @@ import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLSession
 import javax.net.ssl.SSLSocket
 
-import static de.gesellix.docker.client.protocolhandler.contenthandler.StreamType.STDOUT
+import static de.gesellix.docker.client.rawstream.StreamType.STDOUT
 import static java.net.Proxy.Type.DIRECT
 import static java.net.Proxy.Type.HTTP
 

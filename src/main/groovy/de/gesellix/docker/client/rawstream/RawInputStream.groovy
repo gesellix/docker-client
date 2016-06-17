@@ -1,9 +1,7 @@
-package de.gesellix.docker.client.protocolhandler.contenthandler
+package de.gesellix.docker.client.rawstream
 
 import groovy.util.logging.Slf4j
 import org.apache.commons.io.IOUtils
-
-import static de.gesellix.docker.client.protocolhandler.contenthandler.RawStreamHeader.EMPTY_HEADER
 
 /**
  * see https://docs.docker.com/reference/api/docker_remote_api_v1.17/#attach-to-a-container.
@@ -45,7 +43,7 @@ class RawInputStream extends FilterInputStream {
 
         def parsedHeader = readFrameHeader()
         log.trace(parsedHeader.toString())
-        if (parsedHeader == EMPTY_HEADER) {
+        if (parsedHeader == RawStreamHeader.EMPTY_HEADER) {
             return EOF
         }
 
@@ -72,7 +70,7 @@ class RawInputStream extends FilterInputStream {
             if (remainingFrameSize <= 0) {
                 def parsedHeader = readFrameHeader()
                 log.trace(parsedHeader.toString())
-                if (parsedHeader == EMPTY_HEADER) {
+                if (parsedHeader == RawStreamHeader.EMPTY_HEADER) {
                     return EOF
                 }
                 remainingFrameSize = parsedHeader.frameSize
@@ -97,7 +95,7 @@ class RawInputStream extends FilterInputStream {
 
 //    log.trace("read header: ${headerBuf}")
         if (headerBuf.find { it < 0 }) {
-            return EMPTY_HEADER
+            return RawStreamHeader.EMPTY_HEADER
         }
 
         try {

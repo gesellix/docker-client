@@ -1,4 +1,4 @@
-package de.gesellix.docker.client.protocolhandler.contenthandler
+package de.gesellix.docker.client.rawstream
 
 /**
  <p>
@@ -14,7 +14,7 @@ enum StreamType {
 
     STDIN((byte) 0),
     STDOUT((byte) 1),
-    STDERR((byte) 2);
+    STDERR((byte) 2)
 
     private final byte streamTypeId;
 

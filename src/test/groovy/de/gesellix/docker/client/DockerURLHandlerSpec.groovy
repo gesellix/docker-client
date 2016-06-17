@@ -1,13 +1,12 @@
-package de.gesellix.docker.client.protocolhandler
+package de.gesellix.docker.client
 
-import de.gesellix.docker.client.DockerConfig
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.nio.file.Files
 import java.nio.file.Paths
 
-class DockerURLHandlerTest extends Specification {
+class DockerURLHandlerSpec extends Specification {
 
     @Unroll
     def "should assume TLS when tlsVerify==#tlsVerify"() {

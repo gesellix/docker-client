@@ -1,6 +1,5 @@
-package de.gesellix.docker.client.protocolhandler
+package de.gesellix.docker.client
 
-import de.gesellix.docker.client.DockerConfig
 import groovy.util.logging.Slf4j
 
 @Slf4j

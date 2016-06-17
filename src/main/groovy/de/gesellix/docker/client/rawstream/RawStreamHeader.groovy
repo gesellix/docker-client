@@ -1,4 +1,4 @@
-package de.gesellix.docker.client.protocolhandler.contenthandler
+package de.gesellix.docker.client.rawstream
 
 /**
  * see https://docs.docker.com/reference/api/docker_remote_api_v1.17/#attach-to-a-container.

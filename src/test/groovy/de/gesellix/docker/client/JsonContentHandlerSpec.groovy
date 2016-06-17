@@ -1,4 +1,4 @@
-package de.gesellix.docker.client.protocolhandler.content.application
+package de.gesellix.docker.client
 
 import groovy.json.JsonSlurper
 import org.apache.commons.io.IOUtils

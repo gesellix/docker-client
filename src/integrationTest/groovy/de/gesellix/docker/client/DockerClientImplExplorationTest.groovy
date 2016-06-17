@@ -1,6 +1,6 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
+import de.gesellix.docker.client.rawstream.RawInputStream
 import org.apache.commons.io.IOUtils
 import spock.lang.Ignore
 import spock.lang.Requires

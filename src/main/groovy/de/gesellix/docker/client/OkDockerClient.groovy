@@ -1,8 +1,6 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.client.protocolhandler.DockerURLHandler
-import de.gesellix.docker.client.protocolhandler.content.application.JsonContentHandler
-import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
+import de.gesellix.docker.client.rawstream.RawInputStream
 import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
 import okhttp3.CacheControl

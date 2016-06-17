@@ -1,6 +1,6 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.client.protocolhandler.contenthandler.RawInputStream
+import de.gesellix.docker.client.rawstream.RawInputStream
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
