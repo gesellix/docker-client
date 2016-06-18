@@ -978,10 +978,12 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def updateNode(name, config) {
+    def updateNode(name, query, config) {
         log.info "docker node update"
+        def actualQuery = query ?: [:]
         config = config ?: [:]
         def response = getHttpClient().post([path              : "/nodes/$name/update",
+                                             query             : actualQuery,
                                              body              : config,
                                              requestContentType: "application/json"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker node update failed"))
@@ -1022,9 +1024,11 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def leaveSwarm() {
+    def leaveSwarm(query = [:]) {
         log.info "docker swarm leave"
-        def response = getHttpClient().post([path: "/swarm/leave"])
+        def actualQuery = query ?: [:]
+        def response = getHttpClient().post([path : "/swarm/leave",
+                                             query: actualQuery])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm leave failed"))
         return response
     }

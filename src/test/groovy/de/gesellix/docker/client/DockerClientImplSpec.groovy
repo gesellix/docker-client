@@ -1289,6 +1289,7 @@ class DockerClientImplSpec extends Specification {
 
     def "update node"() {
         given:
+        def query = [version: 42]
         def config = [
                 "Spec": [
                         "AcceptancePolicy": [
@@ -1301,10 +1302,11 @@ class DockerClientImplSpec extends Specification {
         ]
 
         when:
-        dockerClient.updateNode("node-id", config)
+        dockerClient.updateNode("node-id", query, config)
 
         then:
         1 * httpClient.post([path              : "/nodes/node-id/update",
+                             query             : query,
                              body              : config,
                              requestContentType: "application/json"]) >> [status: [success: true]]
     }

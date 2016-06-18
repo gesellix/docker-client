@@ -198,7 +198,7 @@ interface DockerClient {
 
     def inspectNode(name)
 
-    def updateNode(name, config)
+    def updateNode(name, query, config)
 
     def rmNode(name)
 
@@ -211,6 +211,8 @@ interface DockerClient {
     def joinSwarm(config)
 
     def leaveSwarm()
+
+    def leaveSwarm(query)
 
     def updateSwarm(config)
 
