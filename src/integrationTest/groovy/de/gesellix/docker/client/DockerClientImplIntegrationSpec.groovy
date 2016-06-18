@@ -115,14 +115,14 @@ class DockerClientImplIntegrationSpec extends Specification {
         def version = dockerClient.version().content
 
         then:
-        version.ApiVersion == "1.23"
+        version.ApiVersion == "1.24"
         version.Arch == "amd64"
-        version.BuildTime == "2016-06-06T23:57:32.306881674+00:00"
-        version.GitCommit == "56888bf"
-        version.GoVersion == "go1.5.4"
+        version.BuildTime == "2016-06-17T22:09:20.440355664+00:00"
+        version.GitCommit == "a7119de"
+        version.GoVersion == "go1.6.2"
         version.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"
         version.Os == "linux"
-        version.Version == "1.11.2"
+        version.Version == "1.12.0-rc2"
     }
 
     def auth() {
@@ -169,8 +169,8 @@ class DockerClientImplIntegrationSpec extends Specification {
         then:
         DockerClientException ex = thrown()
         ex.cause.message == 'docker build failed'
-        ex.detail.content.last() == [error      : "Error: image missing/image not found",
-                                     errorDetail: [message: "Error: image missing/image not found"]]
+        ex.detail.content.last() == [error      : "Error: image missing/image:latest not found",
+                                     errorDetail: [message: "Error: image missing/image:latest not found"]]
     }
 
     def "build image with custom Dockerfile"() {
@@ -910,7 +910,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         dockerClient.rm(name)
     }
 
-    def "copy"() {
+    def "get archive (copy from container)"() {
         given:
         def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
         def imageName = "copy_container"
@@ -921,7 +921,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         def containerId = containerInfo.container.content.Id
 
         when:
-        def tarContent = dockerClient.copy(containerId, [Resource: "/file1.txt"]).stream
+        def tarContent = dockerClient.getArchive(containerId, "/file1.txt").stream
 
         then:
         def fileContent = dockerClient.extractSingleTarEntry(tarContent as InputStream, "file1.txt")
@@ -962,7 +962,7 @@ class DockerClientImplIntegrationSpec extends Specification {
                 description : "",
                 is_automated: true,
                 is_official : false,
-                is_trusted  : true,
+//                is_trusted  : true,
                 name        : "gesellix/docker-client-testimage",
                 star_count  : 0
         ])

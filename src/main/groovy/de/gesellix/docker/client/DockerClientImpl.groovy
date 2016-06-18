@@ -658,10 +658,9 @@ class DockerClientImpl implements DockerClient {
         }
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker get archive failed"))
 
-        def pathInfo = response.headers['X-Docker-Container-Path-Stat'.toLowerCase()] as List
+        String pathInfo = response.headers['X-Docker-Container-Path-Stat'.toLowerCase()]
         if (pathInfo) {
-            def firstPathInfo = pathInfo.first() as String
-            log.debug "archiveStats: ${new JsonSlurper().parseText(new String(firstPathInfo.decodeBase64()))}"
+            log.debug "archiveStats: ${new JsonSlurper().parseText(new String(pathInfo.decodeBase64()))}"
         }
         return response
     }
