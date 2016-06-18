@@ -109,4 +109,4 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 ## Tasks
 
 * [x] `docker service tasks`: List tasks running on a node
-* [ ] Get details on a task
+* [x] Get details on a task

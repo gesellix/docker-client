@@ -2,7 +2,7 @@
 
 A Docker HTTP client written in Groovy
 
-[![Remote API v1.24 Coverage Status (74/75 endpoints)](http://progressed.io/bar/99?title=api%20coverage)](https://github.com/gesellix/docker-client/blob/master/roadmap.md)
+[![Remote API v1.24 Coverage Status (74/74 endpoints)](http://progressed.io/bar/100?title=api%20coverage)](https://github.com/gesellix/docker-client/blob/master/roadmap.md)
 [![Build Status](https://travis-ci.org/gesellix/docker-client.svg)](https://travis-ci.org/gesellix/docker-client)
 [![Latest version](https://api.bintray.com/packages/gesellix/docker-utils/docker-client/images/download.svg) ](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion)
 
