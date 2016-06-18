@@ -1,13 +1,9 @@
 # Supported Features
 
-*feature set based on the [Docker Remote API v1.23](https://docs.docker.com/engine/reference/api/docker_remote_api_v1.23/)*
+*feature set based on the [Docker Remote API v1.24](https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/)*
 
 Since the Docker remote api tends to be backwards compatible,
-the Docker-Client currently supports most other api versions, too.
-
-For most use cases the Docker-Client also works with the Docker Swarm API, but the same
-restrictions and changed behaviour apply like described in the
-official [Swarm API docs](https://docs.docker.com/swarm/api/swarm-api/).
+the Docker Client currently supports most other api versions, too.
 
 This project tends to support most api endpoints, but it always depends on free time. If you're missing a feature, please file
 a [new issue](https://github.com/gesellix/docker-client/issues) or a [pull request](https://github.com/gesellix/docker-client/pulls)
@@ -36,7 +32,6 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] Attach to a container (websocket)
 * [x] `docker wait <container>`: Wait a container
 * [x] `docker rm <container>`: Remove a container
-* [x] `docker cp <container>:<path> <hostpath>`: Copy files or folders from a container - _deprecated_
 * [x] Retrieve information about files and folders in a container
 * [x] `docker cp <container>:<path> <hostpath>`: Get an archive of a filesystem resource in a container
 * [x] `docker cp <hostpath> <container>:<path>`: Extract an archive of files or folders to a directory in a container
@@ -87,3 +82,28 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker network connect`: Connect a container to a network
 * [x] `docker network disconnect`: Disconnect a container from a network
 * [x] `docker network rm`: Remove a network
+
+## Nodes
+
+* [ ] List nodes
+* [ ] Return low-level information on the node `<id>`
+
+## Swarm
+
+* [ ] Initialize a new Swarm
+* [ ] Join an existing new Swarm
+* [ ] Leave a Swarm
+* [ ] Update a Swarm
+
+## Services
+
+* [ ] List services
+* [ ] Create a service
+* [ ] Stop and remove the service `<id>`
+* [ ] Return information on the service `<id>`
+* [ ] Update a service
+
+## Tasks
+
+* [ ] List tasks
+* [ ] Get details on a task
