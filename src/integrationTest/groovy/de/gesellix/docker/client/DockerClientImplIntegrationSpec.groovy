@@ -209,7 +209,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
         def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
         def imageName = "gesellix/test:latest"
-        dockerClient.tag(imageId, imageName, true)
+        dockerClient.tag(imageId, imageName)
 
         when:
         def pushResult = dockerClient.push(imageName, authBase64Encoded)
@@ -230,7 +230,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
         def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
         def imageName = "gesellix/test:latest"
-        dockerClient.tag(imageId, imageName, true)
+        dockerClient.tag(imageId, imageName)
 
         when:
         def pushResult = dockerClient.push(imageName, authBase64Encoded, registry.url())
@@ -249,7 +249,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         given:
         def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
         def imageName = "gesellix/test:latest"
-        dockerClient.tag(imageId, imageName, true)
+        dockerClient.tag(imageId, imageName)
 
         when:
         def pushResult = dockerClient.push(imageName, null, registry.url())
@@ -350,7 +350,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         given:
         def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
         def imageName = "list_containers"
-        dockerClient.tag(imageId, imageName, true)
+        dockerClient.tag(imageId, imageName)
         def containerConfig = ["Cmd"  : ["true"],
                                "Image": imageName]
         def containerId = dockerClient.createContainer(containerConfig).content.Id
@@ -376,7 +376,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         def containerConfig = ["Cmd"       : ["true"],
                                "Image"     : "inspect_container",
                                "HostConfig": ["PublishAllPorts": true]]
-        dockerClient.tag(imageId, imageName, true)
+        dockerClient.tag(imageId, imageName)
         def containerId = dockerClient.createContainer(containerConfig).content.Id
         dockerClient.startContainer(containerId)
 
@@ -831,7 +831,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     def "rm image with existing container"() {
         given:
         def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
-        dockerClient.tag(imageId, "an_image_with_existing_container", true)
+        dockerClient.tag(imageId, "an_image_with_existing_container")
 
         def containerConfig = ["Cmd": ["true"]]
         def tag = "latest"

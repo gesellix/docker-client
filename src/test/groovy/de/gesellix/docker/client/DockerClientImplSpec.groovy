@@ -275,19 +275,7 @@ class DockerClientImplSpec extends Specification {
         then:
         1 * httpClient.post([path : "/images/an-image/tag",
                              query: [repo : "registry:port/username/image-name",
-                                     tag  : "a-tag",
-                                     force: false]])
-    }
-
-    def "tag with force == true"() {
-        when:
-        dockerClient.tag("an-image", "registry:port/username/image-name:a-tag", true)
-
-        then:
-        1 * httpClient.post([path : "/images/an-image/tag",
-                             query: [repo : "registry:port/username/image-name",
-                                     tag  : "a-tag",
-                                     force: true]])
+                                     tag  : "a-tag"]])
     }
 
     def "push with defaults"() {

@@ -26,8 +26,6 @@ interface DockerClient {
 
     def tag(image, repository)
 
-    def tag(image, repository, force)
-
     def parseRepositoryTag(name)
 
     def push(image)
@@ -119,20 +117,6 @@ interface DockerClient {
     def exec(container, command)
 
     def exec(container, command, execConfig)
-
-    /**
-     * @deprecated use #getArchive
-     * @see #getArchive(java.lang.String, java.lang.String)
-     */
-    @Deprecated
-    def copy(container, resourceBody)
-
-    /**
-     * @deprecated use #extractFile
-     * @see #extractFile(java.lang.String, java.lang.String)
-     */
-    @Deprecated
-    def copyFile(container, String filename)
 
     def getArchiveStats(container, path)
 

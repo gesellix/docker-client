@@ -167,13 +167,12 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def tag(imageId, repository, force = false) {
+    def tag(imageId, repository) {
         log.info "docker tag"
         def repoAndTag = parseRepositoryTag(repository)
         def response = getHttpClient().post([path : "/images/${imageId}/tag".toString(),
-                                             query: [repo : repoAndTag.repo,
-                                                     tag  : repoAndTag.tag,
-                                                     force: force]])
+                                             query: [repo: repoAndTag.repo,
+                                                     tag : repoAndTag.tag]])
         return response
     }
 
@@ -184,7 +183,7 @@ class DockerClientImpl implements DockerClient {
         def actualImageName = imageName
         if (registry) {
             actualImageName = "$registry/$imageName".toString()
-            tag(imageName, actualImageName, true)
+            tag(imageName, actualImageName)
         }
         def repoAndTag = parseRepositoryTag(actualImageName)
 
@@ -615,39 +614,6 @@ class DockerClientImpl implements DockerClient {
         return startExec(execId, actualExecConfig)
     }
 
-    /**
-     * @deprecated use #extractFile
-     * @see #extractFile(java.lang.String, java.lang.String)
-     */
-    @Deprecated
-    @Override
-    def copyFile(containerId, String filename) {
-        log.info "copy '${filename}' from '${containerId}'"
-
-        def response = copy(containerId, [Resource: filename])
-        return extractSingleTarEntry(response.stream as InputStream, filename)
-    }
-
-    /**
-     * @deprecated use #getArchive
-     * @see #getArchive(java.lang.String, java.lang.String)
-     */
-    @Deprecated
-    @Override
-    def copy(containerId, resourceBody) {
-        log.info "docker cp ${containerId} ${resourceBody}"
-
-        def response = getHttpClient().post([path              : "/containers/${containerId}/copy".toString(),
-                                             body              : resourceBody,
-                                             requestContentType: "application/json"])
-
-        if (response.status.code == 404) {
-            log.error("no such container ${containerId}")
-        }
-        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker cp failed"))
-        return response
-    }
-
     @Override
     def getArchiveStats(container, path) {
         log.info "docker archive stats ${container}|${path}"
@@ -743,6 +709,10 @@ class DockerClientImpl implements DockerClient {
         def container = inspectContainer(containerId)
         def response = getHttpClient().post([path : "/containers/${containerId}/attach".toString(),
                                              query: query])
+
+        // When using the TTY setting is enabled in POST /containers/create,
+        // the stream is the raw data from the process PTY and client’s stdin.
+        // When the TTY is disabled, then the stream is multiplexed to separate stdout and stderr.
         response.stream.multiplexStreams = !container.content.Config.Tty
         return response
     }
@@ -864,6 +834,9 @@ class DockerClientImpl implements DockerClient {
                         tail      : "all"]
         applyDefaults(actualQuery, defaults)
 
+        // When using the TTY setting is enabled in POST /containers/create,
+        // the stream is the raw data from the process PTY and client’s stdin.
+        // When the TTY is disabled, then the stream is multiplexed to separate stdout and stderr.
         def multiplexStreams = !inspectContainer(container).content.Config.Tty
         def response = getHttpClient().get([path : "/containers/${container}/logs",
                                             query: actualQuery,
