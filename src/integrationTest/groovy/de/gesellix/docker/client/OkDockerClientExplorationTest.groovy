@@ -4,7 +4,7 @@ import spock.lang.Ignore
 import spock.lang.Specification
 
 @Ignore
-class OkHttpClientExplorationTest extends Specification {
+class OkDockerClientExplorationTest extends Specification {
 
     def "local test"() {
         def defaultDockerHost = System.env.DOCKER_HOST
