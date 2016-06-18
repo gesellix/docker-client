@@ -951,6 +951,164 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
+    @Override
+    def nodes(query = [:]) {
+        log.info "docker node ls"
+        def actualQuery = query ?: [:]
+        jsonEncodeFilters(actualQuery)
+        def response = getHttpClient().get([path : "/nodes",
+                                            query: actualQuery])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker node ls failed"))
+        return response
+    }
+
+    @Override
+    def inspectNode(name) {
+        log.info "docker node inspect"
+        def response = getHttpClient().get([path: "/nodes/$name"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker node inspect failed"))
+        return response
+    }
+
+    @Override
+    def rmNode(name) {
+        log.info "docker node rm"
+        def response = getHttpClient().delete([path: "/nodes/$name"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker node rm failed"))
+        return response
+    }
+
+    @Override
+    def updateNode(name, config) {
+        log.info "docker node update"
+        config = config ?: [:]
+        def response = getHttpClient().post([path              : "/nodes/$name/update",
+                                             body              : config,
+                                             requestContentType: "application/json"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker node update failed"))
+        return response
+    }
+
+    @Override
+    def inspectSwarm(query = [:]) {
+        log.info "docker swarm inspect"
+        def actualQuery = query ?: [:]
+        jsonEncodeFilters(actualQuery)
+        def response = getHttpClient().get([path : "/swarm",
+                                            query: actualQuery])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm inspect failed"))
+        return response
+    }
+
+    @Override
+    def initSwarm(config) {
+        log.info "docker swarm init"
+        config = config ?: [:]
+        def response = getHttpClient().post([path              : "/swarm/init",
+                                             body              : config,
+                                             requestContentType: "application/json"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm init failed"))
+        return response
+    }
+
+    @Override
+    def joinSwarm(config) {
+        log.info "docker swarm join"
+        config = config ?: [:]
+        def response = getHttpClient().post([path              : "/swarm/join",
+                                             body              : config,
+                                             requestContentType: "application/json"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm join failed"))
+        return response
+    }
+
+    @Override
+    def leaveSwarm() {
+        log.info "docker swarm leave"
+        def response = getHttpClient().post([path: "/swarm/leave"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm leave failed"))
+        return response
+    }
+
+    @Override
+    def updateSwarm(config) {
+        log.info "docker swarm update"
+        config = config ?: [:]
+        def response = getHttpClient().post([path              : "/swarm/update",
+                                             body              : config,
+                                             requestContentType: "application/json"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm update failed"))
+        return response
+    }
+
+    @Override
+    def services(query = [:]) {
+        log.info "docker service ls"
+        def actualQuery = query ?: [:]
+        jsonEncodeFilters(actualQuery)
+        def response = getHttpClient().get([path : "/services",
+                                            query: actualQuery])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service ls failed"))
+        return response
+    }
+
+    @Override
+    def createService(config) {
+        log.info "docker service create"
+        config = config ?: [:]
+        def response = getHttpClient().post([path              : "/services/create",
+                                             body              : config,
+                                             requestContentType: "application/json"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service create failed"))
+        return response
+    }
+
+    @Override
+    def rmService(name) {
+        log.info "docker service rm"
+        def response = getHttpClient().delete([path: "/services/$name"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service rm failed"))
+        return response
+    }
+
+    @Override
+    def inspectService(name) {
+        log.info "docker service inspect"
+        def response = getHttpClient().get([path: "/services/$name"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service inspect failed"))
+        return response
+    }
+
+    @Override
+    def updateService(name, config) {
+        log.info "docker service update"
+        config = config ?: [:]
+        def response = getHttpClient().post([path              : "/services/$name/update",
+                                             body              : config,
+                                             requestContentType: "application/json"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service update failed"))
+        return response
+    }
+
+    @Override
+    def tasks(query = [:]) {
+        log.info "docker service tasks"
+        def actualQuery = query ?: [:]
+        jsonEncodeFilters(actualQuery)
+        def response = getHttpClient().get([path : "/tasks",
+                                            query: actualQuery])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service tasks failed"))
+        return response
+    }
+
+    @Override
+    def inspectTask(name) {
+        log.info "docker task inspect"
+        def response = getHttpClient().get([path: "/tasks/$name"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker task inspect failed"))
+        return response
+    }
+
     def extractSingleTarEntry(InputStream tarContent, String filename) {
         def stream = new TarArchiveInputStream(new BufferedInputStream(tarContent))
 

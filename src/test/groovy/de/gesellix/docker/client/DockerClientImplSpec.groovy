@@ -274,8 +274,8 @@ class DockerClientImplSpec extends Specification {
 
         then:
         1 * httpClient.post([path : "/images/an-image/tag",
-                             query: [repo : "registry:port/username/image-name",
-                                     tag  : "a-tag"]])
+                             query: [repo: "registry:port/username/image-name",
+                                     tag : "a-tag"]])
     }
 
     def "push with defaults"() {
@@ -304,9 +304,8 @@ class DockerClientImplSpec extends Specification {
 
         then:
         1 * httpClient.post([path : "/images/an-image/tag",
-                             query: [repo : "registry:port/an-image",
-                                     tag  : "",
-                                     force: true]])
+                             query: [repo: "registry:port/an-image",
+                                     tag : ""]])
         then:
         1 * httpClient.post([path   : "/images/registry:port/an-image/push",
                              query  : [tag: ""],
@@ -886,40 +885,6 @@ class DockerClientImplSpec extends Specification {
         1 * dockerClient.startContainer("container-id")
     }
 
-    def "copy from container"() {
-        given:
-        def tarStream = new ByteArrayInputStream("tar".bytes)
-
-        when:
-        def result = dockerClient.copy("a-container", [Resource: "/file.txt"])
-
-        then:
-        1 * httpClient.post([path              : "/containers/a-container/copy",
-                             body              : [Resource: "/file.txt"],
-                             requestContentType: "application/json"]) >> [status: [success: true],
-                                                                          stream: tarStream]
-        and:
-        result.stream == tarStream
-    }
-
-    def "copy file from container"() {
-        given:
-        def tarStream = new ByteArrayInputStream("file-content".bytes)
-
-        when:
-        def result = dockerClient.copyFile("a-container", "/file.txt")
-
-        then:
-        1 * httpClient.post([path              : "/containers/a-container/copy",
-                             body              : [Resource: "/file.txt"],
-                             requestContentType: "application/json"]) >> [status: [success: true],
-                                                                          stream: tarStream]
-        and:
-        1 * dockerClient.extractSingleTarEntry(tarStream, "/file.txt") >> "file-content".bytes
-        and:
-        result == "file-content".bytes
-    }
-
     def "retrieve file/folder stats"() {
         given:
         def containerPathStatHeader = 'X-Docker-Container-Path-Stat'.toLowerCase()
@@ -1298,6 +1263,270 @@ class DockerClientImplSpec extends Specification {
 
         then:
         1 * httpClient.delete([path: "/networks/a-network"]) >> [status: [success: true]]
+    }
+
+    def "list nodes with query"() {
+        given:
+        def filters = [membership: ["accepted"], role: ["worker"]]
+        def expectedFilterValue = new JsonBuilder(filters).toString()
+        def query = [filters: filters]
+
+        when:
+        dockerClient.nodes(query)
+
+        then:
+        1 * httpClient.get([path : "/nodes",
+                            query: [filters: expectedFilterValue]]) >> [status: [success: true]]
+    }
+
+    def "inspect node"() {
+        when:
+        dockerClient.inspectNode("node-id")
+
+        then:
+        1 * httpClient.get([path: "/nodes/node-id"]) >> [status: [success: true]]
+    }
+
+    def "update node"() {
+        given:
+        def config = [
+                "Spec": [
+                        "AcceptancePolicy": [
+                                "Policies": [
+                                        ["Role": "MANAGER", "Autoaccept": false],
+                                        ["Role": "WORKER", "Autoaccept": true]
+                                ]
+                        ]
+                ]
+        ]
+
+        when:
+        dockerClient.updateNode("node-id", config)
+
+        then:
+        1 * httpClient.post([path              : "/nodes/node-id/update",
+                             body              : config,
+                             requestContentType: "application/json"]) >> [status: [success: true]]
+    }
+
+    def "rm node"() {
+        when:
+        dockerClient.rmNode("node-id")
+
+        then:
+        1 * httpClient.delete([path: "/nodes/node-id"]) >> [status: [success: true]]
+    }
+
+    def "inspect swarm"() {
+        given:
+        def filters = [membership: ["accepted"], role: ["worker"]]
+        def expectedFilterValue = new JsonBuilder(filters).toString()
+        def query = [filters: filters]
+
+        when:
+        dockerClient.inspectSwarm(query)
+
+        then:
+        1 * httpClient.get([path : "/swarm",
+                            query: [filters: expectedFilterValue]]) >> [status: [success: true]]
+    }
+
+    def "initialize a swarm"() {
+        given:
+        def config = [
+                "ListenAddr"     : "0.0.0.0:4500",
+                "ForceNewCluster": false,
+                "Spec"           : [
+                        "AcceptancePolicy": [
+                                "Policies": [
+                                        ["Role": "MANAGER", "Autoaccept": false],
+                                        ["Role": "WORKER", "Autoaccept": true]
+                                ]
+                        ],
+                        "Orchestration"   : [:],
+                        "Raft"            : [:],
+                        "Dispatcher"      : [:],
+                        "CAConfig"        : [:]
+                ]
+        ]
+
+        when:
+        dockerClient.initSwarm(config)
+
+        then:
+        1 * httpClient.post([path              : "/swarm/init",
+                             body              : config,
+                             requestContentType: "application/json"]) >> [status: [success: true]]
+    }
+
+    def "join a swarm"() {
+        given:
+        def config = [
+                "ListenAddr": "0.0.0.0:4500",
+                "RemoteAddr": "node1:4500",
+                "Secret"    : "",
+                "CAHash"    : "",
+                "Manager"   : false
+        ]
+
+        when:
+        dockerClient.joinSwarm(config)
+
+        then:
+        1 * httpClient.post([path              : "/swarm/join",
+                             body              : config,
+                             requestContentType: "application/json"]) >> [status: [success: true]]
+    }
+
+    def "leave a swarm"() {
+        when:
+        dockerClient.leaveSwarm()
+
+        then:
+        1 * httpClient.post([path: "/swarm/leave"]) >> [status: [success: true]]
+    }
+
+    def "update a swarm"() {
+        given:
+        def config = [
+                "ListenAddr"     : "0.0.0.0:4500",
+                "ForceNewCluster": false,
+                "Spec"           : [
+                        "AcceptancePolicy": [
+                                "Policies": [
+                                        ["Role": "MANAGER", "Autoaccept": false],
+                                        ["Role": "WORKER", "Autoaccept": false]
+                                ]
+                        ]
+                ]
+        ]
+
+        when:
+        dockerClient.updateSwarm(config)
+
+        then:
+        1 * httpClient.post([path              : "/swarm/update",
+                             body              : config,
+                             requestContentType: "application/json"]) >> [status: [success: true]]
+    }
+
+    def "list services with query"() {
+        given:
+        def filters = [name: ["node-name"]]
+        def expectedFilterValue = new JsonBuilder(filters).toString()
+        def query = [filters: filters]
+
+        when:
+        dockerClient.services(query)
+
+        then:
+        1 * httpClient.get([path : "/services",
+                            query: [filters: expectedFilterValue]]) >> [status: [success: true]]
+    }
+
+    def "create a service"() {
+        given:
+        def config = [
+                "Name"        : "redis",
+                "Task"        : [
+                        "ContainerSpec": [
+                                "Image": "redis"
+                        ],
+                        "Resources"    : [
+                                "Limits"      : [],
+                                "Reservations": []
+                        ],
+                        "RestartPolicy": [],
+                        "Placement"    : []
+                ],
+                "Mode"        : [
+                        "Replicated": [
+                                "Instances": 1
+                        ]
+                ],
+                "UpdateConfig": [
+                        "Parallelism": 1
+                ],
+                "EndpointSpec": [
+                        "ExposedPorts": [
+                                ["Protocol": "tcp", "Port": 6379]
+                        ]
+                ]
+        ]
+
+        when:
+        dockerClient.createService(config)
+
+        then:
+        1 * httpClient.post([path              : "/services/create",
+                             body              : config,
+                             requestContentType: "application/json"]) >> [status: [success: true]]
+    }
+
+    def "rm service"() {
+        when:
+        dockerClient.rmService("service-name")
+
+        then:
+        1 * httpClient.delete([path: "/services/service-name"]) >> [status: [success: true]]
+    }
+
+    def "inspect service"() {
+        when:
+        dockerClient.inspectService("service-name")
+
+        then:
+        1 * httpClient.get([path: "/services/service-name"]) >> [status: [success: true]]
+    }
+
+    def "update service"() {
+        given:
+        def config = [
+                "Name"        : "redis",
+                "Mode"        : [
+                        "Replicated": [
+                                "Instances": 1
+                        ]
+                ],
+                "UpdateConfig": [
+                        "Parallelism": 1
+                ],
+                "EndpointSpec": [
+                        "ExposedPorts": [
+                                ["Protocol": "tcp", "Port": 6379]
+                        ]
+                ]
+        ]
+
+        when:
+        dockerClient.updateService("service-name", config)
+
+        then:
+        1 * httpClient.post([path              : "/services/service-name/update",
+                             body              : config,
+                             requestContentType: "application/json"]) >> [status: [success: true]]
+    }
+
+    def "list tasks with query"() {
+        given:
+        def filters = [name: ["service-name"]]
+        def expectedFilterValue = new JsonBuilder(filters).toString()
+        def query = [filters: filters]
+
+        when:
+        dockerClient.tasks(query)
+
+        then:
+        1 * httpClient.get([path : "/tasks",
+                            query: [filters: expectedFilterValue]]) >> [status: [success: true]]
+    }
+
+    def "inspect task"() {
+        when:
+        dockerClient.inspectTask("task-id")
+
+        then:
+        1 * httpClient.get([path: "/tasks/task-id"]) >> [status: [success: true]]
     }
 
     def "cleanupStorage removes exited containers"() {

@@ -85,25 +85,28 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 
 ## Nodes
 
-* [ ] List nodes
-* [ ] Return low-level information on the node `<id>`
+* [x] `docker node ls`: List nodes in the swarm
+* [x] `docker node inspect`: Inspect a node in the swarm
+* [x] `docker node update`: Update a node
+* [x] `docker node rm`: Remove a node from the swarm
 
 ## Swarm
 
-* [ ] Initialize a new Swarm
-* [ ] Join an existing new Swarm
-* [ ] Leave a Swarm
-* [ ] Update a Swarm
+* [x] `docker swarm inspect`: Inspect the Swarm
+* [x] `docker swarm init`: Initialize a Swarm
+* [x] `docker swarm join`: Join a Swarm as a node and/or manager
+* [x] `docker swarm leave`: Leave a Swarm
+* [x] `docker swarm update`: Update the Swarm
 
 ## Services
 
-* [ ] List services
-* [ ] Create a service
-* [ ] Stop and remove the service `<id>`
-* [ ] Return information on the service `<id>`
-* [ ] Update a service
+* [x] `docker service ls`: List services
+* [x] `docker service create`: Create a service
+* [x] `docker service rm`: Remove a service
+* [x] `docker service inspect`: Return information on the service `<id>`
+* [x] `docker service update`: Update a service
 
 ## Tasks
 
-* [ ] List tasks
+* [x] `docker service tasks`: List tasks running on a node
 * [ ] Get details on a task

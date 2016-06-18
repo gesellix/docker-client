@@ -191,4 +191,44 @@ interface DockerClient {
     def disconnectNetwork(network, container)
 
     def rmNetwork(name)
+
+    def nodes()
+
+    def nodes(query)
+
+    def inspectNode(name)
+
+    def updateNode(name, config)
+
+    def rmNode(name)
+
+    def inspectSwarm()
+
+    def inspectSwarm(query)
+
+    def initSwarm(config)
+
+    def joinSwarm(config)
+
+    def leaveSwarm()
+
+    def updateSwarm(config)
+
+    def services()
+
+    def services(query)
+
+    def createService(config)
+
+    def rmService(name)
+
+    def inspectService(name)
+
+    def updateService(name, config)
+
+    def tasks()
+
+    def tasks(query)
+
+    def inspectTask(name)
 }
