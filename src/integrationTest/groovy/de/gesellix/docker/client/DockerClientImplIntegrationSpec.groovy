@@ -820,9 +820,9 @@ class DockerClientImplIntegrationSpec extends Specification {
         rmImageResult.status.code == 200
     }
 
-    def "rm unkown image"() {
+    def "rm unknown image"() {
         when:
-        def rmImageResult = dockerClient.rmi("an_unkown_image")
+        def rmImageResult = dockerClient.rmi("an_unknown_image")
 
         then:
         rmImageResult.status.code == 404
