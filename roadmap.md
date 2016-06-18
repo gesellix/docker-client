@@ -110,3 +110,15 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 
 * [x] `docker service tasks`: List tasks running on a node
 * [x] Get details on a task
+
+## Plugins (experimental)
+
+* [ ] `docker plugin ls`: List plugins `GET /plugins`
+* [ ] `docker plugin inspect`: Inspect a plugin `GET /plugins/{name:.*}`
+* [ ] `docker plugin rm`: Remove a plugin `DELETE /plugins/{name:.*}`
+* [ ] `docker plugin enable`: Enable a plugin `POST /plugins/{name:.*}/enable`
+* [ ] `docker plugin disable`: Disable a plugin `POST /plugins/{name:.*}/disable`
+* [ ] Pull a plugin `POST /plugins/pull`
+* [ ] `docker plugin push`: Push a plugin `POST /plugins/{name:.*}/push`
+* [ ] `docker plugin set`: Change settings for a plugin `POST /plugins/{name:.*}/set`
+* [ ] `docker plugin install`: Install a plugin (equivalent to pull + enable)
