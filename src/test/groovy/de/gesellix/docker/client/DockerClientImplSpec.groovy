@@ -912,7 +912,7 @@ class DockerClientImplSpec extends Specification {
         def expectedResponse = [status : [success: true],
                                 headers: [:],
                                 stream : tarStream]
-        expectedResponse.headers[containerPathStatHeader] = [encodedStats]
+        expectedResponse.headers[containerPathStatHeader] = encodedStats
 
         when:
         def result = dockerClient.getArchive("a-container", "/path/")
@@ -920,7 +920,7 @@ class DockerClientImplSpec extends Specification {
         then:
         1 * httpClient.get([path : "/containers/a-container/archive",
                             query: [path: "/path/"]]) >> expectedResponse
-        result.headers[containerPathStatHeader] == [encodedStats]
+        result.headers[containerPathStatHeader] == encodedStats
         result.stream == tarStream
     }
 
