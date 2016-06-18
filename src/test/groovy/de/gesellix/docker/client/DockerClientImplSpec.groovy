@@ -1385,7 +1385,8 @@ class DockerClientImplSpec extends Specification {
         dockerClient.leaveSwarm()
 
         then:
-        1 * httpClient.post([path: "/swarm/leave"]) >> [status: [success: true]]
+        1 * httpClient.post([path : "/swarm/leave",
+                             query: [:]]) >> [status: [success: true]]
     }
 
     def "update a swarm"() {
