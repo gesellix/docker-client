@@ -140,18 +140,122 @@ class DockerSwarmIntegrationSpec extends Specification {
     }
 
     def "join swarm"() {
+        given:
+        def managerConfig = newSwarmConfig()
+        dockerClient.initSwarm(managerConfig)
+        def nodeConfig = [
+                "ListenAddr": "0.0.0.0:4555",
+                "RemoteAddr": managerConfig.ListenAddr,
+                "Secret"    : "",
+                "CAHash"    : "",
+                "Manager"   : false
+        ]
+
+        when:
+        dockerClient.joinSwarm(nodeConfig)
+
+        then:
+        def exception = thrown(DockerClientException)
+        exception.message == "java.lang.IllegalStateException: docker swarm join failed"
+        exception.detail.content.message.contains("This node is already part of a Swarm cluster")
+
+        cleanup:
+        dockerClient.leaveSwarm([force: true])
     }
 
     def "leave swarm"() {
+        given:
+        def config = newSwarmConfig()
+        dockerClient.initSwarm(config)
+
+        when:
+        dockerClient.leaveSwarm([force: false])
+
+        then:
+        def exception = thrown(DockerClientException)
+        exception.message == "java.lang.IllegalStateException: docker swarm leave failed"
+        exception.detail.content.message.contains("Leaving last manager will remove all current state of the cluster")
+
+        cleanup:
+        dockerClient.leaveSwarm([force: true])
     }
 
     def "update swarm"() {
+        given:
+        def config = newSwarmConfig()
+        dockerClient.initSwarm(config)
+        def spec = dockerClient.inspectSwarm().content.Spec
+        spec.Annotations = [
+                Name: "test update"
+        ]
+
+        when:
+        def response = dockerClient.updateSwarm(
+                ["version": 11],
+                spec)
+
+        then:
+        response.status.code == 200
+
+        cleanup:
+        dockerClient.leaveSwarm([force: true])
     }
 
     def "services"() {
+        given:
+        def config = newSwarmConfig()
+        dockerClient.initSwarm(config)
+
+        when:
+        def response = dockerClient.services()
+
+        then:
+        response.status.code == 200
+        response.content == null
+
+        cleanup:
+        dockerClient.leaveSwarm([force: true])
     }
 
     def "create service"() {
+        given:
+        def config = newSwarmConfig()
+        dockerClient.initSwarm(config)
+        def serviceConfig = [
+                "Name"        : "redis",
+                "TaskTemplate": [
+                        "ContainerSpec": [
+                                "Image": "redis"
+                        ],
+                        "Resources"    : [
+                                "Limits"      : [:],
+                                "Reservations": [:]
+                        ],
+                        "RestartPolicy": [:],
+                        "Placement"    : [:]
+                ],
+                "Mode"        : [
+                        "Replicated": [
+                                "Instances": 1
+                        ]
+                ],
+                "UpdateConfig": [
+                        "Parallelism": 1
+                ],
+                "EndpointSpec": [
+                        "ExposedPorts": [
+                                ["Protocol": "tcp", "Port": 6379]
+                        ]
+                ]]
+
+        when:
+        def response = dockerClient.createService(serviceConfig)
+
+        then:
+        response.content.ID =~ /[0-9a-f]+/
+
+        cleanup:
+        dockerClient.leaveSwarm([force: true])
     }
 
     def "rm service"() {

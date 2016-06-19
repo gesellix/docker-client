@@ -1291,12 +1291,10 @@ class DockerClientImplSpec extends Specification {
         given:
         def query = [version: 42]
         def config = [
-                "Spec": [
-                        "AcceptancePolicy": [
-                                "Policies": [
-                                        ["Role": "MANAGER", "Autoaccept": false],
-                                        ["Role": "WORKER", "Autoaccept": true]
-                                ]
+                "AcceptancePolicy": [
+                        "Policies": [
+                                ["Role": "MANAGER", "Autoaccept": false],
+                                ["Role": "WORKER", "Autoaccept": true]
                         ]
                 ]
         ]
@@ -1391,24 +1389,22 @@ class DockerClientImplSpec extends Specification {
 
     def "update a swarm"() {
         given:
+        def query = [version: 42]
         def config = [
-                "ListenAddr"     : "0.0.0.0:4500",
-                "ForceNewCluster": false,
-                "Spec"           : [
-                        "AcceptancePolicy": [
-                                "Policies": [
-                                        ["Role": "MANAGER", "Autoaccept": false],
-                                        ["Role": "WORKER", "Autoaccept": false]
-                                ]
+                "AcceptancePolicy": [
+                        "Policies": [
+                                ["Role": "MANAGER", "Autoaccept": false],
+                                ["Role": "WORKER", "Autoaccept": false]
                         ]
                 ]
         ]
 
         when:
-        dockerClient.updateSwarm(config)
+        dockerClient.updateSwarm(query, config)
 
         then:
         1 * httpClient.post([path              : "/swarm/update",
+                             query             : query,
                              body              : config,
                              requestContentType: "application/json"]) >> [status: [success: true]]
     }
@@ -1436,11 +1432,11 @@ class DockerClientImplSpec extends Specification {
                                 "Image": "redis"
                         ],
                         "Resources"    : [
-                                "Limits"      : [],
-                                "Reservations": []
+                                "Limits"      : [:],
+                                "Reservations": [:]
                         ],
-                        "RestartPolicy": [],
-                        "Placement"    : []
+                        "RestartPolicy": [:],
+                        "Placement"    : [:]
                 ],
                 "Mode"        : [
                         "Replicated": [

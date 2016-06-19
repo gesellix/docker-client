@@ -1034,10 +1034,12 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def updateSwarm(config) {
+    def updateSwarm(query, config) {
         log.info "docker swarm update"
+        def actualQuery = query ?: [:]
         config = config ?: [:]
         def response = getHttpClient().post([path              : "/swarm/update",
+                                             query             : actualQuery,
                                              body              : config,
                                              requestContentType: "application/json"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm update failed"))

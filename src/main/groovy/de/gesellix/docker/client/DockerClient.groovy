@@ -214,7 +214,7 @@ interface DockerClient {
 
     def leaveSwarm(query)
 
-    def updateSwarm(config)
+    def updateSwarm(query, config)
 
     def services()
 
