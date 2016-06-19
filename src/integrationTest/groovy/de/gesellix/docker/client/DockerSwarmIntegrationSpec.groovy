@@ -324,7 +324,6 @@ class DockerSwarmIntegrationSpec extends Specification {
         def config = newSwarmConfig()
         dockerClient.initSwarm(config)
         def serviceConfig = [
-                "Name"        : "redis",
                 "TaskTemplate": [
                         "ContainerSpec": [
                                 "Image": "redis"
@@ -337,14 +336,12 @@ class DockerSwarmIntegrationSpec extends Specification {
                         "Parallelism": 1
                 ]]
         def serviceId = dockerClient.createService(serviceConfig).content.ID
-        def service = dockerClient.inspectService(serviceId).content
-        service.Annotations = [
-                Name: "test service update"
-        ]
+        def serviceSpec = dockerClient.inspectService(serviceId).content.Spec
+        serviceSpec.Name = "${serviceSpec.Name}-foo"
 
         when:
         def swarm = dockerClient.inspectSwarm().content
-        def response = dockerClient.updateService(serviceId, [version: swarm.Version.Index], serviceConfig)
+        def response = dockerClient.updateService(serviceId, [version: swarm.Version.Index], serviceSpec)
 
         then:
         response == [:]
