@@ -1480,6 +1480,7 @@ class DockerClientImplSpec extends Specification {
 
     def "update service"() {
         given:
+        def query = [version: 42]
         def config = [
                 "Name"        : "redis",
                 "Mode"        : [
@@ -1498,10 +1499,11 @@ class DockerClientImplSpec extends Specification {
         ]
 
         when:
-        dockerClient.updateService("service-name", config)
+        dockerClient.updateService("service-name", query, config)
 
         then:
         1 * httpClient.post([path              : "/services/service-name/update",
+                             query             : query,
                              body              : config,
                              requestContentType: "application/json"]) >> [status: [success: true]]
     }

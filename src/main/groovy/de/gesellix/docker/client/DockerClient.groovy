@@ -226,7 +226,7 @@ interface DockerClient {
 
     def inspectService(name)
 
-    def updateService(name, config)
+    def updateService(name, query, config)
 
     def tasks()
 
