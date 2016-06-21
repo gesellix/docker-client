@@ -19,6 +19,28 @@ class LocalDocker {
         }
     }
 
+    static def hasSwarmMode() {
+        try {
+            def version = getDockerVersion()
+            return version.major >= 1 && version.minor >= 12
+        }
+        catch (Exception e) {
+            log.info("Docker not available", e)
+            return false
+        }
+    }
+
+    static DockerVersion getDockerVersion() {
+        try {
+            def version = new DockerClientImpl().version().content.Version as String
+            return parseDockerVersion(version)
+        }
+        catch (Exception e) {
+            log.info("Docker not available", e)
+            throw new RuntimeException(e)
+        }
+    }
+
     static def isNamedPipe() {
         def dockerHost = new DockerClientImpl().config.dockerHost
         return dockerHost.startsWith("npipe://")
@@ -32,5 +54,19 @@ class LocalDocker {
     static def isTcpSocket() {
         def dockerHost = new DockerClientImpl().config.dockerHost
         return dockerHost.startsWith("tcp://") || dockerHost.startsWith("http://") || dockerHost.startsWith("https://")
+    }
+
+    static DockerVersion parseDockerVersion(String version) {
+        final def versionPattern = /(\d+)\.(\d+)\.(\d+)(.*)/
+
+        def parsedVersion = new DockerVersion()
+        version.eachMatch(versionPattern) { List<String> groups ->
+            parsedVersion.major = Integer.parseInt(groups[1])
+            parsedVersion.minor = Integer.parseInt(groups[2])
+            parsedVersion.patch = Integer.parseInt(groups[3])
+            parsedVersion.meta = groups[4]
+        }
+
+        return parsedVersion
     }
 }
