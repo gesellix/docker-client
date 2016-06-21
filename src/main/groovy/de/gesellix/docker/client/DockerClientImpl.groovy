@@ -53,7 +53,14 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def cleanupStorage(Closure shouldKeepContainer) {
+    def cleanupStorage(Closure shouldKeepContainer, Closure shouldKeepVolume = { true }) {
+        cleanupContainers shouldKeepContainer
+        cleanupImages()
+        cleanupVolumes shouldKeepVolume
+    }
+
+    @Override
+    def cleanupContainers(Closure shouldKeepContainer) {
         def allContainers = ps([filters: [status: ["exited"]]]).content
         allContainers.findAll { Map container ->
             !shouldKeepContainer(container)
@@ -61,10 +68,24 @@ class DockerClientImpl implements DockerClient {
             log.debug "docker rm ${container.Id} (${container.Names.first()})"
             rm(container.Id)
         }
+    }
 
+    @Override
+    def cleanupImages() {
         images([filters: [dangling: ["true"]]]).content.each { image ->
             log.debug "docker rmi ${image.Id}"
             rmi(image.Id)
+        }
+    }
+
+    @Override
+    def cleanupVolumes(Closure shouldKeepVolume) {
+        def allVolumes = volumes([filters: [dangling: ["true"]]]).content
+        allVolumes.findAll { Map volume ->
+            !shouldKeepVolume(volume)
+        }.each { volume ->
+            log.debug "docker volume rm ${volume.Id}"
+            rmVolume(volume.Id)
         }
     }
 

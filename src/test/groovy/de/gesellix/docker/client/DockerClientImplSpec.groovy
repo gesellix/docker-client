@@ -1562,6 +1562,10 @@ class DockerClientImplSpec extends Specification {
         0 * dockerClient.rm("container-id-2")
         and:
         1 * dockerClient.images([filters: [dangling: ["true"]]]) >> [:]
+        and:
+        1 * dockerClient.volumes([filters: [dangling: ["true"]]]) >> [content: [[Id: "volume-id"]]]
+        and:
+        0 * dockerClient.rmVolume(_)
     }
 
     def "cleanupStorage removes dangling images"() {
@@ -1583,6 +1587,45 @@ class DockerClientImplSpec extends Specification {
         ]
         then:
         1 * dockerClient.rmi("image-id-1")
+        and:
+        1 * dockerClient.volumes([filters: [dangling: ["true"]]]) >> [content: [[Id: "volume-id"]]]
+        and:
+        0 * dockerClient.rmVolume(_)
+    }
+
+    def "cleanupStorage doesn't remove dangling volumes by default"() {
+        when:
+        dockerClient.cleanupStorage { container -> false }
+
+        then:
+        1 * dockerClient.ps([filters: [status: ["exited"]]]) >> [:]
+        and:
+        1 * dockerClient.images([filters: [dangling: ["true"]]]) >> [:]
+        and:
+        1 * dockerClient.volumes([filters: [dangling: ["true"]]]) >> [
+                content: [
+                        [Id: "volume-id"]]]
+        and:
+        0 * dockerClient.rmVolume(_)
+    }
+
+    def "cleanupStorage removes dangling volumes when desired"() {
+        when:
+        dockerClient.cleanupStorage({ container -> false }, { volume -> volume.Id != "volume-id-1" })
+
+        then:
+        1 * dockerClient.ps([filters: [status: ["exited"]]]) >> [:]
+        and:
+        1 * dockerClient.images([filters: [dangling: ["true"]]]) >> [:]
+        and:
+        1 * dockerClient.volumes([filters: [dangling: ["true"]]]) >> [
+                content: [
+                        [Id: "volume-id-1"],
+                        [Id: "volume-id-2"]]]
+        and:
+        1 * dockerClient.rmVolume("volume-id-1") >> [status: [success: true]]
+        and:
+        0 * dockerClient.rmVolume("volume-id-2")
     }
 
     def findLoggedEvent(MemoryAppender memoryAppender, needle) {

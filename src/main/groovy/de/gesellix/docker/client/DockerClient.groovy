@@ -6,6 +6,14 @@ interface DockerClient {
 
     def cleanupStorage(Closure shouldKeepContainer)
 
+    def cleanupStorage(Closure shouldKeepContainer, Closure shouldKeepVolume)
+
+    def cleanupImages()
+
+    def cleanupContainers(Closure shouldKeepContainer)
+
+    def cleanupVolumes(Closure shouldKeepVolume)
+
     def ping()
 
     def info()
