@@ -1620,8 +1620,9 @@ class DockerClientImplSpec extends Specification {
         and:
         1 * dockerClient.volumes([filters: [dangling: ["true"]]]) >> [
                 content: [
-                        [Id: "volume-id-1"],
-                        [Id: "volume-id-2"]]]
+                        Volumes: [
+                                [Id: "volume-id-1"],
+                                [Id: "volume-id-2"]]]]
         and:
         1 * dockerClient.rmVolume("volume-id-1") >> [status: [success: true]]
         and:
