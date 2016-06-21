@@ -1220,13 +1220,13 @@ class DockerClientImplSpec extends Specification {
 
     def "create network with config"() {
         given:
-        def networkConfig = [driver         : "bridge",
-                             options        : [:],
-                             check_duplicate: true]
-        def expectedNetworkConfig = [name           : "network-name",
-                                     driver         : "bridge",
-                                     options        : [:],
-                                     check_duplicate: true]
+        def networkConfig = [Driver        : "bridge",
+                             Options       : [:],
+                             CheckDuplicate: true]
+        def expectedNetworkConfig = [Name          : "network-name",
+                                     Driver        : "bridge",
+                                     Options       : [:],
+                                     CheckDuplicate: true]
 
         when:
         dockerClient.createNetwork("network-name", networkConfig)
