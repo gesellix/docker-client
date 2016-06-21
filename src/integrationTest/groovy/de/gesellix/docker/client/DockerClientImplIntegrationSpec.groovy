@@ -1099,6 +1099,53 @@ class DockerClientImplIntegrationSpec extends Specification {
         dockerClient.rm(containerId)
     }
 
+    def "list networks"() {
+        when:
+        def networks = dockerClient.networks().content
+
+        then:
+        networks.find { it.Name == "bridge" }
+    }
+
+    def "create default network"() {
+        given:
+        !dockerClient.networks().content.find { it.Name == "test-net" }
+
+        when:
+        dockerClient.createNetwork('test-net')
+
+        then:
+        dockerClient.networks().content.find { it.Name == "test-net" }
+
+        cleanup:
+        dockerClient.rmNetwork('test-net')
+    }
+
+    @Requires({ LocalDocker.hasSwarmMode() })
+    def "create overlay network"() {
+        given:
+        !dockerClient.networks().content.find { it.Name == "test-net" }
+        dockerClient.initSwarm([
+                "ListenAddr"     : "0.0.0.0:4500",
+                "ForceNewCluster": false
+        ])
+
+        when:
+        dockerClient.createNetwork('test-net', [
+                Driver: "overlay",
+                "IPAM": [
+                        "Driver": "default"
+                ]
+        ])
+
+        then:
+        dockerClient.networks().content.find { it.Name == "test-net" }
+
+        cleanup:
+        dockerClient.rmNetwork('test-net')
+        dockerClient.leaveSwarm([force: true])
+    }
+
     def "logs"() {
         given:
         def latch = new CountDownLatch(1)

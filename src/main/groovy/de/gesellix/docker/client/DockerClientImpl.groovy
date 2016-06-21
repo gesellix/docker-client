@@ -913,10 +913,10 @@ class DockerClientImpl implements DockerClient {
     def createNetwork(name, config = [:]) {
         log.info "docker network create"
         def actualConfig = config ?: [:]
-        def defaults = [name: name]
+        def defaults = [Name: name]
         applyDefaults(actualConfig, defaults)
         def response = getHttpClient().post([path              : "/networks/create",
-                                             body              : config ?: [:],
+                                             body              : actualConfig ?: [:],
                                              requestContentType: "application/json"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network create failed"))
         return response
