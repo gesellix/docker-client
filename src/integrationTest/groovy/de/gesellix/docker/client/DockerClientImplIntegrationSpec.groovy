@@ -1099,6 +1099,14 @@ class DockerClientImplIntegrationSpec extends Specification {
         dockerClient.rm(containerId)
     }
 
+    def "list volumes"() {
+        when:
+        def volumes = dockerClient.volumes().content
+
+        then:
+        volumes.Volumes instanceof List
+    }
+
     def "list networks"() {
         when:
         def networks = dockerClient.networks().content

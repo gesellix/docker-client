@@ -80,7 +80,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def cleanupVolumes(Closure shouldKeepVolume) {
-        def allVolumes = volumes([filters: [dangling: ["true"]]]).content
+        def allVolumes = volumes([filters: [dangling: ["true"]]]).content.Volumes
         allVolumes.findAll { Map volume ->
             !shouldKeepVolume(volume)
         }.each { volume ->
