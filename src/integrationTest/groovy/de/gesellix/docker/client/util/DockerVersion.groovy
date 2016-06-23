@@ -1,9 +1,10 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.util
 
 import groovy.transform.EqualsAndHashCode
 
 @EqualsAndHashCode
 class DockerVersion {
+
     int major
     int minor
     int patch

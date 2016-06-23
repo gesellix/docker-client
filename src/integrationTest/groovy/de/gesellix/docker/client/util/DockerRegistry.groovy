@@ -1,4 +1,7 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.util
+
+import de.gesellix.docker.client.DockerClient
+import de.gesellix.docker.client.DockerClientImpl
 
 class DockerRegistry {
 

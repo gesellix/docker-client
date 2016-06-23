@@ -1,5 +1,6 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.client.util.LocalDocker
 import groovy.util.logging.Slf4j
 import spock.lang.Ignore
 import spock.lang.Requires

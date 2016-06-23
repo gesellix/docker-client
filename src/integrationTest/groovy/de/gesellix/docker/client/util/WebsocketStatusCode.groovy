@@ -1,4 +1,4 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.util
 
 // see https://tools.ietf.org/html/rfc6455#section-11.7
 enum WebsocketStatusCode {

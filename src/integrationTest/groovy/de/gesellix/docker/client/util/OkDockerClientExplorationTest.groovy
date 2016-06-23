@@ -1,5 +1,6 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.util
 
+import de.gesellix.docker.client.OkDockerClient
 import spock.lang.Ignore
 import spock.lang.Specification
 

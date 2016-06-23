@@ -1,5 +1,7 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.util
 
+import de.gesellix.docker.client.DockerClient
+import de.gesellix.docker.client.DockerClientImpl
 import de.gesellix.docker.client.rawstream.RawInputStream
 import groovy.util.logging.Slf4j
 import org.apache.commons.io.IOUtils

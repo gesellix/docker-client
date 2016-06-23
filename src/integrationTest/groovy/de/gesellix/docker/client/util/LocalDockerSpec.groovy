@@ -1,4 +1,4 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.util
 
 import spock.lang.Specification
 import spock.lang.Unroll
