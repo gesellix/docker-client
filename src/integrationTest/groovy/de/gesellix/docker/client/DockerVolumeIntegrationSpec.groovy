@@ -40,4 +40,26 @@ class DockerVolumeIntegrationSpec extends Specification {
         then:
         volumes.Volumes instanceof List
     }
+
+    def "create volume"() {
+        given:
+        def volumeConfig = [Name      : "my-volume",
+                            Driver    : "local",
+                            DriverOpts: [:]]
+
+        when:
+        def volume = dockerClient.createVolume(volumeConfig).content
+
+        then:
+        volume.Name == "my-volume"
+        and:
+        volume.Driver == "local"
+        and:
+        volume.Mountpoint
+        and:
+        volume.Scope == "local"
+
+        cleanup:
+        dockerClient.rmVolume("my-volume")
+    }
 }
