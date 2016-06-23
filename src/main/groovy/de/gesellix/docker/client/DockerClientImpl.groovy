@@ -84,8 +84,8 @@ class DockerClientImpl implements DockerClient {
         allVolumes.findAll { Map volume ->
             !shouldKeepVolume(volume)
         }.each { volume ->
-            log.debug "docker volume rm ${volume.Id}"
-            rmVolume(volume.Id)
+            log.debug "docker volume rm ${volume.Name}"
+            rmVolume(volume.Name)
         }
     }
 

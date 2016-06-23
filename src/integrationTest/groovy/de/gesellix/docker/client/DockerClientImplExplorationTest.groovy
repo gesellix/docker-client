@@ -1,11 +1,13 @@
 package de.gesellix.docker.client
 
 import de.gesellix.docker.client.rawstream.RawInputStream
+import groovy.util.logging.Slf4j
 import org.apache.commons.io.IOUtils
 import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
 
+@Slf4j
 @Requires({ LocalDocker.available() })
 class DockerClientImplExplorationTest extends Specification {
 
@@ -49,5 +51,21 @@ class DockerClientImplExplorationTest extends Specification {
         and:
         attached.stream.multiplexStreams == false
         IOUtils.copy(attached.stream, System.out)
+    }
+
+    @Ignore("only for explorative testing")
+    def "cleanup volumes"() {
+        given:
+        def shouldKeepVolume = { Map volume ->
+            log.warn("volume : ${volume}")
+            def keep = volume.Name.replaceAll("^/", "").matches(".*data.*")
+            if (keep) {
+                log.warn("will keep ${volume}")
+            }
+            return keep
+        }
+
+        expect:
+        dockerClient.cleanupVolumes shouldKeepVolume
     }
 }
