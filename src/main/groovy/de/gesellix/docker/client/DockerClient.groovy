@@ -142,6 +142,8 @@ interface DockerClient {
 
     def attach(container, query)
 
+    def attach(container, query, callback)
+
     def attachWebsocket(container, query, WebSocketListener listener)
 
     def commit(container, query)

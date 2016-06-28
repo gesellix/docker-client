@@ -56,7 +56,7 @@ class UnixSocketFactory extends SocketFactory implements Dns {
     }
 
     @Slf4j
-    static class UnixSocket extends Socket {
+    public static class UnixSocket extends Socket {
 
         public static final String SOCKET_MARKER = ".socket"
         private AFUNIXSocket socket
@@ -105,6 +105,11 @@ class UnixSocketFactory extends SocketFactory implements Dns {
         @Override
         void bind(SocketAddress bindpoint) throws IOException {
             socket.bind(bindpoint)
+        }
+
+        @Override
+        void close() throws IOException {
+            socket.close()
         }
     }
 

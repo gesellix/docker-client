@@ -24,5 +24,7 @@ public interface HttpClient {
 
     def delete(Map requestConfig)
 
+    def attach(Map requestConfig)
+
     WebSocketCall webSocketCall(Map requestConfig)
 }

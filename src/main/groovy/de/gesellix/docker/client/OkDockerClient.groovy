@@ -4,15 +4,21 @@ import de.gesellix.docker.client.rawstream.RawInputStream
 import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
 import okhttp3.CacheControl
+import okhttp3.Call
+import okhttp3.Callback
 import okhttp3.HttpUrl
+import okhttp3.Interceptor
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
 import okhttp3.internal.http.HttpMethod
+import okhttp3.internal.io.RealConnection
 import okhttp3.ws.WebSocketCall
 import okio.Okio
+import okio.Sink
+import okio.Source
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.output.NullOutputStream
 
@@ -108,6 +114,126 @@ class OkDockerClient implements HttpClient {
 
         def wsCall = WebSocketCall.create(client, request)
         wsCall
+    }
+
+    static class ConnectionProvider implements Interceptor {
+
+        Sink sink = null
+        Source source = null
+
+        @Override
+        Response intercept(Interceptor.Chain chain) throws IOException {
+            // attention: this connection is *per request*, so sink and source might be overwritten
+            RealConnection connection = chain.connection() as RealConnection
+            source = connection.source
+            sink = connection.sink
+            return chain.proceed(chain.request())
+        }
+    }
+
+    static class ResponseCallback implements Callback {
+        InputStream stdin
+        ConnectionProvider connectionProvider
+        OkHttpClient client
+        Closure onResponseCallback
+        Closure done
+
+        ResponseCallback(def stdin, def connectionProvider, def client, def onResponseCallback, def done) {
+            this.stdin = stdin
+            this.connectionProvider = connectionProvider
+            this.client = client
+            this.onResponseCallback = onResponseCallback
+            this.done = done
+        }
+
+        @Override
+        void onFailure(Call call, IOException e) {
+            log.error "connection failed: ${e.message}"
+        }
+
+        @Override
+        void onResponse(Call call, Response response) throws IOException {
+            ensureTcpUpgrade(response)
+
+            if (stdin != null) {
+                // pass input from the client via stdin and pass it to the output stream
+                // running it in an own thread allows the client to gain back control
+                def reader = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            def bufferedSink = Okio.buffer(connectionProvider.sink)
+                            def stdinSource = Okio.source(stdin)
+                            while (stdinSource.read(bufferedSink.buffer(), 1024) != -1) {
+                                bufferedSink.flush()
+                            }
+                            bufferedSink.close()
+                        } catch (Exception e) {
+                            log.error("error", e)
+                        }
+                        client.dispatcher().executorService().shutdown()
+
+                        done(response)
+                    }
+                })
+                reader.start()
+            }
+            onResponseCallback(response)
+        }
+
+        def ensureTcpUpgrade(Response response) {
+            if (response.code() != 101) {
+                log.error "expected status 101, but got ${response.code()} ${response.message()}"
+                throw new ProtocolException("Expected HTTP 101 Connection Upgrade")
+            }
+            String headerConnection = response.header("Connection")
+            if (headerConnection.toLowerCase() != "upgrade") {
+                log.error "expected 'Connection: Upgrade', but got 'Connection: ${headerConnection}'"
+                throw new ProtocolException("Expected 'Connection: Upgrade'")
+            }
+            String headerUpgrade = response.header("Upgrade")
+            if (headerUpgrade.toLowerCase() != "tcp") {
+                log.error "expected 'Upgrade: tcp', but got 'Upgrade: ${headerUpgrade}'"
+                throw new ProtocolException("Expected 'Upgrade: tcp'")
+            }
+        }
+    }
+
+    @Override
+    def attach(Map requestConfig) {
+        def config = ensureValidRequestConfig(requestConfig)
+        config.method = "POST"
+        config.headers = [
+                "Upgrade"   : "tcp",
+                "Connection": "Upgrade",
+        ]
+        config.body = new ByteArrayInputStream()
+        config.requestContentType = "text/plain"
+
+        OutputStream stdout = config.callback.stdout
+        OutputStream stderr = config.callback.stderr
+        InputStream stdin = config.callback.stdin
+        boolean multiplexStreams = config.multiplexStreams
+        Closure onResponseCallback = config.callback.onResponseCallback
+        Closure done = config.callback.done
+
+        Request.Builder requestBuilder = prepareRequest(new Request.Builder(), config)
+        def request = requestBuilder.build()
+
+        OkHttpClient.Builder clientBuilder = prepareClient(new OkHttpClient.Builder(), config.timeout ?: 0)
+
+        def connectionProvider = new ConnectionProvider()
+
+        clientBuilder.addNetworkInterceptor(connectionProvider)
+        def client = newClient(clientBuilder)
+
+        def responseCallback = new ResponseCallback(stdin, connectionProvider, client, onResponseCallback, done)
+
+        log.debug("${request.method()} ${request.url()} using proxy: ${client.proxy()}")
+
+        // if   responseCallback != null -> enqueue(responseCallback)
+        // else                          -> execute()
+        client.newCall(request).enqueue(responseCallback)
     }
 
     def request(Map requestConfig) {

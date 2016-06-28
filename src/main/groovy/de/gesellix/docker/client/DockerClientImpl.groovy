@@ -724,16 +724,37 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def attach(containerId, query) {
+    def attach(containerId, query, callback = [:]) {
         log.info "docker attach"
-        def container = inspectContainer(containerId)
-        def response = getHttpClient().post([path : "/containers/${containerId}/attach".toString(),
-                                             query: query])
+        if (callback) {
+            return attachInteractive(containerId, query, callback)
+        } else {
+            def container = inspectContainer(containerId)
+            def response = getHttpClient().post([path : "/containers/${containerId}/attach".toString(),
+                                                 query: query])
+
+            // When using the TTY setting is enabled in POST /containers/create,
+            // the stream is the raw data from the process PTY and client’s stdin.
+            // When the TTY is disabled, then the stream is multiplexed to separate stdout and stderr.
+            response.stream.multiplexStreams = !container.content.Config.Tty
+            return response
+        }
+    }
+
+    // https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#attach-to-a-container
+    def attachInteractive(containerId, query, callback) {
+        log.info "docker attach (interactive)"
 
         // When using the TTY setting is enabled in POST /containers/create,
         // the stream is the raw data from the process PTY and client’s stdin.
         // When the TTY is disabled, then the stream is multiplexed to separate stdout and stderr.
-        response.stream.multiplexStreams = !container.content.Config.Tty
+        def container = inspectContainer(containerId)
+        def multiplexStreams = !container.content.Config.Tty
+
+        def response = getHttpClient().attach([path            : "/containers/${containerId}/attach".toString(),
+                                               query           : query,
+                                               callback        : callback,
+                                               multiplexStreams: multiplexStreams])
         return response
     }
 
