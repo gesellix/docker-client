@@ -84,7 +84,7 @@ dependencies {
     compile 'com.squareup.okhttp3:okhttp-ws:3.3.1'
     testCompile 'com.squareup.okhttp3:mockwebserver:3.3.1'
 
-    compile 'org.apache.commons:commons-compress:1.11'
+    compile 'org.apache.commons:commons-compress:1.12'
     compile 'commons-io:commons-io:2.5'
 
     compile 'org.slf4j:slf4j-api:1.7.21'
@@ -100,7 +100,7 @@ dependencies {
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
         exclude module: 'groovy-all'
     }
-    testCompile 'cglib:cglib-nodep:3.2.3'
+    testCompile 'cglib:cglib-nodep:3.2.4'
     testCompile 'commons-lang:commons-lang:2.6'
     testCompile 'joda-time:joda-time:2.9.4'
 
