@@ -168,10 +168,16 @@ class OkDockerClient implements HttpClient {
                                 bufferedSink.flush()
                             }
                             bufferedSink.close()
+
+                            def bufferedStdout = Okio.buffer(Okio.sink(System.out))
+                            while (connectionProvider.source.read(bufferedStdout.buffer(), 1024) != -1) {
+                                bufferedStdout.flush()
+                            }
                         } catch (Exception e) {
                             log.error("error", e)
+                        } finally {
+                            client.dispatcher().executorService().shutdown()
                         }
-                        client.dispatcher().executorService().shutdown()
 
                         done(response)
                     }
