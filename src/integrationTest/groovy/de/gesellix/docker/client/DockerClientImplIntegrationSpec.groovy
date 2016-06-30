@@ -100,7 +100,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         then:
         version.ApiVersion == "1.24"
         version.Arch == "amd64"
-        version.BuildTime == "2016-06-17T22:09:20.440355664+00:00"
+        version.BuildTime == "2016-06-29T10:03:33.627389158+00:00"
         version.GitCommit == "a7119de"
         version.GoVersion == "go1.6.2"
         version.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"

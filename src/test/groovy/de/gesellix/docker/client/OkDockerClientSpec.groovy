@@ -199,7 +199,7 @@ class OkDockerClientSpec extends Specification {
             config.method
         }
         when:
-        def method = client.head("/foo")
+        def method = client.head([path: "/foo"])
         then:
         method == "HEAD"
     }
@@ -213,7 +213,7 @@ class OkDockerClientSpec extends Specification {
             config.method
         }
         when:
-        def method = client.get("/foo")
+        def method = client.get([path: "/foo"])
         then:
         method == "GET"
     }
@@ -227,7 +227,7 @@ class OkDockerClientSpec extends Specification {
             config.method
         }
         when:
-        def method = client.put("/foo")
+        def method = client.put([path: "/foo"])
         then:
         method == "PUT"
     }
@@ -241,7 +241,7 @@ class OkDockerClientSpec extends Specification {
             config.method
         }
         when:
-        def method = client.post("/foo")
+        def method = client.post([path: "/foo"])
         then:
         method == "POST"
     }
@@ -255,7 +255,7 @@ class OkDockerClientSpec extends Specification {
             config.method
         }
         when:
-        def method = client.delete("/foo")
+        def method = client.delete([path: "/foo"])
         then:
         method == "DELETE"
     }
@@ -392,6 +392,48 @@ class OkDockerClientSpec extends Specification {
         when:
         def response = client.request([method: "OPTIONS",
                                        path  : "/a-resource"])
+        then:
+        response.status.success
+        and:
+        hasVerified
+
+        cleanup:
+        mockWebServer.shutdown()
+    }
+
+    def "request with explicit api version"() {
+        given:
+        def mockWebServer = new MockWebServer()
+        mockWebServer.enqueue(new MockResponse().setBody("mock-response"))
+        mockWebServer.start()
+
+        def serverUrl = mockWebServer.url("/")
+        def hasVerified = false
+        def Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
+            def expectedUrl = serverUrl.newBuilder()
+                    .encodedPath("/v1.23/a-resource")
+                    .build()
+            if (!expectedUrl.equals(chain.request().url())) {
+                throw new AssertionError("expected ${expectedUrl}, got ${chain.request().url()}")
+            }
+            hasVerified = true
+            true
+        }
+        def client = new OkDockerClient() {
+            @Override
+            OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+                clientBuilder
+                        .addNetworkInterceptor(new TestInterceptor({ true }, verifyResponse))
+                        .build()
+            }
+        }
+        client.config = new DockerConfig(
+                dockerHost: mockWebServer.url("/").toString())
+
+        when:
+        def response = client.request([method    : "OPTIONS",
+                                       path      : "/a-resource",
+                                       apiVersion: "v1.23"])
         then:
         response.status.success
         and:

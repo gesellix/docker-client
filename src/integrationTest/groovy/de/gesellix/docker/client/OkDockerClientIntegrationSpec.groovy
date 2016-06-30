@@ -15,7 +15,7 @@ class OkDockerClientIntegrationSpec extends Specification {
     def "should allow GET requests"() {
         def client = new OkDockerClient()
         expect:
-        client.get("/_ping").content == "OK"
+        client.get([path: "/_ping"]).content == "OK"
     }
 
     def "should allow POST requests"() {
@@ -62,7 +62,7 @@ class OkDockerClientIntegrationSpec extends Specification {
     def "should parse application/json"() {
         def client = new OkDockerClient()
         when:
-        def response = client.get("/version")
+        def response = client.get([path: "/version"])
         then:
         def content = response.content
         content.ApiVersion == "1.24"

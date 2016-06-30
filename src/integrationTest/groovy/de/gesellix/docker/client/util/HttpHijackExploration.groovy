@@ -1,5 +1,6 @@
 package de.gesellix.docker.client.util
 
+import de.gesellix.docker.client.AttachConfig
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.DockerClientImpl
 import groovy.util.logging.Slf4j
@@ -39,7 +40,7 @@ class HttpHijackExploration {
         def runResult = dockerClient.run(
                 "gesellix/docker-client-testimage",
                 [
-                        Cmd      : ["/bin/sh", "-c", "read line && echo \$line"],
+                        Cmd      : ["/bin/sh", "-c", "read line && echo \"->\$line\""],
                         OpenStdin: true,
                         Tty      : true
                 ],
@@ -68,11 +69,14 @@ class HttpHijackExploration {
                         stdin : true,
                         stdout: true,
                         stderr: true
-                ], [stdin             : stdin,
-                    stdout            : System.out,
-                    stderr            : System.err,
-                    onResponseCallback: onResponseCallback,
-                    done              : done])
+                ],
+                new AttachConfig(
+                        streams: new AttachConfig.Streams(
+                                stdin: stdin,
+                                stdout: System.out,
+                                stderr: System.err),
+                        onResponse: onResponseCallback,
+                        onStdinClosed: done))
         responseLatch.await()
         doneLatch.await()
     }

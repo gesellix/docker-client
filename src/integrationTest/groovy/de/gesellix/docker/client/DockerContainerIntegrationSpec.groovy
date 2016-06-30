@@ -724,6 +724,45 @@ class DockerContainerIntegrationSpec extends Specification {
         dockerClient.rm(containerId)
     }
 
+    def "attach (interactive)"() {
+        given:
+        def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
+        def containerConfig = [
+                Tty      : true,
+                OpenStdin: true,
+                Cmd      : ["/bin/sh", "-c", "read line && echo \"->\$line\""]
+        ]
+        def containerId = dockerClient.run(imageId, containerConfig).container.content.Id
+
+        def input = "attach ${UUID.randomUUID()}"
+        def expectedOutput = "$input\r\n->$input\r\n"
+        def outputStream = new ByteArrayOutputStream()
+
+        def done = new CountDownLatch(1)
+
+        def attachConfig = new AttachConfig()
+        attachConfig.streams.stdin = new ByteArrayInputStream("$input\n".bytes)
+        attachConfig.streams.stdout = outputStream
+        attachConfig.onStdinClosed = { Response response ->
+            done.countDown()
+        }
+
+        when:
+        dockerClient.attach(
+                containerId,
+                [stream: 1, stdin: 1, stdout: 1, stderr: 1],
+                attachConfig)
+        done.await(5, SECONDS)
+
+        then:
+        outputStream.toByteArray() == expectedOutput.bytes
+
+        cleanup:
+        dockerClient.stop(containerId)
+        dockerClient.wait(containerId)
+        dockerClient.rm(containerId)
+    }
+
     @Requires({ LocalDocker.isTcpSocket() })
     def "attach (websocket)"() {
         given:
