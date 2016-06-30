@@ -825,6 +825,7 @@ class DockerClientImpl implements DockerClient {
                                             async: true])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker events failed"))
         def executor = newSingleThreadExecutor()
+        // TODO return the executor (or its Future result)?
         executor.submit(new DockerAsyncConsumer(response, callback))
         return response
     }
@@ -851,6 +852,7 @@ class DockerClientImpl implements DockerClient {
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker stats failed"))
         if (async) {
             def executor = newSingleThreadExecutor()
+            // TODO return the executor (or its Future result)?
             executor.submit(new DockerAsyncConsumer(response, callback))
         }
         return response
@@ -890,6 +892,7 @@ class DockerClientImpl implements DockerClient {
                 response.stream = new RawInputStream(response.stream as InputStream)
             }
             def executor = newSingleThreadExecutor()
+            // TODO return the executor (or its Future result)?
             executor.submit(new DockerAsyncConsumer(response, callback))
         }
         return response
