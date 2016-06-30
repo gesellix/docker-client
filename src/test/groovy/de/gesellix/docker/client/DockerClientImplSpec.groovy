@@ -966,8 +966,10 @@ class DockerClientImplSpec extends Specification {
         dockerClient.attach("a-container", [stream: true])
 
         then:
-        1 * httpClient.post([path : "/containers/a-container/attach",
-                             query: [stream: true]]) >> [stream: [:]]
+        1 * httpClient.post([path            : "/containers/a-container/attach",
+                             query           : [stream: true],
+                             attach          : null,
+                             multiplexStreams: true]) >> [stream: [:]]
     }
 
     // TODO
