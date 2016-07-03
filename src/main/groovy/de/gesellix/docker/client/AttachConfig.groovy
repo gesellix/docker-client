@@ -12,6 +12,8 @@ class AttachConfig {
 
     def onStdinClosed = { Response response -> }
 
+    def onFinish = { }
+
     static class Streams {
         InputStream stdin = null
         OutputStream stdout = System.out

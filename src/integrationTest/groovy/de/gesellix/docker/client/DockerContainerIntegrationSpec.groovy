@@ -518,6 +518,68 @@ class DockerContainerIntegrationSpec extends Specification {
         dockerClient.rm(name)
     }
 
+    def "exec (interactive)"() {
+        given:
+        def imageName = "gesellix/docker-client-testimage"
+        def tag = "latest"
+        def cmds = ["sh", "-c", "ping 127.0.0.1"]
+        def containerConfig = ["Cmd": cmds]
+        def name = "attach-exec"
+        def containerStatus = dockerClient.run(imageName, containerConfig, tag, name)
+        def containerId = containerStatus.container.content.Id
+        def execCreateConfig = [
+                "AttachStdin" : true,
+                "AttachStdout": true,
+                "AttachStderr": true,
+                "Tty"         : true,
+                "Cmd"         : ["/bin/sh", "-c", "read line && echo \"->\$line\""]
+        ]
+
+        def execCreateResult = dockerClient.createExec(containerId, execCreateConfig).content
+        def execId = execCreateResult.Id
+
+        def input = "exec ${UUID.randomUUID()}"
+        def expectedOutput = "$input\r\n->$input\r\n"
+        def outputStream = new ByteArrayOutputStream()
+
+        def onStdinClosed = new CountDownLatch(1)
+        def onFinish = new CountDownLatch(1)
+
+        def attachConfig = new AttachConfig()
+        attachConfig.streams.stdin = new ByteArrayInputStream("$input\n".bytes)
+        attachConfig.streams.stdout = outputStream
+        attachConfig.onFailure = { Exception e ->
+            log.error("exec failed", e)
+        }
+        attachConfig.onResponse = {
+            log.trace("onResponse")
+        }
+        attachConfig.onStdinClosed = { Response response ->
+            log.trace("onStdinClosed")
+            onStdinClosed.countDown()
+        }
+        attachConfig.onFinish = {
+            log.trace("onFinish")
+            onFinish.countDown()
+        }
+
+        when:
+        def execStartConfig = [
+                "Detach": false,
+                "Tty"   : true]
+        dockerClient.startExec(execId, execStartConfig, attachConfig)
+        onStdinClosed.await(5, SECONDS)
+        onFinish.await(5, SECONDS)
+
+        then:
+        outputStream.toString() == new String(expectedOutput.bytes)
+
+        cleanup:
+        dockerClient.stop(name)
+        dockerClient.wait(name)
+        dockerClient.rm(name)
+    }
+
     def "get archive (copy from container)"() {
         given:
         def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
@@ -738,13 +800,17 @@ class DockerContainerIntegrationSpec extends Specification {
         def expectedOutput = "$input\r\n->$input\r\n"
         def outputStream = new ByteArrayOutputStream()
 
-        def done = new CountDownLatch(1)
+        def onStdinClosed = new CountDownLatch(1)
+        def onFinish = new CountDownLatch(1)
 
         def attachConfig = new AttachConfig()
         attachConfig.streams.stdin = new ByteArrayInputStream("$input\n".bytes)
         attachConfig.streams.stdout = outputStream
         attachConfig.onStdinClosed = { Response response ->
-            done.countDown()
+            onStdinClosed.countDown()
+        }
+        attachConfig.onFinish = {
+            onFinish.countDown()
         }
 
         when:
@@ -752,7 +818,8 @@ class DockerContainerIntegrationSpec extends Specification {
                 containerId,
                 [stream: 1, stdin: 1, stdout: 1, stderr: 1],
                 attachConfig)
-        done.await(5, SECONDS)
+        onStdinClosed.await(5, SECONDS)
+        onFinish.await(5, SECONDS)
 
         then:
         outputStream.toByteArray() == expectedOutput.bytes

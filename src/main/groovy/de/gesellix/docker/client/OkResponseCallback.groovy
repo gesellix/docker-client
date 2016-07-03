@@ -15,7 +15,8 @@ class OkResponseCallback implements Callback {
     AttachConfig attachConfig
     InputStream stdin
     Closure onResponse
-    Closure done
+    Closure onStdinClosed
+    Closure onFinish
 
     OkResponseCallback(OkHttpClient client, ConnectionProvider connectionProvider, AttachConfig attachConfig) {
         this.client = client
@@ -23,7 +24,8 @@ class OkResponseCallback implements Callback {
         this.attachConfig = attachConfig
         this.stdin = attachConfig.streams.stdin
         this.onResponse = attachConfig.onResponse
-        this.done = attachConfig.onStdinClosed
+        this.onStdinClosed = attachConfig.onStdinClosed
+        this.onFinish = attachConfig.onFinish
     }
 
     @Override
@@ -39,41 +41,47 @@ class OkResponseCallback implements Callback {
         if (attachConfig.streams.stdin != null) {
             // pass input from the client via stdin and pass it to the output stream
             // running it in an own thread allows the client to gain back control
-            new Thread(new Runnable() {
+            def stdinSource = Okio.source(attachConfig.streams.stdin)
+            def writer = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         def bufferedSink = Okio.buffer(connectionProvider.sink)
-                        def stdinSource = Okio.source(attachConfig.streams.stdin)
+                        Thread.sleep(150)
                         while (stdinSource.read(bufferedSink.buffer(), 1024) != -1) {
                             bufferedSink.flush()
                         }
                         bufferedSink.close()
+                        onStdinClosed(response)
                     } catch (Exception e) {
                         log.error("error", e)
                     } finally {
                         client.dispatcher().executorService().shutdown()
                     }
-
-                    done(response)
                 }
-            }).start()
+            })
+            writer.setName("stdin-writer ${call.request().url().encodedPath()}")
+            writer.start()
         }
 
         if (attachConfig.streams.stdout != null) {
-            new Thread(new Runnable() {
+            def bufferedStdout = Okio.buffer(Okio.sink(attachConfig.streams.stdout))
+            def reader = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        def bufferedStdout = Okio.buffer(Okio.sink(attachConfig.streams.stdout))
+                        Thread.sleep(150)
                         while (connectionProvider.source.read(bufferedStdout.buffer(), 1024) != -1) {
                             bufferedStdout.flush()
                         }
                     } catch (Exception e) {
                         log.error("error", e)
                     }
+                    onFinish()
                 }
-            }).start()
+            })
+            reader.setName("stdout-reader ${call.request().url().encodedPath()}")
+            reader.start()
         }
         onResponse(response)
     }
