@@ -28,7 +28,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker rename <container>`: Rename a container
 * [x] `docker pause <container>`: Pause a container
 * [x] `docker unpause <container>`: Unpause a container
-* [x] `docker attach <container>`: Attach to a container - _interactive tty via socket hijacking currently not supported_
+* [x] `docker attach <container>`: Attach to a container (supports interactive tty)
 * [x] Attach to a container (websocket)
 * [x] `docker wait <container>`: Wait a container
 * [x] `docker rm <container>`: Remove a container
@@ -63,7 +63,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker save <image> [<image> ...]`: Get a tarball containing all images.
 * [x] `docker load`: Load a tarball with a set of images and tags into docker
 * [x] Exec Create
-* [x] Exec Start (`docker exec <container> <command>`) - _interactive tty via socket hijacking currently not supported_
+* [x] Exec Start (`docker exec <container> <command>`) (supports interactive tty)
 * [x] Exec Resize
 * [x] Exec Inspect
 
