@@ -719,11 +719,24 @@ class DockerClientImplSpec extends Specification {
         dockerClient.startExec("an-exec", execStartConfig)
 
         then:
+        1 * httpClient.get([path: "/exec/an-exec/json"]) >> [
+                status : [success: true],
+                content: [ProcessConfig: [tty: true]]
+        ]
+        and:
+        1 * dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+            assert arguments[1]?.message == "docker inspect exec failed"
+        }
+
+        then:
         1 * httpClient.post([path              : "/exec/an-exec/start",
                              body              : execStartConfig,
-                             requestContentType: "application/json"]) >> [status: [:]]
+                             requestContentType: "application/json",
+                             attach            : null,
+                             multiplexStreams  : false]) >> [status: [:],
+                                                             stream: [:]]
         and:
-        dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+        1 * dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
             assert arguments[1]?.message == "docker exec start failed"
         }
     }
@@ -731,9 +744,10 @@ class DockerClientImplSpec extends Specification {
     def "start exec with missing exec"() {
         def execStartConfig = [:]
         given:
-        httpClient.post([path              : "/exec/a-missing-exec/start",
-                         body              : execStartConfig,
-                         requestContentType: "application/json"]) >> [status: [code: 404]]
+        httpClient.get([path: "/exec/a-missing-exec/json"]) >> [status: [code: 404]]
+//        httpClient.post([path              : "/exec/a-missing-exec/start",
+//                         body              : execStartConfig,
+//                         requestContentType: "application/json"]) >> [status: [code: 404]]
         getMemoryAppender().clearLoggedEvents()
 
         when:

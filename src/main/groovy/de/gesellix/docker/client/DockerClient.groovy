@@ -116,15 +116,17 @@ interface DockerClient {
 
     def rmi(image)
 
-    def createExec(container, execConfig)
+    def createExec(container, Map execConfig)
 
-    def startExec(execId, execConfig)
+    def startExec(execId, Map execConfig)
+
+    def startExec(execId, Map execConfig, AttachConfig attachConfig)
 
     def inspectExec(execId)
 
     def exec(container, command)
 
-    def exec(container, command, execConfig)
+    def exec(container, command, Map execConfig)
 
     def getArchiveStats(container, path)
 

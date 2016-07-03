@@ -571,7 +571,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def createExec(containerId, execConfig) {
+    def createExec(containerId, Map execConfig) {
         log.info "docker create exec on '${containerId}'"
 
         def response = getHttpClient().post([path              : "/containers/${containerId}/exec".toString(),
@@ -587,18 +587,29 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def startExec(execId, execConfig) {
+    def startExec(execId, Map execConfig, AttachConfig attachConfig = null) {
         log.info "docker start exec '${execId}'"
+
+        // When using the TTY setting is enabled in POST /containers/create,
+        // the stream is the raw data from the process PTY and client’s stdin.
+        // When the TTY is disabled, then the stream is multiplexed to separate stdout and stderr.
+        def exec = inspectExec(execId)
+        def multiplexStreams = !exec.content.ProcessConfig.tty
 
         def response = getHttpClient().post([path              : "/exec/${execId}/start".toString(),
                                              body              : execConfig,
-                                             requestContentType: "application/json"])
+                                             requestContentType: "application/json",
+                                             attach            : attachConfig,
+                                             multiplexStreams  : multiplexStreams])
 
-
-        if (response.status?.code == 404) {
-            log.error("no such exec '${execId}'")
+        if (!attachConfig) {
+            if (response.status?.code == 404) {
+                log.error("no such exec '${execId}'")
+            }
+            responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker exec start failed"))
+            response.stream.multiplexStreams = multiplexStreams
         }
-        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker exec start failed"))
+
         return response
     }
 
@@ -616,7 +627,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def exec(containerId, command, execConfig = [
+    def exec(containerId, command, Map execConfig = [
             "Detach"     : false,
             "AttachStdin": false,
             "Tty"        : false]) {
