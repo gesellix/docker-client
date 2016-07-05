@@ -17,6 +17,8 @@ class ConnectionProvider implements Interceptor {
         RealConnection connection = chain.connection() as RealConnection
         source = connection.source
         sink = connection.sink
-        return chain.proceed(chain.request())
+
+        def response = chain.proceed(chain.request())
+        return response
     }
 }

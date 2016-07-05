@@ -130,7 +130,7 @@ interface DockerClient {
 
     def getArchiveStats(container, path)
 
-    def extractFile(container, String filename)
+    byte[] extractFile(container, String filename)
 
     def getArchive(container, path)
 

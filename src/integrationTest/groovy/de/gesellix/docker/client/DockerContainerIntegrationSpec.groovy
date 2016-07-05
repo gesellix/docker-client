@@ -527,23 +527,25 @@ class DockerContainerIntegrationSpec extends Specification {
         def name = "attach-exec"
         def containerStatus = dockerClient.run(imageName, containerConfig, tag, name)
         def containerId = containerStatus.container.content.Id
+
+        def logFileName = "/log.txt"
         def execCreateConfig = [
                 "AttachStdin" : true,
                 "AttachStdout": true,
                 "AttachStderr": true,
                 "Tty"         : true,
-                "Cmd"         : ["/bin/sh", "-c", "read line && echo \"->\$line\""]
+                "Cmd"         : ["/bin/sh", "-c", "read line && echo \"->\$line<-\" > ${logFileName}"]
         ]
 
         def execCreateResult = dockerClient.createExec(containerId, execCreateConfig).content
         def execId = execCreateResult.Id
 
         def input = "exec ${UUID.randomUUID()}"
-        def expectedOutput = "$input\r\n->$input\r\n"
+        def expectedOutput = "->$input<-"
         def outputStream = new ByteArrayOutputStream()
 
-        def onStdinClosed = new CountDownLatch(1)
-        def onFinish = new CountDownLatch(1)
+        def onSinkClosed = new CountDownLatch(1)
+        def onSourceConsumed = new CountDownLatch(1)
 
         def attachConfig = new AttachConfig()
         attachConfig.streams.stdin = new ByteArrayInputStream("$input\n".bytes)
@@ -554,13 +556,13 @@ class DockerContainerIntegrationSpec extends Specification {
         attachConfig.onResponse = {
             log.trace("onResponse")
         }
-        attachConfig.onStdinClosed = { Response response ->
-            log.trace("onStdinClosed")
-            onStdinClosed.countDown()
+        attachConfig.onSinkClosed = { Response response ->
+            log.trace("onSinkClosed")
+            onSinkClosed.countDown()
         }
-        attachConfig.onFinish = {
+        attachConfig.onSourceConsumed = {
             log.trace("onFinish")
-            onFinish.countDown()
+            onSourceConsumed.countDown()
         }
 
         when:
@@ -568,11 +570,12 @@ class DockerContainerIntegrationSpec extends Specification {
                 "Detach": false,
                 "Tty"   : true]
         dockerClient.startExec(execId, execStartConfig, attachConfig)
-        onStdinClosed.await(5, SECONDS)
-        onFinish.await(5, SECONDS)
+        onSinkClosed.await(5, SECONDS)
+        onSourceConsumed.await(5, SECONDS)
 
         then:
-        outputStream.toString() == new String(expectedOutput.bytes)
+        def logContent = new String(dockerClient.extractFile(name, logFileName))
+        logContent.trim() == expectedOutput.toString()
 
         cleanup:
         dockerClient.stop(name)
@@ -800,17 +803,17 @@ class DockerContainerIntegrationSpec extends Specification {
         def expectedOutput = "$input\r\n->$input\r\n"
         def outputStream = new ByteArrayOutputStream()
 
-        def onStdinClosed = new CountDownLatch(1)
-        def onFinish = new CountDownLatch(1)
+        def onSinkClosed = new CountDownLatch(1)
+        def onSourceConsumed = new CountDownLatch(1)
 
         def attachConfig = new AttachConfig()
         attachConfig.streams.stdin = new ByteArrayInputStream("$input\n".bytes)
         attachConfig.streams.stdout = outputStream
-        attachConfig.onStdinClosed = { Response response ->
-            onStdinClosed.countDown()
+        attachConfig.onSinkClosed = { Response response ->
+            onSinkClosed.countDown()
         }
-        attachConfig.onFinish = {
-            onFinish.countDown()
+        attachConfig.onSourceConsumed = {
+            onSourceConsumed.countDown()
         }
 
         when:
@@ -818,8 +821,8 @@ class DockerContainerIntegrationSpec extends Specification {
                 containerId,
                 [stream: 1, stdin: 1, stdout: 1, stderr: 1],
                 attachConfig)
-        onStdinClosed.await(5, SECONDS)
-        onFinish.await(5, SECONDS)
+        onSinkClosed.await(5, SECONDS)
+        onSourceConsumed.await(5, SECONDS)
 
         then:
         outputStream.toByteArray() == expectedOutput.bytes

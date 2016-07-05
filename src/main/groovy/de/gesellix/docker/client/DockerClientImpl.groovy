@@ -671,7 +671,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def extractFile(container, String filename) {
+    byte[] extractFile(container, String filename) {
         log.info "extract '${filename}' from '${container}'"
 
         def response = getArchive(container, filename)
@@ -1158,7 +1158,7 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
-    def extractSingleTarEntry(InputStream tarContent, String filename) {
+    byte[] extractSingleTarEntry(InputStream tarContent, String filename) {
         def stream = new TarArchiveInputStream(new BufferedInputStream(tarContent))
 
         TarArchiveEntry entry = stream.nextTarEntry

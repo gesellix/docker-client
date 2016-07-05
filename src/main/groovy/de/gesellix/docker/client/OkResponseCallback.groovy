@@ -15,8 +15,8 @@ class OkResponseCallback implements Callback {
     AttachConfig attachConfig
     InputStream stdin
     Closure onResponse
-    Closure onStdinClosed
-    Closure onFinish
+    Closure onSinkClosed
+    Closure onSourceConsumed
 
     OkResponseCallback(OkHttpClient client, ConnectionProvider connectionProvider, AttachConfig attachConfig) {
         this.client = client
@@ -24,13 +24,18 @@ class OkResponseCallback implements Callback {
         this.attachConfig = attachConfig
         this.stdin = attachConfig.streams.stdin
         this.onResponse = attachConfig.onResponse
-        this.onStdinClosed = attachConfig.onStdinClosed
-        this.onFinish = attachConfig.onFinish
+        this.onSinkClosed = attachConfig.onSinkClosed
+        this.onSourceConsumed = attachConfig.onSourceConsumed
     }
 
     @Override
     void onFailure(Call call, IOException e) {
-        log.error "connection failed: ${e.message}"
+        log.error("connection failed: ${e.message}", e)
+        attachConfig.onFailure(e)
+    }
+
+    void onFailure(Exception e) {
+        log.error("error", e)
         attachConfig.onFailure(e)
     }
 
@@ -50,11 +55,10 @@ class OkResponseCallback implements Callback {
                         while (stdinSource.read(bufferedSink.buffer(), 1024) != -1) {
                             bufferedSink.flush()
                         }
-                        Thread.sleep(100)
                         bufferedSink.close()
-                        onStdinClosed(response)
+                        onSinkClosed(response)
                     } catch (Exception e) {
-                        log.error("error", e)
+                        onFailure(e)
                     } finally {
                         client.dispatcher().executorService().shutdown()
                     }
@@ -73,10 +77,10 @@ class OkResponseCallback implements Callback {
                         while (connectionProvider.source.read(bufferedStdout.buffer(), 1024) != -1) {
                             bufferedStdout.flush()
                         }
+                        onSourceConsumed()
                     } catch (Exception e) {
-                        log.error("error", e)
+                        onFailure(e)
                     }
-                    onFinish()
                 }
             })
             reader.setName("stdout-reader ${call.request().url().encodedPath()}")

@@ -10,9 +10,9 @@ class AttachConfig {
 
     def onResponse = { Response response -> }
 
-    def onStdinClosed = { Response response -> }
+    def onSinkClosed = { Response response -> }
 
-    def onFinish = { }
+    def onSourceConsumed = { }
 
     static class Streams {
         InputStream stdin = null
