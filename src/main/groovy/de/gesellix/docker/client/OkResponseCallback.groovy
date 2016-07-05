@@ -47,10 +47,10 @@ class OkResponseCallback implements Callback {
                 public void run() {
                     try {
                         def bufferedSink = Okio.buffer(connectionProvider.sink)
-                        Thread.sleep(150)
                         while (stdinSource.read(bufferedSink.buffer(), 1024) != -1) {
                             bufferedSink.flush()
                         }
+                        Thread.sleep(100)
                         bufferedSink.close()
                         onStdinClosed(response)
                     } catch (Exception e) {
@@ -70,7 +70,6 @@ class OkResponseCallback implements Callback {
                 @Override
                 public void run() {
                     try {
-                        Thread.sleep(150)
                         while (connectionProvider.source.read(bufferedStdout.buffer(), 1024) != -1) {
                             bufferedStdout.flush()
                         }
