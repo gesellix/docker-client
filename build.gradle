@@ -84,6 +84,8 @@ dependencies {
     compile 'com.squareup.okhttp3:okhttp-ws:3.3.1'
     testCompile 'com.squareup.okhttp3:mockwebserver:3.3.1'
 
+    testCompile 'net.jodah:failsafe:0.8.2'
+
     compile 'org.apache.commons:commons-compress:1.12'
     compile 'commons-io:commons-io:2.5'
 

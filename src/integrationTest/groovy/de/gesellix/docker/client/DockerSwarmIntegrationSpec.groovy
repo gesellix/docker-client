@@ -2,9 +2,14 @@ package de.gesellix.docker.client
 
 import de.gesellix.docker.client.util.LocalDocker
 import groovy.util.logging.Slf4j
+import net.jodah.failsafe.Failsafe
+import net.jodah.failsafe.RetryPolicy
+import net.jodah.failsafe.function.Predicate
 import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
+
+import java.util.concurrent.TimeUnit
 
 @Slf4j
 @Requires({ LocalDocker.available() })
@@ -371,7 +376,9 @@ class DockerSwarmIntegrationSpec extends Specification {
         def serviceId = dockerClient.createService(serviceConfig).content.ID
 
         when:
-        def tasks = dockerClient.tasks().content
+        def tasks = getWithRetry(
+                { dockerClient.tasks().content },
+                { List content -> !content })
 
         then:
         def firstTask = tasks.first()
@@ -431,5 +438,13 @@ class DockerSwarmIntegrationSpec extends Specification {
                         "CAConfig"        : [:]
                 ]
         ]
+    }
+
+    def getWithRetry(Closure callable, Predicate retryIf) {
+        RetryPolicy retryPolicy = new RetryPolicy()
+                .withDelay(100, TimeUnit.MILLISECONDS)
+                .withMaxRetries(3)
+                .retryIf(retryIf)
+        return Failsafe.with(retryPolicy).get(callable)
     }
 }
