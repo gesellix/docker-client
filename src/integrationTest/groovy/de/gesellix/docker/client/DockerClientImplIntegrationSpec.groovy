@@ -59,14 +59,16 @@ class DockerClientImplIntegrationSpec extends Specification {
                 "Plugins",
                 "RegistryConfig",
                 "ServerVersion", "SwapLimit", "SystemStatus", "SystemTime"]
-        new ArrayList<>(info.keySet()).each { expectedKeys.contains(it) }
+        new ArrayList<>(info.keySet() as Set).each { expectedKeys.contains(it) }
 
         and:
+        def expectedDriverStatusProperties = ["Root Dir", "Backing Filesystem", "Dirs", "Dirperm1 Supported"]
         info.Containers >= 0
         info.DockerRootDir =~ "(/mnt/sda1)?/var/lib/docker"
         info.DriverStatus.findAll {
-            it[0] == "Root Dir" || it[0] == "Backing Filesystem" || it[0] == "Dirs" || it[0] == "Dirperm1 Supported"
-        }.size() == 4
+            def propertyName = it.first()
+            propertyName in expectedDriverStatusProperties
+        }.size() == expectedDriverStatusProperties.size()
         info.ExperimentalBuild == false
         info.HttpProxy == ""
         info.HttpsProxy == ""
@@ -100,12 +102,12 @@ class DockerClientImplIntegrationSpec extends Specification {
         then:
         version.ApiVersion == "1.24"
         version.Arch == "amd64"
-        version.BuildTime == "2016-06-29T10:03:33.627389158+00:00"
-        version.GitCommit == "a7119de"
+        version.BuildTime == "2016-07-05T02:20:13.448965048+00:00"
+        version.GitCommit == "876f3a7"
         version.GoVersion == "go1.6.2"
         version.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"
         version.Os == "linux"
-        version.Version == "1.12.0-rc2"
+        version.Version == "1.12.0-rc3"
     }
 
     def auth() {
