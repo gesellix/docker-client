@@ -1,4 +1,4 @@
-package sun.net.www.protocol.unix
+package de.gesellix.docker.client.unix
 
 import de.gesellix.docker.client.DockerConfig
 import de.gesellix.docker.client.HttpClient

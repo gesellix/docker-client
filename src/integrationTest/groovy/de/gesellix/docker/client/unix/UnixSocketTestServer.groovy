@@ -1,4 +1,4 @@
-package sun.net.www.protocol.unix
+package de.gesellix.docker.client.unix
 
 import org.newsclub.net.unix.AFUNIXServerSocket
 import org.newsclub.net.unix.AFUNIXSocketAddress

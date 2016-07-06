@@ -1,4 +1,4 @@
-package sun.net.www.protocol.npipe
+package de.gesellix.docker.client.npipe
 
 import de.gesellix.docker.client.DockerConfig
 import de.gesellix.docker.client.HttpClient
