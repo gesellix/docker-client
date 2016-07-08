@@ -1,13 +1,11 @@
 package de.gesellix.docker.client
 
-import groovy.util.logging.Slf4j
 import okhttp3.Dns
-import okhttp3.HttpUrl
-import okio.ByteString
 import org.newsclub.net.unix.AFUNIXSocket
-import org.newsclub.net.unix.AFUNIXSocketAddress
 
 import javax.net.SocketFactory
+
+import static de.gesellix.docker.client.UnixSocket.SOCKET_MARKER
 
 class UnixSocketFactory extends SocketFactory implements Dns {
 
@@ -17,17 +15,9 @@ class UnixSocketFactory extends SocketFactory implements Dns {
         }
     }
 
-    HttpUrl urlForUnixSocketPath(String unixSocketPath, String path) {
-        return new HttpUrl.Builder()
-                .scheme("http")
-                .host(UnixSocket.encodeHostname(unixSocketPath))
-                .addPathSegment(path)
-                .build()
-    }
-
     @Override
     List<InetAddress> lookup(String hostname) throws UnknownHostException {
-        return hostname.endsWith(".socket") ? [InetAddress.getByAddress(hostname, [0, 0, 0, 0] as byte[])] : SYSTEM.lookup(hostname)
+        return hostname.endsWith(SOCKET_MARKER) ? [InetAddress.getByAddress(hostname, [0, 0, 0, 0] as byte[])] : SYSTEM.lookup(hostname)
     }
 
     @Override
@@ -53,74 +43,5 @@ class UnixSocketFactory extends SocketFactory implements Dns {
     @Override
     Socket createSocket(InetAddress inetAddress, int i, InetAddress inetAddress1, int i1) throws IOException {
         throw new UnsupportedOperationException()
-    }
-
-    @Slf4j
-    public static class UnixSocket extends Socket {
-
-        public static final String SOCKET_MARKER = ".socket"
-        private AFUNIXSocket socket
-
-        static String encodeHostname(String path) {
-            return "${Encoder.encode(path)}${SOCKET_MARKER}"
-        }
-
-        static String decodeHostname(InetAddress address) {
-            String hostName = address.getHostName()
-            return Encoder.decode(hostName.substring(0, hostName.indexOf(SOCKET_MARKER)))
-        }
-
-        @Override
-        void connect(SocketAddress endpoint, int timeout) throws IOException {
-            InetAddress address = ((InetSocketAddress) endpoint).getAddress()
-            String socketPath = decodeHostname(address)
-
-            log.debug "connect via '${socketPath}'..."
-            File socketFile = new File(socketPath)
-
-            socket = AFUNIXSocket.newInstance()
-
-            if (timeout < 0) {
-                timeout = 0
-            }
-            socket.connect(new AFUNIXSocketAddress(socketFile), timeout)
-            socket.setSoTimeout(timeout)
-        }
-
-        @Override
-        boolean isConnected() {
-            return socket.isConnected()
-        }
-
-        @Override
-        InputStream getInputStream() throws IOException {
-            return socket.getInputStream()
-        }
-
-        @Override
-        OutputStream getOutputStream() throws IOException {
-            return socket.getOutputStream()
-        }
-
-        @Override
-        void bind(SocketAddress bindpoint) throws IOException {
-            socket.bind(bindpoint)
-        }
-
-        @Override
-        void close() throws IOException {
-            socket.close()
-        }
-    }
-
-    private static class Encoder {
-
-        static String encode(String toEncode) {
-            return ByteString.encodeUtf8(toEncode).hex()
-        }
-
-        static String decode(String toDecode) {
-            return ByteString.decodeHex(toDecode).utf8()
-        }
     }
 }

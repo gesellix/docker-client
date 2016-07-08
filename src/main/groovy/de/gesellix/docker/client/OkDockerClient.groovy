@@ -3,13 +3,7 @@ package de.gesellix.docker.client
 import de.gesellix.docker.client.rawstream.RawInputStream
 import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
-import okhttp3.CacheControl
-import okhttp3.HttpUrl
-import okhttp3.MediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody
-import okhttp3.Response
+import okhttp3.*
 import okhttp3.internal.http.HttpMethod
 import okhttp3.ws.WebSocketCall
 import okio.Okio
@@ -201,13 +195,13 @@ class OkDockerClient implements HttpClient {
         if (protocol == "unix") {
             httpUrl = urlBuilder
                     .scheme("http")
-                    .host(UnixSocketFactory.UnixSocket.encodeHostname(host))
+                    .host(UnixSocket.encodeHostname(host))
 //                    .port(/not/allowed/for/unix/socket/)
                     .build()
         } else if (protocol == "npipe") {
             httpUrl = urlBuilder
                     .scheme("http")
-                    .host(NpipeSocketFactory.NamedPipeSocket.encodeHostname(host))
+                    .host(NamedPipeSocket.encodeHostname(host))
 //                    .port(/not/allowed/for/npipe/socket/)
                     .build()
         } else {
