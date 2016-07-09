@@ -5,19 +5,9 @@ import org.newsclub.net.unix.AFUNIXSocket
 import org.newsclub.net.unix.AFUNIXSocketAddress
 
 @Slf4j
-class UnixSocket extends Socket {
+class UnixSocket extends FileSocket {
 
-    static final String SOCKET_MARKER = ".socket"
     private AFUNIXSocket socket
-
-    static String encodeHostname(String path) {
-        return "${HostnameEncoder.encode(path)}${SOCKET_MARKER}"
-    }
-
-    static String decodeHostname(InetAddress address) {
-        String hostName = address.getHostName()
-        return HostnameEncoder.decode(hostName.substring(0, hostName.indexOf(SOCKET_MARKER)))
-    }
 
     @Override
     void connect(SocketAddress endpoint, int timeout) throws IOException {
@@ -37,11 +27,6 @@ class UnixSocket extends Socket {
     }
 
     @Override
-    boolean isConnected() {
-        return socket.isConnected()
-    }
-
-    @Override
     InputStream getInputStream() throws IOException {
         return socket.getInputStream()
     }
@@ -57,7 +42,12 @@ class UnixSocket extends Socket {
     }
 
     @Override
-    void close() throws IOException {
+    boolean isConnected() {
+        return socket.isConnected()
+    }
+
+    @Override
+    synchronized void close() throws IOException {
         socket.close()
     }
 }

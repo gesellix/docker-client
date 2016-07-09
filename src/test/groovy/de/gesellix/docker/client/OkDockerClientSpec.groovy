@@ -36,7 +36,7 @@ class OkDockerClientSpec extends Specification {
         def defaultHost = isWindows ? "//./pipe/docker_engine" : "/var/run/docker.sock"
 
         expect:
-        client.getProtocolAndHost() == [expectedScheme, defaultHost, -1]
+        client.getSchemeAndAuthority() == [expectedScheme, defaultHost, -1]
     }
 
     @IgnoreIf({ System.env.DOCKER_HOST })
@@ -45,7 +45,7 @@ class OkDockerClientSpec extends Specification {
         def oldDockerHost = System.setProperty("docker.host", "http://127.0.0.1:2375")
         def client = new OkDockerClient()
         expect:
-        client.getProtocolAndHost() == ["http", "127.0.0.1", 2375]
+        client.getSchemeAndAuthority() == ["http", "127.0.0.1", 2375]
         cleanup:
         if (oldDockerHost) {
             System.setProperty("docker.host", oldDockerHost)
@@ -59,7 +59,7 @@ class OkDockerClientSpec extends Specification {
                 config: new DockerConfig(
                         dockerHost: "tcp://127.0.0.1:2375"))
         when:
-        def (protocol, host, port) = client.getProtocolAndHost()
+        def (protocol, host, port) = client.getSchemeAndAuthority()
         then:
         protocol =~ /https?/
         and:
@@ -76,7 +76,7 @@ class OkDockerClientSpec extends Specification {
                 config: new DockerConfig(
                         dockerHost: "tcp://127.0.0.1:2376"))
         when:
-        def (protocol, host, port) = client.getProtocolAndHost()
+        def (protocol, host, port) = client.getSchemeAndAuthority()
         then:
         protocol == "https"
         and:
@@ -99,7 +99,7 @@ class OkDockerClientSpec extends Specification {
                 config: new DockerConfig(
                         dockerHost: "https://127.0.0.1:2376"))
         expect:
-        client.getProtocolAndHost() == ["https", "127.0.0.1", 2376]
+        client.getSchemeAndAuthority() == ["https", "127.0.0.1", 2376]
         cleanup:
         if (oldDockerCertPath) {
             System.setProperty("docker.cert.path", oldDockerCertPath)

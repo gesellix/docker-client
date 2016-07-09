@@ -127,7 +127,7 @@ class OkDockerClient implements HttpClient {
         def additionalHeaders = config.headers
         def body = config.body
 
-        def (String protocol, String host, int port) = getProtocolAndHost()
+        def (String protocol, String host, int port) = getSchemeAndAuthority()
         def path = config.path as String
         if (config.apiVersion) {
             path = "${config.apiVersion}/${path}".toString()
@@ -153,7 +153,7 @@ class OkDockerClient implements HttpClient {
     }
 
     private OkHttpClient.Builder prepareClient(OkHttpClient.Builder builder, int currentTimeout) {
-        def (String protocol, String host, int port) = getProtocolAndHost()
+        def (String protocol, String host, int port) = getSchemeAndAuthority()
         if (protocol == "unix") {
             def unixSocketFactory = new UnixSocketFactory()
             builder
@@ -195,13 +195,13 @@ class OkDockerClient implements HttpClient {
         if (protocol == "unix") {
             httpUrl = urlBuilder
                     .scheme("http")
-                    .host(UnixSocket.encodeHostname(host))
+                    .host(FileSocket.encodeHostname(host))
 //                    .port(/not/allowed/for/unix/socket/)
                     .build()
         } else if (protocol == "npipe") {
             httpUrl = urlBuilder
                     .scheme("http")
-                    .host(NamedPipeSocket.encodeHostname(host))
+                    .host(FileSocket.encodeHostname(host))
 //                    .port(/not/allowed/for/npipe/socket/)
                     .build()
         } else {
@@ -380,8 +380,8 @@ class OkDockerClient implements HttpClient {
         return config
     }
 
-    def getProtocolAndHost() {
-        return getDockerURLHandler().getProtocolAndHost(this.config.dockerHost)
+    def getSchemeAndAuthority() {
+        return getDockerURLHandler().getSchemeAndAuthority(this.config.dockerHost)
     }
 
     def queryToString(Map queryParameters) {

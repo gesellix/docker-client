@@ -7,7 +7,7 @@ class DockerURLHandler {
 
     DockerConfig config = new DockerConfig()
 
-    def getProtocolAndHost(String dockerHost) {
+    def getSchemeAndAuthority(String dockerHost) {
         if (!dockerHost) {
             throw new IllegalStateException("dockerHost must be set")
         }
