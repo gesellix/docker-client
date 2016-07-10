@@ -1,6 +1,5 @@
 package de.gesellix.docker.client
 
-import org.apache.commons.io.IOUtils
 import spock.lang.Specification
 
 class DockerignoreFileFilterSpec extends Specification {

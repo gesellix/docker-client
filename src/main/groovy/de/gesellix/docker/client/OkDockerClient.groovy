@@ -7,8 +7,6 @@ import okhttp3.*
 import okhttp3.internal.http.HttpMethod
 import okhttp3.ws.WebSocketCall
 import okio.Okio
-import org.apache.commons.io.IOUtils
-import org.apache.commons.io.output.NullOutputStream
 
 import java.util.regex.Pattern
 

@@ -1,7 +1,6 @@
 package de.gesellix.docker.client
 
 import groovy.json.JsonSlurper
-import org.apache.commons.io.IOUtils
 
 import java.util.regex.Pattern
 

@@ -6,8 +6,6 @@ import com.sun.net.httpserver.HttpServer
 
 import java.util.concurrent.Executors
 
-import static org.apache.commons.io.IOUtils.toByteArray
-
 class TestHttpServer {
 
     HttpServer httpServer
@@ -51,24 +49,6 @@ class TestHttpServer {
 
                 httpExchange.sendResponseHeaders(200, 0)
                 httpExchange.responseBody.write(param[1].reverse().bytes)
-                httpExchange.responseBody.close()
-            }
-        }
-    }
-
-    static class FileServer implements HttpHandler {
-
-        URL file
-
-        FileServer(URL file) {
-            this.file = file
-        }
-
-        @Override
-        void handle(HttpExchange httpExchange) {
-            if (httpExchange.requestMethod == 'GET') {
-                httpExchange.sendResponseHeaders(200, 0)
-                httpExchange.responseBody.write(toByteArray(file as URL))
                 httpExchange.responseBody.close()
             }
         }

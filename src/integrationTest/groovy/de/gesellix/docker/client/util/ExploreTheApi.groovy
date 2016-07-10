@@ -1,7 +1,7 @@
 package de.gesellix.docker.client.util
 
 import de.gesellix.docker.client.DockerClientImpl
-import org.apache.commons.io.IOUtils
+import de.gesellix.docker.client.IOUtils
 
 class ExploreTheApi {
 

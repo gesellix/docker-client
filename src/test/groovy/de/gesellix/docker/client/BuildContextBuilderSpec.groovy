@@ -1,12 +1,11 @@
 package de.gesellix.docker.client
 
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
-import org.apache.commons.io.IOUtils
 import spock.lang.Specification
 
 import java.util.zip.GZIPInputStream
 
-class BuildContextBuilderTest extends Specification {
+class BuildContextBuilderSpec extends Specification {
 
     def "test archiveTarFilesRecursively"() {
         given:

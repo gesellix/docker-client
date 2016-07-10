@@ -1,5 +1,7 @@
 package de.gesellix.docker.client
 
+import com.sun.net.httpserver.HttpExchange
+import com.sun.net.httpserver.HttpHandler
 import de.gesellix.docker.client.util.DockerRegistry
 import de.gesellix.docker.client.util.LocalDocker
 import groovy.util.logging.Slf4j
@@ -196,7 +198,7 @@ class DockerImageIntegrationSpec extends Specification {
         given:
         def importUrl = getClass().getResource('importUrl/import-from-url.tar')
         def server = new TestHttpServer()
-        def serverAddress = server.start('/images/', new TestHttpServer.FileServer(importUrl))
+        def serverAddress = server.start('/images/', new FileServer(importUrl))
         def port = serverAddress.port
         def addresses = listPublicIps()
         def fileServerIp = addresses.first()
@@ -376,5 +378,23 @@ class DockerImageIntegrationSpec extends Specification {
             }
         }
         addresses
+    }
+
+    static class FileServer implements HttpHandler {
+
+        URL file
+
+        FileServer(URL file) {
+            this.file = file
+        }
+
+        @Override
+        void handle(HttpExchange httpExchange) {
+            if (httpExchange.requestMethod == 'GET') {
+                httpExchange.sendResponseHeaders(200, 0)
+                httpExchange.responseBody.write(IOUtils.toString((file as URL).newInputStream()).bytes)
+                httpExchange.responseBody.close()
+            }
+        }
     }
 }

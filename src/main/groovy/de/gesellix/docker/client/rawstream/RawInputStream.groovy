@@ -1,7 +1,7 @@
 package de.gesellix.docker.client.rawstream
 
+import de.gesellix.docker.client.IOUtils
 import groovy.util.logging.Slf4j
-import org.apache.commons.io.IOUtils
 
 /**
  * see https://docs.docker.com/reference/api/docker_remote_api_v1.17/#attach-to-a-container.

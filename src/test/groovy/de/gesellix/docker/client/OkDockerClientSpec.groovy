@@ -11,7 +11,6 @@ import okhttp3.ResponseBody
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okio.Buffer
-import org.apache.commons.io.IOUtils
 import org.codehaus.groovy.runtime.MethodClosure
 import spock.lang.IgnoreIf
 import spock.lang.Specification
@@ -705,7 +704,7 @@ class OkDockerClientSpec extends Specification {
         then:
         response.stream.available() == "holy ship".length()
         and:
-        IOUtils.toByteArray(response.stream as InputStream) == "holy ship".bytes
+        IOUtils.toString(response.stream as InputStream) == "holy ship"
     }
 
     def "request with unknown mime type"() {
@@ -729,7 +728,7 @@ class OkDockerClientSpec extends Specification {
         then:
         response.stream.available() == "holy ship".length()
         and:
-        IOUtils.toByteArray(response.stream as InputStream) == "holy ship".bytes
+        IOUtils.toString(response.stream as InputStream) == "holy ship"
     }
 
     def "request with unknown mime type and stdout"() {
@@ -805,7 +804,7 @@ class OkDockerClientSpec extends Specification {
         then:
         response.stream instanceof RawInputStream
         and:
-        IOUtils.toByteArray(response.stream as RawInputStream) == actualText.bytes
+        IOUtils.toString(response.stream as RawInputStream) == actualText
         and:
         response.content == null
     }

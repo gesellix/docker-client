@@ -1,9 +1,9 @@
 package de.gesellix.docker.client
 
 import groovy.util.logging.Slf4j
+import okio.Okio
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
-import org.apache.commons.io.IOUtils
 
 import java.nio.file.Files
 import java.util.zip.GZIPOutputStream
@@ -55,12 +55,13 @@ class BuildContextBuilder {
     }
 
     def static copyFile(File input, OutputStream output) throws IOException {
-        final FileInputStream fis = new FileInputStream(input);
+        def source = null
         try {
-            IOUtils.copyLarge(fis, output);
+            source = Okio.source(input)
+            IOUtils.copy(source, Okio.sink(output))
         }
         finally {
-            fis.close();
+            IOUtils.closeQuietly(source)
         }
     }
 }

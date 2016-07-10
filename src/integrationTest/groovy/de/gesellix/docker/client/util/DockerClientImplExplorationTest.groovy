@@ -2,9 +2,9 @@ package de.gesellix.docker.client.util
 
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.DockerClientImpl
+import de.gesellix.docker.client.IOUtils
 import de.gesellix.docker.client.rawstream.RawInputStream
 import groovy.util.logging.Slf4j
-import org.apache.commons.io.IOUtils
 import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
@@ -34,7 +34,7 @@ class DockerClientImplExplorationTest extends Specification {
         attached.stream instanceof RawInputStream
         and:
         attached.stream.multiplexStreams == true
-        IOUtils.copy(attached.stream, System.out)
+        IOUtils.copy(attached.stream as InputStream, System.out)
     }
 
     @Ignore("only for explorative testing")
@@ -52,7 +52,7 @@ class DockerClientImplExplorationTest extends Specification {
         attached.stream instanceof RawInputStream
         and:
         attached.stream.multiplexStreams == false
-        IOUtils.copy(attached.stream, System.out)
+        IOUtils.copy(attached.stream as InputStream, System.out)
     }
 
     @Ignore("only for explorative testing")

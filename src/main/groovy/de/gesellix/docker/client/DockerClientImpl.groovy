@@ -8,7 +8,6 @@ import okhttp3.ws.WebSocketCall
 import okhttp3.ws.WebSocketListener
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
-import org.apache.commons.io.IOUtils
 import org.codehaus.groovy.runtime.MethodClosure
 
 import static java.net.Proxy.NO_PROXY

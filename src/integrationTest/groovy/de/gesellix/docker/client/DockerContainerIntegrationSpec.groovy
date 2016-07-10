@@ -11,7 +11,6 @@ import okhttp3.ws.WebSocket
 import okhttp3.ws.WebSocketCall
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
-import org.apache.commons.io.IOUtils
 import org.joda.time.DateTime
 import spock.lang.Requires
 import spock.lang.Specification

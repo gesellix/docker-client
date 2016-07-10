@@ -1,7 +1,6 @@
 package de.gesellix.docker.client
 
 import groovy.util.logging.Slf4j
-import org.apache.commons.io.IOUtils
 
 import static groovy.io.FileType.FILES
 
