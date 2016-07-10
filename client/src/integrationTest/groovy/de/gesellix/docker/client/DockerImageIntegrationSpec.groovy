@@ -3,7 +3,7 @@ package de.gesellix.docker.client
 import de.gesellix.docker.client.builder.BuildContextBuilder
 import de.gesellix.docker.client.util.DockerRegistry
 import de.gesellix.docker.client.util.LocalDocker
-import de.gesellix.docker.testutil.TestHttpServer
+import de.gesellix.docker.testutil.HttpTestServer
 import de.gesellix.docker.testutil.ResourceReader
 import groovy.util.logging.Slf4j
 import spock.lang.Ignore
@@ -198,8 +198,8 @@ class DockerImageIntegrationSpec extends Specification {
     def "import image from url"() {
         given:
         def importUrl = getClass().getResource('importUrl/import-from-url.tar')
-        def server = new TestHttpServer()
-        def serverAddress = server.start('/images/', new TestHttpServer.FileServer(importUrl))
+        def server = new HttpTestServer()
+        def serverAddress = server.start('/images/', new HttpTestServer.FileServer(importUrl))
         def port = serverAddress.port
         def addresses = listPublicIps()
         def fileServerIp = addresses.first()

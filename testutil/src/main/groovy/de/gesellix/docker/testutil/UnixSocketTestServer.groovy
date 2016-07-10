@@ -1,4 +1,4 @@
-package de.gesellix.docker.client.unix
+package de.gesellix.docker.testutil
 
 import org.newsclub.net.unix.AFUNIXServerSocket
 import org.newsclub.net.unix.AFUNIXSocketAddress

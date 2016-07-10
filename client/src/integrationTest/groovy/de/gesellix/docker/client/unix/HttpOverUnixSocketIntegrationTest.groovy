@@ -2,6 +2,7 @@ package de.gesellix.docker.client.unix
 
 import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.OkDockerClient
+import de.gesellix.docker.testutil.UnixSocketTestServer
 import org.apache.commons.lang.SystemUtils
 import spock.lang.Requires
 import spock.lang.Specification

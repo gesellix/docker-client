@@ -7,7 +7,7 @@ import okio.Okio
 
 import java.util.concurrent.Executors
 
-class TestHttpServer {
+class HttpTestServer {
 
     HttpServer httpServer
 
