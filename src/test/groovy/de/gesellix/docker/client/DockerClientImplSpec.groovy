@@ -2,6 +2,7 @@ package de.gesellix.docker.client
 
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
+import de.gesellix.docker.client.config.DockerEnv
 import groovy.json.JsonBuilder
 import org.slf4j.LoggerFactory
 import spock.lang.Ignore
@@ -20,19 +21,20 @@ class DockerClientImplSpec extends Specification {
 
     def setup() {
         dockerClient.responseHandler = Spy(DockerResponseHandler)
-        dockerClient.newDockerHttpClient = { dockerConfig, proxy -> httpClient }
+        dockerClient.newDockerHttpClient = { DockerEnv dockerEnv, proxy -> httpClient }
     }
 
     def "passes dockerConfig and proxy to internal http client"() {
         given:
         def proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(4711))
-        def config = Mock(DockerConfig)
+        def env = Mock(DockerEnv)
+        env.dockerHost >> "tcp://127.0.0.1:2375"
 
         when:
-        def httpClient = dockerClient.createDockerHttpClient(config, proxy)
+        def httpClient = dockerClient.createDockerHttpClient(env, proxy)
 
         then:
-        httpClient.config == config
+        httpClient.dockerClientConfig.env == env
         httpClient.proxy == proxy
     }
 
@@ -133,7 +135,7 @@ class DockerClientImplSpec extends Specification {
         def oldDockerConfigDir = System.setProperty("docker.config", expectedConfigDir.absolutePath)
 
         when:
-        def dockerConfigFile = dockerClient.config.getDockerConfigFile()
+        def dockerConfigFile = dockerClient.env.getDockerConfigFile()
 
         then:
         dockerConfigFile.absolutePath == new File(expectedConfigDir, 'config.json').absolutePath
@@ -150,14 +152,14 @@ class DockerClientImplSpec extends Specification {
         given:
         def oldDockerConfig = System.clearProperty("docker.config")
         def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/config.json')
-        dockerClient.config.configFile = expectedConfigFile
+        dockerClient.env.configFile = expectedConfigFile
 
         when:
         dockerClient.readDefaultAuthConfig()
 
         then:
         1 * dockerClient.readAuthConfig(null, expectedConfigFile)
-        dockerClient.config.legacyConfigFile
+        dockerClient.env.legacyConfigFile
 
         cleanup:
         if (oldDockerConfig) {
@@ -170,17 +172,17 @@ class DockerClientImplSpec extends Specification {
         def oldDockerConfig = System.clearProperty("docker.config")
         def nonExistingFile = new File('./I should not exist')
         assert !nonExistingFile.exists()
-        dockerClient.config.configFile = nonExistingFile
+        dockerClient.env.configFile = nonExistingFile
         def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg')
-        dockerClient.config.legacyConfigFile = expectedConfigFile
+        dockerClient.env.legacyConfigFile = expectedConfigFile
 
         when:
         dockerClient.readDefaultAuthConfig()
 
         then:
         1 * dockerClient.readAuthConfig(null, expectedConfigFile)
-        dockerClient.config.configFile
-        dockerClient.config.legacyConfigFile
+        dockerClient.env.configFile
+        dockerClient.env.legacyConfigFile
 
         cleanup:
         if (oldDockerConfig) {

@@ -1,5 +1,6 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.builder
 
+import de.gesellix.docker.client.builder.GlobsMatcher
 import org.apache.commons.lang.SystemUtils
 import spock.lang.IgnoreIf
 import spock.lang.Specification

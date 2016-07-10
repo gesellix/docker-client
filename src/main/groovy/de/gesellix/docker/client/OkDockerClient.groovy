@@ -1,6 +1,12 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.client.config.DockerClientConfig
+import de.gesellix.docker.client.filesocket.FileSocket
+import de.gesellix.docker.client.filesocket.NpipeSocketFactory
+import de.gesellix.docker.client.filesocket.UnixSocketFactory
 import de.gesellix.docker.client.rawstream.RawInputStream
+import de.gesellix.docker.client.util.IOUtils
+import de.gesellix.docker.client.util.NullOutputStream
 import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
 import okhttp3.*
@@ -10,21 +16,28 @@ import okio.Okio
 
 import java.util.regex.Pattern
 
+import static java.net.Proxy.NO_PROXY
 import static java.util.concurrent.TimeUnit.MILLISECONDS
 
 @Slf4j
 class OkDockerClient implements HttpClient {
 
-    DockerURLHandler dockerURLHandler
-
+    DockerClientConfig dockerClientConfig
     Proxy proxy
-    DockerConfig config
     DockerSslSocketFactory dockerSslSocketFactory
 
     OkDockerClient() {
-        dockerSslSocketFactory = new DockerSslSocketFactory()
-        config = new DockerConfig()
-        proxy = Proxy.NO_PROXY
+        this(new DockerClientConfig())
+    }
+
+    OkDockerClient(String dockerHost) {
+        this(new DockerClientConfig(dockerHost))
+    }
+
+    OkDockerClient(DockerClientConfig dockerClientConfig, Proxy proxy = NO_PROXY) {
+        this.dockerSslSocketFactory = new DockerSslSocketFactory()
+        this.dockerClientConfig = dockerClientConfig
+        this.proxy = proxy
     }
 
     @Override
@@ -125,7 +138,10 @@ class OkDockerClient implements HttpClient {
         def additionalHeaders = config.headers
         def body = config.body
 
-        def (String protocol, String host, int port) = getSchemeAndAuthority()
+        String protocol = dockerClientConfig.scheme
+        String host = dockerClientConfig.host
+        int port = dockerClientConfig.port
+
         def path = config.path as String
         if (config.apiVersion) {
             path = "${config.apiVersion}/${path}".toString()
@@ -151,7 +167,7 @@ class OkDockerClient implements HttpClient {
     }
 
     private OkHttpClient.Builder prepareClient(OkHttpClient.Builder builder, int currentTimeout) {
-        def (String protocol, String host, int port) = getSchemeAndAuthority()
+        def String protocol = dockerClientConfig.scheme
         if (protocol == "unix") {
             def unixSocketFactory = new UnixSocketFactory()
             builder
@@ -165,7 +181,7 @@ class OkDockerClient implements HttpClient {
                     .dns(npipeSocketFactory)
                     .build()
         } else if (protocol == 'https') {
-            def certPath = this.config.certPath as String
+            def certPath = this.dockerClientConfig.certPath as String
             def dockerSslSocket = dockerSslSocketFactory.createDockerSslSocket(certPath)
             // warn, if null?
             if (dockerSslSocket) {
@@ -174,8 +190,7 @@ class OkDockerClient implements HttpClient {
                         .build()
             }
         }
-        builder
-                .proxy(proxy)
+        builder.proxy(proxy)
 
         // do we need to disable the timeout for streaming?
         builder
@@ -325,19 +340,16 @@ class OkDockerClient implements HttpClient {
         log.debug("status: ${dockerResponse.status}")
 
         def headers = httpResponse.headers()
-        log.debug("headers: ${headers}")
+        log.debug("headers: \n${headers}")
         dockerResponse.headers = headers
 
         String contentType = headers['content-type']
-        log.trace("content-type: ${contentType}")
         dockerResponse.contentType = contentType
 
         String contentLength = headers['content-length'] ?: "-1"
-        log.trace("content-length: ${contentLength}")
         dockerResponse.contentLength = contentLength
 
         String mimeType = getMimeType(contentType)
-        log.trace("mime type: ${mimeType}")
         dockerResponse.mimeType = mimeType
 
         if (dockerResponse.status.success) {
@@ -378,10 +390,6 @@ class OkDockerClient implements HttpClient {
         return config
     }
 
-    def getSchemeAndAuthority() {
-        return getDockerURLHandler().getSchemeAndAuthority(this.config.dockerHost)
-    }
-
     def queryToString(Map queryParameters) {
         def queryAsString = queryParameters.collect { key, value ->
             if (value instanceof String) {
@@ -393,13 +401,6 @@ class OkDockerClient implements HttpClient {
             }
         }
         return queryAsString.join("&")
-    }
-
-    def getDockerURLHandler() {
-        if (!dockerURLHandler) {
-            dockerURLHandler = new DockerURLHandler(config: config)
-        }
-        dockerURLHandler
     }
 
     String getMimeType(String contentTypeHeader) {

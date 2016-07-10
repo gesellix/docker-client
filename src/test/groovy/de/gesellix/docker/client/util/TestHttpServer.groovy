@@ -1,4 +1,4 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.util
 
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpHandler
@@ -49,6 +49,24 @@ class TestHttpServer {
 
                 httpExchange.sendResponseHeaders(200, 0)
                 httpExchange.responseBody.write(param[1].reverse().bytes)
+                httpExchange.responseBody.close()
+            }
+        }
+    }
+
+    static class FileServer implements HttpHandler {
+
+        URL file
+
+        FileServer(URL file) {
+            this.file = file
+        }
+
+        @Override
+        void handle(HttpExchange httpExchange) {
+            if (httpExchange.requestMethod == 'GET') {
+                httpExchange.sendResponseHeaders(200, 0)
+                httpExchange.responseBody.write(IOUtils.toString((file as URL).newInputStream()).bytes)
                 httpExchange.responseBody.close()
             }
         }

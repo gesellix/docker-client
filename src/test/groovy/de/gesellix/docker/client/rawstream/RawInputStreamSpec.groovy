@@ -1,6 +1,6 @@
 package de.gesellix.docker.client.rawstream
 
-import de.gesellix.docker.client.IOUtils
+import de.gesellix.docker.client.util.IOUtils
 import spock.lang.Specification
 
 import static de.gesellix.docker.client.rawstream.StreamType.STDERR

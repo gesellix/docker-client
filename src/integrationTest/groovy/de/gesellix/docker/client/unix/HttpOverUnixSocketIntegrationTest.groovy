@@ -1,6 +1,5 @@
 package de.gesellix.docker.client.unix
 
-import de.gesellix.docker.client.DockerConfig
 import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.OkDockerClient
 import org.apache.commons.lang.SystemUtils
@@ -16,7 +15,7 @@ class HttpOverUnixSocketIntegrationTest extends Specification {
     HttpClient httpClient
 
     def setup() {
-        def unixSocket
+        String unixSocket
         if (socketFile.exists() && socketFile.canRead()) {
             unixSocket = "unix://${socketFile}".toString()
         } else {
@@ -26,7 +25,7 @@ class HttpOverUnixSocketIntegrationTest extends Specification {
             socketFile.deleteOnExit()
             unixSocket = "unix://${socketFile.getCanonicalPath()}".toString()
         }
-        httpClient = new OkDockerClient(config: new DockerConfig(dockerHost: unixSocket))
+        httpClient = new OkDockerClient(unixSocket)
     }
 
     def "info via unix socket"() {

@@ -2,7 +2,6 @@ package de.gesellix.docker.client.util
 
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.DockerClientImpl
-import de.gesellix.docker.client.IOUtils
 import de.gesellix.docker.client.rawstream.RawInputStream
 import groovy.util.logging.Slf4j
 import spock.lang.Ignore

@@ -16,11 +16,11 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     def setupSpec() {
         dockerClient = new DockerClientImpl(
-//                config: new DockerConfig(
+//                new DockerEnv(
 //                        dockerHost: "http://192.168.99.100:2376",
-//                        certPath: "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
+//                        certPath: "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default",
+//                        apiVersion: "v1.23")
         )
-//        dockerClient.config.apiVersion = "v1.23"
         registry = new DockerRegistry(dockerClient: dockerClient)
         registry.run()
     }

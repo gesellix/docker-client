@@ -1,6 +1,9 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.client.config.DockerClientConfig
+import de.gesellix.docker.client.config.DockerEnv
 import de.gesellix.docker.client.rawstream.RawInputStream
+import de.gesellix.docker.client.util.IOUtils
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
@@ -19,36 +22,34 @@ class DockerClientImpl implements DockerClient {
     def responseHandler = new DockerResponseHandler()
 
     def proxy
-
-    DockerConfig config = new DockerConfig()
-
+    DockerEnv env
     HttpClient httpClient
     def Closure<HttpClient> newDockerHttpClient
 
     DockerClientImpl() {
-        this(new DockerConfig())
+        this(new DockerEnv())
     }
 
     DockerClientImpl(String dockerHost) {
-        this(new DockerConfig(dockerHost: dockerHost))
+        this(new DockerEnv(dockerHost: dockerHost))
     }
 
-    DockerClientImpl(DockerConfig config) {
-        this.config = config
-        this.proxy = NO_PROXY
-        newDockerHttpClient = new MethodClosure(this, "createDockerHttpClient")
+    DockerClientImpl(DockerEnv env, Proxy proxy = NO_PROXY) {
+        this.env = env
+        this.proxy = proxy
+        this.newDockerHttpClient = new MethodClosure(this, "createDockerHttpClient")
     }
 
     def getHttpClient() {
         if (!httpClient) {
-            this.httpClient = newDockerHttpClient(config, proxy)
-            log.info "using docker at '${config.dockerHost}'"
+            this.httpClient = newDockerHttpClient(env, proxy)
+            log.info "using docker at '${env.dockerHost}'"
         }
         return httpClient
     }
 
-    def createDockerHttpClient(dockerConfig, proxy) {
-        return new OkDockerClient(config: dockerConfig, proxy: proxy)
+    def createDockerHttpClient(DockerEnv dockerEnv, Proxy proxy) {
+        return new OkDockerClient(new DockerClientConfig(dockerEnv), proxy)
     }
 
     @Override
@@ -111,7 +112,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def readDefaultAuthConfig() {
-        return readAuthConfig(null, config.getDockerConfigFile())
+        return readAuthConfig(null, env.getDockerConfigFile())
     }
 
     @Override
@@ -119,7 +120,7 @@ class DockerClientImpl implements DockerClient {
         log.debug "read authConfig"
 
         if (!dockerCfg) {
-            dockerCfg = config.getDockerConfigFile()
+            dockerCfg = env.getDockerConfigFile()
         }
         if (!dockerCfg?.exists()) {
             log.warn "${dockerCfg} doesn't exist"
@@ -129,7 +130,7 @@ class DockerClientImpl implements DockerClient {
         def parsedDockerCfg = new JsonSlurper().parse(dockerCfg)
 
         if (!hostname) {
-            hostname = config.indexUrl_v1
+            hostname = env.indexUrl_v1
         }
 
         def authConfig

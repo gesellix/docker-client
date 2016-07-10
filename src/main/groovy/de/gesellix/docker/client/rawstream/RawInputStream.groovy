@@ -1,6 +1,6 @@
 package de.gesellix.docker.client.rawstream
 
-import de.gesellix.docker.client.IOUtils
+import de.gesellix.docker.client.util.IOUtils
 import groovy.util.logging.Slf4j
 
 /**

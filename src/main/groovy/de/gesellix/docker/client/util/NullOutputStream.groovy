@@ -1,4 +1,4 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.util
 
 class NullOutputStream extends OutputStream {
 

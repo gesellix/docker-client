@@ -1,4 +1,4 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.filesocket
 
 import groovy.util.logging.Slf4j
 

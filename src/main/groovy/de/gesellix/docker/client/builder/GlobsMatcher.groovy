@@ -1,4 +1,4 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.builder
 
 import java.nio.file.FileSystems
 import java.nio.file.PathMatcher

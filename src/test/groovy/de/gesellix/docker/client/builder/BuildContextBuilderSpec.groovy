@@ -1,5 +1,7 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.builder
 
+import de.gesellix.docker.client.util.IOUtils
+import de.gesellix.docker.client.ResourceReader
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import spock.lang.Specification
 

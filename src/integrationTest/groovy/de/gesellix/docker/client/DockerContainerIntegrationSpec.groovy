@@ -1,6 +1,7 @@
 package de.gesellix.docker.client
 
 import de.gesellix.docker.client.util.DockerRegistry
+import de.gesellix.docker.client.util.IOUtils
 import de.gesellix.docker.client.util.LocalDocker
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j

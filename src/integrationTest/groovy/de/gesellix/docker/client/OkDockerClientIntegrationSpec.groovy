@@ -76,9 +76,7 @@ class OkDockerClientIntegrationSpec extends Specification {
 
     @Requires({ LocalDocker.isUnixSocket() })
     def "should support unix socket connections (Linux native or Docker for Mac)"() {
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "unix:///var/run/docker.sock"))
+        def client = new OkDockerClient("unix:///var/run/docker.sock")
         when:
         def response = client.request([method: "GET",
                                        path  : "/info"])
@@ -88,9 +86,7 @@ class OkDockerClientIntegrationSpec extends Specification {
 
     @Requires({ LocalDocker.isNamedPipe() })
     def "should support named pipe socket connections (Docker for Windows)"() {
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "npipe:////./pipe/docker_engine"))
+        def client = new OkDockerClient("npipe:////./pipe/docker_engine")
         when:
         def response = client.request([method: "GET",
                                        path  : "/info"])

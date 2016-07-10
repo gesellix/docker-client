@@ -1,7 +1,6 @@
 package de.gesellix.docker.client.util
 
 import de.gesellix.docker.client.DockerClientImpl
-import de.gesellix.docker.client.util.DockerVersion
 import groovy.util.logging.Slf4j
 
 @Slf4j
@@ -44,17 +43,17 @@ class LocalDocker {
     }
 
     static def isNamedPipe() {
-        def dockerHost = new DockerClientImpl().config.dockerHost
+        def dockerHost = new DockerClientImpl().env.dockerHost
         return dockerHost.startsWith("npipe://")
     }
 
     static def isUnixSocket() {
-        def dockerHost = new DockerClientImpl().config.dockerHost
+        def dockerHost = new DockerClientImpl().env.dockerHost
         return dockerHost.startsWith("unix://")
     }
 
     static def isTcpSocket() {
-        def dockerHost = new DockerClientImpl().config.dockerHost
+        def dockerHost = new DockerClientImpl().env.dockerHost
         return dockerHost.startsWith("tcp://") || dockerHost.startsWith("http://") || dockerHost.startsWith("https://")
     }
 

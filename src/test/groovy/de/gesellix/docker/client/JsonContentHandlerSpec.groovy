@@ -1,5 +1,6 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.client.util.IOUtils
 import groovy.json.JsonSlurper
 import spock.lang.Specification
 

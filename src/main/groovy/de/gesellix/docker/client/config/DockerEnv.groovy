@@ -1,10 +1,10 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.config
 
 /**
  * Configuration via environment variables should work like
  * described in the official <a href="https://docs.docker.com/engine/reference/commandline/cli/#environment-variables">cli docs</a>.
  */
-class DockerConfig {
+class DockerEnv {
 
     def dockerHost = getDockerHostOrDefault()
 

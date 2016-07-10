@@ -1,13 +1,10 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.client.config.DockerEnv
 import de.gesellix.docker.client.rawstream.RawHeaderAndPayload
 import de.gesellix.docker.client.rawstream.RawInputStream
-import okhttp3.Interceptor
-import okhttp3.MediaType
-import okhttp3.OkHttpClient
-import okhttp3.Protocol
-import okhttp3.Response
-import okhttp3.ResponseBody
+import de.gesellix.docker.client.util.IOUtils
+import okhttp3.*
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okio.Buffer
@@ -35,7 +32,9 @@ class OkDockerClientSpec extends Specification {
         def defaultHost = isWindows ? "//./pipe/docker_engine" : "/var/run/docker.sock"
 
         expect:
-        client.getSchemeAndAuthority() == [expectedScheme, defaultHost, -1]
+        client.dockerClientConfig.scheme == expectedScheme
+        client.dockerClientConfig.host == defaultHost
+        client.dockerClientConfig.port == -1
     }
 
     @IgnoreIf({ System.env.DOCKER_HOST })
@@ -44,7 +43,9 @@ class OkDockerClientSpec extends Specification {
         def oldDockerHost = System.setProperty("docker.host", "http://127.0.0.1:2375")
         def client = new OkDockerClient()
         expect:
-        client.getSchemeAndAuthority() == ["http", "127.0.0.1", 2375]
+        client.dockerClientConfig.scheme == "http"
+        client.dockerClientConfig.host == "127.0.0.1"
+        client.dockerClientConfig.port == 2375
         cleanup:
         if (oldDockerHost) {
             System.setProperty("docker.host", oldDockerHost)
@@ -54,11 +55,12 @@ class OkDockerClientSpec extends Specification {
     }
 
     def "getProtocolAndHost should support tcp protocol"() {
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "tcp://127.0.0.1:2375"))
+        def client = new OkDockerClient()
+        client.dockerClientConfig.apply(new DockerEnv(dockerHost: "tcp://127.0.0.1:2375"))
         when:
-        def (protocol, host, port) = client.getSchemeAndAuthority()
+        def protocol = client.dockerClientConfig.scheme
+        def host = client.dockerClientConfig.host
+        def port = client.dockerClientConfig.port
         then:
         protocol =~ /https?/
         and:
@@ -71,11 +73,13 @@ class OkDockerClientSpec extends Specification {
         given:
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "tcp://127.0.0.1:2376"))
+        def client = new OkDockerClient()
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: "tcp://127.0.0.1:2376"))
         when:
-        def (protocol, host, port) = client.getSchemeAndAuthority()
+        def protocol = client.dockerClientConfig.scheme
+        def host = client.dockerClientConfig.host
+        def port = client.dockerClientConfig.port
         then:
         protocol == "https"
         and:
@@ -94,11 +98,13 @@ class OkDockerClientSpec extends Specification {
         given:
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
+        def client = new OkDockerClient()
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: "https://127.0.0.1:2376"))
         expect:
-        client.getSchemeAndAuthority() == ["https", "127.0.0.1", 2376]
+        client.dockerClientConfig.scheme == "https"
+        client.dockerClientConfig.host == "127.0.0.1"
+        client.dockerClientConfig.port == 2376
         cleanup:
         if (oldDockerCertPath) {
             System.setProperty("docker.cert.path", oldDockerCertPath)
@@ -108,9 +114,9 @@ class OkDockerClientSpec extends Specification {
     }
 
     def "getMimeType"() {
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
+        def client = new OkDockerClient()
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: "https://127.0.0.1:2376"))
         expect:
         client.getMimeType(contentType) == expectedMimeType
         where:
@@ -124,9 +130,9 @@ class OkDockerClientSpec extends Specification {
     }
 
     def "getCharset"() {
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
+        def client = new OkDockerClient()
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: "https://127.0.0.1:2376"))
         expect:
         client.getCharset(contentType) == expectedCharset
         where:
@@ -139,9 +145,9 @@ class OkDockerClientSpec extends Specification {
     }
 
     def "queryToString"() {
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
+        def client = new OkDockerClient()
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: "https://127.0.0.1:2376"))
         expect:
         client.queryToString(parameters) == query
         where:
@@ -157,9 +163,9 @@ class OkDockerClientSpec extends Specification {
 
     @Unroll
     def "generic request with bad config: #requestConfig"() {
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
+        def client = new OkDockerClient()
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: "https://127.0.0.1:2376"))
         when:
         client.request(requestConfig as Map)
         then:
@@ -171,9 +177,9 @@ class OkDockerClientSpec extends Specification {
 
     @Unroll
     def "#method request with bad config: #requestConfig"() {
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
+        def client = new OkDockerClient()
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: "https://127.0.0.1:2376"))
         when:
         new MethodClosure(client, method).call(requestConfig as Map)
         then:
@@ -190,10 +196,10 @@ class OkDockerClientSpec extends Specification {
     }
 
     def "head request uses the HEAD method"() {
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
         given:
+        def client = new OkDockerClient()
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: "https://127.0.0.1:2376"))
         client.metaClass.request = { Map config ->
             config.method
         }
@@ -204,10 +210,10 @@ class OkDockerClientSpec extends Specification {
     }
 
     def "get request uses the GET method"() {
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
         given:
+        def client = new OkDockerClient()
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: "https://127.0.0.1:2376"))
         client.metaClass.request = { Map config ->
             config.method
         }
@@ -218,10 +224,10 @@ class OkDockerClientSpec extends Specification {
     }
 
     def "put request uses the PUT method"() {
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
         given:
+        def client = new OkDockerClient()
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: "https://127.0.0.1:2376"))
         client.metaClass.request = { Map config ->
             config.method
         }
@@ -232,10 +238,10 @@ class OkDockerClientSpec extends Specification {
     }
 
     def "post request uses the POST method"() {
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
         given:
+        def client = new OkDockerClient()
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: "https://127.0.0.1:2376"))
         client.metaClass.request = { Map config ->
             config.method
         }
@@ -246,10 +252,10 @@ class OkDockerClientSpec extends Specification {
     }
 
     def "delete request uses the DELETE method"() {
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
         given:
+        def client = new OkDockerClient()
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: "https://127.0.0.1:2376"))
         client.metaClass.request = { Map config ->
             config.method
         }
@@ -263,9 +269,9 @@ class OkDockerClientSpec extends Specification {
         given:
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
-        def client = new OkDockerClient(
-                config: new DockerConfig(
-                        dockerHost: "https://127.0.0.1:2376"))
+        def client = new OkDockerClient()
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: "https://127.0.0.1:2376"))
 
         when:
         def wsCall = client.webSocketCall([path: "/foo"])
@@ -303,8 +309,8 @@ class OkDockerClientSpec extends Specification {
                         .build()
             }
         }
-        client.config = new DockerConfig(
-                dockerHost: mockWebServer.url("/").toString())
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: mockWebServer.url("/").toString()))
 
         when:
         def response = client.request([method: "OPTIONS",
@@ -344,8 +350,8 @@ class OkDockerClientSpec extends Specification {
             }
         }
         client.proxy = proxy
-        client.config = new DockerConfig(
-                dockerHost: "http://any.thi.ng:4711")
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: "http://any.thi.ng:4711"))
 
         when:
         def response = client.request([method: "OPTIONS",
@@ -385,8 +391,8 @@ class OkDockerClientSpec extends Specification {
                         .build()
             }
         }
-        client.config = new DockerConfig(
-                dockerHost: mockWebServer.url("/").toString())
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: mockWebServer.url("/").toString()))
 
         when:
         def response = client.request([method: "OPTIONS",
@@ -426,8 +432,8 @@ class OkDockerClientSpec extends Specification {
                         .build()
             }
         }
-        client.config = new DockerConfig(
-                dockerHost: mockWebServer.url("/").toString())
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: mockWebServer.url("/").toString()))
 
         when:
         def response = client.request([method    : "OPTIONS",
@@ -469,8 +475,8 @@ class OkDockerClientSpec extends Specification {
                         .build()
             }
         }
-        client.config = new DockerConfig(
-                dockerHost: mockWebServer.url("/").toString())
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: mockWebServer.url("/").toString()))
 
         when:
         def response = client.request([method: "OPTIONS",
@@ -507,8 +513,8 @@ class OkDockerClientSpec extends Specification {
                         .build()
             }
         }
-        client.config = new DockerConfig(
-                dockerHost: mockWebServer.url("/").toString())
+        client.dockerClientConfig.apply(new DockerEnv(
+                dockerHost: mockWebServer.url("/").toString()))
 
         when:
         def response = client.request([method: "OPTIONS",
@@ -549,9 +555,9 @@ class OkDockerClientSpec extends Specification {
                         .build()
             }
         }
-        client.config = new DockerConfig(
+        client.dockerClientConfig.apply(new DockerEnv(
                 dockerHost: mockWebServer.url("/").toString(),
-                tlsVerify: "1")
+                tlsVerify: "1"))
 
         when:
         def response = client.request([method: "OPTIONS",
@@ -585,7 +591,7 @@ class OkDockerClientSpec extends Specification {
                         .build()
             }
         }
-        client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
+        client.dockerClientConfig.apply(new DockerEnv(dockerHost: "http://127.0.0.1:2375"))
 
         when:
         def response = client.request([method: "OPTIONS",
@@ -616,7 +622,7 @@ class OkDockerClientSpec extends Specification {
                         .build()
             }
         }
-        client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
+        client.dockerClientConfig.apply(new DockerEnv(dockerHost: "http://127.0.0.1:2375"))
 
         when:
         def response = client.request([method: "HEADER",
@@ -645,7 +651,7 @@ class OkDockerClientSpec extends Specification {
                         .build()
             }
         }
-        client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
+        client.dockerClientConfig.apply(new DockerEnv(dockerHost: "http://127.0.0.1:2375"))
 
         when:
         def response = client.request([method: "HEADER",
@@ -669,7 +675,7 @@ class OkDockerClientSpec extends Specification {
                         .build()
             }
         }
-        client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
+        client.dockerClientConfig.apply(new DockerEnv(dockerHost: "http://127.0.0.1:2375"))
         def stdout = new ByteArrayOutputStream()
 
         when:
@@ -695,7 +701,7 @@ class OkDockerClientSpec extends Specification {
                         .build()
             }
         }
-        client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
+        client.dockerClientConfig.apply(new DockerEnv(dockerHost: "http://127.0.0.1:2375"))
 
         when:
         def response = client.request([method: "HEADER",
@@ -719,7 +725,7 @@ class OkDockerClientSpec extends Specification {
                         .build()
             }
         }
-        client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
+        client.dockerClientConfig.apply(new DockerEnv(dockerHost: "http://127.0.0.1:2375"))
 
         when:
         def response = client.request([method: "HEADER",
@@ -743,7 +749,7 @@ class OkDockerClientSpec extends Specification {
                         .build()
             }
         }
-        client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
+        client.dockerClientConfig.apply(new DockerEnv(dockerHost: "http://127.0.0.1:2375"))
         def stdout = new ByteArrayOutputStream()
 
         when:
@@ -769,7 +775,7 @@ class OkDockerClientSpec extends Specification {
                         .build()
             }
         }
-        client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
+        client.dockerClientConfig.apply(new DockerEnv(dockerHost: "http://127.0.0.1:2375"))
 
         when:
         def response = client.request([method: "HEADER",
@@ -795,7 +801,7 @@ class OkDockerClientSpec extends Specification {
                         .build()
             }
         }
-        client.config = new DockerConfig(dockerHost: "http://127.0.0.1:2375")
+        client.dockerClientConfig.apply(new DockerEnv(dockerHost: "http://127.0.0.1:2375"))
 
         when:
         def response = client.request([method: "HEADER",
@@ -823,7 +829,7 @@ class OkDockerClientSpec extends Specification {
                         .build()
             }
         }
-        client.config = new DockerConfig(dockerHost: "https://127.0.0.1:2376")
+        client.dockerClientConfig.apply(new DockerEnv(dockerHost: "https://127.0.0.1:2376"))
         client.dockerSslSocketFactory = new DockerSslSocketFactory() {
             @Override
             def createDockerSslSocket(String certPath) {

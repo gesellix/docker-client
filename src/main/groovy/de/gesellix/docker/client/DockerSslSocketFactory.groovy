@@ -1,9 +1,11 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.client.ssl.KeyStoreUtil
+
 import javax.net.ssl.*
 import java.security.KeyStore
 
-import static de.gesellix.docker.client.KeyStoreUtil.KEY_STORE_PASSWORD
+import static de.gesellix.docker.client.ssl.KeyStoreUtil.KEY_STORE_PASSWORD
 import static javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm
 
 class DockerSslSocketFactory {

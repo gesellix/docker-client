@@ -1,16 +1,14 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.filesocket
 
 import okhttp3.Dns
 
 import javax.net.SocketFactory
 
-import static de.gesellix.docker.client.FileSocket.SOCKET_MARKER
-
 abstract class FileSocketFactory extends SocketFactory implements Dns {
 
     @Override
     List<InetAddress> lookup(String hostname) throws UnknownHostException {
-        return hostname.endsWith(SOCKET_MARKER) ? [InetAddress.getByAddress(hostname, [0, 0, 0, 0] as byte[])] : SYSTEM.lookup(hostname)
+        return hostname.endsWith(FileSocket.SOCKET_MARKER) ? [InetAddress.getByAddress(hostname, [0, 0, 0, 0] as byte[])] : SYSTEM.lookup(hostname)
     }
 
     @Override
