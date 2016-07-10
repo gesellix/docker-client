@@ -1,0 +1,175 @@
+import java.text.SimpleDateFormat
+
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'net.saliman:gradle-cobertura-plugin:2.2.8'
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.4.0'
+
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.1'
+    }
+}
+
+apply plugin: 'groovy'
+
+apply plugin: 'jacoco'
+apply plugin: 'net.saliman.cobertura'
+apply plugin: 'com.github.kt3k.coveralls'
+
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
+apply plugin: 'com.jfrog.bintray'
+
+apply plugin: 'idea'
+
+group = 'de.gesellix'
+
+repositories {
+    mavenLocal()
+    jcenter()
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy:2.4.7'
+    compile 'org.codehaus.groovy:groovy-json:2.4.7'
+
+    compile 'org.slf4j:slf4j-api:1.7.21'
+    testCompile 'ch.qos.logback:logback-classic:1.1.7'
+
+    compile 'com.squareup.okio:okio:1.9.0'
+    compile 'com.squareup.okhttp3:okhttp:3.4.1'
+    compile 'com.squareup.okhttp3:okhttp-ws:3.4.1'
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.4.1'
+
+    compile 'org.apache.commons:commons-compress:1.12'
+
+    compile('com.kohlschutter.junixsocket:junixsocket-native-common:2.0.4') {
+        exclude module: 'log4j'
+    }
+    compile('com.kohlschutter.junixsocket:junixsocket-common:2.0.4') {
+        exclude module: 'log4j'
+    }
+
+    compile 'org.bouncycastle:bcpkix-jdk15on:1.54'
+
+    testCompile project(':testutil')
+
+    testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
+        exclude module: 'groovy-all'
+    }
+    testCompile 'cglib:cglib-nodep:3.2.4'
+
+    testCompile 'commons-lang:commons-lang:2.6'
+
+    testCompile 'net.jodah:failsafe:0.8.3'
+
+    testCompile 'joda-time:joda-time:2.9.4'
+}
+
+
+idea {
+    module {
+        testSourceDirs += file('src/integrationTest/groovy')
+        testSourceDirs += file('src/integrationTest/resources')
+    }
+}
+
+sourceSets {
+    integrationTest {
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+        groovy {
+            srcDir 'src/integrationTest/groovy'
+        }
+        resources {
+            srcDir 'src/integrationTest/resources'
+        }
+    }
+}
+
+task sourcesJar(type: Jar) {
+    dependsOn classes
+    classifier 'sources'
+    from sourceSets.main.allSource
+}
+
+ext {
+    artifactVersion = new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss').format(new Date())
+    bintrayDryRun = true
+}
+
+configurations {
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
+}
+
+test {
+    // minimal way of providing a special environment variable for the EnvFileParserTest
+    environment "A_KNOWN_VARIABLE", "my value"
+}
+
+task integrationTest(type: Test) {
+    group = 'verification'
+    description = 'Runs the integration tests.'
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
+}
+integrationTest.mustRunAfter test
+check.dependsOn integrationTest
+
+task aggregateTestReports(type: TestReport) {
+    destinationDir = test.reports.html.destination
+    reportOn test, integrationTest
+}
+aggregateTestReports.mustRunAfter integrationTest
+check.dependsOn aggregateTestReports
+
+cobertura {
+    coverageSourceDirs = sourceSets.main.groovy.srcDirs
+    coverageFormats = ['html', 'xml']
+}
+
+jacocoTestReport.reports {
+    xml.enabled = true
+    html.enabled = true
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+publishing {
+    publications {
+        dockerClient(MavenPublication) {
+            artifactId 'docker-client'
+            version artifactVersion
+            from components.java
+            artifact sourcesJar
+        }
+    }
+}
+
+bintray {
+    user = System.env.BINTRAY_USER ?: project["bintray.user"]
+    key = System.env.BINTRAY_API_KEY ?: project["bintray.key"]
+    publications = ['dockerClient']
+    pkg {
+        repo = 'docker-utils'
+        name = 'docker-client'
+        desc = 'A Docker client written in Groovy'
+        licenses = ['Apache-2.0']
+        labels = ['docker', 'remote api', 'client']
+        version = [
+                name: artifactVersion
+        ]
+    }
+    dryRun = bintrayDryRun
+}
+bintrayUpload.dependsOn build
