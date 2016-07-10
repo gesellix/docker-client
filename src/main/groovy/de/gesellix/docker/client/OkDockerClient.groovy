@@ -5,6 +5,7 @@ import de.gesellix.docker.client.filesocket.FileSocket
 import de.gesellix.docker.client.filesocket.NpipeSocketFactory
 import de.gesellix.docker.client.filesocket.UnixSocketFactory
 import de.gesellix.docker.client.rawstream.RawInputStream
+import de.gesellix.docker.client.ssl.SslSocketConfigFactory
 import de.gesellix.docker.client.util.IOUtils
 import de.gesellix.docker.client.util.NullOutputStream
 import groovy.json.JsonBuilder
@@ -22,9 +23,14 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS
 @Slf4j
 class OkDockerClient implements HttpClient {
 
+    def socketFactories = [
+            "unix" : new UnixSocketFactory(),
+            "npipe": new NpipeSocketFactory(),
+            "https": new SslSocketConfigFactory()
+    ]
+
     DockerClientConfig dockerClientConfig
     Proxy proxy
-    DockerSslSocketFactory dockerSslSocketFactory
 
     OkDockerClient() {
         this(new DockerClientConfig())
@@ -35,7 +41,6 @@ class OkDockerClient implements HttpClient {
     }
 
     OkDockerClient(DockerClientConfig dockerClientConfig, Proxy proxy = NO_PROXY) {
-        this.dockerSslSocketFactory = new DockerSslSocketFactory()
         this.dockerClientConfig = dockerClientConfig
         this.proxy = proxy
     }
@@ -169,21 +174,21 @@ class OkDockerClient implements HttpClient {
     private OkHttpClient.Builder prepareClient(OkHttpClient.Builder builder, int currentTimeout) {
         def String protocol = dockerClientConfig.scheme
         if (protocol == "unix") {
-            def unixSocketFactory = new UnixSocketFactory()
+            def unixSocketFactory = socketFactories[protocol] as UnixSocketFactory
             builder
                     .socketFactory(unixSocketFactory)
                     .dns(unixSocketFactory)
                     .build()
         } else if (protocol == 'npipe') {
-            def npipeSocketFactory = new NpipeSocketFactory()
+            def npipeSocketFactory = socketFactories[protocol] as NpipeSocketFactory
             builder
                     .socketFactory(npipeSocketFactory)
                     .dns(npipeSocketFactory)
                     .build()
         } else if (protocol == 'https') {
             def certPath = this.dockerClientConfig.certPath as String
-            def dockerSslSocket = dockerSslSocketFactory.createDockerSslSocket(certPath)
-            // warn, if null?
+            def sslSocketFactory = socketFactories[protocol] as SslSocketConfigFactory
+            def dockerSslSocket = sslSocketFactory.createDockerSslSocket(certPath)
             if (dockerSslSocket) {
                 builder
                         .sslSocketFactory(dockerSslSocket.sslSocketFactory, dockerSslSocket.trustManager)

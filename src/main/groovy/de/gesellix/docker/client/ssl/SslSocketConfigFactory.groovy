@@ -1,25 +1,16 @@
-package de.gesellix.docker.client
-
-import de.gesellix.docker.client.ssl.KeyStoreUtil
+package de.gesellix.docker.client.ssl
 
 import javax.net.ssl.*
 import java.security.KeyStore
 
-import static de.gesellix.docker.client.ssl.KeyStoreUtil.KEY_STORE_PASSWORD
 import static javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm
 
-class DockerSslSocketFactory {
+class SslSocketConfigFactory {
 
-    def createDockerSslSocket(String certPath) {
-        return createSslContext(certPath)
-    }
-
-    DockerSslSocket createSslContext(def dockerCertPath) {
-        def keyStore = createKeyStore(dockerCertPath)
-
+    DockerSslSocket createDockerSslSocket(String certPath) {
+        def keyStore = createKeyStore(certPath)
         KeyManagerFactory keyManagerFactory = initKeyManagerFactory(keyStore)
         TrustManagerFactory tmf = initTrustManagerFactory(keyStore)
-
         X509TrustManager trustManager = getUniqueX509TrustManager(tmf)
         SSLContext sslContext = initSslContext(keyManagerFactory, trustManager)
         return new DockerSslSocket(sslSocketFactory: sslContext.socketFactory, trustManager: trustManager)
@@ -47,17 +38,11 @@ class DockerSslSocketFactory {
 
     private KeyManagerFactory initKeyManagerFactory(KeyStore keyStore) {
         def keyManagerFactory = KeyManagerFactory.getInstance(getDefaultAlgorithm() as String)
-        keyManagerFactory.init(keyStore, KEY_STORE_PASSWORD as char[])
+        keyManagerFactory.init(keyStore, KeyStoreUtil.KEY_STORE_PASSWORD as char[])
         keyManagerFactory
     }
 
     private KeyStore createKeyStore(dockerCertPath) {
         KeyStoreUtil.createDockerKeyStore(new File(dockerCertPath as String).absolutePath)
-    }
-
-    static class DockerSslSocket {
-
-        SSLSocketFactory sslSocketFactory
-        X509TrustManager trustManager
     }
 }

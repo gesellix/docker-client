@@ -3,6 +3,8 @@ package de.gesellix.docker.client
 import de.gesellix.docker.client.config.DockerEnv
 import de.gesellix.docker.client.rawstream.RawHeaderAndPayload
 import de.gesellix.docker.client.rawstream.RawInputStream
+import de.gesellix.docker.client.ssl.DockerSslSocket
+import de.gesellix.docker.client.ssl.SslSocketConfigFactory
 import de.gesellix.docker.client.util.IOUtils
 import okhttp3.*
 import okhttp3.mockwebserver.MockResponse
@@ -534,7 +536,7 @@ class OkDockerClientSpec extends Specification {
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
 
         def mockWebServer = new MockWebServer()
-        mockWebServer.useHttps(new DockerSslSocketFactory().createDockerSslSocket(certsPath).sslSocketFactory, false)
+        mockWebServer.useHttps(new SslSocketConfigFactory().createDockerSslSocket(certsPath).sslSocketFactory, false)
         mockWebServer.enqueue(new MockResponse().setBody("mock-response"))
         mockWebServer.start()
 
@@ -830,9 +832,9 @@ class OkDockerClientSpec extends Specification {
             }
         }
         client.dockerClientConfig.apply(new DockerEnv(dockerHost: "https://127.0.0.1:2376"))
-        client.dockerSslSocketFactory = new DockerSslSocketFactory() {
+        client.socketFactories["https"] = new SslSocketConfigFactory() {
             @Override
-            def createDockerSslSocket(String certPath) {
+            DockerSslSocket createDockerSslSocket(String certPath) {
                 return null
             }
         }
