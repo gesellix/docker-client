@@ -4,9 +4,13 @@ import org.newsclub.net.unix.AFUNIXSocket
 
 class UnixSocketFactory extends FileSocketFactory {
 
-    UnixSocketFactory() {
-        if (!AFUNIXSocket.isSupported()) {
-            throw new UnsupportedOperationException("AFUNIXSocket.isSupported() == false")
+    static boolean isSupported() {
+        try {
+            def isWindows = System.getProperty("os.name")?.toLowerCase()?.contains("windows")
+            return !isWindows && AFUNIXSocket.isSupported()
+        }
+        catch (Throwable ignored) {
+            return false
         }
     }
 

@@ -23,11 +23,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS
 @Slf4j
 class OkDockerClient implements HttpClient {
 
-    def socketFactories = [
-            "unix" : new UnixSocketFactory(),
-            "npipe": new NpipeSocketFactory(),
-            "https": new SslSocketConfigFactory()
-    ]
+    def socketFactories = [:]
 
     DockerClientConfig dockerClientConfig
     Proxy proxy
@@ -41,6 +37,12 @@ class OkDockerClient implements HttpClient {
     }
 
     OkDockerClient(DockerClientConfig dockerClientConfig, Proxy proxy = NO_PROXY) {
+        if (UnixSocketFactory.supported) {
+            socketFactories.unix = new UnixSocketFactory()
+        }
+        socketFactories.npipe = new NpipeSocketFactory()
+        socketFactories.https = new SslSocketConfigFactory()
+
         this.dockerClientConfig = dockerClientConfig
         this.proxy = proxy
     }
