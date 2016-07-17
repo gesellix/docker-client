@@ -1,47 +1,83 @@
 package de.gesellix.docker.client.npipe
 
+import de.gesellix.docker.client.DockerClient
+import de.gesellix.docker.client.DockerClientImpl
 import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.OkDockerClient
-import spock.lang.Ignore
+import de.gesellix.docker.client.util.LocalDocker
+import org.apache.commons.lang.SystemUtils
+import org.spockframework.util.Assert
+import spock.lang.Requires
 import spock.lang.Specification
 
-@Ignore
-//@Requires({ SystemUtils.IS_OS_WINDOWS })
+import java.util.concurrent.CountDownLatch
+
+@Requires({ SystemUtils.IS_OS_WINDOWS && LocalDocker.available() })
 class HttpOverNamedPipeIntegrationTest extends Specification {
 
-    def "info via named pipe"() {
+    def "http over named pipe"() {
         given:
-        File namedPipeFile = File.createTempFile("named-pipe", null)
-        namedPipeFile.deleteOnExit()
-        def namedPipe = "npipe://${namedPipeFile.getCanonicalPath()}".toString()
-        HttpClient httpClient = new OkDockerClient(namedPipe)
+        DockerClient docker = new DockerClientImpl()
+        def npipeExe = new File("npipe.exe")
+        updateNpipeExe(docker, npipeExe)
 
-        def responseBody = '{"a-key":42,"another-key":4711}'
-        def expectedResponse = [
-                "HTTP/1.1 200 OK",
-                "Content-Type: application/json",
-                "Job-Name: unix socket test",
-                "Date: Thu, 08 Jan 2015 23:05:55 GMT",
-                "Content-Length: ${responseBody.length()}",
-                "",
-                responseBody
-        ]
+        def pipePath = "//./pipe/echo_pipe"
+        def npipeLatch = new CountDownLatch(1)
+        def process = runNpipe(npipeExe, pipePath, npipeLatch)
 
-        namedPipeFile.withWriter { writer ->
-            writer.append(expectedResponse.join("\n"))
+        npipeLatch.await()
+        if (!process.alive) {
+            Assert.fail("couldn't create a named pipe [${process.exitValue()}]")
         }
-        println namedPipeFile.text
+
+        HttpClient httpClient = new OkDockerClient("npipe://${pipePath}")
 
         when:
-        def ping = httpClient.get([path: "/_ping"])
+        def response = httpClient.post([path              : "/foo",
+                                        requestContentType: "text/plain",
+                                        body              : new ByteArrayInputStream("hello world".bytes)])
 
         then:
-        ping.content == ["a-key": 42, "another-key": 4711]
+        response.status.code == 200
+        response.content == "[echo] hello world"
 
         cleanup:
+        actSilently { httpClient?.post([path: "/exit"]) }
+        actSilently { process.waitFor() }
+        actSilently { docker.rm("npipe") }
+    }
+
+    def actSilently(Closure action) {
         try {
-            namedPipeFile.delete()
-        } catch (Exception ignore) {
+            action()
+        } catch (Exception ignored) {
         }
+    }
+
+    def runNpipe(File npipeExe, String pipePath, CountDownLatch npipeLatch) {
+        def process = "cmd /c \"${npipeExe.absolutePath} ${pipePath}\"".execute()
+        Thread.start {
+            process.in.eachLine { String line ->
+                println(line)
+                if (line.contains(pipePath)) {
+                    npipeLatch.countDown()
+                }
+            }
+        }
+        Thread.start {
+            process.err.eachLine { String line ->
+                println(line)
+                if (line.contains(pipePath)) {
+                    npipeLatch.countDown()
+                }
+            }
+        }
+        return process
+    }
+
+    def updateNpipeExe(DockerClientImpl docker, File npipeExe) {
+        docker.createContainer([Image: "gesellix/npipe"], [name: "npipe"])
+        def archive = docker.getArchive("npipe", "/npipe.exe").stream as InputStream
+        docker.copySingleTarEntry(archive, "/npipe.exe", new FileOutputStream(npipeExe))
     }
 }
