@@ -1,4 +1,4 @@
-package de.gesellix.docker.client.util
+package de.gesellix.docker.explore
 
 import de.gesellix.docker.client.AttachConfig
 import de.gesellix.docker.client.DockerClient
@@ -76,7 +76,7 @@ class HttpHijackExploration {
                                 stdout: System.out,
                                 stderr: System.err),
                         onResponse: onResponseCallback,
-                        onStdinClosed: done))
+                        onSinkClosed: done))
         responseLatch.await()
         doneLatch.await()
     }

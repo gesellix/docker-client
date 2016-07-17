@@ -1,7 +1,8 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.client.util.DockerRegistry
 import de.gesellix.docker.client.util.LocalDocker
+import de.gesellix.docker.registry.DockerRegistry
+
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
 import spock.lang.Specification
@@ -21,7 +22,7 @@ class DockerClientImplIntegrationSpec extends Specification {
 //                        certPath: "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default",
 //                        apiVersion: "v1.23")
         )
-        registry = new DockerRegistry(dockerClient: dockerClient)
+        registry = new DockerRegistry(dockerClient)
         registry.run()
     }
 

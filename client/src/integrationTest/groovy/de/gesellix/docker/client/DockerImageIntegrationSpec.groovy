@@ -1,7 +1,7 @@
 package de.gesellix.docker.client
 
 import de.gesellix.docker.client.builder.BuildContextBuilder
-import de.gesellix.docker.client.util.DockerRegistry
+import de.gesellix.docker.registry.DockerRegistry
 import de.gesellix.docker.client.util.LocalDocker
 import de.gesellix.docker.testutil.HttpTestServer
 import de.gesellix.docker.testutil.ResourceReader
@@ -20,7 +20,7 @@ class DockerImageIntegrationSpec extends Specification {
 
     def setupSpec() {
         dockerClient = new DockerClientImpl()
-        registry = new DockerRegistry(dockerClient: dockerClient)
+        registry = new DockerRegistry(dockerClient)
         registry.run()
     }
 

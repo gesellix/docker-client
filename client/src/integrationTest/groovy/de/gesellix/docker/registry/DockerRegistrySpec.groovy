@@ -1,6 +1,7 @@
-package de.gesellix.docker.client.util
+package de.gesellix.docker.registry
 
 import de.gesellix.docker.client.DockerClientImpl
+import de.gesellix.docker.client.util.LocalDocker
 import spock.lang.Requires
 import spock.lang.Specification
 
@@ -9,7 +10,7 @@ class DockerRegistrySpec extends Specification {
 
     def "can determine registry url"() {
         given:
-        def registry = new DockerRegistry(dockerClient: new DockerClientImpl())
+        def registry = new DockerRegistry(new DockerClientImpl())
         registry.run()
         when:
         def registryUrl = registry.url()

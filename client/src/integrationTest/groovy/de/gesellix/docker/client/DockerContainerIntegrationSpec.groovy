@@ -1,6 +1,7 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.client.util.DockerRegistry
+import de.gesellix.docker.client.websocket.DefaultWebSocketListener
+import de.gesellix.docker.registry.DockerRegistry
 import de.gesellix.docker.client.util.IOUtils
 import de.gesellix.docker.client.util.LocalDocker
 import groovy.json.JsonSlurper
@@ -20,7 +21,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 
-import static de.gesellix.docker.client.util.WebsocketStatusCode.NORMAL_CLOSURE
+import static de.gesellix.docker.client.websocket.WebsocketStatusCode.NORMAL_CLOSURE
 import static java.util.concurrent.TimeUnit.MILLISECONDS
 import static java.util.concurrent.TimeUnit.SECONDS
 
@@ -34,7 +35,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def setupSpec() {
         dockerClient = new DockerClientImpl()
-        registry = new DockerRegistry(dockerClient: dockerClient)
+        registry = new DockerRegistry(dockerClient)
         registry.run()
     }
 

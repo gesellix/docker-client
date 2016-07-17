@@ -1,4 +1,4 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.websocket
 
 import groovy.util.logging.Slf4j
 import okhttp3.Response

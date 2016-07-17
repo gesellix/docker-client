@@ -1,6 +1,7 @@
-package de.gesellix.docker.client.util
+package de.gesellix.docker.explore
 
 import de.gesellix.docker.client.DockerClientImpl
+import de.gesellix.docker.client.util.IOUtils
 
 class ExploreTheApi {
 

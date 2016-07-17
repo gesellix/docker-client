@@ -1,6 +1,6 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.client.util.DockerRegistry
+import de.gesellix.docker.registry.DockerRegistry
 import de.gesellix.docker.client.util.LocalDocker
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
@@ -16,7 +16,7 @@ class DockerNetworkIntegrationSpec extends Specification {
 
     def setupSpec() {
         dockerClient = new DockerClientImpl()
-        registry = new DockerRegistry(dockerClient: dockerClient)
+        registry = new DockerRegistry(dockerClient)
         registry.run()
     }
 

@@ -1,15 +1,14 @@
-package de.gesellix.docker.client.util
+package de.gesellix.docker.registry
 
 import de.gesellix.docker.client.DockerClient
-import de.gesellix.docker.client.DockerClientImpl
 
 class DockerRegistry {
 
     DockerClient dockerClient
     def registryId
 
-    DockerRegistry() {
-        this.dockerClient = new DockerClientImpl()
+    DockerRegistry(DockerClient dockerClient) {
+        this.dockerClient = dockerClient
     }
 
     def run() {
