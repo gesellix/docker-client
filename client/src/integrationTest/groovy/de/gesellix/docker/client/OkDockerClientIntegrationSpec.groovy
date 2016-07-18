@@ -67,11 +67,11 @@ class OkDockerClientIntegrationSpec extends Specification {
         def content = response.content
         content.ApiVersion == "1.24"
         content.Arch == "amd64"
-        content.GitCommit == "876f3a7"
+        content.GitCommit == "e4a0dbc"
         content.GoVersion == "go1.6.2"
         content.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"
         content.Os == "linux"
-        content.Version == "1.12.0-rc3"
+        content.Version == "1.12.0-rc4"
     }
 
     @Requires({ LocalDocker.isUnixSocket() })
