@@ -6,11 +6,13 @@ import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.OkDockerClient
 import de.gesellix.docker.client.util.LocalDocker
 import org.apache.commons.lang.SystemUtils
-import org.spockframework.util.Assert
 import spock.lang.Requires
 import spock.lang.Specification
 
 import java.util.concurrent.CountDownLatch
+
+import static java.util.concurrent.TimeUnit.SECONDS
+import static org.spockframework.util.Assert.fail
 
 @Requires({ SystemUtils.IS_OS_WINDOWS && LocalDocker.available() })
 class HttpOverNamedPipeIntegrationTest extends Specification {
@@ -18,17 +20,13 @@ class HttpOverNamedPipeIntegrationTest extends Specification {
     def "http over named pipe"() {
         given:
         DockerClient docker = new DockerClientImpl()
-        def npipeExe = new File("npipe.exe")
-        updateNpipeExe(docker, npipeExe)
+        def npipeExe = createNpipeExe(docker)
 
         def pipePath = "//./pipe/echo_pipe"
+
         def npipeLatch = new CountDownLatch(1)
         def process = runNpipe(npipeExe, pipePath, npipeLatch)
-
-        npipeLatch.await()
-        if (!process.alive) {
-            Assert.fail("couldn't create a named pipe [${process.exitValue()}]")
-        }
+        npipeLatch.await(5, SECONDS)
 
         HttpClient httpClient = new OkDockerClient("npipe://${pipePath}")
 
@@ -43,7 +41,7 @@ class HttpOverNamedPipeIntegrationTest extends Specification {
 
         cleanup:
         actSilently { httpClient?.post([path: "/exit"]) }
-        actSilently { process.waitFor() }
+        actSilently { process.waitFor(5, SECONDS) }
         actSilently { docker.rm("npipe") }
     }
 
@@ -55,29 +53,28 @@ class HttpOverNamedPipeIntegrationTest extends Specification {
     }
 
     def runNpipe(File npipeExe, String pipePath, CountDownLatch npipeLatch) {
-        def process = "cmd /c \"${npipeExe.absolutePath} ${pipePath}\"".execute()
-        Thread.start {
-            process.in.eachLine { String line ->
-                println(line)
-                if (line.contains(pipePath)) {
-                    npipeLatch.countDown()
-                }
+        def logProcessStartup = { String line ->
+            println(line)
+            if (line.contains(pipePath)) {
+                npipeLatch.countDown()
             }
         }
-        Thread.start {
-            process.err.eachLine { String line ->
-                println(line)
-                if (line.contains(pipePath)) {
-                    npipeLatch.countDown()
-                }
-            }
+
+        def process = "cmd /c \"${npipeExe.absolutePath} ${pipePath}\"".execute()
+        Thread.start { process.in.eachLine logProcessStartup }
+        Thread.start { process.err.eachLine logProcessStartup }
+        if (!process.alive) {
+            fail("couldn't create a named pipe [${process.exitValue()}]")
         }
         return process
     }
 
-    def updateNpipeExe(DockerClientImpl docker, File npipeExe) {
+    def createNpipeExe(DockerClientImpl docker) {
         docker.createContainer([Image: "gesellix/npipe"], [name: "npipe"])
         def archive = docker.getArchive("npipe", "/npipe.exe").stream as InputStream
+
+        def npipeExe = new File("npipe.exe")
         docker.copySingleTarEntry(archive, "/npipe.exe", new FileOutputStream(npipeExe))
+        return npipeExe
     }
 }
