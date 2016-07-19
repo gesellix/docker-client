@@ -9,7 +9,10 @@ import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
 
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.CountDownLatch
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS
+import static java.util.concurrent.TimeUnit.SECONDS
 
 @Slf4j
 @Requires({ LocalDocker.available() })
@@ -181,7 +184,7 @@ class DockerSwarmIntegrationSpec extends Specification {
         then:
         def exception = thrown(DockerClientException)
         exception.message == "java.lang.IllegalStateException: docker swarm leave failed"
-        exception.detail.content.message.contains("Leaving last manager will remove all current state of the cluster")
+        exception.detail.content.message.contains("Removing the last manager will erase all current state of the cluster")
 
         cleanup:
         dockerClient.leaveSwarm([force: true])
@@ -218,7 +221,7 @@ class DockerSwarmIntegrationSpec extends Specification {
 
         then:
         response.status.code == 200
-        response.content == null
+        response.content == []
 
         cleanup:
         dockerClient.leaveSwarm([force: true])
@@ -260,8 +263,12 @@ class DockerSwarmIntegrationSpec extends Specification {
 
         then:
         response.content.ID =~ /[0-9a-f]+/
+        def redisService = awaitServiceStarted("redis")
+        redisService?.Spec?.Name == "redis"
 
         cleanup:
+        dockerClient.rmService("redis")
+        awaitServiceRemoved("redis")
         dockerClient.leaveSwarm([force: true])
     }
 
@@ -320,6 +327,8 @@ class DockerSwarmIntegrationSpec extends Specification {
         response.content.ID == serviceId
 
         cleanup:
+        dockerClient.rmService("redis")
+        awaitServiceRemoved("redis")
         dockerClient.leaveSwarm([force: true])
     }
 
@@ -353,6 +362,8 @@ class DockerSwarmIntegrationSpec extends Specification {
         response == [:]
 
         cleanup:
+        dockerClient.rmService(serviceSpec.Name)
+        awaitServiceRemoved(serviceSpec.Name)
         dockerClient.leaveSwarm([force: true])
     }
 
@@ -386,6 +397,8 @@ class DockerSwarmIntegrationSpec extends Specification {
         firstTask.ID =~ /[0-9a-f]+/
 
         cleanup:
+        dockerClient.rmService("redis")
+        awaitServiceRemoved("redis")
         dockerClient.leaveSwarm([force: true])
     }
 
@@ -408,6 +421,7 @@ class DockerSwarmIntegrationSpec extends Specification {
                 ]]
         def serviceId = dockerClient.createService(serviceConfig).content.ID
         def firstTask = dockerClient.tasks().content.first()
+        awaitTaskStarted(firstTask.ID)
 
         when:
         def task = dockerClient.inspectTask(firstTask.ID).content
@@ -418,6 +432,8 @@ class DockerSwarmIntegrationSpec extends Specification {
         task.DesiredState == "running"
 
         cleanup:
+        dockerClient.rmService("redis")
+        awaitServiceRemoved("redis")
         dockerClient.leaveSwarm([force: true])
     }
 
@@ -442,9 +458,68 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def getWithRetry(Closure callable, Predicate retryIf) {
         RetryPolicy retryPolicy = new RetryPolicy()
-                .withDelay(100, TimeUnit.MILLISECONDS)
+                .withDelay(100, MILLISECONDS)
                 .withMaxRetries(3)
                 .retryIf(retryIf)
         return Failsafe.with(retryPolicy).get(callable)
+    }
+
+    def awaitServiceStarted(name) {
+        def redisService
+        CountDownLatch latch = new CountDownLatch(1)
+        Thread.start {
+            while (redisService == null) {
+                redisService = findService(name)
+                if (redisService) {
+                    latch.countDown()
+                } else {
+                    Thread.sleep(1000)
+                }
+            }
+        }
+        latch.await(30, SECONDS)
+        return redisService
+    }
+
+    def awaitTaskStarted(taskId) {
+        def task = dockerClient.inspectTask(taskId).content
+        if (task?.Status?.State != "running") {
+            CountDownLatch latch = new CountDownLatch(1)
+            Thread.start {
+                while (task?.Status?.State != "running") {
+                    task = dockerClient.inspectTask(taskId).content
+                    if (task?.Status?.State == "running") {
+                        latch.countDown()
+                    } else {
+                        Thread.sleep(1000)
+                    }
+                }
+            }
+            latch.await(30, SECONDS)
+        }
+        return task
+    }
+
+    def awaitServiceRemoved(name) {
+        def redisService = findService(name)
+        if (redisService != null) {
+            CountDownLatch latch = new CountDownLatch(1)
+            Thread.start {
+                while (redisService != null) {
+                    redisService = findService(name)
+                    if (redisService == null) {
+                        latch.countDown()
+                    } else {
+                        Thread.sleep(1000)
+                    }
+                }
+            }
+            latch.await(30, SECONDS)
+        }
+    }
+
+    def findService(name) {
+        def services = dockerClient.services().content
+        return services.find { it.Spec.Name == name }
     }
 }
