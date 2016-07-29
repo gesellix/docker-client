@@ -70,7 +70,6 @@ class DockerClientImplIntegrationSpec extends Specification {
             def propertyName = it.first()
             propertyName in expectedDriverStatusProperties
         }.size() == expectedDriverStatusProperties.size()
-        info.ExperimentalBuild == false
         info.HttpProxy == ""
         info.HttpsProxy == ""
         info.ID =~ "([0-9A-Z]{4}:?){12}"
@@ -103,12 +102,12 @@ class DockerClientImplIntegrationSpec extends Specification {
         then:
         version.ApiVersion == "1.24"
         version.Arch == "amd64"
-        version.BuildTime == "2016-07-13T03:28:51.540201071+00:00"
-        version.GitCommit == "e4a0dbc"
-        version.GoVersion == "go1.6.2"
+        version.BuildTime == "2016-07-28T21:04:48.864474905+00:00"
+        version.GitCommit == "8eab29e"
+        version.GoVersion == "go1.6.3"
         version.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"
         version.Os == "linux"
-        version.Version == "1.12.0-rc4"
+        version.Version == "1.12.0"
     }
 
     def auth() {

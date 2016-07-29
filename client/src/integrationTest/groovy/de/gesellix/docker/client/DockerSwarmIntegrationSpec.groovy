@@ -167,7 +167,7 @@ class DockerSwarmIntegrationSpec extends Specification {
         then:
         def exception = thrown(DockerClientException)
         exception.message == "java.lang.IllegalStateException: docker swarm join failed"
-        exception.detail.content.message.contains("This node is already part of a Swarm cluster")
+        exception.detail.content.message.contains("This node is already part of a swarm cluster")
 
         cleanup:
         dockerClient.leaveSwarm([force: true])
