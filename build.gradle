@@ -10,6 +10,10 @@ buildscript {
     }
 }
 
+plugins {
+    id 'com.gradle.build-scan' version '1.0'
+}
+
 subprojects {
     apply plugin: 'groovy'
     apply plugin: 'com.github.ben-manes.versions'
@@ -26,6 +30,11 @@ subprojects {
             force dependencyVersions
         }
     }
+}
+
+buildScan {
+    licenseAgreementUrl = 'https://gradle.com/terms-of-service'
+    licenseAgree = 'yes'
 }
 
 task wrapper(type: Wrapper) {
