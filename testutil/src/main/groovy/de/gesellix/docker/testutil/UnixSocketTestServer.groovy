@@ -41,7 +41,6 @@ class UnixSocketTestServer {
     def runInNewThread() throws IOException {
         def startedLatch = new CountDownLatch(1)
         socketThread = Thread.start {
-//    Thread.start {
             AFUNIXServerSocket server = AFUNIXServerSocket.newInstance()
             server.bind(new AFUNIXSocketAddress(socketFile))
             logger.info("server: " + server)
@@ -113,8 +112,8 @@ class UnixSocketTestServer {
     }
 
     def stop() {
-        Thread moribund = socketThread;
-        socketThread = null;
-        moribund?.interrupt();
+        Thread moribund = socketThread
+        socketThread = null
+        moribund?.interrupt()
     }
 }
