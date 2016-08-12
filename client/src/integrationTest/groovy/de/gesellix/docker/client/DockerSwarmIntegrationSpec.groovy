@@ -125,11 +125,11 @@ class DockerSwarmIntegrationSpec extends Specification {
 
         when:
         def response = dockerClient.inspectSwarm()
-        def currentNodeId = dockerClient.info().content.Swarm.NodeID
+        def self = dockerClient.info().content.Swarm.NodeID
 
         then:
         response.content.ID =~ /[0-9a-f]+/
-        currentNodeId == nodeId
+        self == nodeId
 
         cleanup:
         dockerClient.leaveSwarm([force: true])
