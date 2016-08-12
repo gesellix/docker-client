@@ -1538,6 +1538,39 @@ class DockerClientImplSpec extends Specification {
                             query: [filters: expectedFilterValue]]) >> [status: [success: true]]
     }
 
+    def "list tasks on node 'self' with query"() {
+        given:
+        def filters = [node: "node-id", param: "value"]
+        def expectedFilterValue = new JsonBuilder(filters).toString()
+        def query = [filters: filters]
+
+        when:
+        dockerClient.tasksOnNode("self", query)
+
+        then:
+        1 * httpClient.get([path: "/info"]) >> [
+                status : [success: true],
+                content: [Swarm: [NodeID: "node-id"]]]
+        1 * httpClient.get([path : "/tasks",
+                            query: [filters: expectedFilterValue]]) >> [
+                status: [success: true]]
+    }
+
+    def "list tasks of service with query"() {
+        given:
+        def filters = [service: "service-name"]
+        def expectedFilterValue = new JsonBuilder(filters).toString()
+        def query = [filters: filters]
+
+        when:
+        dockerClient.tasksOfService("service-name", query)
+
+        then:
+        1 * httpClient.get([path : "/tasks",
+                            query: [filters: expectedFilterValue]]) >> [
+                status: [success: true]]
+    }
+
     def "inspect task"() {
         when:
         dockerClient.inspectTask("task-id")

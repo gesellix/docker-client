@@ -244,5 +244,13 @@ interface DockerClient {
 
     def tasks(query)
 
+    def tasksOnNode(node)
+
+    def tasksOnNode(node, query)
+
+    def tasksOfService(service)
+
+    def tasksOfService(service, query)
+
     def inspectTask(name)
 }

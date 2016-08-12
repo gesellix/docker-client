@@ -1047,6 +1047,54 @@ class DockerClientImpl implements DockerClient {
     @Override
     def initSwarm(config) {
         log.info "docker swarm init"
+
+        /*
+func runInit(dockerCli *client.DockerCli, flags *pflag.FlagSet, opts initOptions) error {
+	client := dockerCli.Client()
+	ctx := context.Background()
+
+	// If no secret was specified, we create a random one
+	if !flags.Changed("secret") {
+		opts.secret = generateRandomSecret()
+		fmt.Fprintf(dockerCli.Out(), "No --secret provided. Generated random secret:\n\t%s\n\n", opts.secret)
+	}
+
+	req := swarm.InitRequest{
+		ListenAddr:      opts.listenAddr.String(),
+		ForceNewCluster: opts.forceNewCluster,
+		Spec:            opts.swarmOptions.ToSpec(),
+	}
+
+	nodeID, err := client.SwarmInit(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(dockerCli.Out(), "Swarm initialized: current node (%s) is now a manager.\n\n", nodeID)
+
+	// Fetch CAHash and Address from the API
+	info, err := client.Info(ctx)
+	if err != nil {
+		return err
+	}
+
+	node, _, err := client.NodeInspectWithRaw(ctx, nodeID)
+	if err != nil {
+		return err
+	}
+
+	if node.ManagerStatus != nil && info.Swarm.CACertHash != "" {
+		var secretArgs string
+		if opts.secret != "" {
+			secretArgs = "--secret " + opts.secret
+		}
+		fmt.Fprintf(dockerCli.Out(), "To add a worker to this swarm, run the following command:\n\tdocker swarm join %s \\\n\t--ca-hash %s \\\n\t%s\n", secretArgs, info.Swarm.CACertHash, node.ManagerStatus.Addr)
+	}
+
+	return nil
+}
+         */
+
         config = config ?: [:]
         def response = getHttpClient().post([path              : "/swarm/init",
                                              body              : config,
@@ -1141,13 +1189,38 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
+    def tasksOnNode(node, query = [:]) {
+        log.info "docker node ps"
+        def actualQuery = query ?: [:]
+        if (!actualQuery.containsKey('filters')) {
+            actualQuery.filters = [:]
+        }
+        actualQuery.filters['node'] = resolveNodeId(node)
+        return tasks(actualQuery)
+    }
+
+    @Override
+    def tasksOfService(service, query = [:]) {
+        log.info "docker service ps"
+        def actualQuery = query ?: [:]
+        if (!actualQuery.containsKey('filters')) {
+            actualQuery.filters = [:]
+        }
+        actualQuery.filters['service'] = service
+        if (actualQuery.filters?.node) {
+            actualQuery.filters.node = resolveNodeId(query.filters.node)
+        }
+        return tasks(actualQuery)
+    }
+
+    @Override
     def tasks(query = [:]) {
-        log.info "docker service tasks"
+        log.info "docker tasks"
         def actualQuery = query ?: [:]
         jsonEncodeFilters(actualQuery)
         def response = getHttpClient().get([path : "/tasks",
                                             query: actualQuery])
-        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service tasks failed"))
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker tasks failed"))
         return response
     }
 
@@ -1157,6 +1230,24 @@ class DockerClientImpl implements DockerClient {
         def response = getHttpClient().get([path: "/tasks/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker task inspect failed"))
         return response
+    }
+
+    def resolveNodeId(nodeFilter) {
+        def ownNodeId = {
+            info().content.Swarm.NodeID
+        }
+        def resolve = { String ref ->
+            (ref == "self") ? ownNodeId() : ref
+        }
+        def resolvedNodeFilter = nodeFilter
+        if (nodeFilter instanceof String) {
+            resolvedNodeFilter = resolve(nodeFilter)
+        } else if (nodeFilter instanceof String[] || nodeFilter instanceof Collection) {
+            resolvedNodeFilter = nodeFilter.collect { String ref ->
+                resolve(ref)
+            }
+        }
+        resolvedNodeFilter
     }
 
     byte[] extractSingleTarEntry(InputStream tarContent, String filename) {
@@ -1205,7 +1296,7 @@ class DockerClientImpl implements DockerClient {
         return entry.size
     }
 
-    def applyDefaults(query, defaults) {
+    def applyDefaults(Map query, defaults) {
         defaults.each { k, v ->
             if (!query.containsKey(k)) {
                 query[k] = v
@@ -1213,7 +1304,7 @@ class DockerClientImpl implements DockerClient {
         }
     }
 
-    def jsonEncodeFilters(query) {
+    def jsonEncodeFilters(Map query) {
         query.each { k, v ->
             if (k == "filters") {
                 query[k] = new JsonBuilder(v).toString()
