@@ -124,7 +124,7 @@ class DockerClientImpl implements DockerClient {
             dockerCfg = env.getDockerConfigFile()
         }
         if (!dockerCfg?.exists()) {
-            log.warn "${dockerCfg} doesn't exist"
+            log.info "docker config '${dockerCfg}' doesn't exist"
             return [:]
         }
         log.debug "reading auth info from ${dockerCfg}"

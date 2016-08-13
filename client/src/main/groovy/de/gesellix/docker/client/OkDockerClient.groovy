@@ -316,7 +316,7 @@ class OkDockerClient implements HttpClient {
                 }
                 break
             default:
-                log.warn("unexpected mime type '${response.mimeType}'.")
+                log.debug("unexpected mime type '${response.mimeType}'.")
                 def body = httpResponse.body()
                 if (body.contentLength() == -1) {
                     def stream = body.byteStream()
