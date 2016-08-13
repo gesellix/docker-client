@@ -3,7 +3,6 @@ package de.gesellix.docker.client
 import de.gesellix.docker.client.websocket.DefaultWebSocketListener
 import de.gesellix.docker.registry.DockerRegistry
 import de.gesellix.docker.client.util.IOUtils
-import de.gesellix.docker.client.util.LocalDocker
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import okhttp3.RequestBody

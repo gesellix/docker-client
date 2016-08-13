@@ -1,16 +1,14 @@
 package de.gesellix.docker.testutil
 
+import groovy.util.logging.Slf4j
 import org.newsclub.net.unix.AFUNIXServerSocket
 import org.newsclub.net.unix.AFUNIXSocketAddress
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 import java.util.concurrent.CountDownLatch
 
 // from https://github.com/gesellix/junixsocket/blob/master/junixsocket/src/demo/org/newsclub/net/unix/demo/SimpleTestServer.java
+@Slf4j
 class UnixSocketTestServer {
-
-    Logger logger = LoggerFactory.getLogger(UnixSocketTestServer)
 
     def greeting = "welcome!"
     def sendGreeting = false
@@ -43,8 +41,8 @@ class UnixSocketTestServer {
         socketThread = Thread.start {
             AFUNIXServerSocket server = AFUNIXServerSocket.newInstance()
             server.bind(new AFUNIXSocketAddress(socketFile))
-            logger.info("server: " + server)
-            logger.info("chat with me: 'socat UNIX:${socketFile} -'")
+            log.info("server: " + server)
+            log.info("chat with me: 'socat UNIX:${socketFile} -'")
 
             loop(server, startedLatch)
         }
@@ -58,10 +56,10 @@ class UnixSocketTestServer {
         def requiresNewConnection = true
         while (!Thread.interrupted()) {
             if (requiresNewConnection) {
-                logger.info("waiting for a new connection...")
+                log.info("waiting for a new connection...")
                 startedLatch.countDown()
                 sock = server.accept()
-                logger.info("connected: " + sock)
+                log.info("connected: " + sock)
                 is = sock.getInputStream()
                 os = sock.getOutputStream()
                 requiresNewConnection = false
@@ -71,7 +69,7 @@ class UnixSocketTestServer {
                     os.write(greeting.bytes)
                     os.flush()
                 }
-                logger.info("- ok, let's chat!")
+                log.info("- ok, let's chat!")
             }
             assert sock && is && os
 
@@ -81,11 +79,11 @@ class UnixSocketTestServer {
                 read = is.read(buf)
             }
             catch (Exception e) {
-                logger.warn("got an error reading bytes from the InputStream", e)
+                log.warn("got an error reading bytes from the InputStream", e)
                 return
             }
             if (read == -1) {
-                logger.info("EndOfStream - closing connection...")
+                log.info("EndOfStream - closing connection...")
                 requiresNewConnection = true
 
                 closeAll(os, is, sock)

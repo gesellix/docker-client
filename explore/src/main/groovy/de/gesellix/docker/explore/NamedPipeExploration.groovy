@@ -1,6 +1,6 @@
 package de.gesellix.docker.explore
 
-class NamedPipeExplorationTest {
+class NamedPipeExploration {
 
     public static void main(String[] args) {
         try {

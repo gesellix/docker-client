@@ -3,11 +3,13 @@ package de.gesellix.docker.client.unix
 import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.OkDockerClient
 import de.gesellix.docker.testutil.UnixSocketTestServer
-import org.apache.commons.lang.SystemUtils
 import spock.lang.Requires
 import spock.lang.Specification
 
-@Requires({ new File("/var/run/docker.sock").exists() || SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC })
+import static org.apache.commons.lang.SystemUtils.IS_OS_LINUX
+import static org.apache.commons.lang.SystemUtils.IS_OS_MAC
+
+@Requires({ new File("/var/run/docker.sock").exists() || IS_OS_LINUX || IS_OS_MAC })
 class HttpOverUnixSocketIntegrationTest extends Specification {
 
     File defaultDockerSocket = new File("/var/run/docker.sock")

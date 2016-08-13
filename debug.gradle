@@ -2,9 +2,9 @@ evaluationDependsOn(':client')
 
 task checkDockerClient(type: JavaExec) {
 
-    main = 'de.gesellix.docker.client.util.LocalDocker'
+    main = 'de.gesellix.docker.client.LocalDocker'
     def clientSourceSets = project(':client').sourceSets
-    classpath = clientSourceSets.main.runtimeClasspath + clientSourceSets.integrationTest.runtimeClasspath
+    classpath = clientSourceSets.main.runtimeClasspath + clientSourceSets.test.runtimeClasspath
 
     standardOutput = new ByteArrayOutputStream()
 

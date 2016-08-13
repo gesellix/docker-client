@@ -2,7 +2,6 @@ package de.gesellix.docker.client
 
 import de.gesellix.docker.client.builder.BuildContextBuilder
 import de.gesellix.docker.registry.DockerRegistry
-import de.gesellix.docker.client.util.LocalDocker
 import de.gesellix.docker.testutil.HttpTestServer
 import de.gesellix.docker.testutil.ResourceReader
 import groovy.util.logging.Slf4j

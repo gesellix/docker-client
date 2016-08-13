@@ -1,3 +1,4 @@
 rootProject.name = 'docker-client'
 include 'testutil'
 include 'client'
+include 'explore'

@@ -1,7 +1,9 @@
-package de.gesellix.docker.client.util
+package de.gesellix.docker.client
 
-import de.gesellix.docker.client.DockerClientImpl
+import de.gesellix.docker.client.config.DockerVersion
 import groovy.util.logging.Slf4j
+
+import static de.gesellix.docker.client.config.DockerVersion.parseDockerVersion
 
 @Slf4j
 class LocalDocker {
@@ -55,19 +57,5 @@ class LocalDocker {
     static def isTcpSocket() {
         def dockerHost = new DockerClientImpl().env.dockerHost
         return dockerHost.startsWith("tcp://") || dockerHost.startsWith("http://") || dockerHost.startsWith("https://")
-    }
-
-    static DockerVersion parseDockerVersion(String version) {
-        final def versionPattern = /(\d+)\.(\d+)\.(\d+)(.*)/
-
-        def parsedVersion = new DockerVersion()
-        version.eachMatch(versionPattern) { List<String> groups ->
-            parsedVersion.major = Integer.parseInt(groups[1])
-            parsedVersion.minor = Integer.parseInt(groups[2])
-            parsedVersion.patch = Integer.parseInt(groups[3])
-            parsedVersion.meta = groups[4]
-        }
-
-        return parsedVersion
     }
 }

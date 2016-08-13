@@ -1,7 +1,7 @@
 package de.gesellix.docker.registry
 
 import de.gesellix.docker.client.DockerClientImpl
-import de.gesellix.docker.client.util.LocalDocker
+import de.gesellix.docker.client.LocalDocker
 import spock.lang.Requires
 import spock.lang.Specification
 

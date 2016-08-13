@@ -4,7 +4,7 @@ import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.DockerClientImpl
 import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.OkDockerClient
-import de.gesellix.docker.client.util.LocalDocker
+import de.gesellix.docker.client.LocalDocker
 import org.apache.commons.lang.SystemUtils
 import spock.lang.Requires
 import spock.lang.Specification

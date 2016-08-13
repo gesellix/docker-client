@@ -1,6 +1,5 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.client.util.LocalDocker
 import groovy.util.logging.Slf4j
 import net.jodah.failsafe.Failsafe
 import net.jodah.failsafe.RetryPolicy
