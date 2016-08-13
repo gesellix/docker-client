@@ -1,4 +1,4 @@
-package de.gesellix.docker.client.npipe
+package de.gesellix.docker.client.filesocket
 
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.DockerClientImpl

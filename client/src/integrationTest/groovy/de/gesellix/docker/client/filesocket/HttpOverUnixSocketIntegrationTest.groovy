@@ -1,4 +1,4 @@
-package de.gesellix.docker.client.unix
+package de.gesellix.docker.client.filesocket
 
 import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.OkDockerClient
