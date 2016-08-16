@@ -1,8 +1,8 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.client.util.IOUtils
 import de.gesellix.docker.client.websocket.DefaultWebSocketListener
 import de.gesellix.docker.registry.DockerRegistry
-import de.gesellix.docker.client.util.IOUtils
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import okhttp3.RequestBody
@@ -675,29 +675,35 @@ class DockerContainerIntegrationSpec extends Specification {
             @Override
             def onEvent(Object event) {
                 println event
-                events << new JsonSlurper().parseText(event as String)
-                latch.countDown()
+                def parsedEvent = new JsonSlurper().parseText(event as String)
+                events << parsedEvent
+                if (parsedEvent.status == "destroy") {
+                    latch.countDown()
+                }
             }
         }
 
-        def container1 = dockerClient.createContainer([Cmd: "-"]).content.Id
-        def container2 = dockerClient.createContainer([Cmd: "-"]).content.Id
+        def container1 = dockerClient.createContainer([Cmd: "-"], [name: "c1"]).content.Id
+        log.debug "container1: ${container1}"
+        def container2 = dockerClient.createContainer([Cmd: "-"], [name: "c2"]).content.Id
+        log.debug "container2: ${container2}"
 
         Thread.sleep(1000)
-        long epochBeforeRm = (DateTime.now().millis / 1000) + timeOffset
+        long epochBeforeRm = (DateTime.now().millis / 1000) + timeOffset - 1000
         dockerClient.rm(container1)
 
         when:
-        dockerClient.events(callback, [since: epochBeforeRm])
-        latch.await(5, SECONDS)
+        dockerClient.events(callback, [since: epochBeforeRm, filters: [container: [container1]]])
+        latch.await(10, SECONDS)
 
         then:
-        callback.events.size() == 1
+        !callback.events.empty
         and:
-        callback.events.first().status == "destroy"
-        callback.events.first().id == container1
+        def destroyEvents = new ArrayList<>(callback.events).findAll { it.status == "destroy" }
+        destroyEvents.find { it.id == container1 }
 
         cleanup:
+        dockerClient.rm(container1)
         dockerClient.rm(container2)
     }
 
