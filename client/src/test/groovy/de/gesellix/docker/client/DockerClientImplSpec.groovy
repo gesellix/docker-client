@@ -554,7 +554,17 @@ class DockerClientImplSpec extends Specification {
         dockerClient.rm("a-container")
 
         then:
-        1 * httpClient.delete([path: "/containers/a-container"])
+        1 * httpClient.delete([path: "/containers/a-container",
+                               query: [:]])
+    }
+
+    def "rm container with query"() {
+        when:
+        dockerClient.rm("a-container", ["v" : 0])
+
+        then:
+        1 * httpClient.delete([path: "/containers/a-container",
+                               query: ["v" : 0]])
     }
 
     def "ps containers"() {
