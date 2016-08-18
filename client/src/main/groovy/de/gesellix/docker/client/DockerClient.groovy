@@ -112,6 +112,8 @@ interface DockerClient {
 
     def unpause(container)
 
+    def rm(container)
+
     def rm(container, query)
 
     def rmi(image)
