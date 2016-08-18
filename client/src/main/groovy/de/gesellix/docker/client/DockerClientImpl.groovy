@@ -470,7 +470,7 @@ class DockerClientImpl implements DockerClient {
     @Override
     def rm(containerId, query = [:]) {
         log.info "docker rm"
-        def response = getHttpClient().delete([path: "/containers/${containerId}".toString(),
+        def response = getHttpClient().delete([path : "/containers/${containerId}".toString(),
                                                query: query])
         return response
     }
