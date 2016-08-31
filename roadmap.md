@@ -89,12 +89,16 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker node inspect`: Inspect a node in the swarm
 * [x] `docker node update`: Update a node
 * [x] `docker node rm`: Remove a node from the swarm
+* [ ] `docker node ps`: List tasks running on a node
+* [ ] `docker node demote`: Demote a node from manager in the swarm
+* [ ] `docker node promote`: Promote a node to a manager in the swarm
 
 ## Swarm
 
 * [x] `docker swarm inspect`: Inspect the Swarm
 * [x] `docker swarm init`: Initialize a Swarm
 * [x] `docker swarm join`: Join a Swarm as a node and/or manager
+* [ ] `docker swarm join-token`: Manage join tokens
 * [x] `docker swarm leave`: Leave a Swarm
 * [x] `docker swarm update`: Update the Swarm
 
@@ -105,10 +109,12 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker service rm`: Remove a service
 * [x] `docker service inspect`: Return information on the service `<id>`
 * [x] `docker service update`: Update a service
+* [ ] `docker service ps`: List the tasks of a service
+* [ ] `docker service scale`: Scale one or multiple services
 
 ## Tasks
 
-* [x] `docker service tasks`: List tasks running on a node
+* [ ] List all tasks
 * [x] Get details on a task
 
 ## Plugins (experimental)
