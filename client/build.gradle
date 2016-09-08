@@ -43,7 +43,7 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.21'
     testCompile 'ch.qos.logback:logback-classic:1.1.7'
 
-    compile 'com.squareup.okio:okio:1.9.0'
+    compile 'com.squareup.okio:okio:1.10.0'
     compile 'com.squareup.okhttp3:okhttp:3.4.1'
     compile 'com.squareup.okhttp3:okhttp-ws:3.4.1'
     testCompile 'com.squareup.okhttp3:mockwebserver:3.4.1'
@@ -57,7 +57,7 @@ dependencies {
         exclude module: 'log4j'
     }
 
-    compile 'org.bouncycastle:bcpkix-jdk15on:1.54'
+    compile 'org.bouncycastle:bcpkix-jdk15on:1.55'
 
     testCompile project(':testutil')
 

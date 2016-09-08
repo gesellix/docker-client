@@ -24,6 +24,10 @@ class DockerSwarmIntegrationSpec extends Specification {
 //        dockerClient.config.apiVersion = "v1.24"
     }
 
+    def cleanup() {
+        Thread.sleep(500)
+    }
+
     def ping() {
         when:
         def ping = dockerClient.ping()
@@ -75,12 +79,13 @@ class DockerSwarmIntegrationSpec extends Specification {
         given:
         def config = newSwarmConfig()
         def nodeId = dockerClient.initSwarm(config).content
-        def oldSpec = dockerClient.inspectNode(nodeId).content.Spec
+        def nodeInfo = dockerClient.inspectNode(nodeId).content
+        def oldSpec = nodeInfo.Spec
 
         when:
         def response = dockerClient.updateNode(nodeId,
                 [
-                        "version": 10
+                        "version": nodeInfo.Version.Index
                 ],
                 [
                         Role        : "manager",
@@ -91,7 +96,8 @@ class DockerSwarmIntegrationSpec extends Specification {
         then:
         response.status.code == 200
         and:
-        def newSpec = dockerClient.inspectNode(nodeId).content.Spec
+        def swarmInfo = dockerClient.inspectNode(nodeId).content
+        def newSpec = swarmInfo.Spec
         oldSpec.Availability == "active"
         newSpec.Availability == "drain"
         dockerClient.info().content.Swarm.LocalNodeState == "active"
@@ -166,7 +172,7 @@ class DockerSwarmIntegrationSpec extends Specification {
         then:
         def exception = thrown(DockerClientException)
         exception.message == "java.lang.IllegalStateException: docker swarm join failed"
-        exception.detail.content.message.contains("This node is already part of a swarm cluster")
+        exception.detail.content.message.contains("This node is already part of a swarm")
 
         cleanup:
         dockerClient.leaveSwarm([force: true])
@@ -183,7 +189,7 @@ class DockerSwarmIntegrationSpec extends Specification {
         then:
         def exception = thrown(DockerClientException)
         exception.message == "java.lang.IllegalStateException: docker swarm leave failed"
-        exception.detail.content.message.contains("Removing the last manager will erase all current state of the cluster")
+        exception.detail.content.message.contains("Removing the last manager erases all current state of the swarm")
 
         cleanup:
         dockerClient.leaveSwarm([force: true])
@@ -193,14 +199,17 @@ class DockerSwarmIntegrationSpec extends Specification {
         given:
         def config = newSwarmConfig()
         dockerClient.initSwarm(config)
-        def spec = dockerClient.inspectSwarm().content.Spec
+        def swarmInfo = dockerClient.inspectSwarm().content
+        def spec = swarmInfo.Spec
         spec.Annotations = [
                 Name: "test update"
         ]
 
         when:
         def response = dockerClient.updateSwarm(
-                ["version": 11],
+                [
+                        "version": swarmInfo.Version.Index
+                ],
                 spec)
 
         then:
@@ -419,6 +428,7 @@ class DockerSwarmIntegrationSpec extends Specification {
                         "Parallelism": 1
                 ]]
         def serviceId = dockerClient.createService(serviceConfig).content.ID
+        Thread.sleep(500)
         def firstTask = dockerClient.tasks().content.first()
         awaitTaskStarted(firstTask.ID)
 

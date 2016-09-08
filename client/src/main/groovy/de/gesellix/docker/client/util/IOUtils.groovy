@@ -6,6 +6,10 @@ import okio.Source
 
 class IOUtils {
 
+    static long consumeToDevNull(InputStream source) {
+        return copy(Okio.source(source), Okio.blackhole())
+    }
+
     static long copy(InputStream source, OutputStream sink) {
         return copy(Okio.source(source), Okio.sink(sink))
     }

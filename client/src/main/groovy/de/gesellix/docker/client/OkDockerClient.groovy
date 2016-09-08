@@ -7,7 +7,6 @@ import de.gesellix.docker.client.filesocket.UnixSocketFactory
 import de.gesellix.docker.client.rawstream.RawInputStream
 import de.gesellix.docker.client.ssl.SslSocketConfigFactory
 import de.gesellix.docker.client.util.IOUtils
-import de.gesellix.docker.client.util.NullOutputStream
 import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
 import okhttp3.*
@@ -268,7 +267,7 @@ class OkDockerClient implements HttpClient {
         if (response.status.code == 204) {
             if (response.stream) {
                 // redirect the response body to /dev/null, since it's expected to be empty
-                IOUtils.copy(response.stream as InputStream, new NullOutputStream())
+                IOUtils.consumeToDevNull(response.stream as InputStream)
             }
             return response
         }

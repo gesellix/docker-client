@@ -1,7 +1,6 @@
 package de.gesellix.docker.client
 
 import de.gesellix.docker.registry.DockerRegistry
-
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
 import spock.lang.Specification
@@ -81,16 +80,13 @@ class DockerClientImplIntegrationSpec extends Specification {
         info.MemoryLimit == true
         info.NoProxy == "" || info.NoProxy == "*.local, 169.254/16"
         info.OomKillDisable == true
-        info.RegistryConfig == [
-                "IndexConfigs"         : [
-                        "docker.io": ["Mirrors" : null,
-                                      "Name"    : "docker.io",
-                                      "Official": true,
-                                      "Secure"  : true]
-                ],
-                "InsecureRegistryCIDRs": ["127.0.0.0/8"],
-                "Mirrors"              : null
-        ]
+        info.RegistryConfig.IndexConfigs['docker.io'] == [
+                "Mirrors" : null,
+                "Name"    : "docker.io",
+                "Official": true,
+                "Secure"  : true]
+        info.RegistryConfig.InsecureRegistryCIDRs == ["127.0.0.0/8"]
+        info.RegistryConfig.Mirrors == null
         info.SystemTime =~ "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2,}.(\\d{3,}Z)?"
     }
 
@@ -101,12 +97,12 @@ class DockerClientImplIntegrationSpec extends Specification {
         then:
         version.ApiVersion == "1.24"
         version.Arch == "amd64"
-        version.BuildTime == "2016-07-28T21:04:48.864474905+00:00"
-        version.GitCommit == "8eab29e"
+        version.BuildTime == "2016-08-18T17:32:24.504694950+00:00"
+        version.GitCommit == "23cf638"
         version.GoVersion == "go1.6.3"
         version.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"
         version.Os == "linux"
-        version.Version == "1.12.0"
+        version.Version == "1.12.1"
     }
 
     def auth() {
