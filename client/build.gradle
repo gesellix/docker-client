@@ -68,7 +68,7 @@ dependencies {
 
     testCompile 'commons-lang:commons-lang:2.6'
 
-    testCompile 'net.jodah:failsafe:0.9.2'
+    testCompile 'net.jodah:failsafe:0.9.3'
 
     testCompile 'joda-time:joda-time:2.9.4'
 }
