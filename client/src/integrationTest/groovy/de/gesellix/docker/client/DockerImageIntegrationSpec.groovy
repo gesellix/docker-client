@@ -291,13 +291,22 @@ class DockerImageIntegrationSpec extends Specification {
     }
 
     def "list images filtered"() {
+        given:
+        def inputDirectory = new ResourceReader().getClasspathResourceAsFile('build/build/Dockerfile', DockerClient).parentFile
+        def buildResult = dockerClient.build(newBuildContext(inputDirectory))
+
         when:
         def images = dockerClient.images([filters: [dangling: ["true"]]]).content
 
         then:
-        images.every { image ->
-            image.RepoTags == ["<none>:<none>"]
+        images.findAll { image ->
+            image.RepoTags == ["<none>:<none>"] || image.RepoTags == null
+        }.find { image ->
+            image.Id.startsWith "sha256:$buildResult"
         }
+
+        cleanup:
+        dockerClient.rmi(buildResult)
     }
 
     def "rm image"() {
