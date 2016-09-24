@@ -178,8 +178,10 @@ class DockerClientImpl implements DockerClient {
     @Override
     def build(InputStream buildContext, query = ["rm": true]) {
         log.info "docker build"
+        def actualQuery = query ?: [:]
+        jsonEncodeBuildargs(actualQuery)
         def response = getHttpClient().post([path              : "/build",
-                                             query             : query,
+                                             query             : actualQuery,
                                              body              : buildContext,
                                              requestContentType: "application/octet-stream"])
 
@@ -1306,8 +1308,16 @@ func runInit(dockerCli *client.DockerCli, flags *pflag.FlagSet, opts initOptions
     }
 
     def jsonEncodeFilters(Map query) {
+        jsonEncodeQueryParameter(query, "filters")
+    }
+
+    def jsonEncodeBuildargs(Map query) {
+        jsonEncodeQueryParameter(query, "buildargs")
+    }
+
+    def jsonEncodeQueryParameter(Map query, String parameterName) {
         query.each { k, v ->
-            if (k == "filters") {
+            if (k == parameterName) {
                 query[k] = new JsonBuilder(v).toString()
             }
         }

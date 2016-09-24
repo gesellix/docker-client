@@ -77,10 +77,17 @@ class DockerImageIntegrationSpec extends Specification {
         def inputDirectory = new ResourceReader().getClasspathResourceAsFile('build/custom/Dockerfile', DockerClient).parentFile
 
         when:
-        def buildResult = dockerClient.build(newBuildContext(inputDirectory), [rm: true, dockerfile: './Dockerfile.custom'])
+        def buildResult = dockerClient.build(newBuildContext(inputDirectory), [
+                rm        : true,
+                dockerfile: './Dockerfile.custom',
+                buildargs : [the_arg: "custom-arg"]
+        ])
 
         then:
-        dockerClient.history(buildResult).content.first().CreatedBy.endsWith("'custom'")
+        def history = dockerClient.history(buildResult).content
+        def mostRecentEntry = history.first()
+        mostRecentEntry.CreatedBy.startsWith("|1 the_arg=custom-arg ")
+        mostRecentEntry.CreatedBy.endsWith("'custom \${the_arg}'")
 
         cleanup:
         dockerClient.rmi(buildResult)
