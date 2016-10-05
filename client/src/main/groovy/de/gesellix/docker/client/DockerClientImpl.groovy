@@ -25,7 +25,7 @@ class DockerClientImpl implements DockerClient {
     def proxy
     DockerEnv env
     HttpClient httpClient
-    def Closure<HttpClient> newDockerHttpClient
+    Closure<HttpClient> newDockerHttpClient
 
     DockerClientImpl() {
         this(new DockerEnv())
@@ -117,7 +117,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def readAuthConfig(def hostname, File dockerCfg) {
+    def readAuthConfig(hostname, File dockerCfg) {
         log.debug "read authConfig"
 
         if (!dockerCfg) {
@@ -161,13 +161,13 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def encodeAuthConfig(def authConfig) {
+    def encodeAuthConfig(authConfig) {
         log.debug "encode authConfig for ${authConfig.username}@${authConfig.serveraddress}"
         return new JsonBuilder(authConfig).toString().bytes.encodeBase64().toString()
     }
 
     @Override
-    def auth(def authDetails) {
+    def auth(authDetails) {
         log.info "docker login"
         def response = getHttpClient().post([path              : "/auth",
                                              body              : authDetails,
@@ -1052,50 +1052,50 @@ class DockerClientImpl implements DockerClient {
         log.info "docker swarm init"
 
         /*
-func runInit(dockerCli *client.DockerCli, flags *pflag.FlagSet, opts initOptions) error {
-	client := dockerCli.Client()
-	ctx := context.Background()
+    func runInit(dockerCli *client.DockerCli, flags *pflag.FlagSet, opts initOptions) error {
+    client := dockerCli.Client()
+    ctx := context.Background()
 
-	// If no secret was specified, we create a random one
-	if !flags.Changed("secret") {
-		opts.secret = generateRandomSecret()
-		fmt.Fprintf(dockerCli.Out(), "No --secret provided. Generated random secret:\n\t%s\n\n", opts.secret)
-	}
+    // If no secret was specified, we create a random one
+    if !flags.Changed("secret") {
+    opts.secret = generateRandomSecret()
+    fmt.Fprintf(dockerCli.Out(), "No --secret provided. Generated random secret:\n\t%s\n\n", opts.secret)
+    }
 
-	req := swarm.InitRequest{
-		ListenAddr:      opts.listenAddr.String(),
-		ForceNewCluster: opts.forceNewCluster,
-		Spec:            opts.swarmOptions.ToSpec(),
-	}
+    req := swarm.InitRequest{
+    ListenAddr:      opts.listenAddr.String(),
+    ForceNewCluster: opts.forceNewCluster,
+    Spec:            opts.swarmOptions.ToSpec(),
+    }
 
-	nodeID, err := client.SwarmInit(ctx, req)
-	if err != nil {
-		return err
-	}
+    nodeID, err := client.SwarmInit(ctx, req)
+    if err != nil {
+    return err
+    }
 
-	fmt.Fprintf(dockerCli.Out(), "Swarm initialized: current node (%s) is now a manager.\n\n", nodeID)
+    fmt.Fprintf(dockerCli.Out(), "Swarm initialized: current node (%s) is now a manager.\n\n", nodeID)
 
-	// Fetch CAHash and Address from the API
-	info, err := client.Info(ctx)
-	if err != nil {
-		return err
-	}
+    // Fetch CAHash and Address from the API
+    info, err := client.Info(ctx)
+    if err != nil {
+    return err
+    }
 
-	node, _, err := client.NodeInspectWithRaw(ctx, nodeID)
-	if err != nil {
-		return err
-	}
+    node, _, err := client.NodeInspectWithRaw(ctx, nodeID)
+    if err != nil {
+    return err
+    }
 
-	if node.ManagerStatus != nil && info.Swarm.CACertHash != "" {
-		var secretArgs string
-		if opts.secret != "" {
-			secretArgs = "--secret " + opts.secret
-		}
-		fmt.Fprintf(dockerCli.Out(), "To add a worker to this swarm, run the following command:\n\tdocker swarm join %s \\\n\t--ca-hash %s \\\n\t%s\n", secretArgs, info.Swarm.CACertHash, node.ManagerStatus.Addr)
-	}
+    if node.ManagerStatus != nil && info.Swarm.CACertHash != "" {
+    var secretArgs string
+    if opts.secret != "" {
+      secretArgs = "--secret " + opts.secret
+    }
+    fmt.Fprintf(dockerCli.Out(), "To add a worker to this swarm, run the following command:\n\tdocker swarm join %s \\\n\t--ca-hash %s \\\n\t%s\n", secretArgs, info.Swarm.CACertHash, node.ManagerStatus.Addr)
+    }
 
-	return nil
-}
+    return nil
+    }
          */
 
         config = config ?: [:]
