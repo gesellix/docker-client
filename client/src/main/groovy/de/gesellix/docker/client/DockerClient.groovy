@@ -32,6 +32,8 @@ interface DockerClient {
 
     def build(InputStream buildContext, query)
 
+    def build(InputStream buildContext, query, DockerAsyncCallback callback)
+
     def tag(image, repository)
 
     def parseRepositoryTag(name)

@@ -9,7 +9,13 @@ import de.gesellix.docker.client.ssl.SslSocketConfigFactory
 import de.gesellix.docker.client.util.IOUtils
 import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
-import okhttp3.*
+import okhttp3.CacheControl
+import okhttp3.HttpUrl
+import okhttp3.MediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
+import okhttp3.Response
 import okhttp3.internal.http.HttpMethod
 import okhttp3.ws.WebSocketCall
 import okio.Okio
@@ -173,7 +179,7 @@ class OkDockerClient implements HttpClient {
     }
 
     private OkHttpClient.Builder prepareClient(OkHttpClient.Builder builder, int currentTimeout) {
-        def String protocol = dockerClientConfig.scheme
+        String protocol = dockerClientConfig.scheme
         if (protocol == "unix") {
             def unixSocketFactory = socketFactories[protocol] as UnixSocketFactory
             builder
@@ -205,7 +211,7 @@ class OkDockerClient implements HttpClient {
         builder
     }
 
-    def OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
+    OkHttpClient newClient(OkHttpClient.Builder clientBuilder) {
         clientBuilder.build()
     }
 
@@ -233,7 +239,7 @@ class OkDockerClient implements HttpClient {
         httpUrl
     }
 
-    def createRequestBody(String method, String contentType, def body) {
+    def createRequestBody(String method, String contentType, body) {
         if (!body && HttpMethod.requiresRequestBody(method)) {
             return RequestBody.create(MediaType.parse("application/json"), "{}")
         }

@@ -73,13 +73,13 @@ class DockerClientImplSpec extends Specification {
         result.tag == tag
 
         where:
-        name                      || repo | tag
-        "scratch"                 || "scratch" | ""
-        "root:tag"                || "root" | "tag"
-        "user/repo"               || "user/repo" | ""
-        "user/repo:tag"           || "user/repo" | "tag"
-        "url:5000/repo"           || "url:5000/repo" | ""
-        "url:5000/repo:tag"       || "url:5000/repo" | "tag"
+        name                      || repo                  | tag
+        "scratch"                 || "scratch"             | ""
+        "root:tag"                || "root"                | "tag"
+        "user/repo"               || "user/repo"           | ""
+        "user/repo:tag"           || "user/repo"           | "tag"
+        "url:5000/repo"           || "url:5000/repo"       | ""
+        "url:5000/repo:tag"       || "url:5000/repo"       | "tag"
         "url:5000/user/image:tag" || "url:5000/user/image" | "tag"
     }
 
@@ -243,7 +243,8 @@ class DockerClientImplSpec extends Specification {
         1 * httpClient.post([path              : "/build",
                              query             : ["rm": true],
                              body              : buildContext,
-                             requestContentType: "application/octet-stream"]) >> [content: [[stream: ""]]]
+                             requestContentType: "application/octet-stream",
+                             async             : false]) >> [content: [[stream: ""]]]
         and:
         dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
             assert arguments[1]?.message == "docker build failed"
@@ -261,7 +262,8 @@ class DockerClientImplSpec extends Specification {
         1 * httpClient.post([path              : "/build",
                              query             : ["rm": false],
                              body              : buildContext,
-                             requestContentType: "application/octet-stream"]) >> [content: [[stream: ""]]]
+                             requestContentType: "application/octet-stream",
+                             async             : false]) >> [content: [[stream: ""]]]
         and:
         dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
             assert arguments[1]?.message == "docker build failed"

@@ -4,10 +4,15 @@ import de.gesellix.docker.client.builder.BuildContextBuilder
 import de.gesellix.docker.registry.DockerRegistry
 import de.gesellix.docker.testutil.HttpTestServer
 import de.gesellix.docker.testutil.ResourceReader
+import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
+
+import java.util.concurrent.CountDownLatch
+
+import static java.util.concurrent.TimeUnit.SECONDS
 
 @Slf4j
 @Requires({ LocalDocker.available() })
@@ -91,6 +96,33 @@ class DockerImageIntegrationSpec extends Specification {
 
         cleanup:
         dockerClient.rmi(buildResult)
+    }
+
+    def "build image with log output"() {
+        given:
+        def inputDirectory = new ResourceReader().getClasspathResourceAsFile('build/log/Dockerfile', DockerClient).parentFile
+
+        when:
+        CountDownLatch latch = new CountDownLatch(1)
+        def events = []
+        dockerClient.build(newBuildContext(inputDirectory), [rm: true], new DockerAsyncCallback() {
+            @Override
+            def onEvent(Object event) {
+                def parsedEvent = new JsonSlurper().parseText(event as String)
+                events << parsedEvent
+                if (parsedEvent.stream.contains('Successfully built')) {
+                    latch.countDown()
+                }
+            }
+        })
+        latch.await(5, SECONDS)
+
+        then:
+        events.first() == [stream: "Step 1 : FROM alpine:edge\n"]
+        def imageId = events.last().stream.trim() - "Successfully built "
+
+        cleanup:
+        dockerClient.rmi(imageId)
     }
 
     def "tag image"() {

@@ -176,18 +176,32 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def build(InputStream buildContext, query = ["rm": true]) {
+    def build(InputStream buildContext, query = ["rm": true], DockerAsyncCallback callback = null) {
         log.info "docker build"
+        def async = callback ? true : false
         def actualQuery = query ?: [:]
         jsonEncodeBuildargs(actualQuery)
         def response = getHttpClient().post([path              : "/build",
                                              query             : actualQuery,
                                              body              : buildContext,
-                                             requestContentType: "application/octet-stream"])
+                                             requestContentType: "application/octet-stream",
+                                             async             : async])
 
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker build failed"))
-        def lastChunk = response.content.last()
-        return lastChunk.stream.trim() - "Successfully built "
+
+        if (async) {
+            def executor = newSingleThreadExecutor()
+            // TODO return the Future<?>?
+            executor.submit(new DockerAsyncConsumer(response as DockerResponse, callback))
+            return response
+        } else {
+            def lastChunk = response.content.last()
+            return getBuildResultAsImageId(lastChunk)
+        }
+    }
+
+    String getBuildResultAsImageId(streamItem) {
+        return streamItem.stream.trim() - "Successfully built "
     }
 
     @Override
