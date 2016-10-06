@@ -191,7 +191,7 @@ class DockerClientImpl implements DockerClient {
 
             @Override
             def onFinish() {
-                println "build finished"
+                log.debug "build finished"
                 buildLatch.countDown()
             }
         }
