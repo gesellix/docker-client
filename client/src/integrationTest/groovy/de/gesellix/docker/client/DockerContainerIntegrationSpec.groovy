@@ -638,6 +638,10 @@ class DockerContainerIntegrationSpec extends Specification {
                 events << new JsonSlurper().parseText(event as String)
                 latch.countDown()
             }
+
+            @Override
+            def onFinish() {
+            }
         }
         dockerClient.events(callback)
 
@@ -680,6 +684,10 @@ class DockerContainerIntegrationSpec extends Specification {
                 if (parsedEvent.status == "destroy") {
                     latch.countDown()
                 }
+            }
+
+            @Override
+            def onFinish() {
             }
         }
 
@@ -743,6 +751,10 @@ class DockerContainerIntegrationSpec extends Specification {
                 stats << new JsonSlurper().parseText(stat as String)
                 latch.countDown()
             }
+
+            @Override
+            def onFinish() {
+            }
         }
         def imageName = "gesellix/docker-client-testimage"
         def containerConfig = ["Cmd": ["sh", "-c", "ping 127.0.0.1"]]
@@ -774,6 +786,10 @@ class DockerContainerIntegrationSpec extends Specification {
                 println line
                 lines << line
                 latch.countDown()
+            }
+
+            @Override
+            def onFinish() {
             }
         }
         def imageName = "gesellix/docker-client-testimage"

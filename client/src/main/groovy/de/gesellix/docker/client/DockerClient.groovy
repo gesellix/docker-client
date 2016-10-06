@@ -28,6 +28,10 @@ interface DockerClient {
 
     def auth(authDetails)
 
+    def buildWithLogs(InputStream buildContext)
+
+    def buildWithLogs(InputStream buildContext, query)
+
     def build(InputStream buildContext)
 
     def build(InputStream buildContext, query)

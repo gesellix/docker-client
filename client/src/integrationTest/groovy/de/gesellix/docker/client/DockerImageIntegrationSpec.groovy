@@ -98,7 +98,7 @@ class DockerImageIntegrationSpec extends Specification {
         dockerClient.rmi(buildResult)
     }
 
-    def "build image with log output"() {
+    def "build image with custom stream callback"() {
         given:
         def inputDirectory = new ResourceReader().getClasspathResourceAsFile('build/log/Dockerfile', DockerClient).parentFile
 
@@ -110,9 +110,11 @@ class DockerImageIntegrationSpec extends Specification {
             def onEvent(Object event) {
                 def parsedEvent = new JsonSlurper().parseText(event as String)
                 events << parsedEvent
-                if (parsedEvent.stream.contains('Successfully built')) {
-                    latch.countDown()
-                }
+            }
+
+            @Override
+            def onFinish() {
+                latch.countDown()
             }
         })
         latch.await(5, SECONDS)
@@ -120,6 +122,23 @@ class DockerImageIntegrationSpec extends Specification {
         then:
         events.first() == [stream: "Step 1 : FROM alpine:edge\n"]
         def imageId = events.last().stream.trim() - "Successfully built "
+
+        cleanup:
+        dockerClient.rmi(imageId)
+    }
+
+    def "build image with logs"() {
+        given:
+        def inputDirectory = new ResourceReader().getClasspathResourceAsFile('build/log/Dockerfile', DockerClient).parentFile
+
+        when:
+        def result = dockerClient.buildWithLogs(newBuildContext(inputDirectory))
+
+        then:
+        result.log.first() == [stream: "Step 1 : FROM alpine:edge\n"]
+        result.log.last().stream.startsWith("Successfully built ")
+        def imageId = result.log.last().stream.trim() - "Successfully built "
+        result.imageId == imageId
 
         cleanup:
         dockerClient.rmi(imageId)

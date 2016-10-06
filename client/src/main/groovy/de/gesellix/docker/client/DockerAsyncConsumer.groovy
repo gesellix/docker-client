@@ -25,6 +25,8 @@ class DockerAsyncConsumer implements Runnable {
         } catch (Exception e) {
             log.error("error reading from stream", e)
             throw new RuntimeException(e)
+        } finally {
+            callback?.onFinish()
         }
     }
 }

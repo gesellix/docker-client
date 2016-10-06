@@ -1097,6 +1097,10 @@ class DockerClientImplSpec extends Specification {
                 events << event
                 latch.countDown()
             }
+
+            @Override
+            def onFinish() {
+            }
         }
 
         when:
@@ -1122,6 +1126,10 @@ class DockerClientImplSpec extends Specification {
             def onEvent(Object event) {
                 events << event
                 latch.countDown()
+            }
+
+            @Override
+            def onFinish() {
             }
         }
         def since = new Date().time

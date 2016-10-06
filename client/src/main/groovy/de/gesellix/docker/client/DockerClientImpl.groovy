@@ -14,8 +14,11 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.codehaus.groovy.runtime.MethodClosure
 
+import java.util.concurrent.CountDownLatch
+
 import static java.net.Proxy.NO_PROXY
 import static java.util.concurrent.Executors.newSingleThreadExecutor
+import static java.util.concurrent.TimeUnit.MINUTES
 
 @Slf4j
 class DockerClientImpl implements DockerClient {
@@ -173,6 +176,30 @@ class DockerClientImpl implements DockerClient {
                                              body              : authDetails,
                                              requestContentType: "application/json"])
         return response
+    }
+
+    @Override
+    def buildWithLogs(InputStream buildContext, query = ["rm": true]) {
+        def buildLatch = new CountDownLatch(1)
+        def chunks = []
+        def callback = new DockerAsyncCallback() {
+            @Override
+            def onEvent(Object event) {
+                def parsedEvent = new JsonSlurper().parseText(event as String)
+                chunks << parsedEvent
+            }
+
+            @Override
+            def onFinish() {
+                println "build finished"
+                buildLatch.countDown()
+            }
+        }
+        build(buildContext, query, callback)
+        // TODO make configurable
+        buildLatch.await(10, MINUTES)
+        return [log    : chunks,
+                imageId: getBuildResultAsImageId(chunks.last())]
     }
 
     @Override
