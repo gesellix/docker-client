@@ -29,7 +29,7 @@ class OkDockerClientIntegrationSpec extends Specification {
         when:
         def response = client.post(request)
         then:
-        response.content.last() == [status: "Status: Image is up to date for gesellix/docker-client-testimage:$imageTag"]
+        response.content.last() == [status: "Status: Image is up to date for gesellix/docker-client-testimage:$imageTag".toString()]
     }
 
     @IgnoreIf({ dockerHubPassword == "-yet-another-password-" })
