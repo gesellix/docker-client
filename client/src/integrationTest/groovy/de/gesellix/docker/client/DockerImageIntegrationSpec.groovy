@@ -12,6 +12,7 @@ import spock.lang.Specification
 
 import java.util.concurrent.CountDownLatch
 
+import static de.gesellix.docker.client.TestimageConstants.CONSTANTS
 import static java.util.concurrent.TimeUnit.SECONDS
 
 @Slf4j
@@ -146,8 +147,7 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "tag image"() {
         given:
-        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", imageTag)
+        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
         def imageName = "yet-another-tag"
 
         when:
@@ -165,8 +165,7 @@ class DockerImageIntegrationSpec extends Specification {
         given:
         def authDetails = dockerClient.readAuthConfig(null, null)
         def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
-        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", imageTag)
+        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
         def imageName = "gesellix/test:latest"
         dockerClient.tag(imageId, imageName)
 
@@ -187,8 +186,7 @@ class DockerImageIntegrationSpec extends Specification {
         given:
         def authDetails = dockerClient.readDefaultAuthConfig()
         def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
-        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", imageTag)
+        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
         def imageName = "gesellix/test:latest"
         dockerClient.tag(imageId, imageName)
 
@@ -207,8 +205,7 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "push image with undefined authentication"() {
         given:
-        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", imageTag)
+        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
         def imageName = "gesellix/test:latest"
         dockerClient.tag(imageId, imageName)
 
@@ -227,11 +224,10 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "pull image"() {
         when:
-        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", imageTag)
+        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
 
         then:
-        imageId == "sha256:6b552ee013ffc56b05df78b83a7b9717ebb99aa32224cf012c5dbea811b42334"
+        imageId == CONSTANTS.imageDigest
     }
 
     def "pull image by digest"() {
@@ -244,18 +240,17 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "pull image from private registry"() {
         given:
-        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
-        dockerClient.pull("gesellix/docker-client-testimage", imageTag)
-        dockerClient.push("gesellix/docker-client-testimage:test", "", registry.url())
+        dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+        dockerClient.push(CONSTANTS.imageName, "", registry.url())
 
         when:
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", "test", "", registry.url())
+        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag, "", registry.url())
 
         then:
-        imageId == "sha256:6b552ee013ffc56b05df78b83a7b9717ebb99aa32224cf012c5dbea811b42334"
+        imageId == CONSTANTS.imageDigest
 
         cleanup:
-        dockerClient.rmi("${registry.url()}/gesellix/docker-client-testimage")
+        dockerClient.rmi("${registry.url()}/${CONSTANTS.imageRepo}")
     }
 
     def "import image from url"() {
@@ -294,33 +289,31 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "inspect image"() {
         given:
-        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", imageTag)
+        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
 
         when:
         def imageInspection = dockerClient.inspectImage(imageId).content
 
         then:
-        imageInspection.Config.Image == "d3ca5fb4cded236f37a1aca37b81059378bcb6e39f6386d538a3cb630d7d6c4e"
+        imageInspection.Config.Image == LocalDocker.isNativeWindows() ? "todo" : "sha256:728f7fae29a7bc4c1166cc3206eec3e8271bf3408034051b742251d8bdc07db8"
         and:
-        imageInspection.Id == "sha256:6b552ee013ffc56b05df78b83a7b9717ebb99aa32224cf012c5dbea811b42334"
+        imageInspection.Id == CONSTANTS.imageDigest
         and:
         imageInspection.Parent == ""
         and:
-        imageInspection.Container == "bb3a2d1eb5404835149e3639f6f8a220555a8640f4f8fe6e8877c5618ba5cd40"
+        imageInspection.Container == LocalDocker.isNativeWindows() ? "todo" : "7ddb235457b38a125d107ec7d53f95254cbf579069f29a2c731bc9471a153524"
     }
 
     def "history"() {
         given:
-        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", imageTag)
+        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
 
         when:
         def history = dockerClient.history(imageId).content
 
         then:
         history.collect { it.Id } == [
-                "sha256:6b552ee013ffc56b05df78b83a7b9717ebb99aa32224cf012c5dbea811b42334",
+                CONSTANTS.imageDigest,
                 "<missing>",
                 "<missing>",
                 "<missing>"
@@ -329,19 +322,18 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "list images"() {
         given:
-        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
-        dockerClient.pull("gesellix/docker-client-testimage:$imageTag")
+        dockerClient.pull(CONSTANTS.imageName)
 
         when:
         def images = dockerClient.images().content
 
         then:
         def imageById = images.find {
-            it.Id == "sha256:6b552ee013ffc56b05df78b83a7b9717ebb99aa32224cf012c5dbea811b42334"
+            it.Id == CONSTANTS.imageDigest
         }
-        imageById.Created == 1454887777
+        imageById.Created == 1475869474
         imageById.ParentId == ""
-        imageById.RepoTags.contains "gesellix/docker-client-testimage:$imageTag"
+        imageById.RepoTags.contains CONSTANTS.imageName
     }
 
     def "list images with intermediate layers"() {
@@ -378,8 +370,7 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "rm image"() {
         given:
-        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", imageTag)
+        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
         dockerClient.tag(imageId, "an_image_to_be_deleted")
 
         when:
@@ -399,8 +390,7 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "rm image with existing container"() {
         given:
-        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", imageTag)
+        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
         dockerClient.tag(imageId, "an_image_with_existing_container")
 
         def containerConfig = ["Cmd": ["true"]]
@@ -426,11 +416,11 @@ class DockerImageIntegrationSpec extends Specification {
 
         then:
         searchResult.content.contains([
-                description : "",
+                description : "Base image for integration tests of the Docker client at https://github.com/gesellix/docker-client\n",
                 is_automated: true,
                 is_official : false,
 //                is_trusted  : true,
-                name        : "gesellix/docker-client-testimage",
+                name        : CONSTANTS.imageRepo,
                 star_count  : 0
         ])
     }

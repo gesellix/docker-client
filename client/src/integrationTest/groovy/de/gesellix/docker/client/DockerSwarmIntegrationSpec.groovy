@@ -340,7 +340,7 @@ class DockerSwarmIntegrationSpec extends Specification {
         dockerClient.leaveSwarm([force: true])
     }
 
-    // fails, and I don't know why
+    // TODO fails, and I don't know why
     @Ignore
     def "update service"() {
         given:

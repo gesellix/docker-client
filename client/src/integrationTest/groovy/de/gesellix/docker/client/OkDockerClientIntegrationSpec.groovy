@@ -4,6 +4,8 @@ import spock.lang.IgnoreIf
 import spock.lang.Requires
 import spock.lang.Specification
 
+import static de.gesellix.docker.client.TestimageConstants.CONSTANTS
+
 @Requires({ LocalDocker.available() })
 class OkDockerClientIntegrationSpec extends Specification {
 
@@ -20,16 +22,15 @@ class OkDockerClientIntegrationSpec extends Specification {
     def "should allow POST requests"() {
         given:
         def client = new OkDockerClient()
-        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
         def request = [path : "/images/create",
-                       query: [fromImage: "gesellix/docker-client-testimage",
-                               tag      : imageTag,
+                       query: [fromImage: CONSTANTS.imageRepo,
+                               tag      : CONSTANTS.imageTag,
                                registry : ""]]
 
         when:
         def response = client.post(request)
         then:
-        response.content.last() == [status: "Status: Image is up to date for gesellix/docker-client-testimage:$imageTag".toString()]
+        response.content.last() == [status: "Status: Image is up to date for ${CONSTANTS.imageName}".toString()]
     }
 
     @IgnoreIf({ dockerHubPassword == "-yet-another-password-" })
