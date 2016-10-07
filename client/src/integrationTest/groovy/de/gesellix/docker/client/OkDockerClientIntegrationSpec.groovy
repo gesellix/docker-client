@@ -20,15 +20,16 @@ class OkDockerClientIntegrationSpec extends Specification {
     def "should allow POST requests"() {
         given:
         def client = new OkDockerClient()
+        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
         def request = [path : "/images/create",
                        query: [fromImage: "gesellix/docker-client-testimage",
-                               tag      : "latest",
+                               tag      : imageTag,
                                registry : ""]]
 
         when:
         def response = client.post(request)
         then:
-        response.content.last() == [status: "Status: Image is up to date for gesellix/docker-client-testimage:latest"]
+        response.content.last() == [status: "Status: Image is up to date for gesellix/docker-client-testimage:$imageTag"]
     }
 
     @IgnoreIf({ dockerHubPassword == "-yet-another-password-" })

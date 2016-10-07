@@ -44,6 +44,18 @@ class LocalDocker {
         }
     }
 
+    static boolean isNativeWindows() {
+        try {
+            def arch = new DockerClientImpl().version().content.Arch as String
+            def os = new DockerClientImpl().version().content.Os as String
+            return "$os/$arch".toString() == "windows/amd64"
+        }
+        catch (Exception e) {
+            log.info("Docker not available", e)
+            throw new RuntimeException(e)
+        }
+    }
+
     static def isNamedPipe() {
         def dockerHost = new DockerClientImpl().env.dockerHost
         return dockerHost.startsWith("npipe://")

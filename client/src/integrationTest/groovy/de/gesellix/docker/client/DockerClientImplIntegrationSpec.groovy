@@ -12,6 +12,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     static DockerRegistry registry
 
     static DockerClient dockerClient
+    static boolean nativeWindows = LocalDocker.isNativeWindows()
 
     def setupSpec() {
         dockerClient = new DockerClientImpl(
@@ -20,12 +21,14 @@ class DockerClientImplIntegrationSpec extends Specification {
 //                        certPath: "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default",
 //                        apiVersion: "v1.23")
         )
-        registry = new DockerRegistry(dockerClient)
-        registry.run()
+        if (!nativeWindows) {
+            registry = new DockerRegistry(dockerClient)
+            registry.run()
+        }
     }
 
     def cleanupSpec() {
-        registry.rm()
+        registry?.rm()
     }
 
     def ping() {
@@ -61,12 +64,21 @@ class DockerClientImplIntegrationSpec extends Specification {
         new ArrayList<>(info.keySet() as Set).each { expectedKeys.contains(it) }
 
         and:
-        def expectedDriverStatusProperties = ["Root Dir", "Backing Filesystem", "Dirs", "Dirperm1 Supported"]
         info.Containers >= 0
-        info.DockerRootDir =~ "(/mnt/sda1)?/var/lib/docker"
+        if (nativeWindows) {
+            info.DockerRootDir == "C:\\\\ProgramData\\\\Docker"
+        } else {
+            info.DockerRootDir =~ "(/mnt/sda1)?/var/lib/docker"
+        }
+
+        def expectedDriverStatusProperties
+        if (nativeWindows) {
+            expectedDriverStatusProperties = ["Windows"]
+        } else {
+            expectedDriverStatusProperties = ["Root Dir", "Backing Filesystem", "Dirs", "Dirperm1 Supported"]
+        }
         info.DriverStatus.findAll {
-            def propertyName = it.first()
-            propertyName in expectedDriverStatusProperties
+            it.first() in expectedDriverStatusProperties
         }.size() == expectedDriverStatusProperties.size()
         info.HttpProxy == ""
         info.HttpsProxy == ""
@@ -77,9 +89,9 @@ class DockerClientImplIntegrationSpec extends Specification {
         info.Labels == null
         info.LoggingDriver == "json-file"
         info.MemTotal > 0
-        info.MemoryLimit == true
+        info.MemoryLimit != nativeWindows
         info.NoProxy == "" || info.NoProxy == "*.local, 169.254/16"
-        info.OomKillDisable == true
+        info.OomKillDisable == !nativeWindows
         info.RegistryConfig.IndexConfigs['docker.io'] == [
                 "Mirrors" : null,
                 "Name"    : "docker.io",
@@ -95,13 +107,13 @@ class DockerClientImplIntegrationSpec extends Specification {
         def version = dockerClient.version().content
 
         then:
-        version.ApiVersion == "1.24"
+        version.ApiVersion == nativeWindows ? "1.25" : "1.24"
         version.Arch == "amd64"
         version.BuildTime == "2016-09-27T23:38:15.810178467+00:00"
         version.GitCommit == "45bed2c"
         version.GoVersion == "go1.6.3"
         version.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"
-        version.Os == "linux"
+        version.Os == nativeWindows ? "windows" : "linux"
         version.Version == "1.12.2-rc1"
     }
 

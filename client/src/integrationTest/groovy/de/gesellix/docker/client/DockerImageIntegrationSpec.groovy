@@ -146,7 +146,8 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "tag image"() {
         given:
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
+        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
+        def imageId = dockerClient.pull("gesellix/docker-client-testimage", imageTag)
         def imageName = "yet-another-tag"
 
         when:
@@ -164,7 +165,8 @@ class DockerImageIntegrationSpec extends Specification {
         given:
         def authDetails = dockerClient.readAuthConfig(null, null)
         def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
+        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
+        def imageId = dockerClient.pull("gesellix/docker-client-testimage", imageTag)
         def imageName = "gesellix/test:latest"
         dockerClient.tag(imageId, imageName)
 
@@ -185,7 +187,8 @@ class DockerImageIntegrationSpec extends Specification {
         given:
         def authDetails = dockerClient.readDefaultAuthConfig()
         def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
+        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
+        def imageId = dockerClient.pull("gesellix/docker-client-testimage", imageTag)
         def imageName = "gesellix/test:latest"
         dockerClient.tag(imageId, imageName)
 
@@ -204,7 +207,8 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "push image with undefined authentication"() {
         given:
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
+        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
+        def imageId = dockerClient.pull("gesellix/docker-client-testimage", imageTag)
         def imageName = "gesellix/test:latest"
         dockerClient.tag(imageId, imageName)
 
@@ -223,7 +227,8 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "pull image"() {
         when:
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
+        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
+        def imageId = dockerClient.pull("gesellix/docker-client-testimage", imageTag)
 
         then:
         imageId == "sha256:6b552ee013ffc56b05df78b83a7b9717ebb99aa32224cf012c5dbea811b42334"
@@ -239,11 +244,12 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "pull image from private registry"() {
         given:
-        dockerClient.pull("gesellix/docker-client-testimage", "latest")
-        dockerClient.push("gesellix/docker-client-testimage:latest", "", registry.url())
+        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
+        dockerClient.pull("gesellix/docker-client-testimage", imageTag)
+        dockerClient.push("gesellix/docker-client-testimage:test", "", registry.url())
 
         when:
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest", "", registry.url())
+        def imageId = dockerClient.pull("gesellix/docker-client-testimage", "test", "", registry.url())
 
         then:
         imageId == "sha256:6b552ee013ffc56b05df78b83a7b9717ebb99aa32224cf012c5dbea811b42334"
@@ -288,7 +294,8 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "inspect image"() {
         given:
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
+        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
+        def imageId = dockerClient.pull("gesellix/docker-client-testimage", imageTag)
 
         when:
         def imageInspection = dockerClient.inspectImage(imageId).content
@@ -305,7 +312,8 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "history"() {
         given:
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
+        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
+        def imageId = dockerClient.pull("gesellix/docker-client-testimage", imageTag)
 
         when:
         def history = dockerClient.history(imageId).content
@@ -321,7 +329,8 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "list images"() {
         given:
-        dockerClient.pull("gesellix/docker-client-testimage:latest")
+        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
+        dockerClient.pull("gesellix/docker-client-testimage:$imageTag")
 
         when:
         def images = dockerClient.images().content
@@ -332,7 +341,7 @@ class DockerImageIntegrationSpec extends Specification {
         }
         imageById.Created == 1454887777
         imageById.ParentId == ""
-        imageById.RepoTags.contains "gesellix/docker-client-testimage:latest"
+        imageById.RepoTags.contains "gesellix/docker-client-testimage:$imageTag"
     }
 
     def "list images with intermediate layers"() {
@@ -369,7 +378,8 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "rm image"() {
         given:
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
+        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
+        def imageId = dockerClient.pull("gesellix/docker-client-testimage", imageTag)
         dockerClient.tag(imageId, "an_image_to_be_deleted")
 
         when:
@@ -389,7 +399,8 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "rm image with existing container"() {
         given:
-        def imageId = dockerClient.pull("gesellix/docker-client-testimage", "latest")
+        def imageTag = LocalDocker.isNativeWindows() ? "os-windows" : "os-linux"
+        def imageId = dockerClient.pull("gesellix/docker-client-testimage", imageTag)
         dockerClient.tag(imageId, "an_image_with_existing_container")
 
         def containerConfig = ["Cmd": ["true"]]
