@@ -185,6 +185,7 @@ class DockerClientImpl implements DockerClient {
         def callback = new DockerAsyncCallback() {
             @Override
             def onEvent(Object event) {
+                log.info "event: $event"
                 def parsedEvent = new JsonSlurper().parseText(event as String)
                 chunks << parsedEvent
             }

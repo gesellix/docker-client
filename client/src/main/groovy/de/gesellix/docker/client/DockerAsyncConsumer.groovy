@@ -19,7 +19,7 @@ class DockerAsyncConsumer implements Runnable {
         try {
             String line
             while ((line = reader.readLine()) != null) {
-                log.debug("event: $line")
+                log.trace("event: $line")
                 callback.onEvent(line)
             }
         } catch (Exception e) {
