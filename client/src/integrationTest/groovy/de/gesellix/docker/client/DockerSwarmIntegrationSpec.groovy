@@ -4,7 +4,6 @@ import groovy.util.logging.Slf4j
 import net.jodah.failsafe.Failsafe
 import net.jodah.failsafe.RetryPolicy
 import net.jodah.failsafe.function.Predicate
-import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
 
@@ -340,8 +339,6 @@ class DockerSwarmIntegrationSpec extends Specification {
         dockerClient.leaveSwarm([force: true])
     }
 
-    // TODO fails, and I don't know why
-    @Ignore
     def "update service"() {
         given:
         def config = newSwarmConfig()
@@ -360,19 +357,19 @@ class DockerSwarmIntegrationSpec extends Specification {
                 ]]
         def serviceId = dockerClient.createService(serviceConfig).content.ID
         def serviceSpec = dockerClient.inspectService(serviceId).content.Spec
+        def serviceVersion = dockerClient.inspectService(serviceId).content.Version.Index
         serviceSpec.Name = "${serviceSpec.Name}-foo"
 
         when:
-        def swarm = dockerClient.inspectSwarm().content
-        def response = dockerClient.updateService(serviceId, [version: swarm.Version.Index], serviceSpec)
+        def response = dockerClient.updateService(serviceId, [version: serviceVersion], serviceSpec)
 
         then:
-        response == [:]
+        response.status.code == 200
 
         cleanup:
-        dockerClient.rmService(serviceSpec.Name)
-        awaitServiceRemoved(serviceSpec.Name)
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.rmService(serviceSpec.Name) }
+        performSilently { awaitServiceRemoved(serviceSpec.Name) }
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def "tasks"() {
@@ -530,5 +527,12 @@ class DockerSwarmIntegrationSpec extends Specification {
     def findService(name) {
         def services = dockerClient.services().content
         return services.find { it.Spec.Name == name }
+    }
+
+    def performSilently(Closure action) {
+        try {
+            action()
+        } catch (Exception ignored) {
+        }
     }
 }
