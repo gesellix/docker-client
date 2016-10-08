@@ -1251,7 +1251,7 @@ class DockerClientImpl implements DockerClient {
         if (!actualQuery.containsKey('filters')) {
             actualQuery.filters = [:]
         }
-        actualQuery.filters['service'] = service
+        actualQuery.filters['service'] = [service]
         if (actualQuery.filters?.node) {
             actualQuery.filters.node = resolveNodeId(query.filters.node)
         }

@@ -1578,7 +1578,7 @@ class DockerClientImplSpec extends Specification {
 
     def "list tasks of service with query"() {
         given:
-        def filters = [service: "service-name"]
+        def filters = [service: ["service-name"]]
         def expectedFilterValue = new JsonBuilder(filters).toString()
         def query = [filters: filters]
 
