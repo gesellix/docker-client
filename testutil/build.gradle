@@ -16,7 +16,7 @@ repositories {
 
 dependencies {
     compile 'org.codehaus.groovy:groovy:2.4.7'
-    compile 'com.squareup.okio:okio:1.10.0'
+    compile 'com.squareup.okio:okio:1.11.0'
     compile('com.kohlschutter.junixsocket:junixsocket-native-common:2.0.4') {
         exclude module: 'log4j'
     }

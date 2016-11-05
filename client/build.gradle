@@ -11,7 +11,7 @@ buildscript {
         classpath 'net.saliman:gradle-cobertura-plugin:2.3.2'
         classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.6.3'
 
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.1'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.2'
     }
 }
 
@@ -43,10 +43,10 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.21'
     testCompile 'ch.qos.logback:logback-classic:1.1.7'
 
-    compile 'com.squareup.okio:okio:1.10.0'
-    compile 'com.squareup.okhttp3:okhttp:3.4.1'
-    compile 'com.squareup.okhttp3:okhttp-ws:3.4.1'
-    testCompile 'com.squareup.okhttp3:mockwebserver:3.4.1'
+    compile 'com.squareup.okio:okio:1.11.0'
+    compile 'com.squareup.okhttp3:okhttp:3.4.2'
+    compile 'com.squareup.okhttp3:okhttp-ws:3.4.2'
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.4.2'
 
     compile 'org.apache.commons:commons-compress:1.12'
 
@@ -68,9 +68,9 @@ dependencies {
 
     testCompile 'commons-lang:commons-lang:2.6'
 
-    testCompile 'net.jodah:failsafe:0.9.3'
+    testCompile 'net.jodah:failsafe:0.9.5'
 
-    testCompile 'joda-time:joda-time:2.9.4'
+    testCompile 'joda-time:joda-time:2.9.5'
 }
 
 
