@@ -40,7 +40,7 @@ buildScan {
 
 task wrapper(type: Wrapper) {
     gradleVersion = '3.1'
-    distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+    distributionType = Wrapper.DistributionType.ALL
 }
 
 apply from: 'debug.gradle'
