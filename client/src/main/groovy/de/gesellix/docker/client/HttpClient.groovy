@@ -2,7 +2,7 @@ package de.gesellix.docker.client
 
 import okhttp3.ws.WebSocketCall
 
-public interface HttpClient {
+interface HttpClient {
 
     def head(Map requestConfig)
 

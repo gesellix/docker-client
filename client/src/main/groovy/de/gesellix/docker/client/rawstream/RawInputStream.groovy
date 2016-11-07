@@ -11,7 +11,7 @@ class RawInputStream extends FilterInputStream {
 
     final static int EOF = -1
 
-    def RawInputStream(InputStream inputStream) {
+    RawInputStream(InputStream inputStream) {
         super(inputStream)
     }
 
@@ -38,7 +38,7 @@ class RawInputStream extends FilterInputStream {
 
     int copyFrame(stdout, stderr) {
         def outputStreamsByStreamType = [:]
-        outputStreamsByStreamType["${StreamType.STDOUT}"] = stdout ?: stderr;
+        outputStreamsByStreamType["${StreamType.STDOUT}"] = stdout ?: stderr
         outputStreamsByStreamType["${StreamType.STDERR}"] = stderr ?: stdout
 
         def parsedHeader = readFrameHeader()
