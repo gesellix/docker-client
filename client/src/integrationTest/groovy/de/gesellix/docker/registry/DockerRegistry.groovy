@@ -13,11 +13,11 @@ class DockerRegistry {
     }
 
     def getImageName(){
-        LocalDocker.isNativeWindows() ? "gesellix/registry" : "registry"
+        LocalDocker.isNativeWindows() ? "sixeyed/registry" : "registry"
     }
 
     def getImageTag(){
-        LocalDocker.isNativeWindows() ? "2.5.1-windows" : "2"
+        LocalDocker.isNativeWindows() ? "nanoserver" : "2"
     }
 
     def run() {
