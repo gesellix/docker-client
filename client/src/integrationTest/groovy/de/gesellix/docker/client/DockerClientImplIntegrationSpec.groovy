@@ -1,6 +1,5 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.registry.DockerRegistry
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
 import spock.lang.Specification
@@ -8,8 +7,6 @@ import spock.lang.Specification
 @Slf4j
 @Requires({ LocalDocker.available() })
 class DockerClientImplIntegrationSpec extends Specification {
-
-    static DockerRegistry registry
 
     static DockerClient dockerClient
     static boolean nativeWindows = LocalDocker.isNativeWindows()
@@ -21,14 +18,6 @@ class DockerClientImplIntegrationSpec extends Specification {
 //                        certPath: "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default",
 //                        apiVersion: "v1.23")
         )
-        if (!nativeWindows) {
-            registry = new DockerRegistry(dockerClient)
-            registry.run()
-        }
-    }
-
-    def cleanupSpec() {
-        registry?.rm()
     }
 
     def ping() {

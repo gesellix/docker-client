@@ -2,7 +2,6 @@ package de.gesellix.docker.client
 
 import de.gesellix.docker.client.util.IOUtils
 import de.gesellix.docker.client.websocket.DefaultWebSocketListener
-import de.gesellix.docker.registry.DockerRegistry
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import okhttp3.RequestBody
@@ -29,18 +28,10 @@ import static java.util.concurrent.TimeUnit.SECONDS
 @Requires({ LocalDocker.available() })
 class DockerContainerIntegrationSpec extends Specification {
 
-    static DockerRegistry registry
-
     static DockerClient dockerClient
 
     def setupSpec() {
         dockerClient = new DockerClientImpl()
-        registry = new DockerRegistry(dockerClient)
-        registry.run()
-    }
-
-    def cleanupSpec() {
-        registry.rm()
     }
 
     def ping() {

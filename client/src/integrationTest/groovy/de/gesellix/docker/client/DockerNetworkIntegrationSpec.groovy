@@ -1,6 +1,5 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.registry.DockerRegistry
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
 import spock.lang.Specification
@@ -9,18 +8,10 @@ import spock.lang.Specification
 @Requires({ LocalDocker.available() })
 class DockerNetworkIntegrationSpec extends Specification {
 
-    static DockerRegistry registry
-
     static DockerClient dockerClient
 
     def setupSpec() {
         dockerClient = new DockerClientImpl()
-        registry = new DockerRegistry(dockerClient)
-        registry.run()
-    }
-
-    def cleanupSpec() {
-        registry.rm()
     }
 
     def ping() {
