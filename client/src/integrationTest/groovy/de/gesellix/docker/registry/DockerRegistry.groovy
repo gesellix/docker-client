@@ -1,6 +1,7 @@
 package de.gesellix.docker.registry
 
 import de.gesellix.docker.client.DockerClient
+import de.gesellix.docker.client.LocalDocker
 
 class DockerRegistry {
 
@@ -11,12 +12,20 @@ class DockerRegistry {
         this.dockerClient = dockerClient
     }
 
+    def getImageName(){
+        LocalDocker.isNativeWindows() ? "sixeyed/registry" : "registry"
+    }
+
+    def getImageTag(){
+        LocalDocker.isNativeWindows() ? "nanoserver" : "2"
+    }
+
     def run() {
         def registryStatus = dockerClient.run(
-                "registry",
+                getImageName(),
                 ["ExposedPorts": ["5000/tcp": [:]],
                  "HostConfig"  : ["PublishAllPorts": true]],
-                "2")
+                getImageTag())
         registryId = registryStatus.container.content.Id
     }
 

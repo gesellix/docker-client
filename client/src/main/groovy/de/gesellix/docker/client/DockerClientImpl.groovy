@@ -442,7 +442,7 @@ class DockerClientImpl implements DockerClient {
 
     @Override
     def run(fromImage, containerConfig, tag = "", name = "") {
-        log.info "docker run"
+        log.info "docker run ${fromImage}${tag ? ':' : ''}${tag}"
 /*
     http://docs.docker.com/reference/api/docker_remote_api_v1.13/#31-inside-docker-run
 
