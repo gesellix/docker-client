@@ -20,6 +20,7 @@ subprojects {
 
     def dependencyVersions = [
             'com.squareup.okio:okio:1.11.0',
+            'junit:junit:4.11',
             'org.bouncycastle:bcprov-jdk15on:1.55',
             'org.slf4j:slf4j-api:1.7.21'
     ]
@@ -38,7 +39,7 @@ buildScan {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.1'
+    gradleVersion = '3.2.1'
     distributionType = Wrapper.DistributionType.ALL
 }
 
