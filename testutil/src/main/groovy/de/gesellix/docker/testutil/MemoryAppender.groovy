@@ -24,11 +24,10 @@ class MemoryAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
         getMemoryAppender().clear()
     }
 
-    static def findLoggedEvent(needle) {
+    static findLoggedEvent(needle) {
         MemoryAppender memoryAppender = getMemoryAppender()
         def events = memoryAppender.getLoggedEvents()
-        events.find { ILoggingEvent e -> e.level == needle.level && e.message == needle.message }
-        return events
+        return events.find { ILoggingEvent e -> e.level == needle.level && e.message == needle.message }
     }
 
     static MemoryAppender getMemoryAppender() {
@@ -41,7 +40,7 @@ class MemoryAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
     }
 
     @Override
-    public void start() {
+    void start() {
         try {
             encoder.init(outputStream)
             super.start()
@@ -69,15 +68,15 @@ class MemoryAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
         }
     }
 
-    public List<ILoggingEvent> getLoggedEvents() {
+    List<ILoggingEvent> getLoggedEvents() {
         return new ArrayList<ILoggingEvent>(loggedEvents)
     }
 
-    public void clear() {
+    void clear() {
         loggedEvents.clear()
     }
 
-    public String getRenderedOutput() {
+    String getRenderedOutput() {
         return new String(outputStream.toByteArray())
     }
 }
