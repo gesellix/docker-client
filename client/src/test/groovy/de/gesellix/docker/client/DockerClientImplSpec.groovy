@@ -1445,6 +1445,19 @@ class DockerClientImplSpec extends Specification {
                              requestContentType: "application/json"]) >> [status: [success: true]]
     }
 
+    def "get the swarm manager address"() {
+        when:
+        def managerAddress = dockerClient.getSwarmMangerAddress()
+        then:
+        1 * httpClient.get([path: "/info"]) >> [status : [success: true],
+                                                content: [Swarm: [NodeID: "node-id"]]]
+        then:
+        1 * httpClient.get([path: "/nodes/node-id"]) >> [status : [success: true],
+                                                         content: [ManagerStatus: [Addr: "192.168.42.2:2377"]]]
+        and:
+        managerAddress == "192.168.42.2:2377"
+    }
+
     def "get the swarm worker token"() {
         when:
         def token = dockerClient.getSwarmWorkerToken()

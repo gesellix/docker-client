@@ -1183,6 +1183,14 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
+    getSwarmMangerAddress() {
+        log.info "docker get swarm manager address"
+        def swarmNodeId = info().content.Swarm.NodeID
+        def node = inspectNode(swarmNodeId).content
+        return node.ManagerStatus.Addr
+    }
+
+    @Override
     getSwarmWorkerToken() {
         log.info "docker swarm join-token worker"
         def swarm = inspectSwarm().content
