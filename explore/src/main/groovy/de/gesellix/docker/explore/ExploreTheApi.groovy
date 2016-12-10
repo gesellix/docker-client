@@ -1,7 +1,6 @@
 package de.gesellix.docker.explore
 
 import de.gesellix.docker.client.DockerClientImpl
-import de.gesellix.docker.client.util.IOUtils
 
 class ExploreTheApi {
 
@@ -53,16 +52,33 @@ class ExploreTheApi {
 //        def archive = dockerClient.save("a-repo:the-tag", "74c4aa413f9a")
 //        println IOUtils.copy(archive.stream as InputStream, new FileOutputStream("./foo2.tar"))
 
-        try {
-            dockerClient.run("alpine:edge", [Cmd: ["id"], Tty: true], "", "run-me")
-            def logs = dockerClient.logs("run-me")
-            println IOUtils.toString(logs.stream as InputStream)
-        } catch (Exception e) {
-            e.printStackTrace()
-        } finally {
-            dockerClient.stop("run-me")
-            dockerClient.wait("run-me")
-            dockerClient.rm("run-me")
-        }
+//        try {
+//            dockerClient.run("alpine:edge", [Cmd: ["id"], Tty: true], "", "run-me")
+//            def logs = dockerClient.logs("run-me")
+//            println IOUtils.toString(logs.stream as InputStream)
+//        } catch (Exception e) {
+//            e.printStackTrace()
+//        } finally {
+//            dockerClient.stop("run-me")
+//            dockerClient.wait("run-me")
+//            dockerClient.rm("run-me")
+//        }
+
+//        dockerClient.initSwarm([
+//                "ListenAddr"     : "0.0.0.0:2377",
+//                "AdvertiseAddr"  : "192.168.1.1:2377",
+//                "ForceNewCluster": false,
+//                "Spec"           : [
+//                        "Orchestration": [:],
+//                        "Raft"         : [:],
+//                        "Dispatcher"   : [:],
+//                        "CAConfig"     : [:]
+//                ]
+//        ])
+
+//        println dockerClient.getSwarmWorkerToken()
+//        println dockerClient.rotateSwarmWorkerToken()
+//        println dockerClient.getSwarmWorkerToken()
+        println dockerClient.getSwarmManagerUnlockKey()
     }
 }

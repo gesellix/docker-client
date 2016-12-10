@@ -1445,6 +1445,111 @@ class DockerClientImplSpec extends Specification {
                              requestContentType: "application/json"]) >> [status: [success: true]]
     }
 
+    def "get the swarm worker token"() {
+        when:
+        def token = dockerClient.getSwarmWorkerToken()
+        then:
+        1 * httpClient.get([path : "/swarm",
+                            query: [:]]) >> [status : [success: true],
+                                             content: [JoinTokens: [Worker: "worker-token"]]]
+        and:
+        token == "worker-token"
+    }
+
+    def "rotate the swarm worker token"() {
+        when:
+        def token = dockerClient.rotateSwarmWorkerToken()
+        then:
+        1 * httpClient.get([path : "/swarm",
+                            query: [:]]) >> [status : [success: true],
+                                             content: [JoinTokens: [Worker: "worker-token-1"],
+                                                       Spec      : [Key: "Value"],
+                                                       Version   : [Index: "1"]]]
+        then:
+        1 * httpClient.post([path              : "/swarm/update",
+                             query             : [version          : "1",
+                                                  rotateWorkerToken: true],
+                             body              : [Key: "Value"],
+                             requestContentType: "application/json"]) >> [status: [success: true]]
+        then:
+        1 * httpClient.get([path : "/swarm",
+                            query: [:]]) >> [status : [success: true],
+                                             content: [JoinTokens: [Worker: "worker-token-2"],
+                                                       Spec      : [Key: "Value"],
+                                                       Version   : [Index: "2"]]]
+        and:
+        token == "worker-token-2"
+    }
+
+    def "get the swarm manager token"() {
+        when:
+        def token = dockerClient.getSwarmManagerToken()
+        then:
+        1 * httpClient.get([path : "/swarm",
+                            query: [:]]) >> [status : [success: true],
+                                             content: [JoinTokens: [Manager: "manager-token"]]]
+        and:
+        token == "manager-token"
+    }
+
+    def "rotate the swarm manager token"() {
+        when:
+        def token = dockerClient.rotateSwarmManagerToken()
+        then:
+        1 * httpClient.get([path : "/swarm",
+                            query: [:]]) >> [status : [success: true],
+                                             content: [JoinTokens: [Manager: "manager-token-1"],
+                                                       Spec      : [Key: "Value"],
+                                                       Version   : [Index: "1"]]]
+        then:
+        1 * httpClient.post([path              : "/swarm/update",
+                             query             : [version           : "1",
+                                                  rotateManagerToken: true],
+                             body              : [Key: "Value"],
+                             requestContentType: "application/json"]) >> [status: [success: true]]
+        then:
+        1 * httpClient.get([path : "/swarm",
+                            query: [:]]) >> [status : [success: true],
+                                             content: [JoinTokens: [Manager: "manager-token-2"],
+                                                       Spec      : [Key: "Value"],
+                                                       Version   : [Index: "2"]]]
+        and:
+        token == "manager-token-2"
+    }
+
+    def "get the swarm manager unlock key"() {
+        when:
+        def unlockKey = dockerClient.getSwarmManagerUnlockKey()
+        then:
+        1 * httpClient.get([path: "/swarm/unlockkey"]) >> [
+                status : [success: true],
+                content: [UnlockKey: "manager-unlock-key"]]
+        and:
+        unlockKey == "manager-unlock-key"
+    }
+
+    def "rotate the swarm manager unlock key"() {
+        when:
+        def unlockKey = dockerClient.rotateSwarmManagerUnlockKey()
+        then:
+        1 * httpClient.get([path : "/swarm",
+                            query: [:]]) >> [status : [success: true],
+                                             content: [Spec   : [Key: "Value"],
+                                                       Version: [Index: "1"]]]
+        then:
+        1 * httpClient.post([path              : "/swarm/update",
+                             query             : [version               : "1",
+                                                  rotateManagerUnlockKey: true],
+                             body              : [Key: "Value"],
+                             requestContentType: "application/json"]) >> [status: [success: true]]
+        then:
+        1 * httpClient.get([path: "/swarm/unlockkey"]) >> [
+                status : [success: true],
+                content: [UnlockKey: "manager-unlock-key"]]
+        and:
+        unlockKey == "manager-unlock-key"
+    }
+
     def "list services with query"() {
         given:
         def filters = [name: ["node-name"]]

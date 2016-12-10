@@ -98,7 +98,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker swarm inspect`: Inspect the Swarm
 * [x] `docker swarm init`: Initialize a Swarm
 * [x] `docker swarm join`: Join a Swarm as a node and/or manager
-* [ ] `docker swarm join-token`: Manage join tokens
+* [x] `docker swarm join-token`: Manage join tokens
 * [x] `docker swarm leave`: Leave a Swarm
 * [x] `docker swarm update`: Update the Swarm
 

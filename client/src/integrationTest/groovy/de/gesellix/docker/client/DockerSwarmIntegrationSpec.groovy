@@ -218,6 +218,44 @@ class DockerSwarmIntegrationSpec extends Specification {
         dockerClient.leaveSwarm([force: true])
     }
 
+    def "rotate swarm worker token"() {
+        given:
+        def config = newSwarmConfig()
+        dockerClient.initSwarm(config)
+        def previousToken = dockerClient.getSwarmWorkerToken()
+
+        when:
+        def newToken = dockerClient.rotateSwarmWorkerToken()
+
+        then:
+        previousToken != newToken
+        and:
+        previousToken.startsWith("SWMTKN")
+        newToken.startsWith("SWMTKN")
+
+        cleanup:
+        dockerClient.leaveSwarm([force: true])
+    }
+
+    def "rotate swarm manager token"() {
+        given:
+        def config = newSwarmConfig()
+        dockerClient.initSwarm(config)
+        def previousToken = dockerClient.getSwarmManagerToken()
+
+        when:
+        def newToken = dockerClient.rotateSwarmManagerToken()
+
+        then:
+        previousToken != newToken
+        and:
+        previousToken.startsWith("SWMTKN")
+        newToken.startsWith("SWMTKN")
+
+        cleanup:
+        dockerClient.leaveSwarm([force: true])
+    }
+
     def "services"() {
         given:
         def config = newSwarmConfig()

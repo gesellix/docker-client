@@ -230,6 +230,18 @@ interface DockerClient {
 
     def joinSwarm(config)
 
+    def getSwarmWorkerToken()
+
+    def rotateSwarmWorkerToken()
+
+    def getSwarmManagerToken()
+
+    def rotateSwarmManagerToken()
+
+    def getSwarmManagerUnlockKey()
+
+    def rotateSwarmManagerUnlockKey()
+
     def leaveSwarm()
 
     def leaveSwarm(query)

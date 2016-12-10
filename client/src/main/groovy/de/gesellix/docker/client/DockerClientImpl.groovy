@@ -1183,6 +1183,73 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
+    getSwarmWorkerToken() {
+        log.info "docker swarm join-token worker"
+        def swarm = inspectSwarm().content
+        return swarm.JoinTokens.Worker
+    }
+
+    @Override
+    rotateSwarmWorkerToken() {
+        log.info "docker swarm join-token rotate worker token"
+
+        def swarm = inspectSwarm().content
+        def updateResponse = updateSwarm(
+                [
+                        "version"          : swarm.Version.Index,
+                        "rotateWorkerToken": true
+                ],
+                swarm.Spec)
+        log.info "rotate worker token: ${updateResponse.status}"
+        return getSwarmWorkerToken()
+    }
+
+    @Override
+    getSwarmManagerToken() {
+        log.info "docker swarm join-token manager"
+        def swarm = inspectSwarm().content
+        return swarm.JoinTokens.Manager
+    }
+
+    @Override
+    rotateSwarmManagerToken() {
+        log.info "docker swarm join-token rotate manager token"
+
+        def swarm = inspectSwarm().content
+        def updateResponse = updateSwarm(
+                [
+                        "version"           : swarm.Version.Index,
+                        "rotateManagerToken": true
+                ],
+                swarm.Spec)
+        log.info "rotate manager token: ${updateResponse.status}"
+        return getSwarmManagerToken()
+    }
+
+    @Override
+    getSwarmManagerUnlockKey() {
+        log.info "docker swarm manager unlock key"
+        def response = getHttpClient().get([path: "/swarm/unlockkey"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("get swarm manager unlock key failed"))
+        return response.content.UnlockKey
+    }
+
+    @Override
+    rotateSwarmManagerUnlockKey() {
+        log.info "docker swarm join-token rotate manager unlock key"
+
+        def swarm = inspectSwarm().content
+        def updateResponse = updateSwarm(
+                [
+                        "version"               : swarm.Version.Index,
+                        "rotateManagerUnlockKey": true
+                ],
+                swarm.Spec)
+        log.info "rotate manager unlock key: ${updateResponse.status}"
+        return getSwarmManagerUnlockKey()
+    }
+
+    @Override
     services(query = [:]) {
         log.info "docker service ls"
         def actualQuery = query ?: [:]

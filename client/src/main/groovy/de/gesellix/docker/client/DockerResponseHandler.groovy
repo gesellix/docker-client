@@ -5,7 +5,7 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class DockerResponseHandler {
 
-    def ensureSuccessfulResponse(def response, Throwable context) {
+    def ensureSuccessfulResponse(response, Throwable context) {
         if (!response || !response.status.success || hasError(response)) {
             logError(response)
             throw new DockerClientException(context, response)
