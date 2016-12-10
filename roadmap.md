@@ -89,7 +89,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker node inspect`: Inspect a node in the swarm
 * [x] `docker node update`: Update a node
 * [x] `docker node rm`: Remove a node from the swarm
-* [ ] `docker node ps`: List tasks running on a node
+* [x] `docker node ps`: List tasks running on a node
 * [ ] `docker node demote`: Demote a node from manager in the swarm
 * [ ] `docker node promote`: Promote a node to a manager in the swarm
 
