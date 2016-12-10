@@ -358,7 +358,7 @@ class DockerSwarmIntegrationSpec extends Specification {
         def serviceId = dockerClient.createService(serviceConfig).content.ID
         def serviceSpec = dockerClient.inspectService(serviceId).content.Spec
         def serviceVersion = dockerClient.inspectService(serviceId).content.Version.Index
-        serviceSpec.Name = "${serviceSpec.Name}-foo"
+        serviceSpec.Labels = [TestLabel: "${serviceSpec.Name}-foo"]
 
         when:
         def response = dockerClient.updateService(serviceId, [version: serviceVersion], serviceSpec)
