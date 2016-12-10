@@ -57,14 +57,14 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def cleanupStorage(Closure shouldKeepContainer, Closure shouldKeepVolume = { true }) {
+    cleanupStorage(Closure shouldKeepContainer, Closure shouldKeepVolume = { true }) {
         cleanupContainers shouldKeepContainer
         cleanupImages()
         cleanupVolumes shouldKeepVolume
     }
 
     @Override
-    def cleanupContainers(Closure shouldKeepContainer) {
+    cleanupContainers(Closure shouldKeepContainer) {
         def allContainers = ps([filters: [status: ["exited"]]]).content
         allContainers.findAll { Map container ->
             !shouldKeepContainer(container)
@@ -75,7 +75,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def cleanupImages() {
+    cleanupImages() {
         images([filters: [dangling: ["true"]]]).content.each { image ->
             log.debug "docker rmi ${image.Id}"
             rmi(image.Id)
@@ -83,7 +83,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def cleanupVolumes(Closure shouldKeepVolume) {
+    cleanupVolumes(Closure shouldKeepVolume) {
         def allVolumes = volumes([filters: [dangling: ["true"]]]).content.Volumes
         allVolumes.findAll { Map volume ->
             !shouldKeepVolume(volume)
@@ -94,33 +94,33 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def ping() {
+    ping() {
         log.info "docker ping"
         def response = getHttpClient().get([path: "/_ping", timeout: 2000])
         return response
     }
 
     @Override
-    def info() {
+    info() {
         log.info "docker info"
         def response = getHttpClient().get([path: "/info"])
         return response
     }
 
     @Override
-    def version() {
+    version() {
         log.info "docker version"
         def response = getHttpClient().get([path: "/version"])
         return response
     }
 
     @Override
-    def readDefaultAuthConfig() {
+    readDefaultAuthConfig() {
         return readAuthConfig(null, env.getDockerConfigFile())
     }
 
     @Override
-    def readAuthConfig(hostname, File dockerCfg) {
+    readAuthConfig(hostname, File dockerCfg) {
         log.debug "read authConfig"
 
         if (!dockerCfg) {
@@ -164,13 +164,13 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def encodeAuthConfig(authConfig) {
+    encodeAuthConfig(authConfig) {
         log.debug "encode authConfig for ${authConfig.username}@${authConfig.serveraddress}"
         return new JsonBuilder(authConfig).toString().bytes.encodeBase64().toString()
     }
 
     @Override
-    def auth(authDetails) {
+    auth(authDetails) {
         log.info "docker login"
         def response = getHttpClient().post([path              : "/auth",
                                              body              : authDetails,
@@ -179,19 +179,19 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def buildWithLogs(InputStream buildContext, query = ["rm": true]) {
+    buildWithLogs(InputStream buildContext, query = ["rm": true]) {
         def buildLatch = new CountDownLatch(1)
         def chunks = []
         def callback = new DockerAsyncCallback() {
             @Override
-            def onEvent(Object event) {
+            onEvent(Object event) {
                 log.info "event: $event"
                 def parsedEvent = new JsonSlurper().parseText(event as String)
                 chunks << parsedEvent
             }
 
             @Override
-            def onFinish() {
+            onFinish() {
                 log.debug "build finished"
                 buildLatch.countDown()
             }
@@ -204,7 +204,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def build(InputStream buildContext, query = ["rm": true], DockerAsyncCallback callback = null) {
+    build(InputStream buildContext, query = ["rm": true], DockerAsyncCallback callback = null) {
         log.info "docker build"
         def async = callback ? true : false
         def actualQuery = query ?: [:]
@@ -233,7 +233,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def tag(imageId, repository) {
+    tag(imageId, repository) {
         log.info "docker tag"
         def repoAndTag = parseRepositoryTag(repository)
         def response = getHttpClient().post([path : "/images/${imageId}/tag".toString(),
@@ -243,7 +243,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def push(imageName, authBase64Encoded = ".", registry = "") {
+    push(imageName, authBase64Encoded = ".", registry = "") {
         log.info "docker push '${imageName}'"
 
         def actualImageName = imageName
@@ -261,7 +261,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def parseRepositoryTag(name) {
+    parseRepositoryTag(name) {
         if (name.endsWith(':')) {
             throw new DockerClientException(new IllegalArgumentException("'$name' should not end with a ':'"))
         }
@@ -294,7 +294,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def pull(imageName, tag = "", authBase64Encoded = ".", registry = "") {
+    pull(imageName, tag = "", authBase64Encoded = ".", registry = "") {
         log.info "docker pull '${imageName}:${tag}'"
 
         def actualImageName = imageName
@@ -314,7 +314,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def importUrl(url, repository = "", tag = "") {
+    importUrl(url, repository = "", tag = "") {
         log.info "docker import '${url}' into ${repository}:${tag}"
 
         def response = getHttpClient().post([path : "/images/create",
@@ -328,7 +328,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def importStream(stream, repository = "", tag = "") {
+    importStream(stream, repository = "", tag = "") {
         log.info "docker import stream into ${repository}:${tag}"
 
         def response = getHttpClient().post([path              : "/images/create",
@@ -344,7 +344,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def export(container) {
+    export(container) {
         log.info "docker export $container"
 
         def response = getHttpClient().get([path: "/containers/$container/export"])
@@ -354,7 +354,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def save(... images) {
+    save(... images) {
         log.info "docker save"
 
         def response
@@ -370,7 +370,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def load(stream) {
+    load(stream) {
         log.info "docker load"
 
         def response = getHttpClient().post([path              : "/images/load",
@@ -383,7 +383,7 @@ class DockerClientImpl implements DockerClient {
 
     // TODO we might need some authentication here for the pull(...) step
     @Override
-    def createContainer(containerConfig, query = [name: ""]) {
+    createContainer(containerConfig, query = [name: ""]) {
         log.info "docker create"
         def actualContainerConfig = [:] + containerConfig
 
@@ -410,7 +410,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def startContainer(containerId) {
+    startContainer(containerId) {
         log.info "docker start"
         def response = getHttpClient().post([path              : "/containers/${containerId}/start".toString(),
                                              requestContentType: "application/json"])
@@ -418,12 +418,12 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def updateContainer(container, updateConfig) {
+    updateContainer(container, updateConfig) {
         return updateContainers([container], updateConfig)[container]
     }
 
     @Override
-    def updateContainers(List containers, updateConfig) {
+    updateContainers(List containers, updateConfig) {
         log.info "docker update '${containers}'"
 
         def responses = containers.collectEntries { container ->
@@ -441,7 +441,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def run(fromImage, containerConfig, tag = "", name = "") {
+    run(fromImage, containerConfig, tag = "", name = "") {
         log.info "docker run ${fromImage}${tag ? ':' : ''}${tag}"
 /*
     http://docs.docker.com/reference/api/docker_remote_api_v1.13/#31-inside-docker-run
@@ -469,7 +469,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def restart(containerId) {
+    restart(containerId) {
         log.info "docker restart"
         def response = getHttpClient().post([path : "/containers/${containerId}/restart".toString(),
                                              query: [t: 5]])
@@ -477,42 +477,42 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def stop(containerId) {
+    stop(containerId) {
         log.info "docker stop"
         def response = getHttpClient().post([path: "/containers/${containerId}/stop".toString()])
         return response
     }
 
     @Override
-    def kill(containerId) {
+    kill(containerId) {
         log.info "docker kill"
         def response = getHttpClient().post([path: "/containers/${containerId}/kill".toString()])
         return response
     }
 
     @Override
-    def wait(containerId) {
+    wait(containerId) {
         log.info "docker wait"
         def response = getHttpClient().post([path: "/containers/${containerId}/wait".toString()])
         return response
     }
 
     @Override
-    def pause(containerId) {
+    pause(containerId) {
         log.info "docker pause"
         def response = getHttpClient().post([path: "/containers/${containerId}/pause".toString()])
         return response
     }
 
     @Override
-    def unpause(containerId) {
+    unpause(containerId) {
         log.info "docker unpause"
         def response = getHttpClient().post([path: "/containers/${containerId}/unpause".toString()])
         return response
     }
 
     @Override
-    def rm(containerId, query = [:]) {
+    rm(containerId, query = [:]) {
         log.info "docker rm"
         def response = getHttpClient().delete([path : "/containers/${containerId}".toString(),
                                                query: query])
@@ -520,14 +520,14 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def rmi(imageId) {
+    rmi(imageId) {
         log.info "docker rmi"
         def response = getHttpClient().delete([path: "/images/${imageId}".toString()])
         return response
     }
 
     @Override
-    def ps(query = [:]) {
+    ps(query = [:]) {
         log.info "docker ps"
         def actualQuery = query ?: [:]
         def defaults = [all: true, size: false]
@@ -540,7 +540,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def inspectContainer(containerId) {
+    inspectContainer(containerId) {
         log.info "docker inspect container"
         def response = getHttpClient().get([path: "/containers/${containerId}/json"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker inspect failed"))
@@ -548,28 +548,28 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def diff(containerId) {
+    diff(containerId) {
         log.info "docker diff"
         def response = getHttpClient().get([path: "/containers/${containerId}/changes"])
         return response
     }
 
     @Override
-    def inspectImage(imageId) {
+    inspectImage(imageId) {
         log.info "docker inspect image"
         def response = getHttpClient().get([path: "/images/${imageId}/json"])
         return response
     }
 
     @Override
-    def history(imageId) {
+    history(imageId) {
         log.info "docker history"
         def response = getHttpClient().get([path: "/images/${imageId}/history"])
         return response
     }
 
     @Override
-    def images(query = [:]) {
+    images(query = [:]) {
         log.info "docker images"
         def actualQuery = query ?: [:]
         def defaults = [all: false]
@@ -617,7 +617,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def createExec(containerId, Map execConfig) {
+    createExec(containerId, Map execConfig) {
         log.info "docker create exec on '${containerId}'"
 
         def response = getHttpClient().post([path              : "/containers/${containerId}/exec".toString(),
@@ -633,7 +633,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def startExec(execId, Map execConfig, AttachConfig attachConfig = null) {
+    startExec(execId, Map execConfig, AttachConfig attachConfig = null) {
         log.info "docker start exec '${execId}'"
 
         // When using the TTY setting is enabled in POST /containers/create,
@@ -660,7 +660,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def inspectExec(execId) {
+    inspectExec(execId) {
         log.info "docker inspect exec '${execId}'"
 
         def response = getHttpClient().get([path: "/exec/${execId}/json".toString()])
@@ -673,7 +673,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def exec(containerId, command, Map execConfig = [
+    exec(containerId, command, Map execConfig = [
             "Detach"     : false,
             "AttachStdin": false,
             "Tty"        : false]) {
@@ -693,7 +693,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def getArchiveStats(container, path) {
+    getArchiveStats(container, path) {
         log.info "docker archive stats ${container}|${path}"
 
         def response = getHttpClient().head([path : "/containers/${container}/archive".toString(),
@@ -725,7 +725,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def getArchive(container, path) {
+    getArchive(container, path) {
         log.info "docker download from ${container}|${path}"
 
         def response = getHttpClient().get([path : "/containers/${container}/archive".toString(),
@@ -744,7 +744,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def putArchive(container, path, InputStream archive, query = [:]) {
+    putArchive(container, path, InputStream archive, query = [:]) {
         log.info "docker upload to ${container}|${path}"
 
         def finalQuery = query ?: [:]
@@ -763,7 +763,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def rename(containerId, newName) {
+    rename(containerId, newName) {
         log.info "docker rename"
         def response = getHttpClient().post([path : "/containers/${containerId}/rename".toString(),
                                              query: [name: newName]])
@@ -772,7 +772,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def search(term) {
+    search(term) {
         log.info "docker search"
         def response = getHttpClient().get([path : "/images/search".toString(),
                                             query: [term: term]])
@@ -781,7 +781,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def attach(containerId, query, AttachConfig callback = null) {
+    attach(containerId, query, AttachConfig callback = null) {
         log.info "docker attach"
 
         // When using the TTY setting is enabled in POST /containers/create,
@@ -802,7 +802,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def attachWebsocket(containerId, query, WebSocketListener listener) {
+    attachWebsocket(containerId, query, WebSocketListener listener) {
         log.info "docker attach via websocket"
         WebSocketCall webSocketCall = getHttpClient().webSocketCall(
                 [path : "/containers/${containerId}/attach/ws".toString(),
@@ -814,7 +814,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def commit(container, query, config = [:]) {
+    commit(container, query, config = [:]) {
         log.info "docker commit"
 
         def finalQuery = query ?: [:]
@@ -831,7 +831,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def resizeTTY(container, height, width) {
+    resizeTTY(container, height, width) {
         log.info "docker resize container"
 //        if (!inspectContainer(container).Config.Tty) {
 //            log.warn "container '${container}' hasn't been configured with a TTY!"
@@ -845,7 +845,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def resizeExec(exec, height, width) {
+    resizeExec(exec, height, width) {
         log.info "docker resize exec"
 //        if (!inspectExec(exec).ProcessConfig.tty) {
 //            log.warn "exec '${exec}' hasn't been configured with a TTY!"
@@ -859,7 +859,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def events(DockerAsyncCallback callback, query = [:]) {
+    events(DockerAsyncCallback callback, query = [:]) {
         log.info "docker events"
 
         jsonEncodeFilters(query)
@@ -874,7 +874,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def top(container, ps_args = null) {
+    top(container, ps_args = null) {
         log.info "docker top"
 
         def query = ps_args ? [ps_args: ps_args] : [:]
@@ -885,7 +885,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def stats(container, DockerAsyncCallback callback = null) {
+    stats(container, DockerAsyncCallback callback = null) {
         log.info "docker stats"
 
         def async = callback ? true : false
@@ -902,12 +902,12 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def logs(container, DockerAsyncCallback callback = null) {
+    logs(container, DockerAsyncCallback callback = null) {
         return logs(container, [:], callback)
     }
 
     @Override
-    def logs(container, query, DockerAsyncCallback callback = null) {
+    logs(container, query, DockerAsyncCallback callback = null) {
         log.info "docker logs"
 
         def async = callback ? true : false
@@ -942,7 +942,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def volumes(query = [:]) {
+    volumes(query = [:]) {
         log.info "docker volume ls"
         def actualQuery = query ?: [:]
         jsonEncodeFilters(actualQuery)
@@ -953,7 +953,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def inspectVolume(name) {
+    inspectVolume(name) {
         log.info "docker volume inspect"
         def response = getHttpClient().get([path: "/volumes/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume inspect failed"))
@@ -961,7 +961,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def createVolume(config = [:]) {
+    createVolume(config = [:]) {
         log.info "docker volume create"
         def response = getHttpClient().post([path              : "/volumes/create",
                                              body              : config ?: [:],
@@ -971,7 +971,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def rmVolume(name) {
+    rmVolume(name) {
         log.info "docker volume rm"
         def response = getHttpClient().delete([path: "/volumes/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume rm failed"))
@@ -979,7 +979,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def networks(query = [:]) {
+    networks(query = [:]) {
         log.info "docker network ls"
         def actualQuery = query ?: [:]
         jsonEncodeFilters(actualQuery)
@@ -990,7 +990,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def inspectNetwork(name) {
+    inspectNetwork(name) {
         log.info "docker network inspect"
         def response = getHttpClient().get([path: "/networks/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network inspect failed"))
@@ -998,7 +998,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def createNetwork(name, config = [:]) {
+    createNetwork(name, config = [:]) {
         log.info "docker network create"
         def actualConfig = config ?: [:]
         def defaults = [Name: name]
@@ -1011,7 +1011,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def connectNetwork(network, container) {
+    connectNetwork(network, container) {
         log.info "docker network connect"
         def response = getHttpClient().post([path              : "/networks/$network/connect",
                                              body              : [container: container],
@@ -1021,7 +1021,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def disconnectNetwork(network, container) {
+    disconnectNetwork(network, container) {
         log.info "docker network disconnect"
         def response = getHttpClient().post([path              : "/networks/$network/disconnect",
                                              body              : [container: container],
@@ -1031,7 +1031,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def rmNetwork(name) {
+    rmNetwork(name) {
         log.info "docker network rm"
         def response = getHttpClient().delete([path: "/networks/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network rm failed"))
@@ -1039,7 +1039,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def nodes(query = [:]) {
+    nodes(query = [:]) {
         log.info "docker node ls"
         def actualQuery = query ?: [:]
         jsonEncodeFilters(actualQuery)
@@ -1050,7 +1050,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def inspectNode(name) {
+    inspectNode(name) {
         log.info "docker node inspect"
         def response = getHttpClient().get([path: "/nodes/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker node inspect failed"))
@@ -1058,7 +1058,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def rmNode(name) {
+    rmNode(name) {
         log.info "docker node rm"
         def response = getHttpClient().delete([path: "/nodes/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker node rm failed"))
@@ -1066,7 +1066,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def updateNode(name, query, config) {
+    updateNode(name, query, config) {
         log.info "docker node update"
         def actualQuery = query ?: [:]
         config = config ?: [:]
@@ -1079,7 +1079,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def inspectSwarm(query = [:]) {
+    inspectSwarm(query = [:]) {
         log.info "docker swarm inspect"
         def actualQuery = query ?: [:]
         jsonEncodeFilters(actualQuery)
@@ -1090,7 +1090,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def initSwarm(config) {
+    initSwarm(config) {
         log.info "docker swarm init"
 
         /*
@@ -1149,7 +1149,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def joinSwarm(config) {
+    joinSwarm(config) {
         log.info "docker swarm join"
         config = config ?: [:]
         def response = getHttpClient().post([path              : "/swarm/join",
@@ -1160,7 +1160,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def leaveSwarm(query = [:]) {
+    leaveSwarm(query = [:]) {
         log.info "docker swarm leave"
         def actualQuery = query ?: [:]
         def response = getHttpClient().post([path : "/swarm/leave",
@@ -1170,7 +1170,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def updateSwarm(query, config) {
+    updateSwarm(query, config) {
         log.info "docker swarm update"
         def actualQuery = query ?: [:]
         config = config ?: [:]
@@ -1183,7 +1183,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def services(query = [:]) {
+    services(query = [:]) {
         log.info "docker service ls"
         def actualQuery = query ?: [:]
         jsonEncodeFilters(actualQuery)
@@ -1194,7 +1194,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def createService(config) {
+    createService(config) {
         log.info "docker service create"
         config = config ?: [:]
         def response = getHttpClient().post([path              : "/services/create",
@@ -1205,7 +1205,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def rmService(name) {
+    rmService(name) {
         log.info "docker service rm"
         def response = getHttpClient().delete([path: "/services/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service rm failed"))
@@ -1213,7 +1213,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def inspectService(name) {
+    inspectService(name) {
         log.info "docker service inspect"
         def response = getHttpClient().get([path: "/services/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service inspect failed"))
@@ -1221,7 +1221,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def updateService(name, query, config) {
+    updateService(name, query, config) {
         log.info "docker service update"
         def actualQuery = query ?: [:]
         config = config ?: [:]
@@ -1234,7 +1234,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def tasksOnNode(node, query = [:]) {
+    tasksOnNode(node, query = [:]) {
         log.info "docker node ps"
         def actualQuery = query ?: [:]
         if (!actualQuery.containsKey('filters')) {
@@ -1245,7 +1245,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def tasksOfService(service, query = [:]) {
+    tasksOfService(service, query = [:]) {
         log.info "docker service ps"
         def actualQuery = query ?: [:]
         if (!actualQuery.containsKey('filters')) {
@@ -1259,7 +1259,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def tasks(query = [:]) {
+    tasks(query = [:]) {
         log.info "docker tasks"
         def actualQuery = query ?: [:]
         jsonEncodeFilters(actualQuery)
@@ -1270,7 +1270,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    def inspectTask(name) {
+    inspectTask(name) {
         log.info "docker task inspect"
         def response = getHttpClient().get([path: "/tasks/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker task inspect failed"))

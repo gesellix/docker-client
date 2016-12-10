@@ -64,7 +64,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         if (nativeWindows) {
             expectedDriverStatusProperties = ["Windows"]
         } else {
-            expectedDriverStatusProperties = ["Root Dir", "Backing Filesystem", "Dirs", "Dirperm1 Supported"]
+            expectedDriverStatusProperties = ["Backing Filesystem", "Native Overlay Diff" , "Supports d_type"]
         }
         info.DriverStatus.findAll {
             it.first() in expectedDriverStatusProperties
@@ -87,7 +87,7 @@ class DockerClientImplIntegrationSpec extends Specification {
                 "Official": true,
                 "Secure"  : true]
         info.RegistryConfig.InsecureRegistryCIDRs == ["127.0.0.0/8"]
-        info.RegistryConfig.Mirrors == null
+        info.RegistryConfig.Mirrors == []
         info.SystemTime =~ "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2,}.(\\d{3,}Z)?"
     }
 
@@ -96,14 +96,15 @@ class DockerClientImplIntegrationSpec extends Specification {
         def version = dockerClient.version().content
 
         then:
-        version.ApiVersion == nativeWindows ? "1.25" : "1.24"
+        version.ApiVersion == "1.25"
         version.Arch == "amd64"
-        version.BuildTime == "2016-09-27T23:38:15.810178467+00:00"
-        version.GitCommit == "45bed2c"
-        version.GoVersion == "go1.6.3"
+        version.BuildTime == "2016-12-06T01:15:44.725283878+00:00"
+        version.GitCommit == "4d92237"
+        version.GoVersion == "go1.7.3"
         version.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"
+        version.MinAPIVersion == "1.12"
         version.Os == nativeWindows ? "windows" : "linux"
-        version.Version == "1.12.2-rc1"
+        version.Version == "1.13.0-rc3"
     }
 
     def auth() {

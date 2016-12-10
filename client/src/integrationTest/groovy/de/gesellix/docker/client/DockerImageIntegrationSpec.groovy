@@ -74,8 +74,8 @@ class DockerImageIntegrationSpec extends Specification {
         then:
         DockerClientException ex = thrown()
         ex.cause.message == 'docker build failed'
-        ex.detail.content.last() == [error      : "Error: image missing/image:latest not found",
-                                     errorDetail: [message: "Error: image missing/image:latest not found"]]
+        ex.detail.content.last() == [error      : "repository missing/image not found: does not exist or no read access",
+                                     errorDetail: [message: "repository missing/image not found: does not exist or no read access"]]
     }
 
     def "build image with custom Dockerfile"() {
@@ -108,20 +108,20 @@ class DockerImageIntegrationSpec extends Specification {
         def events = []
         dockerClient.build(newBuildContext(inputDirectory), [rm: true], new DockerAsyncCallback() {
             @Override
-            def onEvent(Object event) {
+            onEvent(Object event) {
                 def parsedEvent = new JsonSlurper().parseText(event as String)
                 events << parsedEvent
             }
 
             @Override
-            def onFinish() {
+            onFinish() {
                 latch.countDown()
             }
         })
         latch.await(5, SECONDS)
 
         then:
-        events.first() == [stream: "Step 1 : FROM alpine:edge\n"]
+        events.first() == [stream: "Step 1/11 : FROM alpine:edge\n"]
         def imageId = events.last().stream.trim() - "Successfully built "
 
         cleanup:
@@ -136,7 +136,7 @@ class DockerImageIntegrationSpec extends Specification {
         def result = dockerClient.buildWithLogs(newBuildContext(inputDirectory))
 
         then:
-        result.log.first() == [stream: "Step 1 : FROM alpine:edge\n"]
+        result.log.first() == [stream: "Step 1/11 : FROM alpine:edge\n"]
         result.log.last().stream.startsWith("Successfully built ")
         def imageId = result.log.last().stream.trim() - "Successfully built "
         result.imageId == imageId
@@ -161,7 +161,7 @@ class DockerImageIntegrationSpec extends Specification {
     }
 
     @Ignore
-    def "push image (registry api v2)"() {
+    "push image (registry api v2)"() {
         given:
         def authDetails = dockerClient.readAuthConfig(null, null)
         def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
@@ -182,7 +182,7 @@ class DockerImageIntegrationSpec extends Specification {
     }
 
     @Ignore
-    def "push image with registry (registry api v2)"() {
+    "push image with registry (registry api v2)"() {
         given:
         def authDetails = dockerClient.readDefaultAuthConfig()
         def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)

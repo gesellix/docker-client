@@ -184,8 +184,7 @@ class DockerContainerIntegrationSpec extends Specification {
         then:
         DockerClientException ex = thrown()
         ex.cause.message == 'docker pull failed'
-        ex.detail.content.last() == [error      : "Tag unknown not found in repository docker.io/gesellix/docker-client-testimage",
-                                     errorDetail: [message: "Tag unknown not found in repository docker.io/gesellix/docker-client-testimage"]]
+        ex.detail.content.message == "manifest for gesellix/docker-client-testimage:unknown not found"
     }
 
     def "start container"() {
@@ -599,14 +598,14 @@ class DockerContainerIntegrationSpec extends Specification {
             def events = []
 
             @Override
-            def onEvent(Object event) {
+            onEvent(Object event) {
                 println event
                 events << new JsonSlurper().parseText(event as String)
                 latch.countDown()
             }
 
             @Override
-            def onFinish() {
+            onFinish() {
             }
         }
         dockerClient.events(callback)
@@ -643,7 +642,7 @@ class DockerContainerIntegrationSpec extends Specification {
             def events = []
 
             @Override
-            def onEvent(Object event) {
+            onEvent(Object event) {
                 println event
                 def parsedEvent = new JsonSlurper().parseText(event as String)
                 events << parsedEvent
@@ -653,7 +652,7 @@ class DockerContainerIntegrationSpec extends Specification {
             }
 
             @Override
-            def onFinish() {
+            onFinish() {
             }
         }
 
@@ -711,14 +710,14 @@ class DockerContainerIntegrationSpec extends Specification {
             def stats = []
 
             @Override
-            def onEvent(Object stat) {
+            onEvent(Object stat) {
                 println stat
                 stats << new JsonSlurper().parseText(stat as String)
                 latch.countDown()
             }
 
             @Override
-            def onFinish() {
+            onFinish() {
             }
         }
         def containerConfig = ["Cmd": ["sh", "-c", "ping 127.0.0.1"]]
@@ -746,14 +745,14 @@ class DockerContainerIntegrationSpec extends Specification {
             def lines = []
 
             @Override
-            def onEvent(Object line) {
+            onEvent(Object line) {
                 println line
                 lines << line
                 latch.countDown()
             }
 
             @Override
-            def onFinish() {
+            onFinish() {
             }
         }
         def containerConfig = ["Cmd": ["sh", "-c", "ping 127.0.0.1"]]
@@ -819,7 +818,7 @@ class DockerContainerIntegrationSpec extends Specification {
     }
 
     @Requires({ LocalDocker.isTcpSocket() })
-    def "attach (websocket)"() {
+    "attach (websocket)"() {
         given:
         def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
         def containerConfig = [

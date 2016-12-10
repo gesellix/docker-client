@@ -8,11 +8,11 @@ import static de.gesellix.docker.client.config.DockerVersion.parseDockerVersion
 @Slf4j
 class LocalDocker {
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         log.debug available() ? "connection success" : "failed to connect"
     }
 
-    static def available() {
+    static available() {
         try {
             return new DockerClientImpl().ping().status.code == 200
         }
@@ -22,7 +22,7 @@ class LocalDocker {
         }
     }
 
-    static def hasSwarmMode() {
+    static hasSwarmMode() {
         try {
             def version = getDockerVersion()
             return version.major >= 1 && version.minor >= 12
@@ -56,17 +56,17 @@ class LocalDocker {
         }
     }
 
-    static def isNamedPipe() {
+    static isNamedPipe() {
         def dockerHost = new DockerClientImpl().env.dockerHost
         return dockerHost.startsWith("npipe://")
     }
 
-    static def isUnixSocket() {
+    static isUnixSocket() {
         def dockerHost = new DockerClientImpl().env.dockerHost
         return dockerHost.startsWith("unix://")
     }
 
-    static def isTcpSocket() {
+    static isTcpSocket() {
         def dockerHost = new DockerClientImpl().env.dockerHost
         return dockerHost.startsWith("tcp://") || dockerHost.startsWith("http://") || dockerHost.startsWith("https://")
     }

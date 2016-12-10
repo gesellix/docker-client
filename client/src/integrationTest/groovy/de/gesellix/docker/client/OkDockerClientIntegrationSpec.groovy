@@ -9,9 +9,9 @@ import static de.gesellix.docker.client.TestimageConstants.CONSTANTS
 @Requires({ LocalDocker.available() })
 class OkDockerClientIntegrationSpec extends Specification {
 
-    final static def dockerHubUsername = "gesellix"
-    final static def dockerHubPassword = "-yet-another-password-"
-    final static def dockerHubEmail = "tobias@gesellix.de"
+    final static dockerHubUsername = "gesellix"
+    final static dockerHubPassword = "-yet-another-password-"
+    final static dockerHubEmail = "tobias@gesellix.de"
 
     def "should allow GET requests"() {
         def client = new OkDockerClient()
@@ -34,7 +34,7 @@ class OkDockerClientIntegrationSpec extends Specification {
     }
 
     @IgnoreIf({ dockerHubPassword == "-yet-another-password-" })
-    def "should allow POST requests with body"() {
+    "should allow POST requests with body"() {
         given:
         def client = new OkDockerClient()
         def authDetails = ["username"     : dockerHubUsername,
@@ -66,17 +66,18 @@ class OkDockerClientIntegrationSpec extends Specification {
         def response = client.get([path: "/version"])
         then:
         def content = response.content
-        content.ApiVersion == "1.24"
+        content.ApiVersion == "1.25"
         content.Arch == "amd64"
-        content.GitCommit == "45bed2c"
-        content.GoVersion == "go1.6.3"
+        content.GitCommit == "4d92237"
+        content.GoVersion == "go1.7.3"
         content.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"
+        content.MinAPIVersion == "1.12"
         content.Os == "linux"
-        content.Version == "1.12.2-rc1"
+        content.Version == "1.13.0-rc3"
     }
 
     @Requires({ LocalDocker.isUnixSocket() })
-    def "should support unix socket connections (Linux native or Docker for Mac)"() {
+    "should support unix socket connections (Linux native or Docker for Mac)"() {
         def client = new OkDockerClient("unix:///var/run/docker.sock")
         when:
         def response = client.request([method: "GET",
@@ -86,7 +87,7 @@ class OkDockerClientIntegrationSpec extends Specification {
     }
 
     @Requires({ LocalDocker.isNamedPipe() })
-    def "should support named pipe socket connections (Docker for Windows)"() {
+    "should support named pipe socket connections (Docker for Windows)"() {
         def client = new OkDockerClient("npipe:////./pipe/docker_engine")
         when:
         def response = client.request([method: "GET",
