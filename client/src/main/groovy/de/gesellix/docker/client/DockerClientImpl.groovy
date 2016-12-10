@@ -1309,6 +1309,18 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
+    scaleService(name, int replicas) {
+        log.info "docker service scale"
+        def service = inspectService(name).content
+        def mode = service.Spec.Mode
+        if (!mode.Replicated) {
+            throw new IllegalStateException("scale can only be used with replicated mode")
+        }
+        mode.Replicated.Replicas = replicas
+        return updateService(name, [version:service.Version], service.Spec)
+    }
+
+    @Override
     tasksOnNode(node, query = [:]) {
         log.info "docker node ps"
         def actualQuery = query ?: [:]

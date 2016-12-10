@@ -262,6 +262,8 @@ interface DockerClient {
 
     def updateService(name, query, config)
 
+    def scaleService(name, int replicas)
+
     def tasks()
 
     def tasks(query)

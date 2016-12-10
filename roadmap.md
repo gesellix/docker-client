@@ -109,15 +109,15 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker service rm`: Remove a service
 * [x] `docker service inspect`: Return information on the service `<id>`
 * [x] `docker service update`: Update a service
-* [ ] `docker service ps`: List the tasks of a service
-* [ ] `docker service scale`: Scale one or multiple services
+* [x] `docker service ps`: List the tasks of a service
+* [x] `docker service scale`: Scale one or multiple services
 
 ## Tasks
 
-* [ ] List all tasks
+* [x] List all tasks
 * [x] Get details on a task
 
-## Plugins (experimental)
+## Plugins
 
 * [ ] `docker plugin ls`: List plugins `GET /plugins`
 * [ ] `docker plugin inspect`: Inspect a plugin `GET /plugins/{name:.*}`
@@ -128,3 +128,5 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [ ] `docker plugin push`: Push a plugin `POST /plugins/{name:.*}/push`
 * [ ] `docker plugin set`: Change settings for a plugin `POST /plugins/{name:.*}/set`
 * [ ] `docker plugin install`: Install a plugin (equivalent to pull + enable)
+
+## Secrets

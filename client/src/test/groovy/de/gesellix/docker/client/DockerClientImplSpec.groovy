@@ -1662,6 +1662,17 @@ class DockerClientImplSpec extends Specification {
                              requestContentType: "application/json"]) >> [status: [success: true]]
     }
 
+    def "scale service"() {
+        when:
+        dockerClient.scaleService("service-id", 42)
+        then:
+        1 * httpClient.get([path: "/services/service-id"]) >> [status : [success: true],
+                                                               content: [Version: 1,
+                                                                         Spec   : [Mode: [Replicated: [Replicas: 1]]]]]
+        then:
+        dockerClient.updateService("service-id", [version: 1], [Mode: [Replicated: [Replicas: 42]]]) >> [status: [success: true]]
+    }
+
     def "list tasks with query"() {
         given:
         def filters = [name: ["service-name"]]
