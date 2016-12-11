@@ -14,8 +14,8 @@ import static ch.qos.logback.classic.Level.ERROR
 
 class DockerClientImplSpec extends Specification {
 
-    def DockerClientImpl dockerClient = Spy(DockerClientImpl)
-    def HttpClient httpClient = Mock(HttpClient)
+    DockerClientImpl dockerClient = Spy(DockerClientImpl)
+    HttpClient httpClient = Mock(HttpClient)
 
     def setup() {
         dockerClient.responseHandler = Spy(DockerResponseHandler)
@@ -63,7 +63,7 @@ class DockerClientImplSpec extends Specification {
     }
 
     @Unroll
-    def "parse repository tag #name to repo '#repo' and tag '#tag'"() {
+    "parse repository tag #name to repo '#repo' and tag '#tag'"() {
         when:
         def result = dockerClient.parseRepositoryTag(name)
 
@@ -114,6 +114,14 @@ class DockerClientImplSpec extends Specification {
 
         then:
         1 * httpClient.get([path: "/version"])
+    }
+
+    def "system df"() {
+        when:
+        dockerClient.systemDf()
+
+        then:
+        1 * httpClient.get([path: "/system/df"])
     }
 
     def "login"() {
@@ -1000,7 +1008,7 @@ class DockerClientImplSpec extends Specification {
 
     // TODO
     @Ignore
-    def "attach websocket"() {
+    "attach websocket"() {
 //        given:
 //        def listener = new DefaultWebSocketListener()
 //        def wsCall = WebSocketCall.create(
@@ -1093,13 +1101,13 @@ class DockerClientImplSpec extends Specification {
             def events = []
 
             @Override
-            def onEvent(Object event) {
+            onEvent(Object event) {
                 events << event
                 latch.countDown()
             }
 
             @Override
-            def onFinish() {
+            onFinish() {
             }
         }
 
@@ -1123,13 +1131,13 @@ class DockerClientImplSpec extends Specification {
             def events = []
 
             @Override
-            def onEvent(Object event) {
+            onEvent(Object event) {
                 events << event
                 latch.countDown()
             }
 
             @Override
-            def onFinish() {
+            onFinish() {
             }
         }
         def since = new Date().time
@@ -1561,6 +1569,15 @@ class DockerClientImplSpec extends Specification {
                 content: [UnlockKey: "manager-unlock-key"]]
         and:
         unlockKey == "manager-unlock-key"
+    }
+
+    def "unlock swarm"() {
+        when:
+        dockerClient.unlockSwarm("SWMKEY-1-4711")
+        then:
+        1 * httpClient.post([path              : "/swarm/unlock",
+                             body              : [UnlockKey: "SWMKEY-1-4711"],
+                             requestContentType: "application/json"]) >> [status: [success: true]]
     }
 
     def "list services with query"() {

@@ -79,6 +79,8 @@ class ExploreTheApi {
 //        println dockerClient.getSwarmWorkerToken()
 //        println dockerClient.rotateSwarmWorkerToken()
 //        println dockerClient.getSwarmWorkerToken()
-        println dockerClient.getSwarmMangerAddress()
+//        println dockerClient.getSwarmMangerAddress()
+
+        println dockerClient.systemDf().content
     }
 }

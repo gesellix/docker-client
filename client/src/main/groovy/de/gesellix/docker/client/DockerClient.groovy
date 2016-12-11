@@ -18,6 +18,10 @@ interface DockerClient {
 
     def info()
 
+    def systemDf()
+
+    def systemDf(query)
+
     def version()
 
     def readDefaultAuthConfig()
@@ -243,6 +247,8 @@ interface DockerClient {
     def getSwarmManagerUnlockKey()
 
     def rotateSwarmManagerUnlockKey()
+
+    def unlockSwarm(unlockKey)
 
     def leaveSwarm()
 

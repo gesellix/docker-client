@@ -1,8 +1,8 @@
 # Supported Features
 
-*feature set based on the [Docker Remote API v1.24](https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/)*
+*feature set based on the [Docker Engine API v1.24](https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/)*
 
-Since the Docker remote api tends to be backwards compatible,
+Since the Docker engine api tends to be backwards compatible,
 the Docker Client currently supports most other api versions, too.
 
 This project tends to support most api endpoints, but it always depends on free time. If you're missing a feature, please file
@@ -10,11 +10,11 @@ a [new issue](https://github.com/gesellix/docker-client/issues) or a [pull reque
 and we'll add it as soon as possible. If you're looking for another Java based Docker library with similar feature set,
 check out the project at [Java Docker API Client](https://github.com/docker-java/docker-java).
 
-## Misc, System - Manage Docker (6/8)
+## Misc, System - Manage Docker (7/8)
 
 * [x] `docker search <term>`: Search the Docker Hub for images
 * [x] `docker system info`: Display system-wide information
-* [ ] `docker system df`: Show docker disk usage (GET /system/df)
+* [x] `docker system df`: Show docker disk usage (GET /system/df)
 * [x] `docker system events`: Monitor Docker's events
 * [ ] `docker system prune`: Remove unused data
 * [x] `docker version`: Show the docker version information
@@ -48,7 +48,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker container rename <container>`: Rename a container
 * [x] `docker container restart <container>`: Restart one or more containers
 * [x] `docker container rm <container>`: Remove one or more containers
-* [ ] `docker container run`: Run a command in a new container
+* [x] `docker container run`: Run a command in a new container
 * [x] `docker container start <container>`: Start one or more stopped containers
 * [x] `docker container stats <container>`: Display a live stream of container(s) resource usage statistics
 * [x] `docker container stop <container>`: Stop one or more running containers
@@ -99,7 +99,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker swarm join-token`: Manage join tokens
 * [x] `docker swarm leave`: Leave a Swarm
 * [x] `docker swarm inspect`: Inspect the Swarm
-* [ ] `docker swarm unlock`: Unlock swarm
+* [x] `docker swarm unlock`: Unlock swarm
 * [x] `docker swarm unlock-key`: Manage the unlock key
 * [x] `docker swarm update`: Update the Swarm
 

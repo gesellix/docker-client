@@ -163,9 +163,9 @@ bintray {
     pkg {
         repo = 'docker-utils'
         name = 'docker-client'
-        desc = 'A Docker client written in Groovy'
+        desc = 'A Docker client for the JVM written in Groovy'
         licenses = ['Apache-2.0']
-        labels = ['docker', 'remote api', 'client']
+        labels = ['docker', 'engine api', 'remote api', 'client', 'java', 'groovy']
         version = [
                 name: artifactVersion
         ]

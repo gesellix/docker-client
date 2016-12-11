@@ -108,6 +108,15 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
+    systemDf(query = [:]) {
+        log.info "docker system df"
+        def actualQuery = query ?: [:]
+        def response = getHttpClient().get([path : "/system/df",
+                                            query: actualQuery])
+        return response
+    }
+
+    @Override
     version() {
         log.info "docker version"
         def response = getHttpClient().get([path: "/version"])
@@ -1258,6 +1267,16 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
+    unlockSwarm(unlockKey) {
+        log.info "docker swarm unlock"
+        def response = getHttpClient().post([path              : "/swarm/unlock",
+                                             body              : [UnlockKey: unlockKey],
+                                             requestContentType: "application/json"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("unlock swarm failed"))
+        return response
+    }
+
+    @Override
     services(query = [:]) {
         log.info "docker service ls"
         def actualQuery = query ?: [:]
@@ -1317,7 +1336,7 @@ class DockerClientImpl implements DockerClient {
             throw new IllegalStateException("scale can only be used with replicated mode")
         }
         mode.Replicated.Replicas = replicas
-        return updateService(name, [version:service.Version], service.Spec)
+        return updateService(name, [version: service.Version], service.Spec)
     }
 
     @Override
