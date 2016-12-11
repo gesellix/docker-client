@@ -121,7 +121,8 @@ class DockerClientImplSpec extends Specification {
         dockerClient.systemDf()
 
         then:
-        1 * httpClient.get([path: "/system/df"])
+        1 * httpClient.get([path : "/system/df",
+                            query: [:]])
     }
 
     def "login"() {
