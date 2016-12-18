@@ -2,4 +2,5 @@
 .idea
 *.iml
 /build
+/classes
 npipe.exe
