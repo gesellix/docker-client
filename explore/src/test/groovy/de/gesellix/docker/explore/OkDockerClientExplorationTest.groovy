@@ -30,10 +30,10 @@ class OkDockerClientExplorationTest extends Specification {
 //        println response
 //        response = client.post("/containers/test/attach?logs=1&stream=1&stdout=1&stderr=0&tty=false")
 //        println response
-//        response = client.post("/images/create?fromImage=gesellix%2Fdocker-client-testimage&tag=latest&registry=")
+//        response = client.post("/images/create?fromImage=gesellix%2Ftestimage&tag=latest&registry=")
 //        println response
 //        response = client.post([path : "/images/create",
-//                                query: [fromImage: "gesellix/docker-client-testimage", tag: "latest", "registry": ""]])
+//                                query: [fromImage: "gesellix/testimage", tag: "latest", "registry": ""]])
 //        println response
 //        response = client.get([path : "/events",
 //                               async: true])

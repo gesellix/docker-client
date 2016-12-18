@@ -38,7 +38,7 @@ class HttpHijackExploration {
 //        dockerClient.rm(containerName)
 
         def runResult = dockerClient.run(
-                "gesellix/docker-client-testimage",
+                "gesellix/testimage",
                 [
                         Cmd      : ["/bin/sh", "-c", "read line && echo \"->\$line\""],
                         OpenStdin: true,

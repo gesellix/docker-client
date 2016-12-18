@@ -1761,12 +1761,12 @@ class DockerClientImplSpec extends Specification {
                 content: [
                         [Command: "ping 127.0.0.1",
                          Id     : "container-id-1",
-                         Image  : "gesellix/docker-client-testimage:latest",
+                         Image  : "gesellix/testimage:latest",
                          Names  : ["/agitated_bardeen"],
                          Status : "Exited (137) 13 minutes ago"],
                         [Command: "ping 127.0.0.1",
                          Id     : "container-id-2",
-                         Image  : "gesellix/docker-client-testimage:latest",
+                         Image  : "gesellix/testimage:latest",
                          Names  : ["/my_data"],
                          Status : "Exited (137) 13 minutes ago"]
                 ]

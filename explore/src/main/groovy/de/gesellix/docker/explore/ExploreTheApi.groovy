@@ -16,7 +16,7 @@ class ExploreTheApi {
         println dockerClient.info().content
         println dockerClient.version().content
 
-//    def runResult = dockerClient.run("gesellix/docker-client-testimage", [Cmd: ["ping", "127.0.0.1"]])
+//    def runResult = dockerClient.run("gesellix/testimage", [Cmd: ["ping", "127.0.0.1"]])
 //    println runResult.container.content.Id
 //    dockerClient.attach(runResult.content.Id)
 
@@ -31,11 +31,11 @@ class ExploreTheApi {
 //    println authConfig
 
 //    println new JsonBuilder(dockerClient.images().content).toPrettyString()
-//        def imageId = dockerClient.pull("gesellix/docker-client-testimage")
+//        def imageId = dockerClient.pull("gesellix/testimage")
 //        println imageId
 
 //        def cmds = ["sh", "-c", "mkdir -p /foo; touch /foo/bar"]
-//        def runResult = dockerClient.run("gesellix/docker-client-testimage", [Cmd: cmds])
+//        def runResult = dockerClient.run("gesellix/testimage", [Cmd: cmds])
 //        println runResult.container.content.Id
 
 //        def archiveInfo = dockerClient.getArchiveStats('cp-test', '/tst.txt')
