@@ -7,8 +7,8 @@ import de.gesellix.docker.client.util.IOUtils
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
-import okhttp3.ws.WebSocketCall
-import okhttp3.ws.WebSocketListener
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 import okio.Okio
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
@@ -813,13 +813,12 @@ class DockerClientImpl implements DockerClient {
     @Override
     attachWebsocket(containerId, query, WebSocketListener listener) {
         log.info "docker attach via websocket"
-        WebSocketCall webSocketCall = getHttpClient().webSocketCall(
+        WebSocket webSocket = getHttpClient().webSocket(
                 [path : "/containers/${containerId}/attach/ws".toString(),
-                 query: query]
+                 query: query],
+                listener
         )
-
-        webSocketCall.enqueue(listener)
-        return webSocketCall
+        return webSocket
     }
 
     @Override

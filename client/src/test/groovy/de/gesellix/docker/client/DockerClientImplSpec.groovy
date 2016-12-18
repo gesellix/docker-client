@@ -1012,18 +1012,17 @@ class DockerClientImplSpec extends Specification {
     "attach websocket"() {
 //        given:
 //        def listener = new DefaultWebSocketListener()
-//        def wsCall = WebSocketCall.create(
-//                new OkHttpClient.Builder().build(),
+//        def wsCall = new OkHttpClient.Builder().build().newWebSocket(
 //                new Request.Builder()
-//                        .url("").build())
+//                        .url("").build(), (listener))
 //
 //        when:
 //        dockerClient.attachWebsocket("a-container", [stream: true], listener)
 //
 //        then:
-//        1 * httpClient.webSocketCall(
+//        1 * httpClient.webSocket(
 //                [path : "/containers/a-container/attach/ws",
-//                 query: [stream: true]]) >> wsCall
+//                 query: [stream: true]], (listener)) >> wsCall
 //        and:
 //        1 * wsCall.enqueue(listener)
     }

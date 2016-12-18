@@ -4,11 +4,9 @@ import de.gesellix.docker.client.util.IOUtils
 import de.gesellix.docker.client.websocket.DefaultWebSocketListener
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
-import okhttp3.RequestBody
 import okhttp3.Response
-import okhttp3.ResponseBody
-import okhttp3.ws.WebSocket
-import okhttp3.ws.WebSocketCall
+import okhttp3.WebSocket
+import okio.ByteString
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.joda.time.DateTime
@@ -843,20 +841,26 @@ class DockerContainerIntegrationSpec extends Specification {
                 executor.execute(new Runnable() {
                     @Override
                     void run() {
-                        webSocket.sendMessage(RequestBody.create(WebSocket.TEXT, ourMessage))
+                        webSocket.send(ourMessage)
                     }
                 })
             }
 
             @Override
-            void onMessage(ResponseBody message) throws IOException {
-                receivedMessages << message.string()
+            void onMessage(WebSocket webSocket, String text) {
+                receivedMessages << text
+                receiveMessage.countDown()
+            }
+
+            @Override
+            void onMessage(WebSocket webSocket, ByteString bytes) {
+                receivedMessages << bytes.toString()
                 receiveMessage.countDown()
             }
         }
 
         when:
-        WebSocketCall wsCall = dockerClient.attachWebsocket(
+        WebSocket wsCall = dockerClient.attachWebsocket(
                 containerId,
                 [stream: 1, stdin: 1, stdout: 1, stderr: 1],
                 listener)

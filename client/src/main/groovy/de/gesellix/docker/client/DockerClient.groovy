@@ -1,6 +1,6 @@
 package de.gesellix.docker.client
 
-import okhttp3.ws.WebSocketListener
+import okhttp3.WebSocketListener
 
 interface DockerClient {
 

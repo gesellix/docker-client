@@ -16,8 +16,9 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 import okhttp3.internal.http.HttpMethod
-import okhttp3.ws.WebSocketCall
 import okio.Okio
 
 import java.util.regex.Pattern
@@ -53,42 +54,42 @@ class OkDockerClient implements HttpClient {
     }
 
     @Override
-    def head(Map requestConfig) {
+    head(Map requestConfig) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "HEAD"
         return request(config)
     }
 
     @Override
-    def get(Map requestConfig) {
+    get(Map requestConfig) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "GET"
         return request(config)
     }
 
     @Override
-    def put(Map requestConfig) {
+    put(Map requestConfig) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "PUT"
         return request(config)
     }
 
     @Override
-    def post(Map requestConfig) {
+    post(Map requestConfig) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "POST"
         return request(config)
     }
 
     @Override
-    def delete(Map requestConfig) {
+    delete(Map requestConfig) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "DELETE"
         return request(config)
     }
 
     @Override
-    WebSocketCall webSocketCall(Map requestConfig) {
+    WebSocket webSocket(Map requestConfig, WebSocketListener listener) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "GET"
 
@@ -98,7 +99,7 @@ class OkDockerClient implements HttpClient {
         OkHttpClient.Builder clientBuilder = prepareClient(new OkHttpClient.Builder(), config.timeout ?: 0)
         def client = newClient(clientBuilder)
 
-        def wsCall = WebSocketCall.create(client, request)
+        def wsCall = client.newWebSocket(request, listener)
         wsCall
     }
 

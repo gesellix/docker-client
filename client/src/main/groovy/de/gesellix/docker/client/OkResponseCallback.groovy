@@ -49,7 +49,7 @@ class OkResponseCallback implements Callback {
             def stdinSource = Okio.source(attachConfig.streams.stdin)
             def writer = new Thread(new Runnable() {
                 @Override
-                public void run() {
+                void run() {
                     try {
                         def bufferedSink = Okio.buffer(connectionProvider.sink)
                         while (stdinSource.read(bufferedSink.buffer(), 1024) != -1) {
@@ -72,7 +72,7 @@ class OkResponseCallback implements Callback {
             def bufferedStdout = Okio.buffer(Okio.sink(attachConfig.streams.stdout))
             def reader = new Thread(new Runnable() {
                 @Override
-                public void run() {
+                void run() {
                     try {
                         while (connectionProvider.source.read(bufferedStdout.buffer(), 1024) != -1) {
                             bufferedStdout.flush()

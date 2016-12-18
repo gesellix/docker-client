@@ -267,7 +267,7 @@ class OkDockerClientSpec extends Specification {
         method == "DELETE"
     }
 
-    def "webSocketCall prepares a websocket call"() {
+    def "webSocket prepares a websocket call"() {
         given:
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
@@ -276,7 +276,7 @@ class OkDockerClientSpec extends Specification {
                 dockerHost: "https://127.0.0.1:2376"))
 
         when:
-        def wsCall = client.webSocketCall([path: "/foo"])
+        def wsCall = client.webSocket([path: "/foo"], Mock(WebSocketListener))
 
         then:
         wsCall != null

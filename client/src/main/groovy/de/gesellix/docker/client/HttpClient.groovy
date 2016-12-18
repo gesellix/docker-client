@@ -1,6 +1,7 @@
 package de.gesellix.docker.client
 
-import okhttp3.ws.WebSocketCall
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 
 interface HttpClient {
 
@@ -14,5 +15,5 @@ interface HttpClient {
 
     def delete(Map requestConfig)
 
-    WebSocketCall webSocketCall(Map requestConfig)
+    WebSocket webSocket(Map requestConfig, WebSocketListener listener)
 }

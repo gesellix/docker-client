@@ -2,13 +2,12 @@ package de.gesellix.docker.client.websocket
 
 import groovy.util.logging.Slf4j
 import okhttp3.Response
-import okhttp3.ResponseBody
-import okhttp3.ws.WebSocket
-import okhttp3.ws.WebSocketListener
-import okio.Buffer
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
+import okio.ByteString
 
 @Slf4j
-class DefaultWebSocketListener implements WebSocketListener {
+class DefaultWebSocketListener extends WebSocketListener {
 
     @Override
     void onOpen(WebSocket webSocket, Response response) {
@@ -16,23 +15,28 @@ class DefaultWebSocketListener implements WebSocketListener {
     }
 
     @Override
-    void onFailure(IOException e, Response response) {
-        log.debug "[onFailure] ${e.message}"
-        e.printStackTrace()
+    void onFailure(WebSocket webSocket, Throwable t, Response response) {
+        log.debug "[onFailure] ${t.message}"
+        t.printStackTrace()
     }
 
     @Override
-    void onMessage(ResponseBody message) throws IOException {
-        log.debug "[onMessage] ${message.string()}"
+    void onMessage(WebSocket webSocket, String text) {
+        log.debug "[onMessage.text] ${text}"
     }
 
     @Override
-    void onPong(Buffer payload) {
-        log.debug "[onPong]"
+    void onMessage(WebSocket webSocket, ByteString bytes) {
+        log.debug "[onMessage.binary] size: ${bytes.size()}"
     }
 
     @Override
-    void onClose(int code, String reason) {
-        log.debug "[onClose] $code '$reason'"
+    void onClosing(WebSocket webSocket, int code, String reason) {
+        log.debug "[onClosing] ${code}/${reason}"
+    }
+
+    @Override
+    void onClosed(WebSocket webSocket, int code, String reason) {
+        log.debug "[onClosed] ${code}/${reason}"
     }
 }
