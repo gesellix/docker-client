@@ -550,8 +550,7 @@ class DockerContainerIntegrationSpec extends Specification {
         given:
         def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
         def imageName = "copy_container"
-        def containerConfig = ["Cmd"  : ["sh", "-c", "echo -n -e 'to be or\nnot to be' > /file1.txt"],
-                               "Image": "copy_container"]
+        def containerConfig = ["Cmd": ["sh", "-c", "echo -n -e 'to be or\nnot to be' > /file1.txt"]]
         dockerClient.tag(imageId, imageName)
         def containerInfo = dockerClient.run(imageName, containerConfig, [:])
         def containerId = containerInfo.container.content.Id
@@ -815,9 +814,34 @@ class DockerContainerIntegrationSpec extends Specification {
         dockerClient.rm(containerId)
     }
 
-    @Requires({ LocalDocker.isTcpSocket() })
+    @Requires({ LocalDocker.isTcpSocket() || LocalDocker.isUnixSocket() })
     "attach (websocket)"() {
         given:
+        def tcpClient = dockerClient
+        def socatId
+        if (LocalDocker.isUnixSocket()) {
+            // use a socat "tcp proxy" to test the websocket communication
+            dockerClient.pull("gesellix/socat", "os-linux")
+            def socatInfo = dockerClient.run(
+                    "gesellix/socat",
+                    [
+                            Tty       : true,
+                            OpenStdin : true,
+                            HostConfig: [
+                                    PublishAllPorts: true,
+                                    Binds          : [
+                                            "/var/run/docker.sock:/var/run/docker.sock"
+                                    ]
+                            ]
+                    ],
+                    "os-linux")
+            socatId = socatInfo.container.content.Id
+            def socatContainerDetails = dockerClient.inspectContainer(socatId).content
+            def socatContainerPort = socatContainerDetails.NetworkSettings.Ports['2375/tcp']['HostPort'].first()
+            tcpClient = new DockerClientImpl("tcp://localhost:${socatContainerPort}")
+            assert tcpClient.ping().status.code == 200
+        }
+
         def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
         def containerConfig = [
                 Tty      : true,
@@ -860,7 +884,7 @@ class DockerContainerIntegrationSpec extends Specification {
         }
 
         when:
-        WebSocket wsCall = dockerClient.attachWebsocket(
+        WebSocket wsCall = tcpClient.attachWebsocket(
                 containerId,
                 [stream: 1, stdin: 1, stdout: 1, stderr: 1],
                 listener)
@@ -873,10 +897,16 @@ class DockerContainerIntegrationSpec extends Specification {
         receivedMessages.contains ourMessage
 
         cleanup:
-        webSocketReference.get().close(NORMAL_CLOSURE.code, "cleanup")
+        webSocketReference?.get()?.close(NORMAL_CLOSURE.code, "cleanup")
         dockerClient.stop(containerId)
         dockerClient.wait(containerId)
         dockerClient.rm(containerId)
+
+        if (socatId) {
+            dockerClient.stop(socatId)
+            dockerClient.wait(socatId)
+            dockerClient.rm(socatId)
+        }
     }
 
     def listTarEntries(InputStream tarContent) {
