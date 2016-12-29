@@ -1783,6 +1783,15 @@ class DockerClientImplSpec extends Specification {
         0 * dockerClient.rmVolume(_)
     }
 
+    def "pruneContainers removes stopped containers"() {
+        when:
+        dockerClient.pruneContainers()
+
+        then:
+        1 * httpClient.post([path : "/containers/prune",
+                             query: [:]]) >> [status: [success: true]]
+    }
+
     def "cleanupStorage removes dangling images"() {
         when:
         dockerClient.cleanupStorage { container -> false }
@@ -1806,6 +1815,19 @@ class DockerClientImplSpec extends Specification {
         1 * dockerClient.volumes([filters: [dangling: ["true"]]]) >> [content: [[Name: "volume-id"]]]
         and:
         0 * dockerClient.rmVolume(_)
+    }
+
+    def "pruneImages removes unused images"() {
+        given:
+        def filters = [dangling: true]
+        def expectedFilterValue = new JsonBuilder(filters).toString()
+
+        when:
+        dockerClient.pruneImages([filters: filters])
+
+        then:
+        1 * httpClient.post([path : "/images/prune",
+                             query: [filters: expectedFilterValue]]) >> [status: [success: true]]
     }
 
     def "cleanupStorage doesn't remove dangling volumes by default"() {

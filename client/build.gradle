@@ -8,8 +8,8 @@ buildscript {
     }
 
     dependencies {
-        classpath 'net.saliman:gradle-cobertura-plugin:2.3.2'
-        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.6.3'
+        classpath 'net.saliman:gradle-cobertura-plugin:2.4.0'
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.7.1'
 
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
     }
@@ -47,7 +47,7 @@ dependencies {
     compile 'com.squareup.okhttp3:okhttp:3.5.0'
     testCompile 'com.squareup.okhttp3:mockwebserver:3.5.0'
 
-    compile 'org.apache.commons:commons-compress:1.12'
+    compile 'org.apache.commons:commons-compress:1.13'
 
     compile('com.kohlschutter.junixsocket:junixsocket-native-common:2.0.4') {
         exclude module: 'log4j'
@@ -56,7 +56,7 @@ dependencies {
         exclude module: 'log4j'
     }
 
-    compile 'org.bouncycastle:bcpkix-jdk15on:1.55'
+    compile 'org.bouncycastle:bcpkix-jdk15on:1.56'
 
     testCompile project(':testutil')
 
@@ -69,7 +69,7 @@ dependencies {
 
     testCompile 'net.jodah:failsafe:1.0.0'
 
-    testCompile 'joda-time:joda-time:2.9.6'
+    testCompile 'joda-time:joda-time:2.9.7'
 }
 
 

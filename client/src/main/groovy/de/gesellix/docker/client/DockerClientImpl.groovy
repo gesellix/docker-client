@@ -75,11 +75,33 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
+    pruneContainers(query = [:]) {
+        log.info "docker container prune"
+        def actualQuery = query ?: [:]
+        jsonEncodeFilters(actualQuery)
+        def response = getHttpClient().post([path : "/containers/prune",
+                                             query: actualQuery])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker container prune failed"))
+        return response
+    }
+
+    @Override
     cleanupImages() {
         images([filters: [dangling: ["true"]]]).content.each { image ->
             log.debug "docker rmi ${image.Id}"
             rmi(image.Id)
         }
+    }
+
+    @Override
+    pruneImages(query = [:]) {
+        log.info "docker image prune"
+        def actualQuery = query ?: [:]
+        jsonEncodeFilters(actualQuery)
+        def response = getHttpClient().post([path : "/images/prune",
+                                             query: actualQuery])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker image prune failed"))
+        return response
     }
 
     @Override

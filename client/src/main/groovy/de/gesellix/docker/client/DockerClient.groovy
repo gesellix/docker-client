@@ -10,7 +10,15 @@ interface DockerClient {
 
     def cleanupImages()
 
+    def pruneImages()
+
+    def pruneImages(query)
+
     def cleanupContainers(Closure shouldKeepContainer)
+
+    def pruneContainers()
+
+    def pruneContainers(query)
 
     def cleanupVolumes(Closure shouldKeepVolume)
 

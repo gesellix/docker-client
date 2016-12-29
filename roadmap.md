@@ -44,7 +44,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker container ps`: List containers (alias for `ls`, `list`)
 * [x] `docker container pause <container>`: Pause all processes within one or more containers
 * [ ] `docker container port`: List port mappings or a specific mapping for the container
-* [ ] `docker container prune`: Remove all stopped containers
+* [x] `docker container prune`: Remove all stopped containers
 * [x] `docker container rename <container>`: Rename a container
 * [x] `docker container restart <container>`: Restart one or more containers
 * [x] `docker container rm <container>`: Remove one or more containers
@@ -66,7 +66,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker image inspect <image>`: Display detailed information on one or more images
 * [x] `docker image load`: Load a tarball with a set of images and tags into docker
 * [x] `docker image ls`: List Images
-* [ ] `docker image prune`: Remove unused images (POST /images/prune)
+* [x] `docker image prune`: Remove unused images
 * [x] `docker image pull`: Pull an image or a repository from a registry
 * [x] `docker image push <image>`: Push an image or a repository to a registry
 * [x] `docker image rm <image>`: Remove one or more images
@@ -134,9 +134,10 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [ ] `docker plugin create`: Create a plugin from a rootfs and config `POST /plugins/create`
 * [ ] `docker plugin disable`: Disable a plugin `POST /plugins/{name:.*}/disable`
 * [ ] `docker plugin enable`: Enable a plugin `POST /plugins/{name:.*}/enable`
-* [ ] `docker plugin inspect`: Inspect a plugin `GET /plugins/{name:.*}`
+* [ ] `docker plugin inspect`: Inspect a plugin `GET /plugins/{name:.*}/json`
 * [ ] `docker plugin install`: Install a plugin (equivalent to pull + enable)
 * [ ] `docker plugin ls`: List plugins `GET /plugins`
+* [ ] Get plugin privileges `GET /plugins/privileges`
 * [ ] `docker plugin push`: Push a plugin `POST /plugins/{name:.*}/push`
 * [ ] Pull a plugin `POST /plugins/pull`
 * [ ] `docker plugin rm`: Remove a plugin `DELETE /plugins/{name:.*}`
