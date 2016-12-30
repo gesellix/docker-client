@@ -601,7 +601,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
             @Override
             onEvent(Object event) {
-                println event
+                println "[events (async)] $event"
                 events << new JsonSlurper().parseText(event as String)
                 latch.countDown()
             }
@@ -645,7 +645,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
             @Override
             onEvent(Object event) {
-                println event
+                println "[events (poll)] $event"
                 def parsedEvent = new JsonSlurper().parseText(event as String)
                 events << parsedEvent
                 if (parsedEvent.status == "destroy") {
@@ -713,7 +713,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
             @Override
             onEvent(Object stat) {
-                println stat
+                println "[stats] $stat"
                 stats << new JsonSlurper().parseText(stat as String)
                 latch.countDown()
             }
@@ -748,7 +748,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
             @Override
             onEvent(Object line) {
-                println line
+                println "[logs] $line"
                 lines << line
                 latch.countDown()
             }
