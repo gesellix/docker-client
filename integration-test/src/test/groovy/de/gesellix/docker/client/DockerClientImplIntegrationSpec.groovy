@@ -83,11 +83,12 @@ class DockerClientImplIntegrationSpec extends Specification {
         info.MemoryLimit != nativeWindows
         info.NoProxy == "" || info.NoProxy == "*.local, 169.254/16"
         info.OomKillDisable == !nativeWindows
-        info.RegistryConfig.IndexConfigs['docker.io'] == [
-                "Mirrors" : null,
-                "Name"    : "docker.io",
-                "Official": true,
-                "Secure"  : true]
+
+        def officialRegistry = info.RegistryConfig.IndexConfigs['docker.io']
+        officialRegistry.Name == "docker.io"
+        officialRegistry.Official == true
+        officialRegistry.Secure == true
+
         info.RegistryConfig.InsecureRegistryCIDRs == ["127.0.0.0/8"]
         info.RegistryConfig.Mirrors == []
         info.SystemTime =~ "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2,}.(\\d{3,}Z)?"
