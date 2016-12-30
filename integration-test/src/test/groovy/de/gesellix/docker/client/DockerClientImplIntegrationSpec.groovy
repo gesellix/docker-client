@@ -4,6 +4,8 @@ import groovy.util.logging.Slf4j
 import spock.lang.Requires
 import spock.lang.Specification
 
+import static de.gesellix.docker.client.TestConstants.CONSTANTS
+
 @Slf4j
 @Requires({ LocalDocker.available() })
 class DockerClientImplIntegrationSpec extends Specification {
@@ -64,7 +66,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         if (nativeWindows) {
             expectedDriverStatusProperties = ["Windows"]
         } else {
-            expectedDriverStatusProperties = ["Backing Filesystem", "Native Overlay Diff" , "Supports d_type"]
+            expectedDriverStatusProperties = ["Backing Filesystem"]
         }
         info.DriverStatus.findAll {
             it.first() in expectedDriverStatusProperties
@@ -96,15 +98,10 @@ class DockerClientImplIntegrationSpec extends Specification {
         def version = dockerClient.version().content
 
         then:
-        version.ApiVersion == "1.25"
-        version.Arch == "amd64"
-        version.BuildTime == "2016-12-17T01:34:17.687787854+00:00"
-        version.GitCommit == "88862e7"
-        version.GoVersion == "go1.7.3"
-        version.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"
-        version.MinAPIVersion == "1.12"
-        version.Os == nativeWindows ? "windows" : "linux"
-        version.Version == "1.13.0-rc4"
+        def nonMatchingEntries = CONSTANTS.versionDetails.findResults { key, matcher ->
+            !matcher(version[key]) ? [(key): version[key]] : null
+        }
+        nonMatchingEntries.empty
     }
 
     def auth() {

@@ -4,7 +4,7 @@ import spock.lang.IgnoreIf
 import spock.lang.Requires
 import spock.lang.Specification
 
-import static de.gesellix.docker.client.TestimageConstants.CONSTANTS
+import static de.gesellix.docker.client.TestConstants.CONSTANTS
 
 @Requires({ LocalDocker.available() })
 class OkDockerClientIntegrationSpec extends Specification {
@@ -23,14 +23,14 @@ class OkDockerClientIntegrationSpec extends Specification {
         given:
         def client = new OkDockerClient()
         def request = [path : "/images/create",
-                       query: [fromImage: de.gesellix.docker.client.TestimageConstants.CONSTANTS.imageRepo,
-                               tag      : de.gesellix.docker.client.TestimageConstants.CONSTANTS.imageTag,
+                       query: [fromImage: CONSTANTS.imageRepo,
+                               tag      : CONSTANTS.imageTag,
                                registry : ""]]
 
         when:
         def response = client.post(request)
         then:
-        response.content.last() == [status: "Status: Image is up to date for ${de.gesellix.docker.client.TestimageConstants.CONSTANTS.imageName}".toString()]
+        response.content.last() == [status: "Status: Image is up to date for ${CONSTANTS.imageName}".toString()]
     }
 
     @IgnoreIf({ dockerHubPassword == "-yet-another-password-" })
@@ -66,14 +66,11 @@ class OkDockerClientIntegrationSpec extends Specification {
         def response = client.get([path: "/version"])
         then:
         def content = response.content
-        content.ApiVersion == "1.25"
-        content.Arch == "amd64"
-        content.GitCommit == "88862e7"
-        content.GoVersion == "go1.7.3"
-        content.KernelVersion =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?"
-        content.MinAPIVersion == "1.12"
-        content.Os == "linux"
-        content.Version == "1.13.0-rc4"
+
+        def nonMatchingEntries = CONSTANTS.versionDetails.findResults { key, matcher ->
+            !matcher(content[key]) ? [(key): content[key]] : null
+        }
+        nonMatchingEntries.empty
     }
 
     @Requires({ LocalDocker.isUnixSocket() })

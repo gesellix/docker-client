@@ -12,7 +12,7 @@ import spock.lang.Specification
 
 import java.util.concurrent.CountDownLatch
 
-import static de.gesellix.docker.client.TestimageConstants.CONSTANTS
+import static TestConstants.CONSTANTS
 import static java.util.concurrent.TimeUnit.SECONDS
 
 @Slf4j
@@ -330,7 +330,7 @@ class DockerImageIntegrationSpec extends Specification {
         def imageById = images.find {
             it.Id == CONSTANTS.imageDigest
         }
-        imageById.Created == 1483046663
+        imageById.Created == 1483093519
         imageById.ParentId == ""
         imageById.RepoTags.contains CONSTANTS.imageName
     }
