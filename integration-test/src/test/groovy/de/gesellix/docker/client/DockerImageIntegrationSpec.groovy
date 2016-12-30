@@ -74,8 +74,8 @@ class DockerImageIntegrationSpec extends Specification {
         then:
         DockerClientException ex = thrown()
         ex.cause.message == 'docker build failed'
-        ex.detail.content.last() == [error      : "repository missing/image not found: does not exist or no read access",
-                                     errorDetail: [message: "repository missing/image not found: does not exist or no read access"]]
+        ex.detail.content.last() == [error      : "repository missing/image not found: does not exist or no pull access",
+                                     errorDetail: [message: "repository missing/image not found: does not exist or no pull access"]]
     }
 
     def "build image with custom Dockerfile"() {
@@ -315,7 +315,6 @@ class DockerImageIntegrationSpec extends Specification {
         history.collect { it.Id } == [
                 CONSTANTS.imageDigest,
                 "<missing>",
-                "<missing>",
                 "<missing>"
         ]
     }
@@ -331,7 +330,7 @@ class DockerImageIntegrationSpec extends Specification {
         def imageById = images.find {
             it.Id == CONSTANTS.imageDigest
         }
-        imageById.Created == 1475869474
+        imageById.Created == 1483046663
         imageById.ParentId == ""
         imageById.RepoTags.contains CONSTANTS.imageName
     }
@@ -416,7 +415,7 @@ class DockerImageIntegrationSpec extends Specification {
 
         then:
         searchResult.content.contains([
-                description : "Base image for integration tests of the Docker client at https://github.com/gesellix/docker-client\n",
+                description : "A Testimage used for Docker Client integration tests.\n",
                 is_automated: true,
                 is_official : false,
 //                is_trusted  : true,

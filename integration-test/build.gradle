@@ -1,0 +1,32 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+        mavenCentral()
+    }
+}
+
+apply plugin: 'groovy'
+
+repositories {
+    mavenLocal()
+    jcenter()
+    mavenCentral()
+}
+
+dependencies {
+    compile project(':client')
+
+    testCompile project(':testutil')
+    testCompile 'net.jodah:failsafe:1.0.0'
+
+    runtime 'ch.qos.logback:logback-classic:1.1.8'
+
+    testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
+        exclude module: 'groovy-all'
+    }
+    testCompile 'cglib:cglib-nodep:3.2.4'
+    testCompile 'commons-lang:commons-lang:2.6'
+    testCompile 'joda-time:joda-time:2.9.7'
+    testCompile 'ch.qos.logback:logback-classic:1.1.8'
+}

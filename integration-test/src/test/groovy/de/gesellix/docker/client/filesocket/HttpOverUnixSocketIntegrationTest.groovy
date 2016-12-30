@@ -9,7 +9,7 @@ import spock.lang.Specification
 import static org.apache.commons.lang.SystemUtils.IS_OS_LINUX
 import static org.apache.commons.lang.SystemUtils.IS_OS_MAC
 
-@Requires({ new File("/var/run/docker.sock").exists() || IS_OS_LINUX || IS_OS_MAC })
+@Requires({ new File("/var/run/docker.sock").exists() || org.apache.commons.lang.SystemUtils.IS_OS_LINUX || org.apache.commons.lang.SystemUtils.IS_OS_MAC })
 class HttpOverUnixSocketIntegrationTest extends Specification {
 
     File defaultDockerSocket = new File("/var/run/docker.sock")

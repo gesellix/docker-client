@@ -66,31 +66,6 @@ dependencies {
     testCompile 'cglib:cglib-nodep:3.2.4'
 
     testCompile 'commons-lang:commons-lang:2.6'
-
-    testCompile 'net.jodah:failsafe:1.0.0'
-
-    testCompile 'joda-time:joda-time:2.9.7'
-}
-
-
-idea {
-    module {
-        testSourceDirs += file('src/integrationTest/groovy')
-        testSourceDirs += file('src/integrationTest/resources')
-    }
-}
-
-sourceSets {
-    integrationTest {
-        compileClasspath += main.output + test.output
-        runtimeClasspath += main.output + test.output
-        groovy {
-            srcDir 'src/integrationTest/groovy'
-        }
-        resources {
-            srcDir 'src/integrationTest/resources'
-        }
-    }
 }
 
 task sourcesJar(type: Jar) {
@@ -104,31 +79,10 @@ ext {
     bintrayDryRun = false
 }
 
-configurations {
-    integrationTestCompile.extendsFrom testCompile
-    integrationTestRuntime.extendsFrom testRuntime
-}
-
 test {
     // minimal way of providing a special environment variable for the EnvFileParserTest
     environment "A_KNOWN_VARIABLE", "my value"
 }
-
-task integrationTest(type: Test) {
-    group = 'verification'
-    description = 'Runs the integration tests.'
-    testClassesDir = sourceSets.integrationTest.output.classesDir
-    classpath = sourceSets.integrationTest.runtimeClasspath
-}
-integrationTest.mustRunAfter test
-check.dependsOn integrationTest
-
-task aggregateTestReports(type: TestReport) {
-    destinationDir = test.reports.html.destination
-    reportOn test, integrationTest
-}
-aggregateTestReports.mustRunAfter integrationTest
-check.dependsOn aggregateTestReports
 
 cobertura {
     coverageSourceDirs = sourceSets.main.groovy.srcDirs

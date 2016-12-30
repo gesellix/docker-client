@@ -60,7 +60,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "list containers"() {
         given:
-        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+        def imageId = dockerClient.pull(TestimageConstants.CONSTANTS.imageRepo, TestimageConstants.CONSTANTS.imageTag)
         def imageName = "list_containers"
         dockerClient.tag(imageId, imageName)
         def containerConfig = ["Cmd"  : ["true"],
@@ -83,7 +83,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "inspect container"() {
         given:
-        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+        def imageId = dockerClient.pull(TestimageConstants.CONSTANTS.imageRepo, TestimageConstants.CONSTANTS.imageTag)
         def imageName = "inspect_container"
         def containerConfig = ["Cmd"       : ["true"],
                                "Image"     : "inspect_container",
@@ -115,7 +115,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "diff"() {
         given:
-        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+        def imageId = dockerClient.pull(TestimageConstants.CONSTANTS.imageRepo, TestimageConstants.CONSTANTS.imageTag)
         def containerConfig = ["Cmd"  : ["/bin/sh", "-c", "echo 'hallo' > /change.txt"],
                                "Image": imageId]
         def containerId = dockerClient.run(imageId, containerConfig).container.content.Id
@@ -136,7 +136,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "create container"() {
         given:
-        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+        def imageId = dockerClient.pull(TestimageConstants.CONSTANTS.imageRepo, TestimageConstants.CONSTANTS.imageTag)
         def containerConfig = ["Cmd"   : ["true"],
                                "Image" : imageId,
                                "Labels": [
@@ -156,7 +156,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "create container with name"() {
         given:
-        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+        def imageId = dockerClient.pull(TestimageConstants.CONSTANTS.imageRepo, TestimageConstants.CONSTANTS.imageTag)
         def containerConfig = ["Cmd"  : ["true"],
                                "Image": imageId]
 
@@ -187,7 +187,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "start container"() {
         given:
-        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+        def imageId = dockerClient.pull(TestimageConstants.CONSTANTS.imageRepo, TestimageConstants.CONSTANTS.imageTag)
         def containerConfig = ["Cmd"  : ["true"],
                                "Image": imageId]
         def containerId = dockerClient.createContainer(containerConfig).content.Id
@@ -209,7 +209,7 @@ class DockerContainerIntegrationSpec extends Specification {
         def cmds = ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
         def name = "update-container"
-        def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, name)
+        def containerStatus = dockerClient.run(TestimageConstants.CONSTANTS.imageRepo, containerConfig, TestimageConstants.CONSTANTS.imageTag, name)
 
         when:
         def updateConfig = [
@@ -232,7 +232,7 @@ class DockerContainerIntegrationSpec extends Specification {
         def containerConfig = ["Cmd": cmds]
 
         when:
-        def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag)
+        def containerStatus = dockerClient.run(TestimageConstants.CONSTANTS.imageRepo, containerConfig, TestimageConstants.CONSTANTS.imageTag)
 
         then:
         containerStatus.status.status.code == 204
@@ -255,7 +255,7 @@ class DockerContainerIntegrationSpec extends Specification {
                                ]]]
 
         when:
-        def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag)
+        def containerStatus = dockerClient.run(TestimageConstants.CONSTANTS.imageRepo, containerConfig, TestimageConstants.CONSTANTS.imageTag)
 
         then:
         containerStatus.status.status.code == 204
@@ -281,7 +281,7 @@ class DockerContainerIntegrationSpec extends Specification {
         def name = "example-name"
 
         when:
-        def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, name)
+        def containerStatus = dockerClient.run(TestimageConstants.CONSTANTS.imageRepo, containerConfig, TestimageConstants.CONSTANTS.imageTag, name)
 
         then:
         containerStatus.status.status.code == 204
@@ -300,7 +300,7 @@ class DockerContainerIntegrationSpec extends Specification {
         given:
         def cmds = ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
-        def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag)
+        def containerStatus = dockerClient.run(TestimageConstants.CONSTANTS.imageRepo, containerConfig, TestimageConstants.CONSTANTS.imageTag)
 
         when:
         def result = dockerClient.restart(containerStatus.container.content.Id)
@@ -318,7 +318,7 @@ class DockerContainerIntegrationSpec extends Specification {
         given:
         def cmds = ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
-        def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag)
+        def containerStatus = dockerClient.run(TestimageConstants.CONSTANTS.imageRepo, containerConfig, TestimageConstants.CONSTANTS.imageTag)
 
         when:
         def result = dockerClient.stop(containerStatus.container.content.Id)
@@ -335,7 +335,7 @@ class DockerContainerIntegrationSpec extends Specification {
         given:
         def cmds = ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
-        def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag)
+        def containerStatus = dockerClient.run(TestimageConstants.CONSTANTS.imageRepo, containerConfig, TestimageConstants.CONSTANTS.imageTag)
 
         when:
         def result = dockerClient.kill(containerStatus.container.content.Id)
@@ -352,7 +352,7 @@ class DockerContainerIntegrationSpec extends Specification {
         given:
         def cmds = ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
-        def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag)
+        def containerStatus = dockerClient.run(TestimageConstants.CONSTANTS.imageRepo, containerConfig, TestimageConstants.CONSTANTS.imageTag)
         dockerClient.stop(containerStatus.container.content.Id)
 
         when:
@@ -371,7 +371,7 @@ class DockerContainerIntegrationSpec extends Specification {
         given:
         def cmds = ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
-        def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag)
+        def containerStatus = dockerClient.run(TestimageConstants.CONSTANTS.imageRepo, containerConfig, TestimageConstants.CONSTANTS.imageTag)
 
         when:
         def result = dockerClient.pause(containerStatus.container.content.Id)
@@ -390,7 +390,7 @@ class DockerContainerIntegrationSpec extends Specification {
         given:
         def cmds = ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
-        def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag)
+        def containerStatus = dockerClient.run(TestimageConstants.CONSTANTS.imageRepo, containerConfig, TestimageConstants.CONSTANTS.imageTag)
         dockerClient.pause(containerStatus.container.content.Id)
 
         when:
@@ -407,7 +407,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "rm container"() {
         given:
-        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+        def imageId = dockerClient.pull(TestimageConstants.CONSTANTS.imageRepo, TestimageConstants.CONSTANTS.imageTag)
         def containerConfig = ["Cmd"  : ["true"],
                                "Image": imageId]
         def containerId = dockerClient.createContainer(containerConfig).content.Id
@@ -432,7 +432,7 @@ class DockerContainerIntegrationSpec extends Specification {
         def cmds = ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
         def name = "create-exec"
-        def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, name)
+        def containerStatus = dockerClient.run(TestimageConstants.CONSTANTS.imageRepo, containerConfig, TestimageConstants.CONSTANTS.imageTag, name)
 
         when:
         def execConfig = ["Cmd": [
@@ -454,7 +454,7 @@ class DockerContainerIntegrationSpec extends Specification {
         def cmds = ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
         def name = "start-exec"
-        def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, name)
+        def containerStatus = dockerClient.run(TestimageConstants.CONSTANTS.imageRepo, containerConfig, TestimageConstants.CONSTANTS.imageTag, name)
         def containerId = containerStatus.container.content.Id
         def execCreateConfig = [
                 "AttachStdin" : false,
@@ -488,7 +488,7 @@ class DockerContainerIntegrationSpec extends Specification {
         def cmds = ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
         def name = "attach-exec"
-        def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, name)
+        def containerStatus = dockerClient.run(TestimageConstants.CONSTANTS.imageRepo, containerConfig, TestimageConstants.CONSTANTS.imageTag, name)
         def containerId = containerStatus.container.content.Id
 
         def logFileName = "/log.txt"
@@ -548,7 +548,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "get archive (copy from container)"() {
         given:
-        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+        def imageId = dockerClient.pull(TestimageConstants.CONSTANTS.imageRepo, TestimageConstants.CONSTANTS.imageTag)
         def imageName = "copy_container"
         def containerConfig = ["Cmd": ["sh", "-c", "echo -n -e 'to be or\nnot to be' > /file1.txt"]]
         dockerClient.tag(imageId, imageName)
@@ -573,7 +573,7 @@ class DockerContainerIntegrationSpec extends Specification {
     def "rename"() {
         given:
         dockerClient.rm("a_wonderful_new_name")
-        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+        def imageId = dockerClient.pull(TestimageConstants.CONSTANTS.imageRepo, TestimageConstants.CONSTANTS.imageTag)
         def containerConfig = ["Cmd"  : ["true"],
                                "Image": imageId]
         def containerId = dockerClient.createContainer(containerConfig).content.Id
@@ -680,7 +680,7 @@ class DockerContainerIntegrationSpec extends Specification {
     def "top"() {
         given:
         def containerConfig = ["Cmd": ["sh", "-c", "ping 127.0.0.1"]]
-        def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, "top-example")
+        def containerStatus = dockerClient.run(TestimageConstants.CONSTANTS.imageRepo, containerConfig, TestimageConstants.CONSTANTS.imageTag, "top-example")
         def containerId = containerStatus.container.content.Id
 
         when:
@@ -718,7 +718,7 @@ class DockerContainerIntegrationSpec extends Specification {
             }
         }
         def containerConfig = ["Cmd": ["sh", "-c", "ping 127.0.0.1"]]
-        def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, "stats-example")
+        def containerStatus = dockerClient.run(TestimageConstants.CONSTANTS.imageRepo, containerConfig, TestimageConstants.CONSTANTS.imageTag, "stats-example")
         def containerId = containerStatus.container.content.Id
 
         when:
@@ -753,7 +753,7 @@ class DockerContainerIntegrationSpec extends Specification {
             }
         }
         def containerConfig = ["Cmd": ["sh", "-c", "ping 127.0.0.1"]]
-        def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, "logs-example")
+        def containerStatus = dockerClient.run(TestimageConstants.CONSTANTS.imageRepo, containerConfig, TestimageConstants.CONSTANTS.imageTag, "logs-example")
         def containerId = containerStatus.container.content.Id
 
         when:
@@ -772,7 +772,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "attach (interactive)"() {
         given:
-        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+        def imageId = dockerClient.pull(TestimageConstants.CONSTANTS.imageRepo, TestimageConstants.CONSTANTS.imageTag)
         def containerConfig = [
                 Tty      : true,
                 OpenStdin: true,
@@ -842,7 +842,7 @@ class DockerContainerIntegrationSpec extends Specification {
             assert tcpClient.ping().status.code == 200
         }
 
-        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+        def imageId = dockerClient.pull(TestimageConstants.CONSTANTS.imageRepo, TestimageConstants.CONSTANTS.imageTag)
         def containerConfig = [
                 Tty      : true,
                 OpenStdin: true,
