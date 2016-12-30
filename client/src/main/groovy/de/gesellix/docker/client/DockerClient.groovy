@@ -26,6 +26,10 @@ interface DockerClient {
 
     def pruneVolumes(query)
 
+    def pruneNetworks()
+
+    def pruneNetworks(query)
+
     def ping()
 
     def info()

@@ -82,14 +82,14 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker volume prune`: Remove all unused volumes
 * [x] `docker volume rm`: Remove one or more volumes
 
-## Network - Manage networks (6/7)
+## Network - Manage networks (7/7)
 
 * [x] `docker network connect`: Connect a container to a network
 * [x] `docker network create`: Create a network
 * [x] `docker network disconnect`: Disconnect a container from a network
 * [x] `docker network inspect`: Display detailed information on one or more networks
 * [x] `docker network ls`: List networks
-* [ ] `docker network prune`: Remove all unused networks (POST /networks/prune)
+* [x] `docker network prune`: Remove all unused networks
 * [x] `docker network rm`: Remove one or more networks
 
 ## Swarm - Manage Swarm (8/8)

@@ -1874,4 +1874,13 @@ class DockerClientImplSpec extends Specification {
         1 * httpClient.post([path : "/volumes/prune",
                              query: [:]]) >> [status: [success: true]]
     }
+
+    def "pruneNetworks removes unused networks"() {
+        when:
+        dockerClient.pruneNetworks()
+
+        then:
+        1 * httpClient.post([path : "/networks/prune",
+                             query: [:]]) >> [status: [success: true]]
+    }
 }
