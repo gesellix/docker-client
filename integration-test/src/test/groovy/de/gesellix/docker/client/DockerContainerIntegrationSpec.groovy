@@ -529,7 +529,7 @@ class DockerContainerIntegrationSpec extends Specification {
             onSinkClosed.countDown()
         }
         attachConfig.onSourceConsumed = {
-            log.trace("onFinish")
+            log.trace("onSourceConsumed")
             onSourceConsumed.countDown()
         }
 
@@ -804,6 +804,13 @@ class DockerContainerIntegrationSpec extends Specification {
         }
         attachConfig.onSourceConsumed = {
             onSourceConsumed.countDown()
+        }
+        attachConfig.onFailure = { Exception e ->
+            println "[attach (interactive)] error ${e}"
+            throw e
+        }
+        attachConfig.onResponse = { Response response ->
+            println "[attach (interactive)] response ${response}"
         }
 
         when:
