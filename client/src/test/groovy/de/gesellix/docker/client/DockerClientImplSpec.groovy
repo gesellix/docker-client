@@ -1865,4 +1865,13 @@ class DockerClientImplSpec extends Specification {
         and:
         0 * dockerClient.rmVolume("volume-id-2")
     }
+
+    def "pruneVolumes removes unused volumes"() {
+        when:
+        dockerClient.pruneVolumes()
+
+        then:
+        1 * httpClient.post([path : "/volumes/prune",
+                             query: [:]]) >> [status: [success: true]]
+    }
 }

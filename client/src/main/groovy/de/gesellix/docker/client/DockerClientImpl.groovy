@@ -116,6 +116,17 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
+    pruneVolumes(query = [:]) {
+        log.info "docker volume prune"
+        def actualQuery = query ?: [:]
+        jsonEncodeFilters(actualQuery)
+        def response = getHttpClient().post([path : "/volumes/prune",
+                                             query: actualQuery])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume prune failed"))
+        return response
+    }
+
+    @Override
     ping() {
         log.info "docker ping"
         def response = getHttpClient().get([path: "/_ping", timeout: 2000])

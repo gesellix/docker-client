@@ -21,7 +21,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] Check auth configuration
 * [x] Ping the docker server
 
-## Container - Manage containers (29/32)
+## Container - Manage containers (31/32)
 
 * [x] `docker container attach <container>`: Attach to a running container (supports interactive tty)
 * [x] Attach to a running container (websocket)
@@ -57,7 +57,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker container update <container> [<container>...]`: Update configuration of one or more containers
 * [x] `docker container wait <container>`: Block until one or more containers stop, then print their exit codes
 
-## Image - Manage images (13/14)
+## Image - Manage images (14/14)
 
 * [x] `docker image build`: Build an image from a Dockerfile
 * [x] `docker image history <image>`: Show the history of an image
@@ -74,12 +74,12 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker image save <image> [<image> ...]`: Get a tarball containing all images.
 * [x] `docker image tag <image> <repository>`: Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE
 
-## Volume - Manage volumes (4/5)
+## Volume - Manage volumes (5/5)
 
 * [x] `docker volume create`: Create a volume
 * [x] `docker volume inspect`: Display detailed information on one or more volumes
 * [x] `docker volume ls`: List volumes from all volume drivers
-* [ ] `docker volume prune`: Remove all unused volumes (POST /volumes/prune)
+* [x] `docker volume prune`: Remove all unused volumes
 * [x] `docker volume rm`: Remove one or more volumes
 
 ## Network - Manage networks (6/7)
@@ -92,7 +92,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [ ] `docker network prune`: Remove all unused networks (POST /networks/prune)
 * [x] `docker network rm`: Remove one or more networks
 
-## Swarm - Manage Swarm (7/8)
+## Swarm - Manage Swarm (8/8)
 
 * [x] `docker swarm init`: Initialize a Swarm
 * [x] `docker swarm join`: Join a Swarm as a node and/or manager

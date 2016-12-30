@@ -22,6 +22,10 @@ interface DockerClient {
 
     def cleanupVolumes(Closure shouldKeepVolume)
 
+    def pruneVolumes()
+
+    def pruneVolumes(query)
+
     def ping()
 
     def info()
