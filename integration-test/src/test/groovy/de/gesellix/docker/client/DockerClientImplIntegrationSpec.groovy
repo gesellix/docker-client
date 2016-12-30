@@ -90,7 +90,6 @@ class DockerClientImplIntegrationSpec extends Specification {
         officialRegistry.Secure == true
 
         info.RegistryConfig.InsecureRegistryCIDRs == ["127.0.0.0/8"]
-        info.RegistryConfig.Mirrors == []
         info.SystemTime =~ "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2,}.(\\d{3,}Z)?"
     }
 
