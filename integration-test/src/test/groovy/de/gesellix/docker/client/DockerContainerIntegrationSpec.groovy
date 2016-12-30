@@ -807,10 +807,13 @@ class DockerContainerIntegrationSpec extends Specification {
                 containerId,
                 [stream: 1, stdin: 1, stdout: 1, stderr: 1],
                 attachConfig)
-        onSinkClosed.await(5, SECONDS)
-        onSourceConsumed.await(5, SECONDS)
+        def sinkClosed = onSinkClosed.await(5, SECONDS)
+        def sourceConsumed = onSourceConsumed.await(5, SECONDS)
 
         then:
+        sinkClosed
+        sourceConsumed
+        outputStream.size() > 0
         outputStream.toByteArray() == expectedOutput.bytes
 
         cleanup:

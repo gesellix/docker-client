@@ -77,6 +77,7 @@ class OkResponseCallback implements Callback {
                         while (connectionProvider.source.read(bufferedStdout.buffer(), 1024) != -1) {
                             bufferedStdout.flush()
                         }
+                        bufferedStdout.flush()
                         onSourceConsumed()
                     } catch (Exception e) {
                         onFailure(e)

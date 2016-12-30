@@ -6,7 +6,7 @@ import okhttp3.Response
 @Slf4j
 class TcpUpgradeVerificator {
 
-    static def ensureTcpUpgrade(Response response) {
+    static ensureTcpUpgrade(Response response) {
         if (response.code() != 101) {
             log.error "expected status 101, but got ${response.code()} ${response.message()}"
             throw new ProtocolException("Expected HTTP 101 Connection Upgrade")
