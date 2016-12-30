@@ -106,7 +106,7 @@ class DockerImageIntegrationSpec extends Specification {
         when:
         CountDownLatch latch = new CountDownLatch(1)
         def events = []
-        dockerClient.build(newBuildContext(inputDirectory), [rm: true], new DockerAsyncCallback() {
+        def response = dockerClient.build(newBuildContext(inputDirectory), [rm: true], new DockerAsyncCallback() {
             @Override
             onEvent(Object event) {
                 def parsedEvent = new JsonSlurper().parseText(event as String)
@@ -125,6 +125,7 @@ class DockerImageIntegrationSpec extends Specification {
         def imageId = events.last().stream.trim() - "Successfully built "
 
         cleanup:
+        response.taskFuture.cancel(true)
         dockerClient.rmi(imageId)
     }
 

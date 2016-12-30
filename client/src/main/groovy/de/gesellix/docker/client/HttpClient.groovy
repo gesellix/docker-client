@@ -5,15 +5,15 @@ import okhttp3.WebSocketListener
 
 interface HttpClient {
 
-    def head(Map requestConfig)
+    DockerResponse head(Map requestConfig)
 
-    def get(Map requestConfig)
+    DockerResponse get(Map requestConfig)
 
-    def put(Map requestConfig)
+    DockerResponse put(Map requestConfig)
 
-    def post(Map requestConfig)
+    DockerResponse post(Map requestConfig)
 
-    def delete(Map requestConfig)
+    DockerResponse delete(Map requestConfig)
 
     WebSocket webSocket(Map requestConfig, WebSocketListener listener)
 }

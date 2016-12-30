@@ -227,7 +227,8 @@ class DockerClientImpl implements DockerClient {
                 buildLatch.countDown()
             }
         }
-        build(buildContext, query, callback)
+        // TODO do we need to handle (and eventually cancel?) the submitted build task?
+        def ignoredResponse = build(buildContext, query, callback)
         // TODO make configurable
         buildLatch.await(10, MINUTES)
         return [log    : chunks,
@@ -250,8 +251,8 @@ class DockerClientImpl implements DockerClient {
 
         if (async) {
             def executor = newSingleThreadExecutor()
-            // TODO return the Future<?>?
-            executor.submit(new DockerAsyncConsumer(response as DockerResponse, callback))
+            def future = executor.submit(new DockerAsyncConsumer(response as DockerResponse, callback))
+            response.taskFuture = future
             return response
         } else {
             def lastChunk = response.content.last()
@@ -898,8 +899,8 @@ class DockerClientImpl implements DockerClient {
                                             async: true])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker events failed"))
         def executor = newSingleThreadExecutor()
-        // TODO return the Future<?>?
-        executor.submit(new DockerAsyncConsumer(response as DockerResponse, callback))
+        def future = executor.submit(new DockerAsyncConsumer(response as DockerResponse, callback))
+        response.taskFuture = future
         return response
     }
 
@@ -925,8 +926,8 @@ class DockerClientImpl implements DockerClient {
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker stats failed"))
         if (async) {
             def executor = newSingleThreadExecutor()
-            // TODO return the Future<?>?
-            executor.submit(new DockerAsyncConsumer(response as DockerResponse, callback))
+            def future = executor.submit(new DockerAsyncConsumer(response as DockerResponse, callback))
+            response.taskFuture = future
         }
         return response
     }
@@ -965,8 +966,8 @@ class DockerClientImpl implements DockerClient {
                 response.stream = new RawInputStream(response.stream as InputStream)
             }
             def executor = newSingleThreadExecutor()
-            // TODO return the Future<?>?
-            executor.submit(new DockerAsyncConsumer(response as DockerResponse, callback))
+            def future = executor.submit(new DockerAsyncConsumer(response as DockerResponse, callback))
+            response.taskFuture = future
         }
         return response
     }

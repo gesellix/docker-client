@@ -6,7 +6,13 @@ import de.gesellix.docker.client.rawstream.RawInputStream
 import de.gesellix.docker.client.ssl.DockerSslSocket
 import de.gesellix.docker.client.ssl.SslSocketConfigFactory
 import de.gesellix.docker.client.util.IOUtils
-import okhttp3.*
+import okhttp3.Interceptor
+import okhttp3.MediaType
+import okhttp3.OkHttpClient
+import okhttp3.Protocol
+import okhttp3.Response
+import okhttp3.ResponseBody
+import okhttp3.WebSocketListener
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okio.Buffer
@@ -26,7 +32,7 @@ import static java.net.Proxy.Type.HTTP
 class OkDockerClientSpec extends Specification {
 
     @IgnoreIf({ System.env.DOCKER_HOST })
-    def "getProtocolAndHost should fallback to unix:///var/run/docker.sock (npipe on Windows)"() {
+    "getProtocolAndHost should fallback to unix:///var/run/docker.sock (npipe on Windows)"() {
         given:
         def client = new OkDockerClient()
         def isWindows = System.properties['os.name'].toLowerCase().contains('windows')
@@ -40,7 +46,7 @@ class OkDockerClientSpec extends Specification {
     }
 
     @IgnoreIf({ System.env.DOCKER_HOST })
-    def "getProtocolAndHost should use to docker.host system property when set"() {
+    "getProtocolAndHost should use to docker.host system property when set"() {
         given:
         def oldDockerHost = System.setProperty("docker.host", "http://127.0.0.1:2375")
         def client = new OkDockerClient()
@@ -164,7 +170,7 @@ class OkDockerClientSpec extends Specification {
     }
 
     @Unroll
-    def "generic request with bad config: #requestConfig"() {
+    "generic request with bad config: #requestConfig"() {
         def client = new OkDockerClient()
         client.dockerClientConfig.apply(new DockerEnv(
                 dockerHost: "https://127.0.0.1:2376"))
@@ -178,7 +184,7 @@ class OkDockerClientSpec extends Specification {
     }
 
     @Unroll
-    def "#method request with bad config: #requestConfig"() {
+    "#method request with bad config: #requestConfig"() {
         def client = new OkDockerClient()
         client.dockerClientConfig.apply(new DockerEnv(
                 dockerHost: "https://127.0.0.1:2376"))
@@ -199,72 +205,77 @@ class OkDockerClientSpec extends Specification {
 
     def "head request uses the HEAD method"() {
         given:
+        def recordedCall = [:]
         def client = new OkDockerClient()
-        client.dockerClientConfig.apply(new DockerEnv(
-                dockerHost: "https://127.0.0.1:2376"))
+        client.dockerClientConfig.apply(new DockerEnv(dockerHost: "https://127.0.0.1:2376"))
         client.metaClass.request = { Map config ->
-            config.method
+            recordedCall['method'] = config.method
+            return null
         }
         when:
-        def method = client.head([path: "/foo"])
+        client.head([path: "/foo"])
         then:
-        method == "HEAD"
+        recordedCall['method'] == "HEAD"
     }
 
     def "get request uses the GET method"() {
         given:
+        def recordedCall = [:]
         def client = new OkDockerClient()
-        client.dockerClientConfig.apply(new DockerEnv(
-                dockerHost: "https://127.0.0.1:2376"))
+        client.dockerClientConfig.apply(new DockerEnv(dockerHost: "https://127.0.0.1:2376"))
         client.metaClass.request = { Map config ->
-            config.method
+            recordedCall['method'] = config.method
+            return null
         }
         when:
-        def method = client.get([path: "/foo"])
+        client.get([path: "/foo"])
         then:
-        method == "GET"
+        recordedCall['method'] == "GET"
     }
 
     def "put request uses the PUT method"() {
         given:
+        def recordedCall = [:]
         def client = new OkDockerClient()
-        client.dockerClientConfig.apply(new DockerEnv(
-                dockerHost: "https://127.0.0.1:2376"))
+        client.dockerClientConfig.apply(new DockerEnv(dockerHost: "https://127.0.0.1:2376"))
         client.metaClass.request = { Map config ->
-            config.method
+            recordedCall['method'] = config.method
+            return null
         }
         when:
-        def method = client.put([path: "/foo"])
+        client.put([path: "/foo"])
         then:
-        method == "PUT"
+        recordedCall['method'] == "PUT"
     }
 
     def "post request uses the POST method"() {
         given:
+        def recordedCall = [:]
         def client = new OkDockerClient()
-        client.dockerClientConfig.apply(new DockerEnv(
-                dockerHost: "https://127.0.0.1:2376"))
+        client.dockerClientConfig.apply(new DockerEnv(dockerHost: "https://127.0.0.1:2376"))
         client.metaClass.request = { Map config ->
-            config.method
+            recordedCall['method'] = config.method
+            return null
         }
         when:
-        def method = client.post([path: "/foo"])
+        client.post([path: "/foo"])
         then:
-        method == "POST"
+        recordedCall['method'] == "POST"
     }
 
     def "delete request uses the DELETE method"() {
         given:
+        def recordedCall = [:]
         def client = new OkDockerClient()
-        client.dockerClientConfig.apply(new DockerEnv(
-                dockerHost: "https://127.0.0.1:2376"))
+        client.dockerClientConfig.apply(new DockerEnv(dockerHost: "https://127.0.0.1:2376"))
         client.metaClass.request = { Map config ->
-            config.method
+            recordedCall['method'] = config.method
+            return null
         }
         when:
-        def method = client.delete([path: "/foo"])
+        client.delete([path: "/foo"])
         then:
-        method == "DELETE"
+        recordedCall['method'] == "DELETE"
     }
 
     def "webSocket prepares a websocket call"() {
@@ -272,8 +283,7 @@ class OkDockerClientSpec extends Specification {
         def certsPath = IOUtils.getResource("/certs").file
         def oldDockerCertPath = System.setProperty("docker.cert.path", certsPath)
         def client = new OkDockerClient()
-        client.dockerClientConfig.apply(new DockerEnv(
-                dockerHost: "https://127.0.0.1:2376"))
+        client.dockerClientConfig.apply(new DockerEnv(dockerHost: "https://127.0.0.1:2376"))
 
         when:
         def wsCall = client.webSocket([path: "/foo"], Mock(WebSocketListener))
@@ -296,7 +306,7 @@ class OkDockerClientSpec extends Specification {
         mockWebServer.start()
 
         def hasVerified = false
-        def Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
+        Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
             if (chain.connection()?.route()?.proxy()?.type() != DIRECT) {
                 throw new AssertionError("got ${chain.connection()?.route()?.proxy()}")
             }
@@ -311,8 +321,7 @@ class OkDockerClientSpec extends Specification {
                         .build()
             }
         }
-        client.dockerClientConfig.apply(new DockerEnv(
-                dockerHost: mockWebServer.url("/").toString()))
+        client.dockerClientConfig.apply(new DockerEnv(dockerHost: mockWebServer.url("/").toString()))
 
         when:
         def response = client.request([method: "OPTIONS",
@@ -335,7 +344,7 @@ class OkDockerClientSpec extends Specification {
         def proxy = new Proxy(HTTP, new InetSocketAddress(serverUrl.host(), serverUrl.port()))
 
         def hasVerified = false
-        def Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
+        Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
             def actualProxy = chain.connection()?.route()?.proxy()
             if (actualProxy != proxy) {
                 throw new AssertionError("got ${actualProxy}")
@@ -375,7 +384,7 @@ class OkDockerClientSpec extends Specification {
 
         def serverUrl = mockWebServer.url("/")
         def hasVerified = false
-        def Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
+        Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
             def expectedUrl = serverUrl.newBuilder()
                     .encodedPath("/a-resource")
                     .build()
@@ -416,7 +425,7 @@ class OkDockerClientSpec extends Specification {
 
         def serverUrl = mockWebServer.url("/")
         def hasVerified = false
-        def Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
+        Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
             def expectedUrl = serverUrl.newBuilder()
                     .encodedPath("/v1.23/a-resource")
                     .build()
@@ -458,7 +467,7 @@ class OkDockerClientSpec extends Specification {
 
         def serverUrl = mockWebServer.url("/")
         def hasVerified = false
-        def Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
+        Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
             def expectedUrl = serverUrl.newBuilder()
                     .encodedPath("/a-resource")
                     .encodedQuery("baz=la%2Fla&answer=42")
@@ -500,7 +509,7 @@ class OkDockerClientSpec extends Specification {
         mockWebServer.start()
 
         def hasVerified = false
-        def Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
+        Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
             if (chain.connection()?.socket() instanceof SSLSocket) {
                 throw new AssertionError("didn't expect a SSLSocket, got ${chain.connection()?.socket()}")
             }
@@ -541,7 +550,7 @@ class OkDockerClientSpec extends Specification {
         mockWebServer.start()
 
         def hasVerified = false
-        def Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
+        Closure<Boolean> verifyResponse = { Response response, Interceptor.Chain chain ->
             if (!(chain.connection()?.socket() instanceof SSLSocket)) {
                 throw new AssertionError("expected a SSLSocket, got ${chain.connection()?.socket()}")
             }
@@ -793,7 +802,7 @@ class OkDockerClientSpec extends Specification {
         given:
         def actualText = "holy ship"
         def headerAndPayload = new RawHeaderAndPayload(STDOUT, actualText.bytes)
-        def responseBody = new ByteArrayInputStream((byte[]) headerAndPayload.bytes)
+        def responseBody = new ByteArrayInputStream(headerAndPayload.bytes as byte[])
         def mediaType = MediaType.parse("application/vnd.docker.raw-stream")
         def client = new OkDockerClient() {
             @Override
@@ -821,7 +830,7 @@ class OkDockerClientSpec extends Specification {
         given:
         def actualText = "holy ship"
         def headerAndPayload = new RawHeaderAndPayload(STDOUT, actualText.bytes)
-        def responseBody = new ByteArrayInputStream((byte[]) headerAndPayload.bytes)
+        def responseBody = new ByteArrayInputStream(headerAndPayload.bytes as byte[])
         def mediaType = MediaType.parse("application/vnd.docker.raw-stream")
         def client = new OkDockerClient() {
             @Override

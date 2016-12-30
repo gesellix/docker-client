@@ -2,6 +2,8 @@ package de.gesellix.docker.client
 
 import groovy.transform.ToString
 
+import java.util.concurrent.Future
+
 @ToString(includeNames = true)
 class DockerResponse {
 
@@ -12,4 +14,6 @@ class DockerResponse {
     def contentLength
     def stream
     def content
+
+    Future taskFuture
 }

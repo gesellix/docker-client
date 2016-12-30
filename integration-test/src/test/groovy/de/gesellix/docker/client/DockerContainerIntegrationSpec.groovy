@@ -610,20 +610,21 @@ class DockerContainerIntegrationSpec extends Specification {
             onFinish() {
             }
         }
-        dockerClient.events(callback)
+        def response = dockerClient.events(callback)
 
         when:
-        def response = dockerClient.createContainer([Cmd: "-"])
+        def containerId = dockerClient.createContainer([Cmd: "-"]).content.Id
         latch.await(5, SECONDS)
 
         then:
         callback.events.size() == 1
         and:
         callback.events.first().status == "create"
-        callback.events.first().id == response.content.Id
+        callback.events.first().id == containerId
 
         cleanup:
-        dockerClient.rm(response.content.Id)
+        response.taskFuture.cancel(true)
+        dockerClient.rm(containerId)
     }
 
     def "events (poll)"() {
@@ -668,7 +669,7 @@ class DockerContainerIntegrationSpec extends Specification {
         dockerClient.rm(container1)
 
         when:
-        dockerClient.events(callback, [since: epochBeforeRm, filters: [container: [container1]]])
+        def response = dockerClient.events(callback, [since: epochBeforeRm, filters: [container: [container1]]])
         latch.await(10, SECONDS)
 
         then:
@@ -678,6 +679,7 @@ class DockerContainerIntegrationSpec extends Specification {
         destroyEvents.find { it.id == container1 }
 
         cleanup:
+        response.taskFuture.cancel(true)
         dockerClient.rm(container1)
         dockerClient.rm(container2)
     }
@@ -727,7 +729,7 @@ class DockerContainerIntegrationSpec extends Specification {
         def containerId = containerStatus.container.content.Id
 
         when:
-        dockerClient.stats(containerId, callback)
+        def response = dockerClient.stats(containerId, callback)
         latch.await(5, SECONDS)
 
         then:
@@ -735,6 +737,7 @@ class DockerContainerIntegrationSpec extends Specification {
         callback.stats.first().blkio_stats
 
         cleanup:
+        response.taskFuture.cancel(true)
         dockerClient.stop(containerId)
         dockerClient.wait(containerId)
         dockerClient.rm(containerId)
@@ -762,7 +765,7 @@ class DockerContainerIntegrationSpec extends Specification {
         def containerId = containerStatus.container.content.Id
 
         when:
-        dockerClient.logs(containerId, [tail: 1], callback)
+        def response = dockerClient.logs(containerId, [tail: 1], callback)
         latch.await(5, SECONDS)
 
         then:
@@ -770,6 +773,7 @@ class DockerContainerIntegrationSpec extends Specification {
         callback.lines.first().startsWith("64 bytes from 127.0.0.1")
 
         cleanup:
+        response.taskFuture.cancel(true)
         dockerClient.stop(containerId)
         dockerClient.wait(containerId)
         dockerClient.rm(containerId)

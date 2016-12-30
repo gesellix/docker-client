@@ -54,35 +54,35 @@ class OkDockerClient implements HttpClient {
     }
 
     @Override
-    head(Map requestConfig) {
+    DockerResponse head(Map requestConfig) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "HEAD"
         return request(config)
     }
 
     @Override
-    get(Map requestConfig) {
+    DockerResponse get(Map requestConfig) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "GET"
         return request(config)
     }
 
     @Override
-    put(Map requestConfig) {
+    DockerResponse put(Map requestConfig) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "PUT"
         return request(config)
     }
 
     @Override
-    post(Map requestConfig) {
+    DockerResponse post(Map requestConfig) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "POST"
         return request(config)
     }
 
     @Override
-    delete(Map requestConfig) {
+    DockerResponse delete(Map requestConfig) {
         def config = ensureValidRequestConfig(requestConfig)
         config.method = "DELETE"
         return request(config)
