@@ -336,6 +336,16 @@ class DockerImageIntegrationSpec extends Specification {
     }
 
     def "list images with intermediate layers"() {
+        given:
+        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+        def container1Info = dockerClient.createContainer(["Cmd": ["-"], "Image": imageId]).content
+        dockerClient.commit(container1Info.Id, [repo: 'repo1', tag: 'tag1'])
+        dockerClient.rm(container1Info.Id)
+        def container2Info = dockerClient.createContainer(["Cmd": ["-"], "Image": "repo1:tag1"]).content
+        dockerClient.commit(container2Info.Id, [repo: 'repo2', tag: 'tag2'])
+        dockerClient.rm(container2Info.Id)
+        dockerClient.rmi("repo1:tag1")
+
         when:
         def images = dockerClient.images([:]).content
         def fullImages = dockerClient.images([all: true]).content
@@ -346,6 +356,9 @@ class DockerImageIntegrationSpec extends Specification {
         imageIds != fullImageIds
         and:
         fullImageIds.size() > imageIds.size()
+
+        cleanup:
+        dockerClient.rmi("repo2:tag2")
     }
 
     def "list images filtered"() {
