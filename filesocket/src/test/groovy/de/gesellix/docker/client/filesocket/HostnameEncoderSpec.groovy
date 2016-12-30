@@ -1,6 +1,5 @@
 package de.gesellix.docker.client.filesocket
 
-import de.gesellix.docker.client.filesocket.HostnameEncoder
 import spock.lang.Specification
 
 class HostnameEncoderSpec extends Specification {

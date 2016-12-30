@@ -1,5 +1,3 @@
-import java.text.SimpleDateFormat
-
 buildscript {
     repositories {
         mavenLocal()
@@ -49,7 +47,12 @@ dependencies {
 
     compile 'org.apache.commons:commons-compress:1.13'
 
-    compile project(':filesocket')
+    compile('com.kohlschutter.junixsocket:junixsocket-native-common:2.0.4') {
+        exclude module: 'log4j'
+    }
+    compile('com.kohlschutter.junixsocket:junixsocket-common:2.0.4') {
+        exclude module: 'log4j'
+    }
 
     compile 'org.bouncycastle:bcpkix-jdk15on:1.56'
 
@@ -67,11 +70,6 @@ task sourcesJar(type: Jar) {
     dependsOn classes
     classifier 'sources'
     from sourceSets.main.allSource
-}
-
-ext {
-    artifactVersion = new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss').format(new Date())
-    bintrayDryRun = false
 }
 
 test {
@@ -92,32 +90,3 @@ jacocoTestReport.reports {
 artifacts {
     archives sourcesJar
 }
-
-publishing {
-    publications {
-        dockerClient(MavenPublication) {
-            artifactId 'docker-client'
-            version artifactVersion
-            from components.java
-            artifact sourcesJar
-        }
-    }
-}
-
-bintray {
-    user = System.env.BINTRAY_USER ?: project["bintray.user"]
-    key = System.env.BINTRAY_API_KEY ?: project["bintray.key"]
-    publications = ['dockerClient']
-    pkg {
-        repo = 'docker-utils'
-        name = 'docker-client'
-        desc = 'A Docker client for the JVM written in Groovy'
-        licenses = ['Apache-2.0']
-        labels = ['docker', 'engine api', 'remote api', 'client', 'java', 'groovy']
-        version = [
-                name: artifactVersion
-        ]
-    }
-    dryRun = bintrayDryRun
-}
-bintrayUpload.dependsOn build
