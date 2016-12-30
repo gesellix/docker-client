@@ -55,7 +55,7 @@ class DockerSwarmIntegrationSpec extends Specification {
         firstNode.ManagerStatus.Leader == true
 
         cleanup:
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def "inspect node"() {
@@ -71,7 +71,7 @@ class DockerSwarmIntegrationSpec extends Specification {
         node.ManagerStatus.Leader == true
 
         cleanup:
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def "update node"() {
@@ -102,7 +102,7 @@ class DockerSwarmIntegrationSpec extends Specification {
         dockerClient.info().content.Swarm.LocalNodeState == "active"
 
         cleanup:
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def "rm node"() {
@@ -119,7 +119,7 @@ class DockerSwarmIntegrationSpec extends Specification {
         exception.detail.content.message.contains("must be demoted")
 
         cleanup:
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def "inspect swarm"() {
@@ -136,7 +136,7 @@ class DockerSwarmIntegrationSpec extends Specification {
         self == nodeId
 
         cleanup:
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def "init swarm"() {
@@ -150,7 +150,7 @@ class DockerSwarmIntegrationSpec extends Specification {
         response.content =~ /[0-9a-f]+/
 
         cleanup:
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def "join swarm"() {
@@ -174,7 +174,7 @@ class DockerSwarmIntegrationSpec extends Specification {
         exception.detail.content.message.contains("This node is already part of a swarm")
 
         cleanup:
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def "leave swarm"() {
@@ -191,7 +191,7 @@ class DockerSwarmIntegrationSpec extends Specification {
         exception.detail.content.message.contains("Removing the last manager erases all current state of the swarm")
 
         cleanup:
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def "update swarm"() {
@@ -215,10 +215,11 @@ class DockerSwarmIntegrationSpec extends Specification {
         response.status.code == 200
 
         cleanup:
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def "rotate swarm worker token"() {
+
         given:
         def config = newSwarmConfig()
         dockerClient.initSwarm(config)
@@ -234,7 +235,7 @@ class DockerSwarmIntegrationSpec extends Specification {
         newToken.startsWith("SWMTKN")
 
         cleanup:
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def "rotate swarm manager token"() {
@@ -253,7 +254,7 @@ class DockerSwarmIntegrationSpec extends Specification {
         newToken.startsWith("SWMTKN")
 
         cleanup:
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def "services"() {
@@ -269,7 +270,7 @@ class DockerSwarmIntegrationSpec extends Specification {
         response.content == []
 
         cleanup:
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def "create service"() {
@@ -312,9 +313,9 @@ class DockerSwarmIntegrationSpec extends Specification {
         redisService?.Spec?.Name == "redis"
 
         cleanup:
-        dockerClient.rmService("redis")
-        awaitServiceRemoved("redis")
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.rmService("redis") }
+        performSilently { awaitServiceRemoved("redis") }
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def "rm service"() {
@@ -343,7 +344,7 @@ class DockerSwarmIntegrationSpec extends Specification {
         response.status.code == 200
 
         cleanup:
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def "inspect service"() {
@@ -372,9 +373,9 @@ class DockerSwarmIntegrationSpec extends Specification {
         response.content.ID == serviceId
 
         cleanup:
-        dockerClient.rmService("redis")
-        awaitServiceRemoved("redis")
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.rmService("redis") }
+        performSilently { awaitServiceRemoved("redis") }
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def "update service"() {
@@ -440,9 +441,9 @@ class DockerSwarmIntegrationSpec extends Specification {
         firstTask.ID =~ /[0-9a-f]+/
 
         cleanup:
-        dockerClient.rmService("redis")
-        awaitServiceRemoved("redis")
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.rmService("redis") }
+        performSilently { awaitServiceRemoved("redis") }
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def "inspect task"() {
@@ -476,9 +477,9 @@ class DockerSwarmIntegrationSpec extends Specification {
         task.DesiredState == "running"
 
         cleanup:
-        dockerClient.rmService("redis")
-        awaitServiceRemoved("redis")
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.rmService("redis") }
+        performSilently { awaitServiceRemoved("redis") }
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def newSwarmConfig() {
