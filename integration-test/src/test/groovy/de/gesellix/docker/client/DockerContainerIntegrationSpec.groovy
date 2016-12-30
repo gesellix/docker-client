@@ -182,7 +182,12 @@ class DockerContainerIntegrationSpec extends Specification {
         then:
         DockerClientException ex = thrown()
         ex.cause.message == 'docker pull failed'
-        ex.detail.content.message == "manifest for gesellix/testimage:unknown not found"
+        def expectManifestNotFound = LocalDocker.getDockerVersion().major >= 1 && LocalDocker.getDockerVersion().minor >= 13
+        if (expectManifestNotFound) {
+            ex.detail.content.message == "manifest for gesellix/testimage:unknown not found"
+        } else {
+            ex.detail.content.last().error == "Tag unknown not found in repository docker.io/gesellix/testimage"
+        }
     }
 
     def "start container"() {

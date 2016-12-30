@@ -75,7 +75,7 @@ class DockerImageIntegrationSpec extends Specification {
         DockerClientException ex = thrown()
         ex.cause.message == 'docker build failed'
         ex.detail.content.last().error.contains " missing/image"
-        ex.detail.content.last().errorDetail.contains " missing/image"
+        ex.detail.content.last().errorDetail.message.contains " missing/image"
     }
 
     def "build image with custom Dockerfile"() {
