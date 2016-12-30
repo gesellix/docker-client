@@ -27,7 +27,8 @@ class TestConstants {
             imageDigest = "sha256:0ce18ad10d281bef97fe2333a9bdcc2dbf84b5302f66d796fed73aac675320db"
         }
 
-        if (System.env.TRAVIS == true) {
+        println "is travis-ci: ${System.env.TRAVIS}"
+        if (System.env.TRAVIS) {
             versionDetails = [
                     ApiVersion   : { it == "1.24" },
                     Arch         : { it == "amd64" },
