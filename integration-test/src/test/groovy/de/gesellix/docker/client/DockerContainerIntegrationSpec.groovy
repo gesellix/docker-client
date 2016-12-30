@@ -687,12 +687,12 @@ class DockerContainerIntegrationSpec extends Specification {
         def top = dockerClient.top(containerId).content
 
         then:
-        top.Titles == ["PID", "USER", "TIME", "COMMAND"]
+        def reducedTitleSet = LocalDocker.getDockerVersion().major >= 1 && LocalDocker.getDockerVersion().minor >= 13
+        top.Titles == reducedTitleSet ? ["PID", "USER", "TIME", "COMMAND"] : ["UID", "PID", "PPID", "C", "STIME", "TTY", "TIME", "CMD"]
         and:
-        top.Processes.last()[0] =~ "\\d{4}"
-        top.Processes.last()[1] == "root"
-        top.Processes.last()[2] == "0:00"
-        top.Processes.last()[3] == "ping 127.0.0.1"
+        def lastEntry = top.Processes.last()
+        def lastColumn = lastEntry.last()
+        lastColumn == "ping 127.0.0.1"
 
         cleanup:
         dockerClient.stop(containerId)

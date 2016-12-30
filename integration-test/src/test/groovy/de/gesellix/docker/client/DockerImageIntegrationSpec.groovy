@@ -74,8 +74,8 @@ class DockerImageIntegrationSpec extends Specification {
         then:
         DockerClientException ex = thrown()
         ex.cause.message == 'docker build failed'
-        ex.detail.content.last() == [error      : "repository missing/image not found: does not exist or no pull access",
-                                     errorDetail: [message: "repository missing/image not found: does not exist or no pull access"]]
+        ex.detail.content.last().error.contains " missing/image"
+        ex.detail.content.last().errorDetail.contains " missing/image"
     }
 
     def "build image with custom Dockerfile"() {
@@ -121,7 +121,7 @@ class DockerImageIntegrationSpec extends Specification {
         latch.await(5, SECONDS)
 
         then:
-        events.first() == [stream: "Step 1/11 : FROM alpine:edge\n"]
+        events.first().stream =~ "Step 1(/11)? : FROM alpine:edge\n"
         def imageId = events.last().stream.trim() - "Successfully built "
 
         cleanup:
@@ -136,7 +136,7 @@ class DockerImageIntegrationSpec extends Specification {
         def result = dockerClient.buildWithLogs(newBuildContext(inputDirectory))
 
         then:
-        result.log.first() == [stream: "Step 1/11 : FROM alpine:edge\n"]
+        result.log.first().stream =~ "Step 1(/11)? : FROM alpine:edge\n"
         result.log.last().stream.startsWith("Successfully built ")
         def imageId = result.log.last().stream.trim() - "Successfully built "
         result.imageId == imageId

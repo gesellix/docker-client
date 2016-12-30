@@ -11,7 +11,7 @@ class DockerVersion {
     String meta
 
     static DockerVersion parseDockerVersion(String version) {
-        final def versionPattern = /(\d+)\.(\d+)\.(\d+)(.*)/
+        final versionPattern = /(\d+)\.(\d+)\.(\d+)(.*)/
 
         def parsedVersion = new DockerVersion()
         version.eachMatch(versionPattern) { List<String> groups ->
@@ -25,7 +25,7 @@ class DockerVersion {
     }
 
     @Override
-    public String toString() {
+    String toString() {
         return "$major.$minor.$patch$meta"
     }
 }

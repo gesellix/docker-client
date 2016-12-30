@@ -36,7 +36,7 @@ class TestConstants {
                     GitCommit    : { it == "6b644ec" },
                     GoVersion    : { it == "go1.6.3" },
                     KernelVersion: { it =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?" },
-                    MinAPIVersion: { it == "1.12" },
+                    MinAPIVersion: { it == null },
                     Os           : { it == "linux" },
                     Version      : { it == "1.12.3" }]
         } else {
