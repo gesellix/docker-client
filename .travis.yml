@@ -11,6 +11,9 @@ env:
     - TERM=dumb
     - secure: sPZuYyAvTEOh+4fuvZwP1cP4jN1GWAMzLudeb1/2yBXOLQTwIQjKa5q640m6sMocofXqIpBYCxP0znG4jC7fo6VTX6mcO2ezcotuVxfWdTiz5HSD8S9u9IvK+mHsa/IpsRxnSft0E47qLieLktvcoBo/sAkJq444lnva/xkbPv8=
     - secure: nLDiPa2QsW5AFnMsQkPaqd+C1XKbTrEmSmNE5dDzsdtluaJkaDedhNH9RiyPLBJDFt88EO1ynNvA6sXMtz+Q3EvDzlH1mLxJgrd4x9by72DGp5Kz5QPk/FY2x2edVK37NyXS0GVYOGOr5VW/8mLjpFv9dTMFpyfsrArOTvgW6XY=
+before_install:
+  - sudo dpkg --purge --force-depends ca-certificates-java
+  - sudo apt-get install ca-certificates-java
 script:
   - ./gradlew clean build cobertura coveralls --stacktrace --info -Dscan
 after_success:
