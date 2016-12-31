@@ -791,26 +791,37 @@ class DockerContainerIntegrationSpec extends Specification {
 
         def input = "attach ${UUID.randomUUID()}"
         def expectedOutput = "$input\r\n->$input\r\n"
-        def outputStream = new ByteArrayOutputStream()
+        def outputStream = new ByteArrayOutputStream() {
+            @Override
+            synchronized void write(byte[] b, int off, int len) {
+                log.info("write ${off}/${len} to ${b.length} bytes")
+                super.write(b, off, len)
+            }
+        }
 
         def onSinkClosed = new CountDownLatch(1)
         def onSourceConsumed = new CountDownLatch(1)
 
         def attachConfig = new AttachConfig()
-        attachConfig.streams.stdin = new ByteArrayInputStream("$input\n".bytes)
+        attachConfig.streams.stdin = new ByteArrayInputStream("$input\n".bytes) {
+            @Override
+            synchronized int read(byte[] b, int off, int len) {
+                log.info("read ${off}/${len} from ${b.length} bytes")
+                return super.read(b, off, len)
+            }
+        }
         attachConfig.streams.stdout = outputStream
         attachConfig.onSinkClosed = { Response response ->
+            log.info("[attach (interactive)] sink closed \n${outputStream.toString()}")
             onSinkClosed.countDown()
         }
         attachConfig.onSourceConsumed = {
-            onSourceConsumed.countDown()
-        }
-        attachConfig.onFailure = { Exception e ->
-            println "[attach (interactive)] error ${e}"
-            throw e
-        }
-        attachConfig.onResponse = { Response response ->
-            println "[attach (interactive)] response ${response}"
+            if (outputStream.toByteArray() == expectedOutput.bytes) {
+                log.info("[attach (interactive)] fully consumed \n${outputStream.toString()}")
+                onSourceConsumed.countDown()
+            } else {
+                log.info("[attach (interactive)] partially consumed \n${outputStream.toString()}")
+            }
         }
 
         when:

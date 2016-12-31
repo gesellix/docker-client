@@ -15,7 +15,7 @@ class IOUtils {
     }
 
     static long copy(Source source, Sink sink) {
-        def buffer = Okio.buffer(sink)
+        def buffer = Okio.buffer(sink as Sink)
         def count = buffer.writeAll(source)
         buffer.flush()
         return count

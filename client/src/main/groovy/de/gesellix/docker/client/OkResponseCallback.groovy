@@ -1,5 +1,6 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.client.util.IOUtils
 import groovy.util.logging.Slf4j
 import okhttp3.Call
 import okhttp3.Callback
@@ -52,15 +53,15 @@ class OkResponseCallback implements Callback {
                 void run() {
                     try {
                         def bufferedSink = Okio.buffer(connectionProvider.sink)
-                        while (stdinSource.read(bufferedSink.buffer(), 1024) != -1) {
-                            bufferedSink.flush()
-                        }
+                        IOUtils.copy(stdinSource, bufferedSink.buffer())
+                        bufferedSink.flush()
                         bufferedSink.close()
                         onSinkClosed(response)
                     } catch (Exception e) {
                         onFailure(e)
                     } finally {
-                        client.dispatcher().executorService().shutdown()
+//                        client.dispatcher().executorService().awaitTermination(5, SECONDS)
+//                        client.dispatcher().executorService().shutdown()
                     }
                 }
             })
@@ -74,9 +75,7 @@ class OkResponseCallback implements Callback {
                 @Override
                 void run() {
                     try {
-                        while (connectionProvider.source.read(bufferedStdout.buffer(), 1024) != -1) {
-                            bufferedStdout.flush()
-                        }
+                        IOUtils.copy(connectionProvider.source, bufferedStdout.buffer())
                         bufferedStdout.flush()
                         onSourceConsumed()
                     } catch (Exception e) {
@@ -87,6 +86,7 @@ class OkResponseCallback implements Callback {
             reader.setName("stdout-reader ${call.request().url().encodedPath()}")
             reader.start()
         }
+
         onResponse(response)
     }
 }
