@@ -8,6 +8,10 @@ import okhttp3.OkHttpClient
 import okhttp3.Response
 import okio.Okio
 
+import java.util.concurrent.CountDownLatch
+
+import static java.util.concurrent.TimeUnit.SECONDS
+
 @Slf4j
 class OkResponseCallback implements Callback {
 
@@ -55,13 +59,17 @@ class OkResponseCallback implements Callback {
                         def bufferedSink = Okio.buffer(connectionProvider.sink)
                         IOUtils.copy(stdinSource, bufferedSink.buffer())
                         bufferedSink.flush()
-                        bufferedSink.close()
-                        onSinkClosed(response)
+                        def done = new CountDownLatch(1)
+                        delayed(100, {
+                            bufferedSink.close()
+                            onSinkClosed(response)
+                        }, done)
+                        done.await(5, SECONDS)
                     } catch (Exception e) {
                         onFailure(e)
                     } finally {
 //                        client.dispatcher().executorService().awaitTermination(5, SECONDS)
-//                        client.dispatcher().executorService().shutdown()
+                        client.dispatcher().executorService().shutdown()
                     }
                 }
             })
@@ -77,7 +85,11 @@ class OkResponseCallback implements Callback {
                     try {
                         IOUtils.copy(connectionProvider.source, bufferedStdout.buffer())
                         bufferedStdout.flush()
-                        onSourceConsumed()
+                        def done = new CountDownLatch(1)
+                        delayed(100, {
+                            onSourceConsumed()
+                        }, done)
+                        done.await(5, SECONDS)
                     } catch (Exception e) {
                         onFailure(e)
                     }
@@ -88,5 +100,21 @@ class OkResponseCallback implements Callback {
         }
 
         onResponse(response)
+    }
+
+    static delayed(long delay, Closure action, CountDownLatch done) {
+        new Timer().schedule(
+                new TimerTask() {
+                    @Override
+                    void run() {
+                        try {
+                            action()
+                        } finally {
+                            done.countDown()
+                        }
+                    }
+                },
+                delay
+        )
     }
 }

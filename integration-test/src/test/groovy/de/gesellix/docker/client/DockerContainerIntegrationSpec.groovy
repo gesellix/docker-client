@@ -601,7 +601,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
             @Override
             onEvent(Object event) {
-                println "[events (async)] $event"
+                log.info("[events (async)] $event")
                 events << new JsonSlurper().parseText(event as String)
                 latch.countDown()
             }
@@ -646,7 +646,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
             @Override
             onEvent(Object event) {
-                println "[events (poll)] $event"
+                log.info("[events (poll)] $event")
                 def parsedEvent = new JsonSlurper().parseText(event as String)
                 events << parsedEvent
                 if (parsedEvent.status == "destroy") {
@@ -715,7 +715,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
             @Override
             onEvent(Object stat) {
-                println "[stats] $stat"
+                log.info("[stats] $stat")
                 stats << new JsonSlurper().parseText(stat as String)
                 latch.countDown()
             }
@@ -751,7 +751,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
             @Override
             onEvent(Object line) {
-                println "[logs] $line"
+                log.info("[logs] $line")
                 lines << line
                 latch.countDown()
             }
@@ -789,8 +789,9 @@ class DockerContainerIntegrationSpec extends Specification {
         ]
         def containerId = dockerClient.run(imageId, containerConfig).container.content.Id
 
-        def input = "attach ${UUID.randomUUID()}"
-        def expectedOutput = "$input\r\n->$input\r\n"
+        def content = "attach ${UUID.randomUUID()}"
+        def expectedOutput = "$content\r\n->$content\r\n"
+
         def outputStream = new ByteArrayOutputStream() {
             @Override
             synchronized void write(byte[] b, int off, int len) {
@@ -798,18 +799,19 @@ class DockerContainerIntegrationSpec extends Specification {
                 super.write(b, off, len)
             }
         }
-
-        def onSinkClosed = new CountDownLatch(1)
-        def onSourceConsumed = new CountDownLatch(1)
-
-        def attachConfig = new AttachConfig()
-        attachConfig.streams.stdin = new ByteArrayInputStream("$input\n".bytes) {
+        def inputStream = new ByteArrayInputStream("$content\n".bytes) {
             @Override
             synchronized int read(byte[] b, int off, int len) {
                 log.info("read ${off}/${len} from ${b.length} bytes")
                 return super.read(b, off, len)
             }
         }
+
+        def onSinkClosed = new CountDownLatch(1)
+        def onSourceConsumed = new CountDownLatch(1)
+
+        def attachConfig = new AttachConfig()
+        attachConfig.streams.stdin = inputStream
         attachConfig.streams.stdout = outputStream
         attachConfig.onSinkClosed = { Response response ->
             log.info("[attach (interactive)] sink closed \n${outputStream.toString()}")

@@ -3,8 +3,9 @@ package de.gesellix.docker.client.filesocket
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.DockerClientImpl
 import de.gesellix.docker.client.HttpClient
-import de.gesellix.docker.client.OkDockerClient
 import de.gesellix.docker.client.LocalDocker
+import de.gesellix.docker.client.OkDockerClient
+import groovy.util.logging.Slf4j
 import org.apache.commons.lang.SystemUtils
 import spock.lang.Requires
 import spock.lang.Specification
@@ -14,6 +15,7 @@ import java.util.concurrent.CountDownLatch
 import static java.util.concurrent.TimeUnit.SECONDS
 import static org.spockframework.util.Assert.fail
 
+@Slf4j
 @Requires({ SystemUtils.IS_OS_WINDOWS && LocalDocker.available() })
 class HttpOverNamedPipeIntegrationTest extends Specification {
 
@@ -54,7 +56,7 @@ class HttpOverNamedPipeIntegrationTest extends Specification {
 
     def runNpipe(File npipeExe, String pipePath, CountDownLatch npipeLatch) {
         def logProcessStartup = { String line ->
-            println(line)
+            log.info(line)
             if (line.contains(pipePath)) {
                 npipeLatch.countDown()
             }
