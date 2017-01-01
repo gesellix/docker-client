@@ -108,6 +108,7 @@ bintray {
         version = [
                 name: artifactVersion
         ]
+        vcsUrl = 'https://github.com/gesellix/docker-client.git'
     }
     dryRun = bintrayDryRun
 }
