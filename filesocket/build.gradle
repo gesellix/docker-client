@@ -24,8 +24,6 @@ apply plugin: 'maven-publish'
 
 apply plugin: 'com.jfrog.bintray'
 
-apply plugin: 'idea'
-
 group = 'de.gesellix'
 
 repositories {
@@ -72,11 +70,6 @@ task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
 }
 
-test {
-    // minimal way of providing a special environment variable for the EnvFileParserTest
-    environment "A_KNOWN_VARIABLE", "my value"
-}
-
 cobertura {
     coverageSourceDirs = sourceSets.main.groovy.srcDirs
     coverageFormats = ['html', 'xml']
@@ -90,3 +83,32 @@ jacocoTestReport.reports {
 artifacts {
     archives sourcesJar
 }
+
+publishing {
+    publications {
+        dockerFilesocket(MavenPublication) {
+            artifactId 'docker-filesocket'
+            version artifactVersion
+            from components.java
+            artifact sourcesJar
+        }
+    }
+}
+
+bintray {
+    user = System.env.BINTRAY_USER ?: project["bintray.user"]
+    key = System.env.BINTRAY_API_KEY ?: project["bintray.key"]
+    publications = ['dockerFilesocket']
+    pkg {
+        repo = 'docker-utils'
+        name = 'docker-filesocket'
+        desc = 'Unix Domain Sockets and Named Pipes for the JVM on Linux, macOS, and Windows'
+        licenses = ['Apache-2.0']
+        labels = ['docker', 'unix socket', 'linux', 'mac', 'named pipe', 'windows', 'engine api', 'remote api', 'client', 'java', 'groovy']
+        version = [
+                name: artifactVersion
+        ]
+    }
+    dryRun = bintrayDryRun
+}
+bintrayUpload.dependsOn build

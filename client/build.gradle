@@ -26,8 +26,6 @@ apply plugin: 'maven-publish'
 
 apply plugin: 'com.jfrog.bintray'
 
-apply plugin: 'idea'
-
 group = 'de.gesellix'
 
 repositories {
