@@ -14,11 +14,11 @@ import java.security.spec.PKCS8EncodedKeySpec
  * A slightly modified copy from https://github.com/rhuss/docker-maven-plugin
  * with kind permission of Roland Huß (https://twitter.com/ro14nd).
  */
-public class KeyStoreUtil {
+class KeyStoreUtil {
 
-    def static KEY_STORE_PASSWORD = "docker".toCharArray()
+    static KEY_STORE_PASSWORD = "docker".toCharArray()
 
-    def static KeyStore createDockerKeyStore(String certPath) throws IOException, GeneralSecurityException {
+    static KeyStore createDockerKeyStore(String certPath) throws IOException, GeneralSecurityException {
         PrivateKey privKey = loadPrivateKey(new File(certPath, "key.pem").absolutePath)
         Certificate[] certs = loadCertificates(new File(certPath, "cert.pem").absolutePath)
 

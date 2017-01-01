@@ -22,7 +22,7 @@ enum StreamType {
         this.streamTypeId = streamTypeId
     }
 
-    static def valueOf(byte b) {
+    static valueOf(byte b) {
         def value = values().find {
             return it.streamTypeId == b
         }

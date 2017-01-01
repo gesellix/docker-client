@@ -18,14 +18,14 @@ class RawInputStream extends FilterInputStream {
     def multiplexStreams = true
     def remainingFrameSize = -1
 
-    def copyFullyMultiplexed(stdout, stderr = null) {
+    def copyFullyMultiplexed(OutputStream stdout, OutputStream stderr = null) {
         if (!(stdout || stderr)) {
             throw new IllegalArgumentException("need at least one of stdout or stderr")
         }
 
         if (!multiplexStreams) {
             def actualOutputStream = stdout ?: stderr
-            return IOUtils.copy(super.in, actualOutputStream as OutputStream)
+            return IOUtils.copy(super.in, actualOutputStream)
         }
 
         int sum = 0
@@ -36,8 +36,8 @@ class RawInputStream extends FilterInputStream {
         return sum
     }
 
-    int copyFrame(stdout, stderr) {
-        def outputStreamsByStreamType = [:]
+    int copyFrame(OutputStream stdout, OutputStream stderr) {
+        Map<String, OutputStream> outputStreamsByStreamType = [:]
         outputStreamsByStreamType["${StreamType.STDOUT}"] = stdout ?: stderr
         outputStreamsByStreamType["${StreamType.STDERR}"] = stderr ?: stdout
 
