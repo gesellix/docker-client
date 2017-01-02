@@ -27,7 +27,8 @@ subprojects {
 
     def dependencyVersions = [
             'junit:junit:4.11',
-            'org.bouncycastle:bcprov-jdk15on:1.56'
+            'org.bouncycastle:bcprov-jdk15on:1.56',
+            'org.slf4j:slf4j-api:1.7.22'
     ]
 
     configurations.all {

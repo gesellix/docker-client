@@ -36,7 +36,7 @@ dependencies {
     compile 'org.codehaus.groovy:groovy:2.4.7'
     compile 'org.codehaus.groovy:groovy-json:2.4.7'
 
-    compile 'org.slf4j:slf4j-api:1.7.21'
+    compile 'org.slf4j:slf4j-api:1.7.22'
     testCompile 'ch.qos.logback:logback-classic:1.1.8'
 
     compile 'com.squareup.okio:okio:1.11.0'
