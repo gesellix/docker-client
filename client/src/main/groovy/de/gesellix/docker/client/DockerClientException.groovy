@@ -10,7 +10,7 @@ class DockerClientException extends RuntimeException {
     }
 
     @Override
-    public String toString() {
+    String toString() {
         if (detail instanceof String) {
             return "DockerClientException{detail=$detail} ${super.toString()}"
         } else {

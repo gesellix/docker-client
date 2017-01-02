@@ -10,16 +10,13 @@ a [new issue](https://github.com/gesellix/docker-client/issues) or a [pull reque
 and we'll add it as soon as possible. If you're looking for another Java based Docker library with similar feature set,
 check out the project at [Java Docker API Client](https://github.com/docker-java/docker-java).
 
-## Misc, System - Manage Docker (7/8)
+# Management Commands
 
-* [x] `docker search <term>`: Search the Docker Hub for images
-* [x] `docker system info`: Display system-wide information
-* [x] `docker system df`: Show docker disk usage (GET /system/df)
-* [x] `docker system events`: Monitor Docker's events
-* [ ] `docker system prune`: Remove unused data
-* [x] `docker version`: Show the docker version information
-* [x] Check auth configuration
-* [x] Ping the docker server
+## Checkpoints - Manage checkpoints (0/3)
+
+* [ ] `docker checkpoints create`: Create a checkpoint from a running container
+* [ ] `docker checkpoints ls`: List checkpoints for a container
+* [ ] `docker checkpoints rm`: Remove a checkpoint
 
 ## Container - Manage containers (31/32)
 
@@ -74,14 +71,6 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker image save <image> [<image> ...]`: Get a tarball containing all images.
 * [x] `docker image tag <image> <repository>`: Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE
 
-## Volume - Manage volumes (5/5)
-
-* [x] `docker volume create`: Create a volume
-* [x] `docker volume inspect`: Display detailed information on one or more volumes
-* [x] `docker volume ls`: List volumes from all volume drivers
-* [x] `docker volume prune`: Remove all unused volumes
-* [x] `docker volume rm`: Remove one or more volumes
-
 ## Network - Manage networks (7/7)
 
 * [x] `docker network connect`: Connect a container to a network
@@ -92,17 +81,6 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker network prune`: Remove all unused networks
 * [x] `docker network rm`: Remove one or more networks
 
-## Swarm - Manage Swarm (8/8)
-
-* [x] `docker swarm init`: Initialize a Swarm
-* [x] `docker swarm join`: Join a Swarm as a node and/or manager
-* [x] `docker swarm join-token`: Manage join tokens
-* [x] `docker swarm leave`: Leave a Swarm
-* [x] `docker swarm inspect`: Inspect the Swarm
-* [x] `docker swarm unlock`: Unlock swarm
-* [x] `docker swarm unlock-key`: Manage the unlock key
-* [x] `docker swarm update`: Update the Swarm
-
 ## Node - Manage Swarm nodes (5/7)
 
 * [ ] `docker node demote`: Demote a node from manager in the swarm
@@ -112,22 +90,6 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker node ps`: List tasks running on a node
 * [x] `docker node rm`: Remove a node from the swarm
 * [x] `docker node update`: Update a node
-
-## Service - Manage services (7/8)
-
-* [x] `docker service create`: Create a service
-* [x] `docker service inspect`: Return information on the service `<id>`
-* [ ] `docker service logs`: Get service logs (GET `/services/{id}/logs`)
-* [x] `docker service ls`: List services
-* [x] `docker service ps`: List the tasks of a service
-* [x] `docker service rm`: Remove a service
-* [x] `docker service scale`: Scale one or multiple services
-* [x] `docker service update`: Update a service
-
-## Tasks (2/2)
-
-* [x] List all tasks
-* [x] Get details on a task
 
 ## Plugin - Manage plugins (0/10)
 
@@ -150,6 +112,17 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [ ] `docker secret ls`: List secrets (GET /secrets)
 * [ ] `docker secret rm`: Delete a secret (DELETE /secrets/{id})
 
+## Service - Manage services (7/8)
+
+* [x] `docker service create`: Create a service
+* [x] `docker service inspect`: Return information on the service `<id>`
+* [ ] `docker service logs`: Get service logs (GET `/services/{id}/logs`)
+* [x] `docker service ls`: List services
+* [x] `docker service ps`: List the tasks of a service
+* [x] `docker service rm`: Remove a service
+* [x] `docker service scale`: Scale one or multiple services
+* [x] `docker service update`: Update a service
+
 ## Stack - Manage Docker stacks (0/5)
 
 * [ ] `docker stack deploy`: Deploy a new stack or update an existing stack
@@ -158,8 +131,42 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [ ] `docker stack rm`: Remove the stack
 * [ ] `docker stack services`: List the services in the stack
 
-## Checkpoints - Manage checkpoints (0/3)
+## Swarm - Manage Swarm (8/8)
 
-* [ ] `docker checkpoints create`: Create a checkpoint from a running container
-* [ ] `docker checkpoints ls`: List checkpoints for a container
-* [ ] `docker checkpoints rm`: Remove a checkpoint
+* [x] `docker swarm init`: Initialize a Swarm
+* [x] `docker swarm join`: Join a Swarm as a node and/or manager
+* [x] `docker swarm join-token`: Manage join tokens
+* [x] `docker swarm leave`: Leave a Swarm
+* [x] `docker swarm inspect`: Inspect the Swarm
+* [x] `docker swarm unlock`: Unlock swarm
+* [x] `docker swarm unlock-key`: Manage the unlock key
+* [x] `docker swarm update`: Update the Swarm
+
+## Misc, System - Manage Docker (3/4)
+
+* [x] `docker system info`: Display system-wide information
+* [x] `docker system df`: Show docker disk usage (GET /system/df)
+* [x] `docker system events`: Monitor Docker's events
+* [ ] `docker system prune`: Remove unused data
+
+## Volume - Manage volumes (5/5)
+
+* [x] `docker volume create`: Create a volume
+* [x] `docker volume inspect`: Display detailed information on one or more volumes
+* [x] `docker volume ls`: List volumes from all volume drivers
+* [x] `docker volume prune`: Remove all unused volumes
+* [x] `docker volume rm`: Remove one or more volumes
+
+# Other Commands
+
+## Misc (4/4)
+
+* [x] `docker search <term>`: Search the Docker Hub for images
+* [x] `docker version`: Show the docker version information
+* [x] Check auth configuration
+* [x] Ping the docker server
+
+## Tasks (2/2)
+
+* [x] List all tasks
+* [x] Get details on a task

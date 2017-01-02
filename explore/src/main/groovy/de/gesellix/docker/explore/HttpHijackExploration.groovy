@@ -14,7 +14,7 @@ class HttpHijackExploration {
     private DockerClient dockerClient
     private Set runningContainers
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         def dockerClient = new DockerClientImpl()
         def runningContainers = [] as Set
 
@@ -33,7 +33,7 @@ class HttpHijackExploration {
         log.info "${dockerClient.info().content}"
         log.info "${dockerClient.version().content}"
 
-        def containerName = "ping"
+        def containerName = "hijack"
 
 //        dockerClient.rm(containerName)
 
@@ -44,7 +44,8 @@ class HttpHijackExploration {
                         OpenStdin: true,
                         Tty      : true
                 ],
-                "", containerName)
+                "os-linux",
+                containerName)
 
         log.info "${runResult.container.content.Id}"
         runningContainers << containerName
@@ -91,7 +92,7 @@ class HttpHijackExploration {
             this.runningContainers = runningContainers
         }
 
-        public void run() {
+        void run() {
             for (String containerId : runningContainers) {
                 log.info containerId
 

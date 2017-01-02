@@ -2,7 +2,19 @@ package de.gesellix.docker.client
 
 import okhttp3.WebSocketListener
 
-interface DockerClient {
+interface DockerClient
+        extends ManageCheckpoint,
+                ManageContainer,
+                ManageImage,
+                ManageNetwork,
+                ManageNode,
+                ManagePlugin,
+                ManageSecret,
+                ManageService,
+                ManageStack,
+                ManageSwarm,
+                ManageSystem,
+                ManageVolume {
 
     def cleanupStorage(Closure shouldKeepContainer)
 
