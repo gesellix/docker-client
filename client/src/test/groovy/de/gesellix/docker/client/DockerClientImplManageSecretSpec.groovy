@@ -25,4 +25,13 @@ class DockerClientImplManageSecretSpec extends Specification {
                                                   Labels: [:]],
                              requestContentType: "application/json"]) >> [status: [success: true]]
     }
+
+    def "inspect a secret"() {
+        given:
+        when:
+        dockerClient.inspectSecret("5qyxxlxqbq6s5004io33miih6")
+
+        then:
+        1 * httpClient.get([path: "/secrets/5qyxxlxqbq6s5004io33miih6"]) >> [status: [success: true]]
+    }
 }

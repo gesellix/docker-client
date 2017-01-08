@@ -8,7 +8,9 @@ interface ManageSecret {
 
     def createSecret(String name, byte[] secretData, Map<String, String> labels)
 
-//    TODO inspect     Display detailed information on one or more secrets
+//    inspect     Display detailed information on one or more secrets
+
+    def inspectSecret(String secretId)
 
 //    TODO ls          List secrets
 
