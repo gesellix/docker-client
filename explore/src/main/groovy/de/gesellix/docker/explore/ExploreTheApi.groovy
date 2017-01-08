@@ -4,7 +4,7 @@ import de.gesellix.docker.client.DockerClientImpl
 
 class ExploreTheApi {
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
 //    def dockerClient = new DockerClientImpl(dockerHost: System.env.DOCKER_HOST)
 //    System.setProperty("docker.cert.path", "/Users/gesellix/.boot2docker/certs/boot2docker-vm")
 //    def dockerClient = new DockerClientImpl(dockerHost: "https://192.168.59.103:2376")
@@ -81,6 +81,8 @@ class ExploreTheApi {
 //        println dockerClient.getSwarmWorkerToken()
 //        println dockerClient.getSwarmMangerAddress()
 
-        println dockerClient.systemDf().content
+//        println dockerClient.systemDf().content
+
+        println dockerClient.createSecret("test", "a-secret".bytes).content
     }
 }

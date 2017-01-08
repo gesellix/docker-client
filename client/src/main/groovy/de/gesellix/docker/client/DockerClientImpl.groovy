@@ -1469,6 +1469,20 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
+    @Override
+    createSecret(String name, byte[] secretData, Map<String, String> labels = [:]) {
+        log.info "docker secret create"
+        // TODO do we need to base64 encode the secret data?
+        def secretConfig = [Name  : name,
+                            Data  : secretData,
+                            Labels: labels]
+        def response = getHttpClient().post([path              : "/secrets/create",
+                                             body              : secretConfig,
+                                             requestContentType: "application/json"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker secret create failed"))
+        return response
+    }
+
     def resolveNodeId(nodeFilter) {
         def ownNodeId = {
             info().content.Swarm.NodeID

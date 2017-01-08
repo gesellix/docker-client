@@ -2,7 +2,11 @@ package de.gesellix.docker.client
 
 interface ManageSecret {
 
-//    TODO create      Create a secret using stdin as content
+//    create      Create a secret using bytes as content
+
+    def createSecret(String name, byte[] secretData)
+
+    def createSecret(String name, byte[] secretData, Map<String, String> labels)
 
 //    TODO inspect     Display detailed information on one or more secrets
 

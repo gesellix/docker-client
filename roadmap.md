@@ -105,9 +105,9 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [ ] `docker plugin rm`: Remove a plugin `DELETE /plugins/{name:.*}`
 * [ ] `docker plugin set`: Change settings for a plugin `POST /plugins/{name:.*}/set`
 
-## Secrets - Manage Docker secrets (0/4)
+## Secrets - Manage Docker secrets (1/4)
 
-* [ ] `docker secret create`: Create a secret (POST /secrets/create)
+* [x] `docker secret create`: Create a secret
 * [ ] `docker secret inspect`: Inspect a secret (GET /secrets/{id})
 * [ ] `docker secret ls`: List secrets (GET /secrets)
 * [ ] `docker secret rm`: Delete a secret (DELETE /secrets/{id})
