@@ -1491,6 +1491,14 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
+    @Override
+    secrets() {
+        log.info "docker secret ls"
+        def response = getHttpClient().get([path: "/secrets"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker secret ls failed"))
+        return response
+    }
+
     def resolveNodeId(nodeFilter) {
         def ownNodeId = {
             info().content.Swarm.NodeID

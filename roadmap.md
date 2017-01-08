@@ -109,7 +109,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 
 * [x] `docker secret create`: Create a secret
 * [x] `docker secret inspect`: Inspect a secret
-* [ ] `docker secret ls`: List secrets (GET /secrets)
+* [x] `docker secret ls`: List secrets
 * [ ] `docker secret rm`: Delete a secret (DELETE /secrets/{id})
 
 ## Service - Manage services (7/8)

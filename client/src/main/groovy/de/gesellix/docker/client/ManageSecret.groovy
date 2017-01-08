@@ -12,7 +12,9 @@ interface ManageSecret {
 
     def inspectSecret(String secretId)
 
-//    TODO ls          List secrets
+//    ls          List secrets
+
+    def secrets()
 
 //    TODO rm          Remove one or more secrets
 

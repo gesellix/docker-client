@@ -14,7 +14,6 @@ class DockerClientImplManageSecretSpec extends Specification {
     }
 
     def "create a secret"() {
-        given:
         when:
         dockerClient.createSecret("a-secret", "secret-content".bytes)
 
@@ -27,11 +26,18 @@ class DockerClientImplManageSecretSpec extends Specification {
     }
 
     def "inspect a secret"() {
-        given:
         when:
         dockerClient.inspectSecret("5qyxxlxqbq6s5004io33miih6")
 
         then:
         1 * httpClient.get([path: "/secrets/5qyxxlxqbq6s5004io33miih6"]) >> [status: [success: true]]
+    }
+
+    def "list all secrets"() {
+        when:
+        dockerClient.secrets()
+
+        then:
+        1 * httpClient.get([path: "/secrets"]) >> [status: [success: true]]
     }
 }
