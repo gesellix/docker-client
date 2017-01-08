@@ -12,13 +12,13 @@ import java.util.zip.GZIPOutputStream
 @Slf4j
 class BuildContextBuilder {
 
-    def static archiveTarFilesRecursively(File base, File targetFile) throws IOException {
+    static archiveTarFilesRecursively(File base, File targetFile) throws IOException {
         def filenames = new DockerignoreFileFilter(base, [targetFile.absolutePath]).collectFiles(base)
         log.debug "found ${filenames.size()} files in buildContext."
         archiveTarFiles(base, filenames, targetFile)
     }
 
-    def static archiveTarFiles(File base, filenames, File targetFile) throws IOException {
+    static archiveTarFiles(File base, filenames, File targetFile) throws IOException {
         TarArchiveOutputStream tos = new TarArchiveOutputStream(new GZIPOutputStream(new FileOutputStream(targetFile)))
         try {
             tos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU)
@@ -51,11 +51,11 @@ class BuildContextBuilder {
         tos.closeArchiveEntry()
     }
 
-    def static String relativize(File base, File absolute) {
+    static String relativize(File base, File absolute) {
         return base.toPath().relativize(absolute.toPath()).toString()
     }
 
-    def static copyFile(File input, OutputStream output) throws IOException {
+    static copyFile(File input, OutputStream output) throws IOException {
         def source = null
         try {
             source = Okio.source(input)

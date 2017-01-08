@@ -1,6 +1,5 @@
 package de.gesellix.docker.client.builder
 
-import de.gesellix.docker.client.builder.GlobsMatcher
 import org.apache.commons.lang.SystemUtils
 import spock.lang.IgnoreIf
 import spock.lang.Specification
@@ -12,20 +11,20 @@ class GlobsMatcherSpec extends Specification {
 
     def "matches all patterns"() {
         given:
-        def matcher = new GlobsMatcher(["abc", "cde"])
+        def matcher = new GlobsMatcher(new File(""), ["abc", "cde"])
 
         expect:
         matcher.matchers.size() == 2
         and:
-        matcher.matches(new File(""), new File("cde"))
+        matcher.matches(new File("cde"))
         and:
-        matcher.matches(new File(""), new File("abc"))
+        matcher.matches(new File("abc"))
     }
 
     @Unroll
-    def "#pattern should match #path"(String pattern, File base, File path) {
+    "#pattern should match #path"(String pattern, File base, File path) {
         expect:
-        new GlobsMatcher([pattern]).matches(base, path)
+        new GlobsMatcher(base, [pattern]).matches(path)
 
         where:
         pattern        | base          | path
@@ -49,9 +48,9 @@ class GlobsMatcherSpec extends Specification {
 
     @IgnoreIf({ !SystemUtils.IS_OS_LINUX && !SystemUtils.IS_OS_MAC })
     @Unroll
-    def "#pattern should match #path on unix systems"(String pattern, File base, File path) {
+    "#pattern should match #path on unix systems"(String pattern, File base, File path) {
         expect:
-        new GlobsMatcher([pattern]).matches(base, path)
+        new GlobsMatcher(base, [pattern]).matches(path)
 
         where:
         pattern  | base         | path
@@ -63,9 +62,9 @@ class GlobsMatcherSpec extends Specification {
     }
 
     @Unroll
-    def "#pattern should not match #path"(String pattern, File base, File path) {
+    "#pattern should not match #path"(String pattern, File base, File path) {
         expect:
-        !new GlobsMatcher([pattern]).matches(base, path)
+        !new GlobsMatcher(base, [pattern]).matches(path)
 
         where:
         pattern        | base         | path
@@ -79,15 +78,16 @@ class GlobsMatcherSpec extends Specification {
         "ab[!c]"       | new File("") | new File("abc")
         "ab[!b-d]"     | new File("") | new File("abc")
         "a??c"         | new File("") | new File("abc")
+        "!a*b"         | new File("") | new File("ab")
         "a?b"          | new File("") | new File("a/b")
         "a*b"          | new File("") | new File("a/b")
     }
 
     @IgnoreIf({ !SystemUtils.IS_OS_LINUX && !SystemUtils.IS_OS_MAC })
     @Unroll
-    def "#pattern should not match #path on unix systems"(String pattern, File base, File path) {
+    "#pattern should not match #path on unix systems"(String pattern, File base, File path) {
         expect:
-        !new GlobsMatcher([pattern]).matches(base, path)
+        !new GlobsMatcher(base, [pattern]).matches(path)
 
         where:
         pattern  | base         | path
@@ -97,9 +97,9 @@ class GlobsMatcherSpec extends Specification {
     }
 
     @Unroll
-    def "#pattern should throw exception"(String pattern, File base, File path) {
+    "#pattern should throw exception"(String pattern, File base, File path) {
         when:
-        new GlobsMatcher([pattern]).matches(base, path)
+        new GlobsMatcher(base, [pattern]).matches(path)
 
         then:
         thrown(PatternSyntaxException)
@@ -107,5 +107,19 @@ class GlobsMatcherSpec extends Specification {
         where:
         pattern | base         | path
         "[]a]"  | new File("") | new File("]")
+    }
+
+    def "allows pattern exclusions"() {
+        expect:
+        new GlobsMatcher(new File(""), patterns).matches(path) == shouldMatch
+
+        where:
+        patterns                 | path                 | shouldMatch
+        ["!ab.c", "*.c"]         | new File("ab.c")     | true
+        ["dir", "!dir/ab.c"]     | new File("dir/ab.c") | false
+        ["dir/", "!dir/ab.c"]    | new File("dir/ab.c") | false
+        ["dir/*", "!dir/ab.c"]   | new File("dir/ab.c") | false
+        ["dir/*.c"]              | new File("dir/ab.c") | true
+        ["dir/*.c", "!dir/ab.c"] | new File("dir/ab.c") | false
     }
 }
