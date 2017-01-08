@@ -27,7 +27,7 @@ class TestConstants {
             imageDigest = "sha256:0ce18ad10d281bef97fe2333a9bdcc2dbf84b5302f66d796fed73aac675320db"
         }
 
-        println "is travis-ci: ${System.env.TRAVIS}"
+        // TODO consider checking the Docker api version instead of "TRAVIS"
         if (System.env.TRAVIS) {
             versionDetails = [
                     ApiVersion   : { it == "1.24" },
@@ -43,13 +43,13 @@ class TestConstants {
             versionDetails = [
                     ApiVersion   : { it == "1.25" },
                     Arch         : { it == "amd64" },
-                    BuildTime    : { it == "2016-12-17T01:34:17.687787854+00:00" },
-                    GitCommit    : { it == "88862e7" },
+                    BuildTime    : { it == "2017-01-05T03:07:30.705325698+00:00" },
+                    GitCommit    : { it == "43cc971" },
                     GoVersion    : { it == "go1.7.3" },
                     KernelVersion: { it =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?" },
                     MinAPIVersion: { it == "1.12" },
                     Os           : { it == "linux" },
-                    Version      : { it == "1.13.0-rc4" }]
+                    Version      : { it == "1.13.0-rc5" }]
         }
     }
 }

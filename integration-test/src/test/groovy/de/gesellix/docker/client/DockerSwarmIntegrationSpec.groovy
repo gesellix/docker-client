@@ -21,10 +21,11 @@ class DockerSwarmIntegrationSpec extends Specification {
     def setupSpec() {
         dockerClient = new DockerClientImpl()
 //        dockerClient.config.apiVersion = "v1.24"
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def cleanup() {
-        Thread.sleep(500)
+        Thread.sleep(1000)
     }
 
     def ping() {
