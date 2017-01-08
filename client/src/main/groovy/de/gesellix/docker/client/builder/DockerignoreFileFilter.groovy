@@ -41,25 +41,12 @@ class DockerignoreFileFilter {
     }
 
     def collectFiles(File base) {
-        def ignoredDirs = []
-        base.eachDirMatch(
-                { globsMatcher.matches(new File("${base}${File.separator}${it}")) },
-                { ignoredDirs << it })
-
         def files = []
-
         base.eachFileRecurse FILES, { File file ->
-            def parentDirIgnored = ignoredDirs.find { File ignoredDir ->
-                file.toPath().startsWith(ignoredDir.toPath())
-            }
-
-            if (!parentDirIgnored) {
-                if (!globsMatcher.matches(file)) {
-                    files << file
-                }
+            if (!globsMatcher.matches(file)) {
+                files << file
             }
         }
-
         return files
     }
 }

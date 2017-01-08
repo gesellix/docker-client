@@ -32,6 +32,8 @@ class GlobsMatcherSpec extends Specification {
         "abc"          | new File("")  | new File("abc")
         "*"            | new File("")  | new File("abc")
         "*c"           | new File("")  | new File("abc")
+        "a*"           | new File("")  | new File("a/bc")
+        "a*/b"         | new File("")  | new File("a/b/c")
         "a*"           | new File("")  | new File("a")
         "a*/b"         | new File("")  | new File("abc/b")
         "a*b*c*d*e*/f" | new File("")  | new File("axbxcxdxe/f")
@@ -62,25 +64,23 @@ class GlobsMatcherSpec extends Specification {
     }
 
     @Unroll
-    "#pattern should not match #path"(String pattern, File base, File path) {
+    "#pattern should not match #path"(String pattern, File path) {
         expect:
-        !new GlobsMatcher(base, [pattern]).matches(path)
+        !new GlobsMatcher(new File(""), [pattern]).matches(path)
 
         where:
-        pattern        | base         | path
-        "a*"           | new File("") | new File("a/bc")
-        "a*/b"         | new File("") | new File("a/b/c")
-        "a*/b"         | new File("") | new File("a/c/b")
-        "a*b*c*d*e*/f" | new File("") | new File("axbxcxdxe/xx/f")
-        "a*b*c*d*e*/f" | new File("") | new File("axbxcxdxexx/ff")
-        "a*b?c*x"      | new File("") | new File("abxbbxdbxebxczzy")
-        "ab[e-g]"      | new File("") | new File("abc")
-        "ab[!c]"       | new File("") | new File("abc")
-        "ab[!b-d]"     | new File("") | new File("abc")
-        "a??c"         | new File("") | new File("abc")
-        "!a*b"         | new File("") | new File("ab")
-        "a?b"          | new File("") | new File("a/b")
-        "a*b"          | new File("") | new File("a/b")
+        pattern        | path
+        "a*/b"         | new File("a/c/b")
+        "a*b*c*d*e*/f" | new File("axbxcxdxe/xx/f")
+        "a*b*c*d*e*/f" | new File("axbxcxdxexx/ff")
+        "a*b?c*x"      | new File("abxbbxdbxebxczzy")
+        "ab[e-g]"      | new File("abc")
+        "ab[!c]"       | new File("abc")
+        "ab[!b-d]"     | new File("abc")
+        "a??c"         | new File("abc")
+        "!a*b"         | new File("ab")
+        "a?b"          | new File("a/b")
+        "a*b"          | new File("a/b")
     }
 
     @IgnoreIf({ !SystemUtils.IS_OS_LINUX && !SystemUtils.IS_OS_MAC })
@@ -121,5 +121,15 @@ class GlobsMatcherSpec extends Specification {
         ["dir/*", "!dir/ab.c"]   | new File("dir/ab.c") | false
         ["dir/*.c"]              | new File("dir/ab.c") | true
         ["dir/*.c", "!dir/ab.c"] | new File("dir/ab.c") | false
+    }
+
+    def "allows pattern exclusions in subdirectories"() {
+        expect:
+        new GlobsMatcher(new File(""), patterns).matches(path) == shouldMatch
+
+        where:
+        patterns                                                      | path                                | shouldMatch
+        ["ignorefolder", "!ignorefolder/keepme.txt", "**/ignore.txt"] | new File("ignorefolder/keepme.txt") | false
+        ["ignorefolder", "!ignorefolder/keepme.txt", "**/ignore.txt"] | new File("ignorefolder/dropme.txt") | true
     }
 }

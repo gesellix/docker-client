@@ -5,7 +5,6 @@ import groovy.util.logging.Slf4j
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.PathMatcher
-import java.nio.file.Paths
 
 @Slf4j
 class GlobsMatcher {
@@ -22,8 +21,8 @@ class GlobsMatcher {
     def matches(File path) {
         def relativePath = base.absoluteFile.toPath().relativize(path.absoluteFile.toPath())
         def match = matchers.find { it.matches(relativePath) }
-        if (!match) {
-//            match = matchers.find { it.matchesParent(relativePath.parent ?: relativePath) }
+        if (!match && relativePath.parent) {
+            match = matchers.find { it.matches(relativePath.parent) }
         }
         return match && !match.negate
     }
@@ -31,7 +30,6 @@ class GlobsMatcher {
     static class Matcher implements PathMatcher {
         String pattern
         PathMatcher matcher
-        PathMatcher parentDirMatcher
         boolean negate
 
         Matcher(fileSystem, String pattern) {
@@ -40,20 +38,14 @@ class GlobsMatcher {
             if (this.negate) {
                 def invertedPattern = pattern.substring("!".length())
                 this.matcher = fileSystem.getPathMatcher("glob:${invertedPattern}")
-                this.parentDirMatcher = fileSystem.getPathMatcher("glob:${Paths.get(invertedPattern).parent.toString()}")
             } else {
                 this.matcher = fileSystem.getPathMatcher("glob:${pattern}")
-                this.parentDirMatcher = fileSystem.getPathMatcher("glob:${Paths.get(pattern).parent.toString()}")
             }
         }
 
         @Override
         boolean matches(Path path) {
             return matcher.matches(path)
-        }
-
-        boolean matchesParent(Path path) {
-            return parentDirMatcher.matches(path)
         }
     }
 }
