@@ -81,12 +81,12 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker network prune`: Remove all unused networks
 * [x] `docker network rm`: Remove one or more networks
 
-## Node - Manage Swarm nodes (5/7)
+## Node - Manage Swarm nodes (7/7)
 
-* [ ] `docker node demote`: Demote a node from manager in the swarm
+* [x] `docker node demote`: Demote a node from manager in the swarm
 * [x] `docker node inspect`: Inspect a node in the swarm
 * [x] `docker node ls`: List nodes in the swarm
-* [ ] `docker node promote`: Promote a node to a manager in the swarm
+* [x] `docker node promote`: Promote a node to a manager in the swarm
 * [x] `docker node ps`: List tasks running on a node
 * [x] `docker node rm`: Remove a node from the swarm
 * [x] `docker node update`: Update a node

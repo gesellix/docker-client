@@ -2,7 +2,9 @@ package de.gesellix.docker.client
 
 interface ManageNode {
 
-//    TODO demote      Demote one or more nodes from manager in the swarm
+//    demote      Demote one or more nodes from manager in the swarm
+
+    def demoteNodes(... node)
 
 //    inspect     Display detailed information on one or more nodes
 
@@ -14,7 +16,9 @@ interface ManageNode {
 
     def nodes(query)
 
-//    TODO promote     Promote one or more nodes to manager in the swarm
+//    promote     Promote one or more nodes to manager in the swarm
+
+    def promoteNodes(... node)
 
 //    ps          List tasks running on one or more nodes, defaults to current node
 

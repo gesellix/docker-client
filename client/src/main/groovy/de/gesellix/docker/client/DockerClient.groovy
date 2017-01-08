@@ -252,6 +252,10 @@ interface DockerClient
 
     def updateNode(name, query, config)
 
+    def promoteNodes(... node)
+
+    def demoteNodes(... node)
+
     def rmNode(name)
 
     def inspectSwarm()

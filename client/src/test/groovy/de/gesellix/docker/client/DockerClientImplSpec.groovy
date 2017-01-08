@@ -1353,6 +1353,58 @@ class DockerClientImplSpec extends Specification {
                              requestContentType: "application/json"]) >> [status: [success: true]]
     }
 
+    def "promote nodes"() {
+        given:
+        def node1Config = [
+                Version: [Index: 1],
+                Spec   : [Role: "worker"]]
+        def node1ChangedSpec = [Role: "manager"]
+        def node2Config = [
+                Version: [Index: 1],
+                Spec   : [Role: "manager"]]
+
+        when:
+        dockerClient.promoteNodes("node-1", "node-2")
+
+        then:
+        1 * httpClient.get([path: "/nodes/node-1"]) >> [
+                status : [success: true],
+                content: node1Config]
+        1 * httpClient.get([path: "/nodes/node-2"]) >> [
+                status : [success: true],
+                content: node2Config]
+        1 * httpClient.post([path              : "/nodes/node-1/update",
+                             query             : ["version": 1],
+                             body              : node1ChangedSpec,
+                             requestContentType: "application/json"]) >> [status: [success: true]]
+    }
+
+    def "demote nodes"() {
+        given:
+        def node1Config = [
+                Version: [Index: 1],
+                Spec   : [Role: "worker"]]
+        def node2Config = [
+                Version: [Index: 1],
+                Spec   : [Role: "manager"]]
+        def node2ChangedSpec = [Role: "worker"]
+
+        when:
+        dockerClient.demoteNodes("node-1", "node-2")
+
+        then:
+        1 * httpClient.get([path: "/nodes/node-1"]) >> [
+                status : [success: true],
+                content: node1Config]
+        1 * httpClient.get([path: "/nodes/node-2"]) >> [
+                status : [success: true],
+                content: node2Config]
+        1 * httpClient.post([path              : "/nodes/node-2/update",
+                             query             : ["version": 1],
+                             body              : node2ChangedSpec,
+                             requestContentType: "application/json"]) >> [status: [success: true]]
+    }
+
     def "rm node"() {
         when:
         dockerClient.rmNode("node-id")

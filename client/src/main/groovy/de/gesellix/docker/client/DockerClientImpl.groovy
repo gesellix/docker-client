@@ -1132,6 +1132,48 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
+    promoteNodes(... nodes) {
+        log.info "docker node promote"
+        nodes?.each { node ->
+            def nodeInfo = inspectNode(node).content
+            def nodeSpec = nodeInfo.Spec
+
+            if (nodeSpec.Role == "manager") {
+                log.warn("Node ${node} is already a manager.")
+            } else {
+                nodeSpec.Role = "manager"
+                def response = updateNode(
+                        node,
+                        ["version": nodeInfo.Version.Index],
+                        nodeSpec)
+                responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker node promote failed for node ${node}"))
+                log.info("Node ${node} promoted to a manager in the swarm.")
+            }
+        }
+    }
+
+    @Override
+    demoteNodes(... nodes) {
+        log.info "docker node demote"
+        nodes?.each { node ->
+            def nodeInfo = inspectNode(node).content
+            def nodeSpec = nodeInfo.Spec
+
+            if (nodeSpec.Role == "worker") {
+                log.warn("Node ${node} is already a worker.")
+            } else {
+                nodeSpec.Role = "worker"
+                def response = updateNode(
+                        node,
+                        ["version": nodeInfo.Version.Index],
+                        nodeSpec)
+                responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker node demote failed for node ${node}"))
+                log.info("Manager ${node} demoted in the swarm.")
+            }
+        }
+    }
+
+    @Override
     inspectSwarm(query = [:]) {
         log.info "docker swarm inspect"
         def actualQuery = query ?: [:]
