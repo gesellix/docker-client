@@ -40,4 +40,12 @@ class DockerClientImplManageSecretSpec extends Specification {
         then:
         1 * httpClient.get([path: "/secrets"]) >> [status: [success: true]]
     }
+
+    def "rm a secret"() {
+        when:
+        dockerClient.rmSecret("5qyxxlxqbq6s5004io33miih6")
+
+        then:
+        1 * httpClient.delete([path: "/secrets/5qyxxlxqbq6s5004io33miih6"]) >> [status: [success: true]]
+    }
 }

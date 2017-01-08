@@ -1499,6 +1499,14 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
+    @Override
+    rmSecret(String secretId) {
+        log.info "docker secret rm"
+        def response = getHttpClient().delete([path: "/secrets/${secretId}"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker secret rm failed"))
+        return response
+    }
+
     def resolveNodeId(nodeFilter) {
         def ownNodeId = {
             info().content.Swarm.NodeID

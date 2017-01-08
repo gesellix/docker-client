@@ -16,6 +16,7 @@ interface ManageSecret {
 
     def secrets()
 
-//    TODO rm          Remove one or more secrets
+//    rm          Remove one or more secrets
 
+    def rmSecret(String secretId)
 }

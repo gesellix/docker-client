@@ -85,6 +85,7 @@ class ExploreTheApi {
 
 //        println dockerClient.createSecret("test", "a-secret".bytes).content
 //        println dockerClient.inspectSecret("5qyxxlxqbq6s5004io33miih6").content
-        println dockerClient.secrets().content
+//        println dockerClient.secrets().content
+        println dockerClient.rmSecret("5qyxxlxqbq6s5004io33miih6").content
     }
 }
