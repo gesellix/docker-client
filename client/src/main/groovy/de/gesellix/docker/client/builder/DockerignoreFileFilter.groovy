@@ -47,6 +47,7 @@ class DockerignoreFileFilter {
                 files << file
             }
         }
+        log.debug "filtered list of files: ${files}"
         return files
     }
 }
