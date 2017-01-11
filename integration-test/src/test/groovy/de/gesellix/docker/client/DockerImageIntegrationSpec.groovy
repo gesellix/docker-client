@@ -11,6 +11,7 @@ import spock.lang.Requires
 import spock.lang.Specification
 
 import java.util.concurrent.CountDownLatch
+import java.util.regex.Pattern
 
 import static TestConstants.CONSTANTS
 import static java.util.concurrent.TimeUnit.SECONDS
@@ -145,6 +146,73 @@ class DockerImageIntegrationSpec extends Specification {
         cleanup:
         dockerClient.rmi(imageId)
     }
+
+    def "build image async and fail"() {
+        given:
+        def inputDirectory = new ResourceReader().getClasspathResourceAsFile('build/fail/Dockerfile', DockerClient).parentFile
+
+        when:
+        CountDownLatch latch = new CountDownLatch(1)
+        def events = []
+        def result = dockerClient.build(newBuildContext(inputDirectory), [rm: true], new DockerAsyncCallback() {
+            @Override
+            onEvent(Object event) {
+                def parsedEvent = new JsonSlurper().parseText(event as String)
+                events << parsedEvent
+            }
+
+            @Override
+            onFinish() {
+                latch.countDown()
+            }
+        })
+        latch.await(5, SECONDS)
+
+        then:
+        println "count: ${events.size()}"
+        println events
+        events.get(0).stream =~ "Step 1(/2)? : FROM alpine:edge\n"
+        events.get(1).stream =~ "\\s---> \\w+\n"
+        events.get(2).stream =~ "Step 2(/2)? : RUN i-will-fail\n"
+        events.get(5).error =~ "The command '/bin/sh -c i-will-fail' returned a non-zero code: 127"
+
+        def containerId = getContainerId(events.get(3).stream as String)
+        def imageId = getImageId(events.get(1).stream as String)
+
+        cleanup:
+        result.taskFuture.cancel(true)
+        dockerClient.rm(containerId)
+        dockerClient.rmi(imageId)
+    }
+
+    def getContainerId(String buildImageLogEvent) {
+        return getFirstMatchingGroup("\\s---> Running in (\\w+)\n", buildImageLogEvent)
+    }
+
+    def getImageId(String buildImageLogEvent) {
+        return getFirstMatchingGroup("\\s---> (\\w+)\n", buildImageLogEvent)
+    }
+
+    def getFirstMatchingGroup(String pattern, String input) {
+        def matcher = Pattern.compile(pattern).matcher(input)
+        if (matcher.find()) {
+            return matcher.group(1)
+        } else {
+            return null
+        }
+    }
+
+//    def "buildWithLogs and fail"() {
+//        given:
+//        def inputDirectory = new ResourceReader().getClasspathResourceAsFile('build/fail/Dockerfile', DockerClient).parentFile
+//
+//        when:
+//        dockerClient.buildWithLogs(newBuildContext(inputDirectory))
+//
+//        then:
+//        DockerClientException exc = thrown()
+//        exc.detail.error == 'The command \'/bin/sh -c i-will-fail\' returned a non-zero code: 127'
+//    }
 
     def "tag image"() {
         given:

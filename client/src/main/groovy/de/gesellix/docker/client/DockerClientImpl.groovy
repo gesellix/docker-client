@@ -238,7 +238,7 @@ class DockerClientImpl implements DockerClient {
         def callback = new DockerAsyncCallback() {
             @Override
             onEvent(Object event) {
-                log.info "event: $event"
+                log.info "$event"
                 def parsedEvent = new JsonSlurper().parseText(event as String)
                 chunks << parsedEvent
             }
@@ -253,6 +253,10 @@ class DockerClientImpl implements DockerClient {
         def ignoredResponse = build(buildContext, query, callback)
         // TODO make configurable
         buildLatch.await(10, MINUTES)
+
+        if (chunks.last()?.error) {
+            throw new DockerClientException(new RuntimeException("docker build failed"), chunks.last())
+        }
         return [log    : chunks,
                 imageId: getBuildResultAsImageId(chunks.last())]
     }
