@@ -8,6 +8,8 @@ interface ManageImage {
 
     def buildWithLogs(InputStream buildContext, query)
 
+    def buildWithLogs(InputStream buildContext, query, Timeout timeout)
+
     def build(InputStream buildContext)
 
     def build(InputStream buildContext, query)

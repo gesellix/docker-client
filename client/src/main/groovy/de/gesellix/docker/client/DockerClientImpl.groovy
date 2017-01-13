@@ -16,9 +16,9 @@ import org.codehaus.groovy.runtime.MethodClosure
 
 import java.util.concurrent.CountDownLatch
 
+import static de.gesellix.docker.client.Timeout.TEN_MINUTES
 import static java.net.Proxy.NO_PROXY
 import static java.util.concurrent.Executors.newSingleThreadExecutor
-import static java.util.concurrent.TimeUnit.MINUTES
 
 @Slf4j
 class DockerClientImpl implements DockerClient {
@@ -232,7 +232,7 @@ class DockerClientImpl implements DockerClient {
     }
 
     @Override
-    buildWithLogs(InputStream buildContext, query = ["rm": true]) {
+    buildWithLogs(InputStream buildContext, query = ["rm": true], Timeout timeout = TEN_MINUTES) {
         def buildLatch = new CountDownLatch(1)
         def chunks = []
         def callback = new DockerAsyncCallback() {
@@ -251,11 +251,17 @@ class DockerClientImpl implements DockerClient {
         }
         // TODO do we need to handle (and eventually cancel?) the submitted build task?
         def ignoredResponse = build(buildContext, query, callback)
-        // TODO make configurable
-        buildLatch.await(10, MINUTES)
 
-        if (chunks.last()?.error) {
-            throw new DockerClientException(new RuntimeException("docker build failed"), chunks.last())
+        def builtInTime = buildLatch.await(timeout.timeout, timeout.unit)
+
+        def lastLogEvent = chunks?.empty ? null : chunks.last()
+
+        if (!builtInTime) {
+            throw new DockerClientException(new RuntimeException("docker build timeout"), lastLogEvent)
+        }
+
+        if (lastLogEvent?.error) {
+            throw new DockerClientException(new RuntimeException("docker build failed"), lastLogEvent)
         }
         return [log    : chunks,
                 imageId: getBuildResultAsImageId(chunks.last())]
