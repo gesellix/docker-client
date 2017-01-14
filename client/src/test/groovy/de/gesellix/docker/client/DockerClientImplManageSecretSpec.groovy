@@ -48,4 +48,15 @@ class DockerClientImplManageSecretSpec extends Specification {
         then:
         1 * httpClient.delete([path: "/secrets/5qyxxlxqbq6s5004io33miih6"]) >> [status: [success: true]]
     }
+
+    def "update a secret"() {
+        when:
+        dockerClient.updateSecret("5qyxxlxqbq6s5004io33miih6", 11, [Labels: [:]])
+
+        then:
+        1 * httpClient.post([path              : "/secrets/5qyxxlxqbq6s5004io33miih6/update",
+                             query             : [version: 11],
+                             body              : [Labels: [:]],
+                             requestContentType: "application/json"]) >> [status: [success: true]]
+    }
 }

@@ -1523,6 +1523,17 @@ class DockerClientImpl implements DockerClient {
         return response
     }
 
+    @Override
+    updateSecret(String secretId, version, secretSpec) {
+        log.info "docker secret update"
+        def response = getHttpClient().post([path              : "/secrets/${secretId}/update",
+                                             query             : [version: version],
+                                             body              : secretSpec,
+                                             requestContentType: "application/json"])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker secret update failed"))
+        return response
+    }
+
     def resolveNodeId(nodeFilter) {
         def ownNodeId = {
             info().content.Swarm.NodeID

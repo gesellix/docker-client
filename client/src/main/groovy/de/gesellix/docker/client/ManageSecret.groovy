@@ -19,4 +19,8 @@ interface ManageSecret {
 //    rm          Remove one or more secrets
 
     def rmSecret(String secretId)
+
+//    update      Update a Secret
+
+    def updateSecret(String secretId, version, secretSpec)
 }
