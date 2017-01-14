@@ -1,24 +1,33 @@
 # Docker Client
 
-A Docker HTTP client written in Groovy
+A Docker HTTP client for the Java VM written in Groovy
 
-[![Remote API v1.24 Coverage Status (74/74 endpoints)](http://progressed.io/bar/100?title=api%20coverage)](https://github.com/gesellix/docker-client/blob/master/roadmap.md)
+[![Engine API v1.25 Coverage Status (93/114 endpoints)](http://progressed.io/bar/82?title=api%20coverage%20(v1.25))](https://github.com/gesellix/docker-client/blob/master/supported-api.md)
 [![Build Status](https://travis-ci.org/gesellix/docker-client.svg)](https://travis-ci.org/gesellix/docker-client)
 [![Latest version](https://api.bintray.com/packages/gesellix/docker-utils/docker-client/images/download.svg) ](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion)
 
-This client library aims at supporting all [existing api endpoints](https://docs.docker.com/engine/reference/api/docker_remote_api/),
+This client library aims at supporting all existing [Docker api endpoints](https://docs.docker.com/engine/reference/api/docker_remote_api/),
  which effectively allows to use it in place of the official Docker client binary.
- It might feel a bit less convenient, though, while it gives you a bit more freedom to access the remote api
- and some less popular endpoints. See the [roadmap.md](https://github.com/gesellix/docker-client/blob/master/roadmap.md)
+
+See the [supported-api.md](https://github.com/gesellix/docker-client/blob/master/supported-api.md)
  for details about the current api coverage.
+
+All platforms are natively supported, which includes:
+- [Linux](https://docs.docker.com/engine/installation/linux/),
+- [Docker for Mac](https://docs.docker.com/docker-for-mac/),
+- [Docker for Windows](https://docs.docker.com/docker-for-windows/),
+- [Docker Machine](https://docs.docker.com/machine/overview/),
+- and the legacy [Docker Toolbox](https://docs.docker.com/toolbox/overview/).
 
 Consider the client as a thin wrapper to perform HTTP requests, minimizing the need to manually configure
  TLS or auth encoding in your code. Most commonly known environment variables will work as expected,
  e.g. `DOCKER_HOST`, `DOCKER_TLS_VERIFY`, or `DOCKER_CERT_PATH`.
+ Due to its thin layer this client might feel a bit less convenient, though,
+ while it gives you a bit more freedom to access the engine api and some less popular endpoints.
 
 ## Plain Usage
 
-For use in Gradle, add the bintray repository first:
+For use in Gradle, add the Bintray repository first:
 
     repositories {
       maven { url 'http://dl.bintray.com/gesellix/docker-utils' }
@@ -27,7 +36,7 @@ For use in Gradle, add the bintray repository first:
 Then, you need to add the dependency, but please ensure to use the [latest version](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion):
 
     dependencies {
-      compile 'de.gesellix:docker-client:2016-12-10T23-39-48'
+      compile 'de.gesellix:docker-client:2017-01-14T21-16-07'
     }
 
 The tests in `DockerClientImplSpec` and `DockerClientImplIntegrationSpec` should give you an idea how to use the docker-client.
@@ -96,7 +105,7 @@ Running a container being available on the host via HTTP port 4712 can be achiev
 
 ## Usage with Gradle Docker Plugin
 
-My personal focus implementing this Docker client was to leverage the Docker remote API in our Gradle scripts.
+My personal focus implementing this Docker client was to leverage the Docker engine API in our Gradle scripts.
 A convenient integration in Gradle is possible by using the [Gradle Docker Plugin](https://github.com/gesellix/gradle-docker-plugin),
 which will be developed along with the Docker client library.
 
@@ -113,7 +122,7 @@ The developer api is quite rough, but that's where you can certainly help: I'll 
 
 ## License
 
-Copyright 2015 [Tobias Gesellchen](https://gesellix.net/) ([@gesellix](https://twitter.com/gesellix))
+Copyright 2015-2017 [Tobias Gesellchen](https://www.gesellix.net/) ([@gesellix](https://twitter.com/gesellix))
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

@@ -1,6 +1,6 @@
 # Supported Features
 
-*feature set based on the [Docker Engine API v1.24](https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/)*
+*feature set based on the [Docker Engine API v1.25](https://github.com/docker/docker/blob/a4bc730298c8ce422889b0ca6ada03957f2b7273/api/swagger.yaml)*
 
 Since the Docker engine api tends to be backwards compatible,
 the Docker Client currently supports most other api versions, too.
@@ -146,7 +146,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 ## Misc, System - Manage Docker (3/4)
 
 * [x] `docker system info`: Display system-wide information
-* [x] `docker system df`: Show docker disk usage (GET /system/df)
+* [x] `docker system df`: Show docker disk usage
 * [x] `docker system events`: Monitor Docker's events
 * [ ] `docker system prune`: Remove unused data
 
