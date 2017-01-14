@@ -18,7 +18,7 @@ dependencies {
     compile project(':client')
 
     testCompile project(':testutil')
-    testCompile 'net.jodah:failsafe:1.0.0'
+    testCompile 'net.jodah:failsafe:1.0.1'
 
     runtime 'ch.qos.logback:logback-classic:1.1.8'
 
