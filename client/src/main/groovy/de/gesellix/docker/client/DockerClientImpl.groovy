@@ -249,11 +249,10 @@ class DockerClientImpl implements DockerClient {
                 buildLatch.countDown()
             }
         }
-        // TODO do we need to handle (and eventually cancel?) the submitted build task?
-        def ignoredResponse = build(buildContext, query, callback)
+        def asyncBuildResponse = build(buildContext, query, callback)
 
         def builtInTime = buildLatch.await(timeout.timeout, timeout.unit)
-        ignoredResponse.taskFuture.cancel(false)
+        asyncBuildResponse.taskFuture.cancel(false)
 
         def lastLogEvent
         if (chunks.empty) {
