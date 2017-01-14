@@ -253,13 +253,19 @@ class DockerClientImpl implements DockerClient {
         def ignoredResponse = build(buildContext, query, callback)
 
         def builtInTime = buildLatch.await(timeout.timeout, timeout.unit)
+        ignoredResponse.taskFuture.cancel(false)
 
-        def lastLogEvent = chunks?.empty ? null : chunks.last()
+        def lastLogEvent
+        if (chunks.empty) {
+            log.warn("no build log collected - timeout of ${timeout} reached?")
+            lastLogEvent = null
+        } else {
+            lastLogEvent = chunks.last()
+        }
 
         if (!builtInTime) {
             throw new DockerClientException(new RuntimeException("docker build timeout"), lastLogEvent)
         }
-
         if (lastLogEvent?.error) {
             throw new DockerClientException(new RuntimeException("docker build failed"), lastLogEvent)
         }

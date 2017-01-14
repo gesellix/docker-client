@@ -14,4 +14,9 @@ class Timeout {
         this.timeout = timeout
         this.unit = unit
     }
+
+    @Override
+    String toString() {
+        return "$timeout $unit"
+    }
 }
