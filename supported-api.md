@@ -1,6 +1,6 @@
 # Supported Features
 
-*feature set based on the [Docker Engine API v1.25](https://github.com/docker/docker/blob/a4bc730298c8ce422889b0ca6ada03957f2b7273/api/swagger.yaml)*
+*feature set based on the [Docker Engine API v1.25](https://docs.docker.com/engine/api/v1.25/)*
 
 Since the Docker engine api tends to be backwards compatible,
 the Docker Client currently supports most other api versions, too.
