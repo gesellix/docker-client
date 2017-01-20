@@ -23,6 +23,7 @@ class DockerImageIntegrationSpec extends Specification {
     static DockerRegistry registry
 
     static DockerClient dockerClient
+    boolean isNativeWindows = LocalDocker.isNativeWindows()
 
     def setupSpec() {
         dockerClient = new DockerClientImpl()
@@ -45,7 +46,11 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "build image"() {
         given:
-        def inputDirectory = new ResourceReader().getClasspathResourceAsFile('build/build/Dockerfile', DockerClient).parentFile
+        def dockerfile = "build/build/Dockerfile"
+        if (isNativeWindows) {
+            dockerfile = "build/build-windows/Dockerfile"
+        }
+        def inputDirectory = new ResourceReader().getClasspathResourceAsFile(dockerfile, DockerClient).parentFile
 
         when:
         def buildResult = dockerClient.build(newBuildContext(inputDirectory))
@@ -81,7 +86,11 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "build image with custom Dockerfile"() {
         given:
-        def inputDirectory = new ResourceReader().getClasspathResourceAsFile('build/custom/Dockerfile', DockerClient).parentFile
+        def dockerfile = "build/custom/Dockerfile"
+        if (isNativeWindows) {
+            dockerfile = "build/custom-windows/Dockerfile"
+        }
+        def inputDirectory = new ResourceReader().getClasspathResourceAsFile(dockerfile, DockerClient).parentFile
 
         when:
         def buildResult = dockerClient.build(newBuildContext(inputDirectory), [
@@ -102,7 +111,11 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "build image with custom stream callback"() {
         given:
-        def inputDirectory = new ResourceReader().getClasspathResourceAsFile('build/log/Dockerfile', DockerClient).parentFile
+        def dockerfile = "build/log/Dockerfile"
+        if (isNativeWindows) {
+            dockerfile = "build/log-windows/Dockerfile"
+        }
+        def inputDirectory = new ResourceReader().getClasspathResourceAsFile(dockerfile, DockerClient).parentFile
 
         when:
         CountDownLatch latch = new CountDownLatch(1)
@@ -122,7 +135,11 @@ class DockerImageIntegrationSpec extends Specification {
         latch.await(5, SECONDS)
 
         then:
-        events.first().stream =~ "Step 1(/11)? : FROM alpine:edge\n"
+        if (isNativeWindows){
+            events.first().stream =~ "Step 1(/10)? : FROM microsoft/nanoserver\n"
+        } else {
+            events.first().stream =~ "Step 1(/10)? : FROM alpine:edge\n"
+        }
         def imageId = events.last().stream.trim() - "Successfully built "
 
         cleanup:
@@ -132,13 +149,21 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "build image with logs"() {
         given:
-        def inputDirectory = new ResourceReader().getClasspathResourceAsFile('build/log/Dockerfile', DockerClient).parentFile
+        def dockerfile = "build/log/Dockerfile"
+        if (isNativeWindows) {
+            dockerfile = "build/log-windows/Dockerfile"
+        }
+        def inputDirectory = new ResourceReader().getClasspathResourceAsFile(dockerfile, DockerClient).parentFile
 
         when:
         def result = dockerClient.buildWithLogs(newBuildContext(inputDirectory))
 
         then:
-        result.log.first().stream =~ "Step 1(/11)? : FROM alpine:edge\n"
+        if (isNativeWindows) {
+            result.log.first().stream =~ "Step 1(/10)? : FROM microsoft/nanoserver\n"
+        } else {
+            result.log.first().stream =~ "Step 1(/10)? : FROM alpine:edge\n"
+        }
         result.log.last().stream.startsWith("Successfully built ")
         def imageId = result.log.last().stream.trim() - "Successfully built "
         result.imageId == imageId
@@ -149,7 +174,11 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "build image async and fail"() {
         given:
-        def inputDirectory = new ResourceReader().getClasspathResourceAsFile('build/fail/Dockerfile', DockerClient).parentFile
+        def dockerfile = "build/fail/Dockerfile"
+        if (isNativeWindows) {
+            dockerfile = "build/fail-windows/Dockerfile"
+        }
+        def inputDirectory = new ResourceReader().getClasspathResourceAsFile(dockerfile, DockerClient).parentFile
 
         when:
         CountDownLatch latch = new CountDownLatch(1)
@@ -166,16 +195,23 @@ class DockerImageIntegrationSpec extends Specification {
                 latch.countDown()
             }
         })
-        latch.await(5, SECONDS)
+        latch.await(20, SECONDS)
 
         then:
         println "count: ${events.size()}"
         println events
-        events.get(0).stream =~ "Step 1(/2)? : FROM alpine:edge\n"
+        if (isNativeWindows) {
+            events.get(0).stream =~ "Step 1(/2)? : FROM microsoft/nanoserver\n"
+        } else {
+            events.get(0).stream =~ "Step 1(/2)? : FROM alpine:edge\n"
+        }
         events.get(1).stream =~ "\\s---> \\w+\n"
         events.get(2).stream =~ "Step 2(/2)? : RUN i-will-fail\n"
-        events.get(5).error =~ "The command '/bin/sh -c i-will-fail' returned a non-zero code: 127"
-
+        if (isNativeWindows) {
+            events.get(5).error == "The command 'cmd /S /C i-will-fail' returned a non-zero code: 1"
+        }else {
+            events.get(5).error == "The command '/bin/sh -c i-will-fail' returned a non-zero code: 127"
+        }
         def containerId = getContainerId(events.get(3).stream as String)
         def imageId = getImageId(events.get(1).stream as String)
 
@@ -364,13 +400,13 @@ class DockerImageIntegrationSpec extends Specification {
         def imageInspection = dockerClient.inspectImage(imageId).content
 
         then:
-        imageInspection.Config.Image == LocalDocker.isNativeWindows() ? "todo" : "sha256:728f7fae29a7bc4c1166cc3206eec3e8271bf3408034051b742251d8bdc07db8"
+        imageInspection.Config.Image == isNativeWindows ? "todo" : "sha256:728f7fae29a7bc4c1166cc3206eec3e8271bf3408034051b742251d8bdc07db8"
         and:
         imageInspection.Id == CONSTANTS.imageDigest
         and:
         imageInspection.Parent == ""
         and:
-        imageInspection.Container == LocalDocker.isNativeWindows() ? "todo" : "7ddb235457b38a125d107ec7d53f95254cbf579069f29a2c731bc9471a153524"
+        imageInspection.Container == isNativeWindows ? "todo" : "7ddb235457b38a125d107ec7d53f95254cbf579069f29a2c731bc9471a153524"
     }
 
     def "history"() {
@@ -432,7 +468,11 @@ class DockerImageIntegrationSpec extends Specification {
 
     def "list images filtered"() {
         given:
-        def inputDirectory = new ResourceReader().getClasspathResourceAsFile('build/build/Dockerfile', DockerClient).parentFile
+        def dockerfile = "build/build/Dockerfile"
+        if (isNativeWindows) {
+            dockerfile = "build/build-windows/Dockerfile"
+        }
+        def inputDirectory = new ResourceReader().getClasspathResourceAsFile(dockerfile, DockerClient).parentFile
         def buildResult = dockerClient.build(newBuildContext(inputDirectory))
 
         when:
