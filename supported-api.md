@@ -143,7 +143,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker swarm unlock-key`: Manage the unlock key
 * [x] `docker swarm update`: Update the Swarm
 
-## Misc, System - Manage Docker (3/4)
+## System - Manage Docker (3/4)
 
 * [x] `docker system info`: Display system-wide information
 * [x] `docker system df`: Show docker disk usage
