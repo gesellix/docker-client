@@ -27,6 +27,7 @@ import static java.util.concurrent.TimeUnit.SECONDS
 class DockerContainerIntegrationSpec extends Specification {
 
     static DockerClient dockerClient
+    boolean isNativeWindows = LocalDocker.isNativeWindows()
 
     def setupSpec() {
         dockerClient = new DockerClientImpl()
@@ -115,8 +116,12 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "diff"() {
         given:
+        def cmd = ["/bin/sh", "-c", "echo 'hallo' > /change.txt"]
+        if (isNativeWindows){
+            cmd = ["powershell", '$hell = \"hallo\"; $hell | Out-File /change.txt']
+        }
         def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
-        def containerConfig = ["Cmd"  : ["/bin/sh", "-c", "echo 'hallo' > /change.txt"],
+        def containerConfig = ["Cmd"  : cmd,
                                "Image": imageId]
         def containerId = dockerClient.run(imageId, containerConfig).container.content.Id
         dockerClient.stop(containerId)
@@ -193,7 +198,7 @@ class DockerContainerIntegrationSpec extends Specification {
     def "start container"() {
         given:
         def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
-        def containerConfig = ["Cmd"  : ["true"],
+        def containerConfig = ["Cmd": isNativeWindows ? ["powershell", "exit"] : ["true"],
                                "Image": imageId]
         def containerId = dockerClient.createContainer(containerConfig).content.Id
 
