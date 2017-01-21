@@ -117,7 +117,7 @@ class DockerContainerIntegrationSpec extends Specification {
     def "diff"() {
         given:
         def cmd = ["/bin/sh", "-c", "echo 'hallo' > /change.txt"]
-        if (isNativeWindows){
+        if (isNativeWindows) {
             cmd = ["powershell", '$hell = \"hallo\"; $hell | Out-File /change.txt']
         }
         def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
@@ -198,7 +198,7 @@ class DockerContainerIntegrationSpec extends Specification {
     def "start container"() {
         given:
         def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
-        def containerConfig = ["Cmd": isNativeWindows ? ["powershell", "exit"] : ["true"],
+        def containerConfig = ["Cmd"  : isNativeWindows ? ["powershell", "exit"] : ["true"],
                                "Image": imageId]
         def containerId = dockerClient.createContainer(containerConfig).content.Id
 
