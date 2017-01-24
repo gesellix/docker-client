@@ -891,7 +891,7 @@ class DockerClientImpl implements DockerClient {
         finalQuery.tag = query.tag
 		finalQuery.author = query.author
 		finalQuery.comment = query.comment
-		finalQuery.changes = query.changes
+		//finalQuery.changes = query.changes
 
         config = config ?: [:]
 
