@@ -885,8 +885,13 @@ class DockerClientImpl implements DockerClient {
     commit(container, query, config = [:]) {
         log.info "docker commit"
 
-        def finalQuery = query ?: [:]
+        def finalQuery = [:]
         finalQuery.container = container
+        finalQuery.repo = query.repo
+        finalQuery.tag = query.tag
+		finalQuery.author = query.author
+		finalQuery.comment = query.comment
+		finalQuery.changes = query.changes
 
         config = config ?: [:]
 
