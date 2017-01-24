@@ -437,6 +437,30 @@ class DockerContainerIntegrationSpec extends Specification {
         rmContainerResult.status.code == 404
     }
 
+    def "commit container"() {
+        given:
+        def cmds = ["sh", "-c", "ping 127.0.0.1"]
+        def containerConfig = ["Cmd": cmds]
+        def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag)
+
+        when:
+        def result = dockerClient.commit(containerStatus.container.content.Id, [
+                repo   : 'committed-repo',
+                tag    : 'the-tag',
+                comment: 'commit container test',
+                author : 'Andrew Niccol <g@tta.ca>'
+        ])
+
+        then:
+        result.status.code == 201
+
+        cleanup:
+        dockerClient.stop(containerStatus.container.content.Id)
+        dockerClient.wait(containerStatus.container.content.Id)
+        dockerClient.rm(containerStatus.container.content.Id)
+        dockerClient.rmi('committed-repo:the-tag')
+    }
+
     def "exec create"() {
         given:
         def cmds = ["sh", "-c", "ping 127.0.0.1"]
