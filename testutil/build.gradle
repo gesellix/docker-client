@@ -23,5 +23,5 @@ dependencies {
     compile('com.kohlschutter.junixsocket:junixsocket-common:2.0.4') {
         exclude module: 'log4j'
     }
-    compile 'ch.qos.logback:logback-classic:1.1.8'
+    compile 'ch.qos.logback:logback-classic:1.1.9'
 }
