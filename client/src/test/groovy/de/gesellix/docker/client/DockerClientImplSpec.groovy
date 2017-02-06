@@ -1262,15 +1262,29 @@ class DockerClientImplSpec extends Specification {
         1 * httpClient.get([path: "/networks/a-network"]) >> [status: [success: true]]
     }
 
+    def "create network with defaults"() {
+        given:
+        def expectedNetworkConfig = [Name          : "network-name",
+                                     CheckDuplicate: true]
+
+        when:
+        dockerClient.createNetwork("network-name")
+
+        then:
+        1 * httpClient.post([path              : "/networks/create",
+                             body              : expectedNetworkConfig,
+                             requestContentType: "application/json"]) >> [status: [success: true]]
+    }
+
     def "create network with config"() {
         given:
         def networkConfig = [Driver        : "bridge",
                              Options       : [:],
-                             CheckDuplicate: true]
+                             CheckDuplicate: false]
         def expectedNetworkConfig = [Name          : "network-name",
                                      Driver        : "bridge",
                                      Options       : [:],
-                                     CheckDuplicate: true]
+                                     CheckDuplicate: false]
 
         when:
         dockerClient.createNetwork("network-name", networkConfig)

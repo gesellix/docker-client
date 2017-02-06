@@ -1069,7 +1069,8 @@ class DockerClientImpl implements DockerClient {
     createNetwork(name, config = [:]) {
         log.info "docker network create"
         def actualConfig = config ?: [:]
-        def defaults = [Name: name]
+        def defaults = [Name          : name,
+                        CheckDuplicate: true]
         applyDefaults(actualConfig, defaults)
         def response = getHttpClient().post([path              : "/networks/create",
                                              body              : actualConfig ?: [:],
@@ -1414,6 +1415,15 @@ class DockerClientImpl implements DockerClient {
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service inspect failed"))
         return response
     }
+
+//    @Override
+//    logsOfService(service) {
+//        log.info "docker service logs"
+//        def response = getHttpClient().get([path : "/services/$service/logs",
+//                                            query: [tail: "all"]])
+//        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service logs failed"))
+//        return response
+//    }
 
     @Override
     updateService(name, query, config) {
