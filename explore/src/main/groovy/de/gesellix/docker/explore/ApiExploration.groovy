@@ -2,7 +2,7 @@ package de.gesellix.docker.explore
 
 import de.gesellix.docker.client.DockerClientImpl
 
-class ExploreTheApi {
+class ApiExploration {
 
     static void main(String[] args) {
 //    def dockerClient = new DockerClientImpl(dockerHost: System.env.DOCKER_HOST)
@@ -13,6 +13,7 @@ class ExploreTheApi {
 //        def dockerClient = new DockerClientImpl("unix:///var/run/docker.sock")
         def dockerClient = new DockerClientImpl()
 
+        println dockerClient.ping().content
         println dockerClient.info().content
         println dockerClient.version().content
 
