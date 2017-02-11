@@ -1,6 +1,6 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.client.util.IOUtils
+import de.gesellix.util.IOUtils
 import de.gesellix.docker.client.websocket.DefaultWebSocketListener
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j

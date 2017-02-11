@@ -1,4 +1,6 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.system
+
+import de.gesellix.docker.client.DockerAsyncCallback
 
 interface ManageSystem {
 

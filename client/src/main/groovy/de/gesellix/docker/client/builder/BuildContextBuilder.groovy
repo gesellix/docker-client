@@ -1,6 +1,6 @@
 package de.gesellix.docker.client.builder
 
-import de.gesellix.docker.client.util.IOUtils
+import de.gesellix.util.IOUtils
 import groovy.util.logging.Slf4j
 import okio.Okio
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry

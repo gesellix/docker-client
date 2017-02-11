@@ -1,4 +1,7 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.image
+
+import de.gesellix.docker.client.DockerAsyncCallback
+import de.gesellix.docker.client.Timeout
 
 interface ManageImage {
 

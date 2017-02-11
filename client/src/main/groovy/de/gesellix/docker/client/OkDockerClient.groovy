@@ -6,7 +6,7 @@ import de.gesellix.docker.client.filesocket.NpipeSocketFactory
 import de.gesellix.docker.client.filesocket.UnixSocketFactory
 import de.gesellix.docker.client.rawstream.RawInputStream
 import de.gesellix.docker.client.ssl.SslSocketConfigFactory
-import de.gesellix.docker.client.util.IOUtils
+import de.gesellix.util.IOUtils
 import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
 import okhttp3.CacheControl

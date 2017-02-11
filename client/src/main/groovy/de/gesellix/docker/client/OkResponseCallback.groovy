@@ -1,6 +1,6 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.client.util.IOUtils
+import de.gesellix.util.IOUtils
 import groovy.util.logging.Slf4j
 import okhttp3.Call
 import okhttp3.Callback

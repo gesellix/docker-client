@@ -3,7 +3,7 @@ package de.gesellix.docker.client
 import de.gesellix.docker.client.config.DockerClientConfig
 import de.gesellix.docker.client.config.DockerEnv
 import de.gesellix.docker.client.rawstream.RawInputStream
-import de.gesellix.docker.client.util.IOUtils
+import de.gesellix.util.IOUtils
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j

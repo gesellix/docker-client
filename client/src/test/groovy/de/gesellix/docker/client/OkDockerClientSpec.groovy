@@ -5,7 +5,7 @@ import de.gesellix.docker.client.rawstream.RawHeaderAndPayload
 import de.gesellix.docker.client.rawstream.RawInputStream
 import de.gesellix.docker.client.ssl.DockerSslSocket
 import de.gesellix.docker.client.ssl.SslSocketConfigFactory
-import de.gesellix.docker.client.util.IOUtils
+import de.gesellix.util.IOUtils
 import okhttp3.Interceptor
 import okhttp3.MediaType
 import okhttp3.OkHttpClient

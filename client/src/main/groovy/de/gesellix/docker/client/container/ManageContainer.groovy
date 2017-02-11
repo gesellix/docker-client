@@ -1,5 +1,7 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.container
 
+import de.gesellix.docker.client.AttachConfig
+import de.gesellix.docker.client.DockerAsyncCallback
 import okhttp3.WebSocketListener
 
 interface ManageContainer {
