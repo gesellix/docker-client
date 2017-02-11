@@ -18,7 +18,7 @@ class UnixSocketTestServer {
     File socketFile
     def socketThread = null
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         File socketFile = new File(new File(System.getProperty("java.io.tmpdir")), "unixsocket-server.sock")
         def server = new UnixSocketTestServer(socketFile)
         server.with {
