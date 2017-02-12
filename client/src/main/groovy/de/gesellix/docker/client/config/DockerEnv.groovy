@@ -8,7 +8,7 @@ class DockerEnv {
 
     def dockerHost = getDockerHostOrDefault()
 
-    static def getDockerHostOrDefault() {
+    static String getDockerHostOrDefault() {
         def configuredDockerHost = System.getProperty("docker.host", System.env.DOCKER_HOST as String)
         if (configuredDockerHost) {
             return configuredDockerHost

@@ -5,6 +5,7 @@ import de.gesellix.docker.client.DockerClientImpl
 import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.LocalDocker
 import de.gesellix.docker.client.OkDockerClient
+import de.gesellix.docker.client.container.ArchiveUtil
 import groovy.util.logging.Slf4j
 import org.apache.commons.lang.SystemUtils
 import spock.lang.Requires
@@ -77,7 +78,7 @@ class HttpOverNamedPipeIntegrationTest extends Specification {
         def archive = docker.getArchive("npipe", "/npipe.exe").stream as InputStream
 
         def npipeExe = new File("npipe.exe")
-        docker.copySingleTarEntry(archive, "/npipe.exe", new FileOutputStream(npipeExe))
+        new ArchiveUtil().copySingleTarEntry(archive, "/npipe.exe", new FileOutputStream(npipeExe))
         return npipeExe
     }
 }

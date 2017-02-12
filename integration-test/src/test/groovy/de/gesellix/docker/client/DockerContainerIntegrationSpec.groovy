@@ -1,7 +1,8 @@
 package de.gesellix.docker.client
 
-import de.gesellix.util.IOUtils
+import de.gesellix.docker.client.container.ArchiveUtil
 import de.gesellix.docker.client.websocket.DefaultWebSocketListener
+import de.gesellix.util.IOUtils
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import okhttp3.Response
@@ -593,7 +594,7 @@ class DockerContainerIntegrationSpec extends Specification {
         def tarContent = dockerClient.getArchive(containerId, "/file1.txt").stream
 
         then:
-        def fileContent = dockerClient.extractSingleTarEntry(tarContent as InputStream, "file1.txt")
+        def fileContent = new ArchiveUtil().extractSingleTarEntry(tarContent as InputStream, "file1.txt")
         and:
         fileContent == "to be or\nnot to be".bytes
 

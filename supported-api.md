@@ -91,7 +91,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker node rm`: Remove a node from the swarm
 * [x] `docker node update`: Update a node
 
-## Plugin - Manage plugins (0/10)
+## Plugin - Manage plugins (0/11)
 
 * [ ] `docker plugin create`: Create a plugin from a rootfs and config `POST /plugins/create`
 * [ ] `docker plugin disable`: Disable a plugin `POST /plugins/{name:.*}/disable`
@@ -104,6 +104,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [ ] Pull a plugin `POST /plugins/pull`
 * [ ] `docker plugin rm`: Remove a plugin `DELETE /plugins/{name:.*}`
 * [ ] `docker plugin set`: Change settings for a plugin `POST /plugins/{name:.*}/set`
+* [ ] `docker plugin upgrade`: Upgrade an existing plugin `POST /plugins/{name:.*}/upgrade`
 
 ## Secrets - Manage Docker secrets (5/5)
 

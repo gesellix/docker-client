@@ -14,7 +14,11 @@ interface ManageSystem {
 
     def events(DockerAsyncCallback callback)
 
-    def events(DockerAsyncCallback callback, query)
+    def events(DockerAsyncCallback callback, Map query)
+
+    def ping()
+
+    def version()
 
 //    info        Display system-wide information
 

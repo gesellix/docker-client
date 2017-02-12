@@ -12,6 +12,10 @@ interface ManageSwarm {
 
 //    join-token  Manage join tokens
 
+    def inspectSwarm()
+
+    def inspectSwarm(query)
+
     def getSwarmWorkerToken()
 
     def rotateSwarmWorkerToken()

@@ -1,5 +1,6 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.client.checkpoint.ManageCheckpoint
 import de.gesellix.docker.client.container.ManageContainer
 import de.gesellix.docker.client.image.ManageImage
@@ -11,10 +12,12 @@ import de.gesellix.docker.client.service.ManageService
 import de.gesellix.docker.client.stack.ManageStack
 import de.gesellix.docker.client.swarm.ManageSwarm
 import de.gesellix.docker.client.system.ManageSystem
+import de.gesellix.docker.client.tasks.ManageTask
 import de.gesellix.docker.client.volume.ManageVolume
 
 interface DockerClient
-        extends ManageCheckpoint,
+        extends ManageAuthentication,
+                ManageCheckpoint,
                 ManageContainer,
                 ManageImage,
                 ManageNetwork,
@@ -25,6 +28,7 @@ interface DockerClient
                 ManageStack,
                 ManageSwarm,
                 ManageSystem,
+                ManageTask,
                 ManageVolume {
 
     def cleanupStorage(Closure shouldKeepContainer)
@@ -37,31 +41,7 @@ interface DockerClient
 
     def cleanupVolumes(Closure shouldKeepVolume)
 
-    def ping()
-
-    def version()
-
-    def readDefaultAuthConfig()
-
-    def readAuthConfig(hostnameOrNull, File dockerCfgOrNull)
-
-    def encodeAuthConfig(authConfig)
-
-    def auth(authDetails)
-
-    def parseRepositoryTag(name)
-
     def search(term)
 
-    def inspectSwarm()
-
-    def inspectSwarm(query)
-
     def getSwarmMangerAddress()
-
-    def tasks()
-
-    def tasks(query)
-
-    def inspectTask(name)
 }

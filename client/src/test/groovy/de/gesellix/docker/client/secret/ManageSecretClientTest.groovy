@@ -1,21 +1,21 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.secret
 
-import de.gesellix.docker.client.config.DockerEnv
+import de.gesellix.docker.client.DockerResponseHandler
+import de.gesellix.docker.client.HttpClient
 import spock.lang.Specification
 
-class DockerClientImplManageSecretSpec extends Specification {
+class ManageSecretClientTest extends Specification {
 
-    DockerClientImpl dockerClient = Spy(DockerClientImpl)
     HttpClient httpClient = Mock(HttpClient)
+    ManageSecretClient service
 
     def setup() {
-        dockerClient.responseHandler = Spy(DockerResponseHandler)
-        dockerClient.newDockerHttpClient = { DockerEnv dockerEnv, proxy -> httpClient }
+        service = new ManageSecretClient(httpClient, Mock(DockerResponseHandler))
     }
 
     def "create a secret"() {
         when:
-        dockerClient.createSecret("a-secret", "secret-content".bytes)
+        service.createSecret("a-secret", "secret-content".bytes)
 
         then:
         1 * httpClient.post([path              : "/secrets/create",
@@ -27,7 +27,7 @@ class DockerClientImplManageSecretSpec extends Specification {
 
     def "inspect a secret"() {
         when:
-        dockerClient.inspectSecret("5qyxxlxqbq6s5004io33miih6")
+        service.inspectSecret("5qyxxlxqbq6s5004io33miih6")
 
         then:
         1 * httpClient.get([path: "/secrets/5qyxxlxqbq6s5004io33miih6"]) >> [status: [success: true]]
@@ -35,7 +35,7 @@ class DockerClientImplManageSecretSpec extends Specification {
 
     def "list all secrets"() {
         when:
-        dockerClient.secrets()
+        service.secrets()
 
         then:
         1 * httpClient.get([path: "/secrets"]) >> [status: [success: true]]
@@ -43,7 +43,7 @@ class DockerClientImplManageSecretSpec extends Specification {
 
     def "rm a secret"() {
         when:
-        dockerClient.rmSecret("5qyxxlxqbq6s5004io33miih6")
+        service.rmSecret("5qyxxlxqbq6s5004io33miih6")
 
         then:
         1 * httpClient.delete([path: "/secrets/5qyxxlxqbq6s5004io33miih6"]) >> [status: [success: true]]
@@ -51,7 +51,7 @@ class DockerClientImplManageSecretSpec extends Specification {
 
     def "update a secret"() {
         when:
-        dockerClient.updateSecret("5qyxxlxqbq6s5004io33miih6", 11, [Labels: [:]])
+        service.updateSecret("5qyxxlxqbq6s5004io33miih6", 11, [Labels: [:]])
 
         then:
         1 * httpClient.post([path              : "/secrets/5qyxxlxqbq6s5004io33miih6/update",
