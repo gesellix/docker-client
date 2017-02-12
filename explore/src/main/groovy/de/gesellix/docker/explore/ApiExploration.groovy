@@ -13,9 +13,9 @@ class ApiExploration {
 //        def dockerClient = new DockerClientImpl("unix:///var/run/docker.sock")
         def dockerClient = new DockerClientImpl()
 
-        println dockerClient.ping().content
-        println dockerClient.info().content
-        println dockerClient.version().content
+//        println dockerClient.ping().content
+//        println dockerClient.info().content
+//        println dockerClient.version().content
 
 //    def runResult = dockerClient.run("gesellix/testimage", [Cmd: ["ping", "127.0.0.1"]])
 //    println runResult.container.content.Id
@@ -87,6 +87,75 @@ class ApiExploration {
 //        println dockerClient.createSecret("test", "a-secret".bytes).content
 //        println dockerClient.inspectSecret("5qyxxlxqbq6s5004io33miih6").content
 //        println dockerClient.secrets().content
-        println dockerClient.rmSecret("5qyxxlxqbq6s5004io33miih6").content
+//        println dockerClient.rmSecret("5qyxxlxqbq6s5004io33miih6").content
+
+        try {
+//            def config = newSwarmConfig()
+//            dockerClient.initSwarm(config)
+//            def serviceConfig = newServiceConfig()
+//            dockerClient.createService(serviceConfig)
+//            println dockerClient.services()
+
+//            println dockerClient.lsStacks()
+
+//            println dockerClient.stackPs("example")
+//            println dockerClient.stackPs("example", [label: ['APP=VOTING': true]])
+
+            println dockerClient.stackServices("example")
+//            println dockerClient.stackServices("example", [label: ['APP=VOTING': true]])
+
+//            dockerClient.stackDeploy()
+        } finally {
+//            dockerClient.leaveSwarm([force: true])
+        }
+    }
+
+    static Map newSwarmConfig() {
+        [
+                "ListenAddr"     : "0.0.0.0:4554",
+                "ForceNewCluster": false,
+                "Spec"           : [
+                        "AcceptancePolicy": [
+                                "Policies": [
+                                        ["Role": "MANAGER", "Autoaccept": true],
+                                        ["Role": "WORKER", "Autoaccept": true]
+                                ]
+                        ],
+                        "Orchestration"   : [:],
+                        "Raft"            : [:],
+                        "Dispatcher"      : [:],
+                        "CAConfig"        : [:]
+                ]
+        ]
+    }
+
+    static Map newServiceConfig() {
+        [
+                "Name"        : "redis",
+                "TaskTemplate": [
+                        "ContainerSpec": [
+                                "Image": "redis"
+                        ],
+                        "Resources"    : [
+                                "Limits"      : [:],
+                                "Reservations": [:]
+                        ],
+                        "RestartPolicy": [:],
+                        "Placement"    : [:]
+                ],
+                "Mode"        : [
+                        "Replicated": [
+                                "Instances": 1
+                        ]
+                ],
+                "UpdateConfig": [
+                        "Parallelism": 1
+                ],
+                "EndpointSpec": [
+                        "ExposedPorts": [
+                                ["Protocol": "tcp", "Port": 6379]
+                        ]
+                ]
+        ]
     }
 }

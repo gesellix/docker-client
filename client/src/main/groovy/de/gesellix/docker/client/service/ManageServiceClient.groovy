@@ -1,5 +1,6 @@
 package de.gesellix.docker.client.service
 
+import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.node.NodeUtil
@@ -29,7 +30,7 @@ class ManageServiceClient implements ManageService {
     }
 
     @Override
-    services(query = [:]) {
+    DockerResponse services(query = [:]) {
         log.info "docker service ls"
         def actualQuery = query ?: [:]
         queryUtil.jsonEncodeFilters(actualQuery)

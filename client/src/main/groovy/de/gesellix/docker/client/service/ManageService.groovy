@@ -1,5 +1,7 @@
 package de.gesellix.docker.client.service
 
+import de.gesellix.docker.client.DockerResponse
+
 interface ManageService {
 
 //    create      Create a new service
@@ -14,9 +16,9 @@ interface ManageService {
 
 //    ls          List services
 
-    def services()
+    DockerResponse services()
 
-    def services(query)
+    DockerResponse services(query)
 
 //    ps          List the tasks of a service
 

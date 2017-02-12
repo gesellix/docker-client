@@ -18,6 +18,8 @@ import de.gesellix.docker.client.secret.ManageSecret
 import de.gesellix.docker.client.secret.ManageSecretClient
 import de.gesellix.docker.client.service.ManageService
 import de.gesellix.docker.client.service.ManageServiceClient
+import de.gesellix.docker.client.stack.ManageStack
+import de.gesellix.docker.client.stack.ManageStackClient
 import de.gesellix.docker.client.swarm.ManageSwarm
 import de.gesellix.docker.client.swarm.ManageSwarmClient
 import de.gesellix.docker.client.system.ManageSystem
@@ -62,6 +64,8 @@ class DockerClientImpl implements DockerClient {
     @Delegate
     ManageService manageService
     @Delegate
+    ManageStack manageStack
+    @Delegate
     ManageNode manageNode
     @Delegate
     ManageTask manageTask
@@ -102,6 +106,7 @@ class DockerClientImpl implements DockerClient {
         NodeUtil nodeUtil = new NodeUtil(manageSystem)
         this.manageService = new ManageServiceClient(httpClient, responseHandler, manageTask, nodeUtil)
         this.manageNode = new ManageNodeClient(httpClient, responseHandler, manageTask, nodeUtil)
+        this.manageStack = new ManageStackClient(httpClient, responseHandler, manageService, manageTask, manageNode)
     }
 
     @Override

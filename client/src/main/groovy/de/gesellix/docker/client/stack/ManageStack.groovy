@@ -2,14 +2,27 @@ package de.gesellix.docker.client.stack
 
 interface ManageStack {
 
-//    TODO deploy      Deploy a new stack or update an existing stack
+//    deploy      Deploy a new stack or update an existing stack
 
-//    TODO ls          List stacks
+    def stackDeploy()
 
-//    TODO ps          List the tasks in the stack
+//    ls          List stacks
 
-//    TODO rm          Remove the stack
+    def lsStacks()
 
-//    TODO services    List the services in the stack
+//    ps          List the tasks in the stack
 
+    def stackPs(String namespace)
+
+    def stackPs(String namespace, Map filters)
+
+//    rm          Remove the stack
+
+    def stackRm()
+
+//    services    List the services in the stack
+
+    def stackServices(String namespace)
+
+    def stackServices(String namespace, Map filters)
 }
