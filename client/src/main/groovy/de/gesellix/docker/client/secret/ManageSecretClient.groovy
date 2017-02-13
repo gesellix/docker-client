@@ -41,9 +41,12 @@ class ManageSecretClient implements ManageSecret {
     }
 
     @Override
-    secrets() {
+    secrets(Map query = [:]) {
         log.info "docker secret ls"
-        def response = client.get([path: "/secrets"])
+        def actualQuery = query ?: [:]
+        queryUtil.jsonEncodeFilters(actualQuery)
+        def response = client.get([path : "/secrets",
+                                   query: actualQuery])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker secret ls failed"))
         return response
     }

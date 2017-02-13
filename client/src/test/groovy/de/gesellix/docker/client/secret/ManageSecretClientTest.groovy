@@ -38,7 +38,8 @@ class ManageSecretClientTest extends Specification {
         service.secrets()
 
         then:
-        1 * httpClient.get([path: "/secrets"]) >> [status: [success: true]]
+        1 * httpClient.get([path : "/secrets",
+                            query: [:]]) >> [status: [success: true]]
     }
 
     def "rm a secret"() {

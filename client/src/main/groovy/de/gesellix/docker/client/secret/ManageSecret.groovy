@@ -16,6 +16,8 @@ interface ManageSecret {
 
     def secrets()
 
+    def secrets(Map query)
+
 //    rm          Remove one or more secrets
 
     def rmSecret(String secretId)
