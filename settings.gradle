@@ -1,4 +1,5 @@
 rootProject.name = 'docker-client'
 include 'client'
+include 'compose'
 include 'integration-test'
 include 'explore'

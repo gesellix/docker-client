@@ -25,7 +25,12 @@ subprojects {
     apply plugin: 'groovy'
     apply plugin: 'com.github.ben-manes.versions'
 
+    group = 'de.gesellix'
+
     def dependencyVersions = [
+            'com.google.code.findbugs:jsr305:3.0.0',
+            'joda-time:joda-time:2.9.7',
+            'junit:junit:4.12',
             'org.bouncycastle:bcprov-jdk15on:1.56',
             'org.slf4j:slf4j-api:1.7.22'
     ]

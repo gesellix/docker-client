@@ -1,0 +1,79 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+    }
+}
+
+apply plugin: 'groovy'
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
+
+repositories {
+    mavenLocal()
+    jcenter()
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy:2.4.8'
+    compile 'org.codehaus.groovy:groovy-json:2.4.8'
+
+    compile 'org.slf4j:slf4j-api:1.7.22'
+    testCompile 'ch.qos.logback:logback-classic:1.1.9'
+
+    compile 'org.yaml:snakeyaml:1.17'
+    compile 'com.squareup.moshi:moshi:1.4.0'
+    compile 'com.google.code.gson:gson:2.8.0'
+    //    compile 'com.github.fge:json-schema-validator:2.2.6'
+
+    testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
+        exclude module: 'groovy-all'
+    }
+    testCompile 'cglib:cglib-nodep:3.2.4'
+}
+
+task sourcesJar(type: Jar) {
+    dependsOn classes
+    classifier 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+publishing {
+    publications {
+        dockerCompose(MavenPublication) {
+            artifactId 'docker-compose'
+            version artifactVersion
+            from components.java
+            artifact sourcesJar
+        }
+    }
+}
+
+bintray {
+    user = System.env.BINTRAY_USER ?: project["bintray.user"]
+    key = System.env.BINTRAY_API_KEY ?: project["bintray.key"]
+    publications = ['dockerCompose']
+    pkg {
+        repo = 'docker-utils'
+        name = 'docker-compose'
+        desc = 'A Docker compose abstraction for the JVM written in Groovy'
+        licenses = ['Apache-2.0']
+        labels = ['docker', 'compose', 'java', 'groovy']
+        version = [
+                name: artifactVersion
+        ]
+        vcsUrl = 'https://github.com/gesellix/docker-client.git'
+    }
+    dryRun = bintrayDryRun
+}
+bintrayUpload.dependsOn build
