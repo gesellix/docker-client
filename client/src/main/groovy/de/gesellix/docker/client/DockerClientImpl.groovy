@@ -106,7 +106,9 @@ class DockerClientImpl implements DockerClient {
         NodeUtil nodeUtil = new NodeUtil(manageSystem)
         this.manageService = new ManageServiceClient(httpClient, responseHandler, manageTask, nodeUtil)
         this.manageNode = new ManageNodeClient(httpClient, responseHandler, manageTask, nodeUtil)
-        this.manageStack = new ManageStackClient(httpClient, responseHandler, manageService, manageTask, manageNode)
+        this.manageStack = new ManageStackClient(
+                httpClient, responseHandler,
+                manageService, manageTask, manageNode, manageNetwork, manageSecret)
     }
 
     @Override

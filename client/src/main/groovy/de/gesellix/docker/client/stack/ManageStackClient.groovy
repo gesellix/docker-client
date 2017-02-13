@@ -3,7 +3,9 @@ package de.gesellix.docker.client.stack
 import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.HttpClient
+import de.gesellix.docker.client.network.ManageNetwork
 import de.gesellix.docker.client.node.ManageNode
+import de.gesellix.docker.client.secret.ManageSecret
 import de.gesellix.docker.client.service.ManageService
 import de.gesellix.docker.client.tasks.ManageTask
 import de.gesellix.util.QueryUtil
@@ -18,6 +20,8 @@ class ManageStackClient implements ManageStack {
     private ManageService manageService
     private ManageTask manageTask
     private ManageNode manageNode
+    private ManageNetwork manageNetwork
+    private ManageSecret manageSecret
 
     // see docker/docker/cli/compose/convert/compose.go:14
     final String LabelNamespace = "com.docker.stack.namespace"
@@ -27,13 +31,17 @@ class ManageStackClient implements ManageStack {
             DockerResponseHandler responseHandler,
             ManageService manageService,
             ManageTask manageTask,
-            ManageNode manageNode) {
+            ManageNode manageNode,
+            ManageNetwork manageNetwork,
+            ManageSecret manageSecret) {
         this.client = client
         this.responseHandler = responseHandler
         this.queryUtil = new QueryUtil()
         this.manageService = manageService
         this.manageTask = manageTask
         this.manageNode = manageNode
+        this.manageNetwork = manageNetwork
+        this.manageSecret = manageSecret
     }
 
     @Override
@@ -77,9 +85,24 @@ class ManageStackClient implements ManageStack {
     }
 
     @Override
-    stackRm() {
+    stackRm(String namespace) {
         log.info "docker stack rm"
-        throw new UnsupportedOperationException("NYI")
+
+        String namespaceFilter = "${LabelNamespace}=${namespace}"
+
+        def services = manageService.services([filters: [label: [(namespaceFilter): true]]])
+        def networks = manageNetwork.networks([filters: [label: [(namespaceFilter): true]]])
+        def secrets = manageSecret.secrets([filters: [label: [(namespaceFilter): true]]])
+
+        services.content.each { service ->
+            manageService.rmService(service.ID)
+        }
+        networks.content.each { network ->
+            manageNetwork.rmNetwork(network.Id)
+        }
+        secrets.content.each { secret ->
+            manageSecret.rmSecret(secret.ID as String)
+        }
     }
 
     @Override

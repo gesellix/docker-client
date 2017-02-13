@@ -125,12 +125,12 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker service scale`: Scale one or multiple services
 * [x] `docker service update`: Update a service
 
-## Stack - Manage Docker stacks (3/5)
+## Stack - Manage Docker stacks (4/5)
 
 * [ ] `docker stack deploy`: Deploy a new stack or update an existing stack
 * [x] `docker stack ls`: List stacks
 * [x] `docker stack ps`: List the tasks in the stack
-* [ ] `docker stack rm`: Remove the stack
+* [x] `docker stack rm`: Remove the stack
 * [x] `docker stack services`: List the services in the stack
 
 ## Swarm - Manage Swarm (8/8)

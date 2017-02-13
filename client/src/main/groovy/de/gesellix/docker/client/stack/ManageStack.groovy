@@ -18,7 +18,7 @@ interface ManageStack {
 
 //    rm          Remove the stack
 
-    def stackRm()
+    def stackRm(String namespace)
 
 //    services    List the services in the stack
 

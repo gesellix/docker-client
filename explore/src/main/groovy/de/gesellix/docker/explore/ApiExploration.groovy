@@ -104,6 +104,8 @@ class ApiExploration {
             println dockerClient.stackServices("example")
 //            println dockerClient.stackServices("example", [label: ['APP=VOTING': true]])
 
+            println dockerClient.stackRm("example")
+
 //            dockerClient.stackDeploy()
         } finally {
 //            dockerClient.leaveSwarm([force: true])
