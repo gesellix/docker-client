@@ -17,7 +17,6 @@ import static org.slf4j.Logger.ROOT_LOGGER_NAME
 class MemoryAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 
     Encoder<ILoggingEvent> encoder
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
     List<ILoggingEvent> loggedEvents = []
 
     static void clearLoggedEvents() {
@@ -42,12 +41,14 @@ class MemoryAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
     @Override
     void start() {
         try {
-            encoder.init(outputStream)
+            encoder.start()
             super.start()
         }
         catch (IOException e) {
             started = false
-            addStatus(new ErrorStatus("Failed to initialize encoder for appender named [" + name + "].", this, e))
+            def errorStatus = new ErrorStatus("Failed to initialize encoder for appender named [" + name + "].", this, e)
+            println errorStatus
+            addStatus(errorStatus)
         }
     }
 
@@ -59,7 +60,7 @@ class MemoryAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 
         try {
             event.prepareForDeferredProcessing()
-            encoder.doEncode(event)
+            encoder.encode(event)
             loggedEvents.add(event)
         }
         catch (IOException ioe) {
@@ -74,9 +75,5 @@ class MemoryAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 
     void clear() {
         loggedEvents.clear()
-    }
-
-    String getRenderedOutput() {
-        return new String(outputStream.toByteArray())
     }
 }

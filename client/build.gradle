@@ -7,7 +7,7 @@ buildscript {
 
     dependencies {
         classpath 'net.saliman:gradle-cobertura-plugin:2.4.0'
-        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.7.1'
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.1'
 
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
     }
@@ -19,12 +19,8 @@ apply plugin: 'jacoco'
 apply plugin: 'net.saliman.cobertura'
 apply plugin: 'com.github.kt3k.coveralls'
 
-apply plugin: 'maven'
 apply plugin: 'maven-publish'
-
 apply plugin: 'com.jfrog.bintray'
-
-group = 'de.gesellix'
 
 repositories {
     mavenLocal()
@@ -37,7 +33,7 @@ dependencies {
     compile 'org.codehaus.groovy:groovy-json:2.4.8'
 
     compile 'org.slf4j:slf4j-api:1.7.22'
-    testCompile 'ch.qos.logback:logback-classic:1.1.9'
+    testCompile 'ch.qos.logback:logback-classic:1.2.1'
 
     compile 'com.squareup.okio:okio:1.11.0'
     compile 'com.squareup.okhttp3:okhttp:3.6.0'
@@ -45,9 +41,11 @@ dependencies {
 
     compile 'org.apache.commons:commons-compress:1.13'
 
-    compile 'de.gesellix:docker-filesocket:2017-02-07T21-05-06'
+    compile 'de.gesellix:docker-filesocket:2017-02-07T21-22-28'
 
     compile 'org.bouncycastle:bcpkix-jdk15on:1.56'
+
+//    compile project(':compose')
 
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
         exclude module: 'groovy-all'
