@@ -1,0 +1,27 @@
+version: "3"
+services:
+  foo:
+    image: busybox
+    networks:
+      with_me:
+  bar:
+    image: busybox
+    environment:
+      - FOO=1
+    networks:
+      - with_ipam
+volumes:
+  hello:
+    driver: default
+    driver_opts:
+      beep: boop
+networks:
+  default:
+    driver: bridge
+    driver_opts:
+      beep: boop
+  with_ipam:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
