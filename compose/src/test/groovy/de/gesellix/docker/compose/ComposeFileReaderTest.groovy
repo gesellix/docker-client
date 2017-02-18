@@ -6,11 +6,13 @@ import de.gesellix.docker.compose.types.DriverOpts
 import de.gesellix.docker.compose.types.Environment
 import de.gesellix.docker.compose.types.External
 import de.gesellix.docker.compose.types.Ipam
+import de.gesellix.docker.compose.types.Labels
 import de.gesellix.docker.compose.types.Network
 import de.gesellix.docker.compose.types.Secret
 import de.gesellix.docker.compose.types.Service
 import de.gesellix.docker.compose.types.Volume
 import groovy.json.JsonSlurper
+import spock.lang.Ignore
 import spock.lang.Specification
 
 class ComposeFileReaderTest extends Specification {
@@ -49,20 +51,6 @@ class ComposeFileReaderTest extends Specification {
         result == sampleConfig
     }
 
-    def "can load version 3.1"() {
-        given:
-        def sampleConfig = newSampleConfigVersion_3_1()
-        InputStream composeFile = getClass().getResourceAsStream('version_3_1/sample.yaml')
-
-        when:
-        def result = reader.load(composeFile)
-
-        then:
-        result.services == sampleConfig.services
-        result.secrets == sampleConfig.secrets
-        result == sampleConfig
-    }
-
     def "can load environments as dict and as list"() {
         given:
         def expectedEnv = new Environment(entries: [
@@ -79,6 +67,55 @@ class ComposeFileReaderTest extends Specification {
         then:
         result.services['dict-env'].environment == expectedEnv
         result.services['list-env'].environment == expectedEnv
+    }
+
+    def "can load version 3.1"() {
+        given:
+        def sampleConfig = newSampleConfigVersion_3_1()
+        InputStream composeFile = getClass().getResourceAsStream('version_3_1/sample.yaml')
+
+        when:
+        def result = reader.load(composeFile)
+
+        then:
+        result.services == sampleConfig.services
+        result.secrets == sampleConfig.secrets
+        result == sampleConfig
+    }
+
+    def "can load attachable network"() {
+        given:
+        def sampleConfig = newSampleConfigAttachableNetwork()
+        InputStream composeFile = getClass().getResourceAsStream('attachable/sample.yaml')
+
+        when:
+        def result = reader.load(composeFile)
+
+        then:
+        result.networks.mynet1 == sampleConfig.mynet1
+        result.networks.mynet2 == sampleConfig.mynet2
+    }
+
+    @Ignore
+    def "can interpolate environment variables"() {
+        given:
+        def home = System.getenv('HOME')
+        def expectedLabels = new Labels(entries: [
+                "home1"      : home,
+                "home2"      : home,
+                "nonexistent": "",
+                "default"    : "default"
+        ])
+
+        InputStream composeFile = getClass().getResourceAsStream('interpolation/sample.yaml')
+
+        when:
+        def result = reader.load(composeFile)
+
+        then:
+        result.services.test.labels == expectedLabels
+        result.networks.test.driver == home
+        result.volumes.test.driver == home
     }
 
     def newSampleConfig() {
@@ -132,5 +169,12 @@ class ComposeFileReaderTest extends Specification {
                         )
                 ]
         )
+    }
+
+    def newSampleConfigAttachableNetwork() {
+        return [
+                mynet1: new Network(driver: "overlay", attachable: true),
+                mynet2: new Network(driver: "bridge", attachable: false)
+        ]
     }
 }

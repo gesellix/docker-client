@@ -1,0 +1,15 @@
+version: "3"
+services:
+  test:
+    image: busybox
+    labels:
+      - home1=$HOME
+      - home2=${HOME}
+      - nonexistent=$NONEXISTENT
+      - default=${NONEXISTENT-default}
+networks:
+  test:
+    driver: $HOME
+volumes:
+  test:
+    driver: $HOME

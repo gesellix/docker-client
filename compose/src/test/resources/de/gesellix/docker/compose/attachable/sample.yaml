@@ -1,0 +1,7 @@
+version: "3.1"
+networks:
+  mynet1:
+    driver: overlay
+    attachable: true
+  mynet2:
+    driver: bridge
