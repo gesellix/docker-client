@@ -7,6 +7,7 @@ import de.gesellix.docker.compose.adapters.MapOrListToLabelAdapter
 import de.gesellix.docker.compose.adapters.MapToDriverOptsAdapter
 import de.gesellix.docker.compose.adapters.MapToExternalAdapter
 import de.gesellix.docker.compose.adapters.StringToNetworkAdapter
+import de.gesellix.docker.compose.interpolation.ComposeInterpolator
 import de.gesellix.docker.compose.types.ComposeConfig
 import groovy.json.JsonOutput
 import groovy.util.logging.Slf4j
@@ -59,6 +60,8 @@ class ComposeFileReader {
             "memswap_limit": "Set resource limits using deploy.resources",
     ]
 
+    ComposeInterpolator interpolator = new ComposeInterpolator()
+
     Map<String, Object> loadYaml(InputStream composeFile) {
         Map<String, Object> composeContent = new Yaml().load(composeFile)
         log.info("composeContent: $composeContent}")
@@ -67,8 +70,8 @@ class ComposeFileReader {
     }
 
     ComposeConfig load(InputStream composeFile) {
-        def composeContent = loadYaml(composeFile)
-        def json = JsonOutput.toJson(composeContent)
+        Map<String, Object> composeContent = loadYaml(composeFile)
+        interpolator.interpolate(composeContent)
 
         Moshi moshi = new Moshi.Builder()
                 .add(new MapToDriverOptsAdapter())
@@ -78,6 +81,8 @@ class ComposeFileReader {
                 .add(new StringToNetworkAdapter())
                 .build()
         JsonAdapter<ComposeConfig> jsonAdapter = moshi.adapter(ComposeConfig)
+
+        def json = JsonOutput.toJson(composeContent)
         ComposeConfig cfg = jsonAdapter.fromJson(json)
 
 //        def forbiddenProperties = collectForbiddenServiceProperties(composeContent.services, ForbiddenProperties)
