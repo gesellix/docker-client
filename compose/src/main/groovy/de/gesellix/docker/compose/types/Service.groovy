@@ -1,6 +1,7 @@
 package de.gesellix.docker.compose.types
 
 import de.gesellix.docker.compose.adapters.EnvironmentType
+import de.gesellix.docker.compose.adapters.LabelsType
 import de.gesellix.docker.compose.adapters.NetworksType
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
@@ -32,7 +33,8 @@ class Service {
     String hostname
     String image
     String ipc
-    List<String> labels
+    @LabelsType
+    Labels labels
     Set<String> links = null
     Logging logging
     String macAddress
