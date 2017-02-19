@@ -1,5 +1,6 @@
 package de.gesellix.docker.compose.types
 
+import de.gesellix.docker.compose.adapters.CommandType
 import de.gesellix.docker.compose.adapters.EnvironmentType
 import de.gesellix.docker.compose.adapters.LabelsType
 import de.gesellix.docker.compose.adapters.NetworksType
@@ -16,7 +17,8 @@ class Service {
     Set<String> capAdd = null
     Set<String> capDrop = null
     String cgroupParent
-    List<String> command
+    @CommandType
+    Command command
     String containerName
     Set<String> dependsOn = null
     Set<String> devices = null
