@@ -42,14 +42,14 @@ class DockerNetworkIntegrationSpec extends Specification {
         dockerClient.networks().content.find { it.Name == "test-net" }
 
         cleanup:
-        dockerClient.rmNetwork('test-net')
+        performSilently { dockerClient.rmNetwork('test-net') }
     }
 
     @Requires({ LocalDocker.hasSwarmMode() })
     def "create overlay network"() {
         given:
+        performSilently { dockerClient.leaveSwarm([force: true]) }
         !dockerClient.networks().content.find { it.Name == "test-net" }
-        dockerClient.leaveSwarm([force: true])
         dockerClient.initSwarm([
                 "ListenAddr"     : "0.0.0.0:4500",
                 "ForceNewCluster": false
@@ -67,7 +67,14 @@ class DockerNetworkIntegrationSpec extends Specification {
         dockerClient.networks().content.find { it.Name == "test-net" }
 
         cleanup:
-        dockerClient.rmNetwork('test-net')
-        dockerClient.leaveSwarm([force: true])
+        performSilently { dockerClient.rmNetwork('test-net') }
+        performSilently { dockerClient.leaveSwarm([force: true]) }
+    }
+
+    def performSilently(Closure action) {
+        try {
+            action()
+        } catch (Exception ignored) {
+        }
     }
 }
