@@ -49,6 +49,7 @@ class DockerNetworkIntegrationSpec extends Specification {
     def "create overlay network"() {
         given:
         !dockerClient.networks().content.find { it.Name == "test-net" }
+        dockerClient.leaveSwarm([force: true])
         dockerClient.initSwarm([
                 "ListenAddr"     : "0.0.0.0:4500",
                 "ForceNewCluster": false
