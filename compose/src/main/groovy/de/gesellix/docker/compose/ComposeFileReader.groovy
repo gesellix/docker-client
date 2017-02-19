@@ -2,6 +2,7 @@ package de.gesellix.docker.compose
 
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
+import de.gesellix.docker.compose.adapters.ListToPortConfigsAdapter
 import de.gesellix.docker.compose.adapters.MapOrListToEnvironmentAdapter
 import de.gesellix.docker.compose.adapters.MapOrListToLabelAdapter
 import de.gesellix.docker.compose.adapters.MapToDriverOptsAdapter
@@ -74,9 +75,10 @@ class ComposeFileReader {
         interpolator.interpolate(composeContent)
 
         Moshi moshi = new Moshi.Builder()
-                .add(new MapToDriverOptsAdapter())
+                .add(new ListToPortConfigsAdapter())
                 .add(new MapOrListToEnvironmentAdapter())
                 .add(new MapOrListToLabelAdapter())
+                .add(new MapToDriverOptsAdapter())
                 .add(new MapToExternalAdapter())
                 .add(new StringToNetworkAdapter())
                 .build()

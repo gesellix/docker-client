@@ -3,6 +3,7 @@ package de.gesellix.docker.compose.types
 import de.gesellix.docker.compose.adapters.EnvironmentType
 import de.gesellix.docker.compose.adapters.LabelsType
 import de.gesellix.docker.compose.adapters.NetworksType
+import de.gesellix.docker.compose.adapters.PortConfigsType
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 
@@ -42,7 +43,8 @@ class Service {
     @NetworksType
     Map<String, Network> networks
     String pid
-    Set<Object> ports = null
+    @PortConfigsType
+    PortConfigs ports = new PortConfigs()
     boolean privileged
     boolean readOnly
     String restart

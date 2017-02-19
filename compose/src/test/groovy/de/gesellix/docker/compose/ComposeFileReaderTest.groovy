@@ -8,6 +8,8 @@ import de.gesellix.docker.compose.types.External
 import de.gesellix.docker.compose.types.Ipam
 import de.gesellix.docker.compose.types.Labels
 import de.gesellix.docker.compose.types.Network
+import de.gesellix.docker.compose.types.PortConfig
+import de.gesellix.docker.compose.types.PortConfigs
 import de.gesellix.docker.compose.types.Secret
 import de.gesellix.docker.compose.types.Service
 import de.gesellix.docker.compose.types.Volume
@@ -96,6 +98,18 @@ class ComposeFileReaderTest extends Specification {
         result.networks.mynet2 == sampleConfig.mynet2
     }
 
+    def "can load expanded port formats"() {
+        given:
+        def sampleConfig = newSampleConfigPortFormats()
+        InputStream composeFile = getClass().getResourceAsStream('portformats/sample.yaml')
+
+        when:
+        def result = reader.load(composeFile)
+
+        then:
+        result.services.web.ports == sampleConfig
+    }
+
     @Ignore
     def "can interpolate environment variables"() {
         given:
@@ -176,5 +190,68 @@ class ComposeFileReaderTest extends Specification {
                 mynet1: new Network(driver: "overlay", attachable: true),
                 mynet2: new Network(driver: "bridge", attachable: false)
         ]
+    }
+
+    def newSampleConfigPortFormats() {
+        return new PortConfigs(portConfigs: [
+                new PortConfig(
+                        mode: "ingress",
+                        target: 8080,
+                        published: 80,
+                        protocol: "tcp"
+                ),
+                new PortConfig(
+                        mode: "ingress",
+                        target: 8081,
+                        published: 81,
+                        protocol: "tcp"
+                ),
+                new PortConfig(
+                        mode: "ingress",
+                        target: 8082,
+                        published: 82,
+                        protocol: "tcp"
+                ),
+                new PortConfig(
+                        mode: "ingress",
+                        target: 8090,
+                        published: 90,
+                        protocol: "udp"
+                ),
+                new PortConfig(
+                        mode: "ingress",
+                        target: 8091,
+                        published: 91,
+                        protocol: "udp"
+                ),
+                new PortConfig(
+                        mode: "ingress",
+                        target: 8092,
+                        published: 92,
+                        protocol: "udp"
+                ),
+                new PortConfig(
+                        mode: "ingress",
+                        target: 8500,
+                        published: 85,
+                        protocol: "tcp"
+                ),
+                new PortConfig(
+                        mode: "ingress",
+                        target: 8600,
+                        published: 0,
+                        protocol: "tcp"
+                ),
+                new PortConfig(
+                        target: 53,
+                        published: 10053,
+                        protocol: "udp"
+                ),
+                new PortConfig(
+                        mode: "host",
+                        target: 22,
+                        published: 10022
+                )
+        ])
     }
 }

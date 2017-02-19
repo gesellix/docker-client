@@ -1,0 +1,15 @@
+version: "3.1"
+services:
+  web:
+    image: busybox
+    ports:
+      - "80-82:8080-8082"
+      - "90-92:8090-8092/udp"
+      - "85:8500"
+      - 8600
+      - protocol: udp
+        target: 53
+        published: 10053
+      - mode: host
+        target: 22
+        published: 10022
