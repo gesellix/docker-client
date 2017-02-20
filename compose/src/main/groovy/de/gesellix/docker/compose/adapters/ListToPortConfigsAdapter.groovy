@@ -73,7 +73,7 @@ class ListToPortConfigsAdapter {
         validateProto(proto as String)
 
         if (rawIP) {
-            def address = InetAddress.getByName("$rawIP:")
+            def address = InetAddress.getByName("$rawIP")
             rawIP = address.hostAddress
         }
 

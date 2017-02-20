@@ -8,5 +8,5 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME
 
 @Retention(RUNTIME)
 @JsonQualifier
-@interface NetworksType {
+@interface ServiceNetworksType {
 }

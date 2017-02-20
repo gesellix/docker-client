@@ -8,7 +8,7 @@ import de.gesellix.docker.compose.adapters.MapOrListToLabelAdapter
 import de.gesellix.docker.compose.adapters.MapToDriverOptsAdapter
 import de.gesellix.docker.compose.adapters.MapToExternalAdapter
 import de.gesellix.docker.compose.adapters.StringOrListToCommandAdapter
-import de.gesellix.docker.compose.adapters.StringToNetworkAdapter
+import de.gesellix.docker.compose.adapters.StringToServiceNetworksAdapter
 import de.gesellix.docker.compose.interpolation.ComposeInterpolator
 import de.gesellix.docker.compose.types.ComposeConfig
 import groovy.json.JsonOutput
@@ -82,7 +82,7 @@ class ComposeFileReader {
                 .add(new MapToDriverOptsAdapter())
                 .add(new MapToExternalAdapter())
                 .add(new StringOrListToCommandAdapter())
-                .add(new StringToNetworkAdapter())
+                .add(new StringToServiceNetworksAdapter())
                 .build()
         JsonAdapter<ComposeConfig> jsonAdapter = moshi.adapter(ComposeConfig)
 
