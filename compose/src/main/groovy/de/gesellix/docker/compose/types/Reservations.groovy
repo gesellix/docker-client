@@ -1,5 +1,6 @@
 package de.gesellix.docker.compose.types
 
+import com.squareup.moshi.Json
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 
@@ -7,8 +8,8 @@ import groovy.transform.ToString
 @ToString
 class Reservations {
 
-//    String NanoCPUs
-     String cpus
+    @Json(name = 'cpus')
+    String nanoCpus
 //    long MemoryBytes
      String memory
 

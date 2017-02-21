@@ -1,5 +1,6 @@
 package de.gesellix.docker.compose.types
 
+import com.squareup.moshi.Json
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 
@@ -12,12 +13,12 @@ class UpdateConfig {
 //    Duration Delay
     String delay
 
-    // `mapstructure:"failure_action"`
+    @Json(name = 'failure_action')
     String failureAction
 
 //    Duration Monitor
     String monitor
 
-    // `mapstructure:"max_failure_ratio"`
+    @Json(name = 'max_failure_ratio')
     float maxFailureRatio
 }

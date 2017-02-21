@@ -3,6 +3,7 @@ package de.gesellix.docker.compose.types
 import com.squareup.moshi.Json
 import de.gesellix.docker.compose.adapters.CommandType
 import de.gesellix.docker.compose.adapters.EnvironmentType
+import de.gesellix.docker.compose.adapters.ExtraHostsType
 import de.gesellix.docker.compose.adapters.LabelsType
 import de.gesellix.docker.compose.adapters.PortConfigsType
 import de.gesellix.docker.compose.adapters.ServiceNetworksType
@@ -28,17 +29,21 @@ class Service {
     Set<String> dependsOn = null
     Deploy deploy
     Set<String> devices = null
-    Object dns
+    List<String> dns
     @Json(name = "dns_search")
     List<String> dnsSearch
     String domainname
     List<String> entrypoint
-    Object envFile
+    @Json(name = 'env_file')
+    List<String> envFile
     @EnvironmentType
     Environment environment = new Environment()
     Set<String> expose = null
-    Set<String> externalLinks = null
-    Object extraHosts
+    @Json(name = 'external_links')
+    Set<String> externalLinks
+    @Json(name = 'extra_hosts')
+    @ExtraHostsType
+    ExtraHosts extraHosts
     Healthcheck healthcheck
     String hostname
     String image
@@ -60,9 +65,10 @@ class Service {
     @Json(name = "read_only")
     boolean readOnly
     String restart
-    Set<String> securityOpt = null
+    @Json(name = 'security_opt')
+    Set<String> securityOpt
     float shmSize
-    List<Object> secrets = null
+    List<String> secrets
     Object sysctls
     @Json(name = "stdin_open")
     boolean stdinOpen

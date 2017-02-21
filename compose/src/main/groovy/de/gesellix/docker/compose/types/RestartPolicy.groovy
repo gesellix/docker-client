@@ -1,5 +1,6 @@
 package de.gesellix.docker.compose.types
 
+import com.squareup.moshi.Json
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 
@@ -12,7 +13,7 @@ class RestartPolicy {
 //    Duration Delay
     String delay
 
-    // `mapstructure:"max_attempts"`
+    @Json(name = 'max_attempts')
     int maxAttempts
 
 //    Duration Window

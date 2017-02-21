@@ -23,6 +23,7 @@ class MapToExternalAdapter {
             reader.beginObject()
             def name = reader.nextName()
             def value = reader.nextString()
+            external.external = true
             external.name = value
             reader.endObject()
         } else {
