@@ -49,7 +49,7 @@ buildScan {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.2.1'
+    gradleVersion = '3.4'
     distributionType = Wrapper.DistributionType.ALL
 }
 
