@@ -10,8 +10,9 @@ class DockerVersionSpec extends Specification {
         expect:
         DockerVersion.parseDockerVersion(versionString) == version
         where:
-        versionString | version
-        "1.12.0"      | new DockerVersion(major: 1, minor: 12, patch: 0, meta: "")
-        "1.12.0-rc2"  | new DockerVersion(major: 1, minor: 12, patch: 0, meta: "-rc2")
+        versionString    | version
+        "1.12.0"         | new DockerVersion(major: 1, minor: 12, patch: 0, meta: "")
+        "1.12.0-rc2"     | new DockerVersion(major: 1, minor: 12, patch: 0, meta: "-rc2")
+        "17.03.0-ce-rc1" | new DockerVersion(major: 17, minor: 3, patch: 0, meta: "-ce-rc1")
     }
 }
