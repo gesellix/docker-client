@@ -1,6 +1,7 @@
 package de.gesellix.docker.explore
 
 import de.gesellix.docker.client.DockerClientImpl
+import de.gesellix.docker.client.stack.DeployConfigReader
 
 class ApiExploration {
 
@@ -101,10 +102,14 @@ class ApiExploration {
 //            println dockerClient.stackPs("example")
 //            println dockerClient.stackPs("example", [label: ['APP=VOTING': true]])
 
-            println dockerClient.stackServices("example")
+//            println dockerClient.stackServices("example")
 //            println dockerClient.stackServices("example", [label: ['APP=VOTING': true]])
 
-            println dockerClient.stackRm("example")
+//            println dockerClient.stackRm("example")
+
+            def composeStack = ApiExploration.class.getResourceAsStream('docker-stack.yml')
+            def deployConfig = new DeployConfigReader().loadCompose(composeStack)
+            println dockerClient.stackDeploy("example", deployConfig)
 
 //            dockerClient.stackDeploy()
         } finally {
