@@ -27,7 +27,7 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.22'
     testCompile 'ch.qos.logback:logback-classic:1.2.1'
 
-    compile 'org.yaml:snakeyaml:1.17'
+    compile 'org.yaml:snakeyaml:1.18'
     compile 'com.squareup.moshi:moshi:1.4.0'
     compile 'com.google.code.gson:gson:2.8.0'
     //    compile 'com.github.fge:json-schema-validator:2.2.6'
