@@ -63,7 +63,7 @@ class ManageStackClient implements ManageStack {
     }
 
     @Override
-    stackDeploy() {
+    stackDeploy(String namespace, DeployStackConfig deployConfig) {
         log.info "docker stack deploy"
         throw new UnsupportedOperationException("NYI")
     }
