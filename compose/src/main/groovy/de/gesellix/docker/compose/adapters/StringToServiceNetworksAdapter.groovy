@@ -56,9 +56,11 @@ class StringToServiceNetworksAdapter {
             reader.endObject()
         } else if (token == JsonReader.Token.BEGIN_ARRAY) {
             reader.beginArray()
-            def name = reader.nextString()
+            while (reader.hasNext()) {
+                def name = reader.nextString()
 //            def value = reader.nextNull()
-            result[name] = null
+                result[name] = null
+            }
             reader.endArray()
         } else {
             // ...
