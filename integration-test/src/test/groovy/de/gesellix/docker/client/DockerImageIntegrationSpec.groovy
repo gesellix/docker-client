@@ -221,6 +221,81 @@ class DockerImageIntegrationSpec extends Specification {
         dockerClient.rmi(imageId)
     }
 
+// TODO
+//    def "build image async with logs and fail"() {
+//        def buildContext = new ByteArrayInputStream([42] as byte[])
+//        def response = [
+//                ["stream": "Step 1/2 : FROM alpine:edge"],
+//                ["stream": " ---\u003e a1a3cae7a75e"],
+//                ["stream": "Step 2/2 : RUN i-will-fail"],
+//                ["stream": " ---\u003e Running in e01136c552bc"],
+//                ["stream": "\u001b[91m/bin/sh: i-will-fail: not found\n\u001b[0m"],
+//                ["errorDetail": ["code": 127, "message": "The command '/bin/sh -c i-will-fail' returned a non-zero code: 127"],
+//                 "error"      : "The command '/bin/sh -c i-will-fail' returned a non-zero code: 127"]
+//        ].collect { entry ->
+//            "${new JsonBuilder(entry).toString()}"
+//        }
+//
+//        def server = new HttpTestServer()
+//        def serverAddress = server.start('/images/', new ChunkedResponseServer(response))
+//        def port = serverAddress.port
+//        def addresses = listPublicIps()
+//        def fileServerIp = addresses.first()
+//
+//        def headersBuilder = new Headers.Builder()
+//        [
+//                "Content-Type: application/json",
+//                "Date: Fri, 13 Jan 2017 22:09:24 GMT",
+//                "Docker-Experimental: true",
+//                "Server: Docker/1.13.0-rc6 (linux)",
+//                "Transfer-Encoding: chunked"
+//        ].each { line ->
+//            headersBuilder.add(line)
+//        }
+//
+//        when:
+//        dockerClient.buildWithLogs(buildContext, ["rm": true], new Timeout(5, SECONDS))
+//
+//        then:
+//        1 * httpClient.post([path              : "/build",
+//                             query             : ["rm": true],
+//                             body              : buildContext,
+//                             requestContentType: "application/octet-stream",
+//                             async             : true]) >> new DockerResponse(
+//                headers: headersBuilder.build(),
+//                stream: new ByteArrayInputStream(new JsonBuilder(response).toString().bytes))
+//        and:
+//        dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+//            assert arguments[1]?.message == "docker build failed"
+//        }
+//
+//        cleanup:
+//        server.stop()
+//    }
+//    static class ChunkedResponseServer implements HttpHandler {
+//
+//        DockerClient delegate
+//        String[] chunks
+//
+//        ChunkedResponseServer(DockerClient delegate, List<String>... chunks) {
+//            this.delegate = delegate
+//            this.chunks = chunks
+//        }
+//
+//        @Override
+//        void handle(HttpExchange httpExchange) {
+//            if (httpExchange.requestMethod == 'POST' && httpExchange.requestURI.path == '/build') {
+//                httpExchange.sendResponseHeaders(200, 0)
+//                chunks.each { String chunk ->
+//                    httpExchange.responseBody.write(chunk.bytes)
+//                }
+//                httpExchange.responseBody.close()
+//            } else {
+//                return delegate.
+//            }
+//        }
+//    }
+
     def getContainerId(String buildImageLogEvent) {
         return getFirstMatchingGroup("\\s---> Running in (\\w+)\n", buildImageLogEvent)
     }
