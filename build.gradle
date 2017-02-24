@@ -27,6 +27,9 @@ subprojects {
 
     group = 'de.gesellix'
 
+    sourceCompatibility = JavaVersion.VERSION_1_7
+    targetCompatibility = JavaVersion.VERSION_1_7
+
     def dependencyVersions = [
             'com.google.code.findbugs:jsr305:3.0.0',
             'joda-time:joda-time:2.9.7',
