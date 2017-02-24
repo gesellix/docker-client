@@ -2,7 +2,6 @@ buildscript {
     repositories {
         mavenLocal()
         jcenter()
-        maven { url 'http://dl.bintray.com/gesellix/docker-utils' }
         mavenCentral()
     }
 
@@ -26,6 +25,7 @@ apply plugin: 'com.jfrog.bintray'
 repositories {
     mavenLocal()
     jcenter()
+    maven { url 'http://dl.bintray.com/gesellix/docker-utils' }
     mavenCentral()
 }
 
