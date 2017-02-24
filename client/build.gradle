@@ -45,6 +45,7 @@ dependencies {
 
     compile 'org.bouncycastle:bcpkix-jdk15on:1.56'
 
+    compile 'de.gesellix:docker-compose:2017-02-24T10-15-40'
 //    compile project(':compose')
 
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
