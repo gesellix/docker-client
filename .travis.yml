@@ -15,8 +15,8 @@ before_install:
   - sudo dpkg --purge --force-depends ca-certificates-java
   - sudo apt-get install ca-certificates-java
 script:
-#  - ./gradlew clean build --stacktrace --info -Dscan
-  - ./gradlew clean build cobertura coveralls --stacktrace --info -Dscan
+  - ./gradlew clean build --stacktrace --info -Dscan
+#  - ./gradlew clean build cobertura coveralls --stacktrace --info -Dscan
 after_success:
   - ./gradlew :client:bintrayUpload -x check --info --stacktrace
   - ./gradlew :compose:bintrayUpload -x check --info --stacktrace
