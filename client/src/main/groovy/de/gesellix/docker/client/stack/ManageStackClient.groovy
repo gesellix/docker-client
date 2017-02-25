@@ -70,14 +70,18 @@ class ManageStackClient implements ManageStack {
     stackDeploy(String namespace, DeployStackConfig deployConfig) {
         log.info "docker stack deploy"
 
-//        checkDaemonIsSwarmManager()
+        checkDaemonIsSwarmManager()
 
-        deployConfig.networks.each { network ->
-            log.info("network: $network")
-            if (network.external) {
-
-            } else {
-                manageNetwork.createNetwork(network.name)
+        def existingNetworks = manageNetwork.networks([filters: [label: [("${LabelNamespace}=${namespace}" as String): true]]])
+        def existingNetworkNames = []
+        existingNetworks.content.each {
+            existingNetworkNames << it.Name
+        }
+        deployConfig.networks.each { name, network ->
+            name = "${namespace}_${name}" as String
+            if (!existingNetworkNames.contains(name)) {
+                log.info("create network $name: $network")
+//                manageNetwork.createNetwork(name, network)
             }
         }
 
@@ -121,14 +125,6 @@ func deployCompose(ctx context.Context, dockerCli *command.DockerCli, opts deplo
 	namespace := convert.NewNamespace(opts.namespace)
 
 	serviceNetworks := getServicesDeclaredNetworks(config.Services)
-
-	networks, externalNetworks := convert.Networks(namespace, config.Networks, serviceNetworks)
-	if err := validateExternalNetworks(ctx, dockerCli, externalNetworks); err != nil {
-		return err
-	}
-	if err := createNetworks(ctx, dockerCli, namespace, networks); err != nil {
-		return err
-	}
 
 	secrets, err := convert.Secrets(namespace, config.Secrets)
 	if err != nil {
