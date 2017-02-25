@@ -7,6 +7,7 @@ import de.gesellix.docker.client.network.ManageNetwork
 import de.gesellix.docker.client.node.ManageNode
 import de.gesellix.docker.client.secret.ManageSecret
 import de.gesellix.docker.client.service.ManageService
+import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.client.tasks.ManageTask
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
@@ -22,9 +23,10 @@ class ManageStackClient implements ManageStack {
     private ManageNode manageNode
     private ManageNetwork manageNetwork
     private ManageSecret manageSecret
+    private ManageSystem manageSystem
 
     // see docker/docker/cli/compose/convert/compose.go:14
-    final String LabelNamespace = "com.docker.stack.namespace"
+    static final String LabelNamespace = "com.docker.stack.namespace"
 
     ManageStackClient(
             HttpClient client,
@@ -33,7 +35,8 @@ class ManageStackClient implements ManageStack {
             ManageTask manageTask,
             ManageNode manageNode,
             ManageNetwork manageNetwork,
-            ManageSecret manageSecret) {
+            ManageSecret manageSecret,
+            ManageSystem manageSystem) {
         this.client = client
         this.responseHandler = responseHandler
         this.queryUtil = new QueryUtil()
@@ -42,6 +45,7 @@ class ManageStackClient implements ManageStack {
         this.manageNode = manageNode
         this.manageNetwork = manageNetwork
         this.manageSecret = manageSecret
+        this.manageSystem = manageSystem
     }
 
     @Override
@@ -65,7 +69,92 @@ class ManageStackClient implements ManageStack {
     @Override
     stackDeploy(String namespace, DeployStackConfig deployConfig) {
         log.info "docker stack deploy"
+
+//        checkDaemonIsSwarmManager()
+
+        deployConfig.networks.each { network ->
+            log.info("network: $network")
+            if (network.external) {
+
+            } else {
+                manageNetwork.createNetwork(network.name)
+            }
+        }
+
         throw new UnsupportedOperationException("NYI")
+    }
+
+/*
+
+func deployCompose(ctx context.Context, dockerCli *command.DockerCli, opts deployOptions) error {
+	configDetails, err := getConfigDetails(opts)
+	if err != nil {
+		return err
+	}
+
+	config, err := loader.Load(configDetails)
+	if err != nil {
+		if fpe, ok := err.(*loader.ForbiddenPropertiesError); ok {
+			return fmt.Errorf("Compose file contains unsupported options:\n\n%s\n",
+				propertyWarnings(fpe.Properties))
+		}
+
+		return err
+	}
+
+	unsupportedProperties := loader.GetUnsupportedProperties(configDetails)
+	if len(unsupportedProperties) > 0 {
+		fmt.Fprintf(dockerCli.Err(), "Ignoring unsupported options: %s\n\n",
+			strings.Join(unsupportedProperties, ", "))
+	}
+
+	deprecatedProperties := loader.GetDeprecatedProperties(configDetails)
+	if len(deprecatedProperties) > 0 {
+		fmt.Fprintf(dockerCli.Err(), "Ignoring deprecated options:\n\n%s\n\n",
+			propertyWarnings(deprecatedProperties))
+	}
+
+	if err := checkDaemonIsSwarmManager(ctx, dockerCli); err != nil {
+		return err
+	}
+
+	namespace := convert.NewNamespace(opts.namespace)
+
+	serviceNetworks := getServicesDeclaredNetworks(config.Services)
+
+	networks, externalNetworks := convert.Networks(namespace, config.Networks, serviceNetworks)
+	if err := validateExternalNetworks(ctx, dockerCli, externalNetworks); err != nil {
+		return err
+	}
+	if err := createNetworks(ctx, dockerCli, namespace, networks); err != nil {
+		return err
+	}
+
+	secrets, err := convert.Secrets(namespace, config.Secrets)
+	if err != nil {
+		return err
+	}
+	if err := createSecrets(ctx, dockerCli, namespace, secrets); err != nil {
+		return err
+	}
+
+	services, err := convert.Services(namespace, config, dockerCli.Client())
+	if err != nil {
+		return err
+	}
+	return deployServices(ctx, dockerCli, services, namespace, opts.sendRegistryAuth)
+}
+
+ */
+
+    // checkDaemonIsSwarmManager does an Info API call to verify that the daemon is
+    // a swarm manager. This is necessary because we must create networks before we
+    // create services, but the API call for creating a network does not return a
+    // proper status code when it can't create a network in the "global" scope.
+    def checkDaemonIsSwarmManager() {
+        if (!manageSystem.info()?.content?.Swarm?.ControlAvailable) {
+            throw new IllegalStateException("This node is not a swarm manager. Use \"docker swarm init\" or \"docker swarm join\" to connect this node to swarm and try again.")
+        }
     }
 
     @Override

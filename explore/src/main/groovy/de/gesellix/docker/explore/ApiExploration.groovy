@@ -107,9 +107,10 @@ class ApiExploration {
 
 //            println dockerClient.stackRm("example")
 
+            def namespace = "example"
             def composeStack = ApiExploration.class.getResourceAsStream('docker-stack.yml')
-            def deployConfig = new DeployConfigReader().loadCompose(composeStack)
-            println dockerClient.stackDeploy("example", deployConfig)
+            def deployConfig = new DeployConfigReader().loadCompose(namespace, composeStack)
+            println dockerClient.stackDeploy(namespace, deployConfig)
 
 //            dockerClient.stackDeploy()
         } finally {
