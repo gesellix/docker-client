@@ -2,11 +2,17 @@ package de.gesellix.docker.client.stack
 
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.stack.types.StackNetwork
+import de.gesellix.docker.client.stack.types.StackSecret
 import de.gesellix.docker.compose.ComposeFileReader
 import de.gesellix.docker.compose.types.ComposeConfig
 import de.gesellix.docker.compose.types.Config
+import de.gesellix.docker.compose.types.Secret
 import de.gesellix.docker.compose.types.Service
 import groovy.util.logging.Slf4j
+
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 
 @Slf4j
 class DeployConfigReader {
@@ -78,6 +84,7 @@ class DeployConfigReader {
 
         def cfg = new DeployStackConfig()
         cfg.networks = networkCreateConfigs
+        cfg.secrets = secrets(namespace, composeConfig.secrets)
         return cfg
     }
 
@@ -95,5 +102,28 @@ class DeployConfigReader {
                 throw new IllegalStateException("network ${name} is declared as external, but is not in 'swarm' scope.")
             }
         }
+    }
+
+    Map<String, StackSecret> secrets(String namespace, Map<String, Secret> secrets) {
+        Map<String, StackSecret> secretSpec = [:]
+        secrets.each { name, secret ->
+            if (!secret.external.external) {
+                Path filePath = Paths.get(secret.file)
+                byte[] data = Files.readAllBytes(filePath)
+
+                def labels = new HashMap<String, String>()
+                if (secret.labels?.entries) {
+                    labels.putAll(secret.labels.entries)
+                }
+                labels[ManageStackClient.LabelNamespace] = namespace
+
+                secretSpec[name] = new StackSecret(
+                        name: ("${namespace}_${name}" as String),
+                        data: data,
+                        labels: labels
+                )
+            }
+        }
+        return secretSpec
     }
 }

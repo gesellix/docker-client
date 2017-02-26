@@ -84,6 +84,10 @@ class ManageStackClient implements ManageStack {
 //                manageNetwork.createNetwork(name, network)
             }
         }
+        deployConfig.secrets.each { name, secret ->
+            log.info("create secret ${secret.name}: $secret")
+//            manageSecret.createSecret(secret.name, secret.data, secret.labels)
+        }
 
         throw new UnsupportedOperationException("NYI")
     }
@@ -123,16 +127,6 @@ func deployCompose(ctx context.Context, dockerCli *command.DockerCli, opts deplo
 	}
 
 	namespace := convert.NewNamespace(opts.namespace)
-
-	serviceNetworks := getServicesDeclaredNetworks(config.Services)
-
-	secrets, err := convert.Secrets(namespace, config.Secrets)
-	if err != nil {
-		return err
-	}
-	if err := createSecrets(ctx, dockerCli, namespace, secrets); err != nil {
-		return err
-	}
 
 	services, err := convert.Services(namespace, config, dockerCli.Client())
 	if err != nil {
