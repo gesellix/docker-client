@@ -3,6 +3,7 @@ package de.gesellix.docker.client.stack
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.stack.types.StackNetwork
 import de.gesellix.docker.client.stack.types.StackSecret
+import de.gesellix.docker.client.stack.types.StackService
 import de.gesellix.docker.compose.ComposeFileReader
 import de.gesellix.docker.compose.types.ComposeConfig
 import de.gesellix.docker.compose.types.Config
@@ -82,9 +83,29 @@ class DeployConfigReader {
 
         validateExternalNetworks(externalNetworkNames)
 
+        def secrets = secrets(namespace, composeConfig.secrets)
+
+        def serviceConfigs = [:]
+        composeConfig.services.each { name, service ->
+//            name = ("${namespace}_${name}" as String)
+            def serviceConfig = new StackService()
+            def ports = service.ports.portConfigs.collect { portConfig ->
+                [
+                        protocol     : portConfig.protocol,
+                        targetPort   : portConfig.target,
+                        publishedPort: portConfig.published,
+                        publishMode  : portConfig.mode,
+                ]
+            }
+            serviceConfig.endpointSpec.ports = ports
+
+            serviceConfigs[name] = serviceConfig
+        }
+        log.info("services $serviceConfigs")
+
         def cfg = new DeployStackConfig()
         cfg.networks = networkCreateConfigs
-        cfg.secrets = secrets(namespace, composeConfig.secrets)
+        cfg.secrets = secrets
         return cfg
     }
 

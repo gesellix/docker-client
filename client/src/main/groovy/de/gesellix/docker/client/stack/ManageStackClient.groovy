@@ -72,7 +72,9 @@ class ManageStackClient implements ManageStack {
 
         checkDaemonIsSwarmManager()
 
-        def existingNetworks = manageNetwork.networks([filters: [label: [("${LabelNamespace}=${namespace}" as String): true]]])
+        def existingNetworks = manageNetwork.networks([
+                filters: [
+                        label: [("${LabelNamespace}=${namespace}" as String): true]]])
         def existingNetworkNames = []
         existingNetworks.content.each {
             existingNetworkNames << it.Name
