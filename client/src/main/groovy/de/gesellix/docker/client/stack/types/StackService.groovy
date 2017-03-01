@@ -5,7 +5,6 @@ import groovy.transform.ToString
 @ToString
 class StackService {
 
-    def endpointSpec = [
-            ports: []
-    ]
+    def endpointSpec = [:]
+    def mode = [:]
 }

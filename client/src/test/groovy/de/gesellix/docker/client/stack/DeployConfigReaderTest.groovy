@@ -9,6 +9,8 @@ import de.gesellix.docker.compose.types.External
 import de.gesellix.docker.compose.types.Ipam
 import de.gesellix.docker.compose.types.Labels
 import de.gesellix.docker.compose.types.Network
+import de.gesellix.docker.compose.types.PortConfig
+import de.gesellix.docker.compose.types.PortConfigs
 import de.gesellix.docker.compose.types.Secret
 import spock.lang.Specification
 
@@ -108,5 +110,52 @@ class DeployConfigReaderTest extends Specification {
                         "something=labeled"
                 ]
         )
+    }
+
+    def "converts service endpoints"() {
+        given:
+        def ports = new PortConfigs(portConfigs: [
+                new PortConfig(
+                        protocol: "udp",
+                        target: 53,
+                        published: 1053,
+                        mode: "host"),
+                new PortConfig(
+                        target: 8080,
+                        published: 80
+                )
+        ])
+
+        when:
+        def endpoints = reader.serviceEndpoints(ports)
+
+        then:
+        endpoints == [ports: [
+                [
+                        protocol     : "udp",
+                        targetPort   : 53,
+                        publishedPort: 1053,
+                        publishMode  : "host"
+                ],
+                [
+                        protocol     : null,
+                        targetPort   : 8080,
+                        publishedPort: 80,
+                        publishMode  : null
+                ]
+        ]
+        ]
+    }
+
+    def "converts service deploy mode"() {
+        expect:
+        reader.serviceMode(mode, replicas) == serviceMode
+        where:
+        mode         | replicas || serviceMode
+        "global"     | null     || [global: true]
+        null         | null     || [replicated: [replicas: 1]]
+        ""           | null     || [replicated: [replicas: 1]]
+        "replicated" | null     || [replicated: [replicas: 1]]
+        "replicated" | 42       || [replicated: [replicas: 42]]
     }
 }

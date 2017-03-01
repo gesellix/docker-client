@@ -8,6 +8,7 @@ import de.gesellix.docker.compose.ComposeFileReader
 import de.gesellix.docker.compose.types.ComposeConfig
 import de.gesellix.docker.compose.types.Config
 import de.gesellix.docker.compose.types.Network
+import de.gesellix.docker.compose.types.PortConfigs
 import de.gesellix.docker.compose.types.Secret
 import de.gesellix.docker.compose.types.Service
 import groovy.util.logging.Slf4j
@@ -45,29 +46,60 @@ class DeployConfigReader {
         List<String> externals
         (networkConfigs, externals) = networks(namespace, serviceNetworkNames, composeConfig.networks)
         def secrets = secrets(namespace, composeConfig.secrets)
-
-        def serviceConfigs = [:]
-        composeConfig.services.each { name, service ->
-//            name = ("${namespace}_${name}" as String)
-            def serviceConfig = new StackService()
-            def ports = service.ports.portConfigs.collect { portConfig ->
-                [
-                        protocol     : portConfig.protocol,
-                        targetPort   : portConfig.target,
-                        publishedPort: portConfig.published,
-                        publishMode  : portConfig.mode,
-                ]
-            }
-            serviceConfig.endpointSpec.ports = ports
-
-            serviceConfigs[name] = serviceConfig
-        }
-        log.info("services $serviceConfigs")
+        def services = services(namespace, composeConfig.services)
 
         def cfg = new DeployStackConfig()
         cfg.networks = networkConfigs
         cfg.secrets = secrets
+        cfg.services = services
         return cfg
+    }
+
+    def services(String namespace, Map<String, Service> services) {
+        Map<String, StackService> serviceSpec = [:]
+        services.each { name, service ->
+//            name = ("${namespace}_${name}" as String)
+            def serviceConfig = new StackService()
+            serviceConfig.endpointSpec = serviceEndpoints(service.ports)
+            serviceConfig.mode = serviceMode(service.deploy.mode, service.deploy.replicas)
+
+            serviceSpec[name] = serviceConfig
+        }
+        log.info("services $serviceSpec")
+        return serviceSpec
+    }
+
+    def serviceEndpoints(PortConfigs portConfigs) {
+        def endpointSpec = [
+                ports: portConfigs.portConfigs.collect { portConfig ->
+                    [
+                            protocol     : portConfig.protocol,
+                            targetPort   : portConfig.target,
+                            publishedPort: portConfig.published,
+                            publishMode  : portConfig.mode,
+                    ]
+                }
+        ]
+
+        return endpointSpec
+    }
+
+    def serviceMode(String mode, Integer replicas) {
+        switch (mode) {
+            case "global":
+                if (replicas) {
+                    throw new IllegalArgumentException("replicas can only be used with replicated mode")
+                }
+                return [global: true]
+
+            case null:
+            case "":
+            case "replicated":
+                return [replicated: [replicas: replicas ?: 1]]
+
+            default:
+                throw new IllegalArgumentException("Unknown mode: '$mode'")
+        }
     }
 
     Tuple2<Map<String, StackNetwork>, List<String>> networks(
@@ -157,6 +189,7 @@ class DeployConfigReader {
                 )
             }
         }
+        log.info("secrets ${secretSpec.keySet()}")
         return secretSpec
     }
 }
