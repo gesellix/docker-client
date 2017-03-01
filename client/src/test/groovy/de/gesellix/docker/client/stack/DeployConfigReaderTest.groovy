@@ -1,8 +1,14 @@
 package de.gesellix.docker.client.stack
 
 import de.gesellix.docker.client.DockerClient
+import de.gesellix.docker.client.stack.types.StackNetwork
 import de.gesellix.docker.client.stack.types.StackSecret
+import de.gesellix.docker.compose.types.Config
+import de.gesellix.docker.compose.types.DriverOpts
 import de.gesellix.docker.compose.types.External
+import de.gesellix.docker.compose.types.Ipam
+import de.gesellix.docker.compose.types.Labels
+import de.gesellix.docker.compose.types.Network
 import de.gesellix.docker.compose.types.Secret
 import spock.lang.Specification
 
@@ -34,4 +40,73 @@ class DeployConfigReaderTest extends Specification {
         ]
     }
 
+    def "converts networks"() {
+        given:
+        def normalNet = new Network(
+                driver: "overlay",
+                driverOpts: new DriverOpts(options: [opt: "value"]),
+                ipam: new Ipam(
+                        driver: "driver",
+                        config: [new Config(subnet: '10.0.0.0')]
+                ),
+                labels: new Labels(entries: ["something": "labeled"])
+        )
+        def outsideNet = new Network(
+                external: new External(
+                        external: true,
+                        name: "special"))
+        def attachableNet = new Network(
+                driver: "overlay",
+                attachable: true)
+
+        when:
+        Map<String, StackNetwork> networks
+        List<String> externals
+
+        (networks, externals) = reader.networks(
+                "name-space",
+                [
+                        'normal',
+                        'outside',
+                        'default',
+                        'attachablenet'
+                ],
+                [
+                        'normal'       : normalNet,
+                        'outside'      : outsideNet,
+                        'attachablenet': attachableNet
+                ]
+        )
+
+        then:
+        1 * reader.dockerClient.inspectNetwork("special") >> [content: [Scope: "swarm"]]
+
+        externals == ["special"]
+        networks.keySet().sort() == ["default", "normal", "attachablenet"].sort()
+        networks["default"] == new StackNetwork(
+                driver: "overlay",
+                labels: ["${ManageStackClient.LabelNamespace}=name-space" as String]
+        )
+        networks["attachablenet"] == new StackNetwork(
+                attachable: true,
+                driver: "overlay",
+                labels: ["${ManageStackClient.LabelNamespace}=name-space" as String]
+        )
+        networks["normal"] == new StackNetwork(
+                driver: "overlay",
+                driverOpts: [
+                        opt: "value"
+                ],
+                ipam: [
+                        driver: "driver",
+                        config: [
+                                [subnet: '10.0.0.0']
+                        ]
+                ],
+                labels: [
+                        "${ManageStackClient.LabelNamespace}=name-space" as String,
+                        "something=labeled"
+                ]
+        )
+    }
 }
