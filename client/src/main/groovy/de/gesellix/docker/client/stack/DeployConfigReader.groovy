@@ -42,6 +42,7 @@ class DeployConfigReader {
         log.info("service network names: ${serviceNetworkNames}")
 
         Map<String, StackNetwork> networkConfigs
+        List<String> externals
         (networkConfigs, externals) = networks(namespace, serviceNetworkNames, composeConfig.networks)
         def secrets = secrets(namespace, composeConfig.secrets)
 
