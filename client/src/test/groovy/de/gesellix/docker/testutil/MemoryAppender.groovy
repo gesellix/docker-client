@@ -2,9 +2,7 @@ package de.gesellix.docker.testutil
 
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
-import ch.qos.logback.core.UnsynchronizedAppenderBase
-import ch.qos.logback.core.encoder.Encoder
-import ch.qos.logback.core.status.ErrorStatus
+import ch.qos.logback.core.OutputStreamAppender
 import org.slf4j.LoggerFactory
 
 import static org.slf4j.Logger.ROOT_LOGGER_NAME
@@ -14,9 +12,8 @@ import static org.slf4j.Logger.ROOT_LOGGER_NAME
  *
  * @author <a href='mailto:burt@burtbeckwith.com'>Burt Beckwith</a>
  */
-class MemoryAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
+class MemoryAppender extends OutputStreamAppender<ILoggingEvent> {
 
-    Encoder<ILoggingEvent> encoder
     List<ILoggingEvent> loggedEvents = []
 
     static void clearLoggedEvents() {
@@ -40,33 +37,14 @@ class MemoryAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 
     @Override
     void start() {
-        try {
-            encoder.start()
-            super.start()
-        }
-        catch (IOException e) {
-            started = false
-            def errorStatus = new ErrorStatus("Failed to initialize encoder for appender named [" + name + "].", this, e)
-            println errorStatus
-            addStatus(errorStatus)
-        }
+        setOutputStream(new ByteArrayOutputStream())
+        super.start()
     }
 
     @Override
-    protected void append(ILoggingEvent event) {
-        if (!isStarted()) {
-            return
-        }
-
-        try {
-            event.prepareForDeferredProcessing()
-            encoder.encode(event)
-            loggedEvents.add(event)
-        }
-        catch (IOException ioe) {
-            started = false
-            addStatus(new ErrorStatus("IO failure in appender", this, ioe))
-        }
+    protected void subAppend(ILoggingEvent event) {
+        super.subAppend(event)
+        loggedEvents.add(event)
     }
 
     List<ILoggingEvent> getLoggedEvents() {
