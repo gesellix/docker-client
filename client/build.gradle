@@ -29,8 +29,8 @@ repositories {
 }
 
 dependencies {
-    compile 'org.codehaus.groovy:groovy:2.4.8'
-    compile 'org.codehaus.groovy:groovy-json:2.4.8'
+    compile 'org.codehaus.groovy:groovy:2.4.9'
+    compile 'org.codehaus.groovy:groovy-json:2.4.9'
 
     compile 'org.slf4j:slf4j-api:1.7.22'
     testCompile 'ch.qos.logback:logback-classic:1.2.1'

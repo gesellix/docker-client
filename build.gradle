@@ -35,6 +35,8 @@ subprojects {
             'joda-time:joda-time:2.9.7',
             'junit:junit:4.12',
             'org.bouncycastle:bcprov-jdk15on:1.56',
+            'org.codehaus.groovy:groovy:2.4.9',
+            'org.codehaus.groovy:groovy-json:2.4.9',
             'org.slf4j:slf4j-api:1.7.22'
     ]
 
