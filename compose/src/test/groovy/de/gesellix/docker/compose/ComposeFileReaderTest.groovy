@@ -299,13 +299,10 @@ class ComposeFileReaderTest extends Specification {
                         'db',
                         'redis'
                 ],
-//                Deploy: types.DeployConfig{
-//                    Labels:   map[string]string{"FOO": "BAR"},
-//                },
                 deploy: new Deploy(
                         mode: "replicated",
                         replicas: 6,
-                        labels: ["FOO=BAR"],
+                        labels: new Labels(entries: ["FOO": "BAR"]),
                         updateConfig: new UpdateConfig(
                                 parallelism: 3,
                                 delay: '10s',
