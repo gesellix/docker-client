@@ -3,6 +3,7 @@ package de.gesellix.docker.compose.types
 import com.squareup.moshi.Json
 import de.gesellix.docker.compose.adapters.DriverOptsType
 import de.gesellix.docker.compose.adapters.ExternalType
+import de.gesellix.docker.compose.adapters.LabelsType
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 
@@ -19,6 +20,7 @@ class Network {
     External external = new External()
     boolean internal
     boolean attachable
-    List<String> labels
+    @LabelsType
+    Labels labels
 
 }

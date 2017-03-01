@@ -3,6 +3,7 @@ package de.gesellix.docker.compose.types
 import com.squareup.moshi.Json
 import de.gesellix.docker.compose.adapters.DriverOptsType
 import de.gesellix.docker.compose.adapters.ExternalType
+import de.gesellix.docker.compose.adapters.LabelsType
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 
@@ -16,5 +17,6 @@ class Volume {
     DriverOpts driverOpts = new DriverOpts()
     @ExternalType
     External external = new External()
-    List<String> labels
+    @LabelsType
+    Labels labels
 }
