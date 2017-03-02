@@ -7,4 +7,5 @@ class StackService {
 
     def endpointSpec = [:]
     def mode = [:]
+    def taskTemplate = [:]
 }

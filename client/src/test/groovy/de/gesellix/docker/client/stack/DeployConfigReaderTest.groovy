@@ -12,6 +12,7 @@ import de.gesellix.docker.compose.types.Network
 import de.gesellix.docker.compose.types.PortConfig
 import de.gesellix.docker.compose.types.PortConfigs
 import de.gesellix.docker.compose.types.Secret
+import de.gesellix.docker.compose.types.Volume
 import spock.lang.Specification
 
 class DeployConfigReaderTest extends Specification {
@@ -157,5 +158,165 @@ class DeployConfigReaderTest extends Specification {
         ""           | null     || [replicated: [replicas: 1]]
         "replicated" | null     || [replicated: [replicas: 1]]
         "replicated" | 42       || [replicated: [replicas: 42]]
+    }
+
+    def "test isReadOnly"() {
+        expect:
+        reader.isReadOnly(mode) == expectedResult
+        where:
+        mode                 | expectedResult
+        ["foo", "bar", "ro"] | true
+        ["ro"]               | true
+        []                   | false
+        ["foo", "rw"]        | false
+        ["foo"]              | false
+    }
+
+    def "test isNoCopy"() {
+        expect:
+        reader.isNoCopy(mode) == expectedResult
+        where:
+        mode                     | expectedResult
+        ["foo", "bar", "nocopy"] | true
+        ["nocopy"]               | true
+        []                       | false
+        ["foo", "rw"]            | false
+        ["foo"]                  | false
+    }
+
+    def "test getBindOptions with known mode"() {
+        expect:
+        reader.getBindOptions(["slave"]) == [propagation: DeployConfigReader.PropagationSlave]
+    }
+
+    def "test getBindOptions with unknown mode"() {
+        expect:
+        reader.getBindOptions(["ro"]) == null
+    }
+
+    def "test ConvertVolumeToMountAnonymousVolume"() {
+        when:
+        def mounts = reader.volumeToMount("name-space", "/foo/bar", [:])
+        then:
+        mounts == [
+                type  : "volume",
+                target: "/foo/bar"
+        ]
+    }
+
+    def "test ConvertVolumeToMountInvalidFormat"() {
+        when:
+        reader.volumeToMount("name-space", volume, [:])
+        then:
+        def exc = thrown(IllegalArgumentException)
+        exc.message == "invalid volume: $volume"
+        where:
+        volume << ["::", "::cc", ":bb:", "aa::", "aa::cc", "aa:bb:", " : : ", " : :cc", " :bb: ", "aa: : ", "aa: :cc", "aa:bb: "]
+    }
+
+    def "test ConvertVolumeToMountNamedVolume"() {
+        def stackVolumes = ["normal": new Volume(
+                driver: "glusterfs",
+                driverOpts: new DriverOpts(
+                        options: ["opt": "value"]
+                ),
+                labels: new Labels(entries: [
+                        "something": "labeled"
+                ])
+        )]
+
+        when:
+        def mount = reader.volumeToMount("name-space", "normal:/foo:ro", stackVolumes)
+
+        then:
+        mount == [
+                type         : "volume",
+                source       : "name-space_normal",
+                target       : "/foo",
+                readOnly     : true,
+                volumeOptions: [
+                        noCopy      : false,
+                        labels      : [
+                                (ManageStackClient.LabelNamespace): "name-space",
+                                "something"                       : "labeled"
+                        ],
+                        driverConfig: [
+                                name   : "glusterfs",
+                                options: [
+                                        "opt": "value"
+                                ]
+                        ]
+                ]
+        ]
+    }
+
+    def "test ConvertVolumeToMountNamedVolumeExternal"() {
+        def stackVolumes = ["outside": new Volume(
+                external: new External(
+                        external: true,
+                        name: "special"
+                )
+        )]
+
+        when:
+        def mount = reader.volumeToMount("name-space", "outside:/foo", stackVolumes)
+
+        then:
+        mount == [
+                type         : "volume",
+                source       : "special",
+                target       : "/foo",
+                readOnly     : false,
+                volumeOptions: [
+                        noCopy: false
+                ]
+        ]
+    }
+
+    def "test ConvertVolumeToMountNamedVolumeExternalNoCopy"() {
+        def stackVolumes = ["outside": new Volume(
+                external: new External(
+                        external: true,
+                        name: "special"
+                )
+        )]
+
+        when:
+        def mount = reader.volumeToMount("name-space", "outside:/foo:nocopy", stackVolumes)
+
+        then:
+        mount == [
+                type         : "volume",
+                source       : "special",
+                target       : "/foo",
+                readOnly     : false,
+                volumeOptions: [
+                        noCopy: true
+                ]
+        ]
+    }
+
+    def "test ConvertVolumeToMountBind"() {
+        when:
+        def mount = reader.volumeToMount("name-space", "/bar:/foo:ro,shared", [:])
+
+        then:
+        mount == [
+                type       : "bind",
+                source     : "/bar",
+                target     : "/foo",
+                readOnly   : true,
+                bindOptions: [
+                        propagation: DeployConfigReader.PropagationShared
+                ]
+        ]
+    }
+
+    def "test ConvertVolumeToMountVolumeDoesNotExist"() {
+        when:
+        reader.volumeToMount("name-space", "unknown:/foo:ro", [:])
+        then:
+        def exc = thrown(IllegalArgumentException)
+        exc.message == "undefined volume: unknown"
     }
 }
