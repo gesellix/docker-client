@@ -7,6 +7,7 @@ import de.gesellix.docker.client.stack.types.StackService
 import de.gesellix.docker.compose.ComposeFileReader
 import de.gesellix.docker.compose.types.ComposeConfig
 import de.gesellix.docker.compose.types.Config
+import de.gesellix.docker.compose.types.Healthcheck
 import de.gesellix.docker.compose.types.Network
 import de.gesellix.docker.compose.types.PortConfigs
 import de.gesellix.docker.compose.types.Resources
@@ -19,8 +20,12 @@ import groovy.util.logging.Slf4j
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.time.Duration
+import java.time.temporal.ChronoUnit
+import java.util.regex.Pattern
 
 import static java.lang.Double.parseDouble
+import static java.lang.Integer.parseInt
 
 @Slf4j
 class DeployConfigReader {
@@ -69,7 +74,8 @@ class DeployConfigReader {
             serviceConfig.mode = serviceMode(service.deploy.mode, service.deploy.replicas)
             serviceConfig.taskTemplate = [
                     containerSpec: [
-                            mounts: volumesToMounts(namespace, service.volumes as List, volumes)
+                            mounts     : volumesToMounts(namespace, service.volumes as List, volumes),
+                            healthcheck: convertHealthcheck(service.healthcheck)
                     ],
                     resources    : serviceResources(service.deploy.resources),
                     restartPolicy: restartPolicy(service.restart, service.deploy.restartPolicy),
@@ -79,6 +85,97 @@ class DeployConfigReader {
         }
         log.info("services $serviceSpec")
         return serviceSpec
+    }
+
+    def convertHealthcheck(Healthcheck healthcheck) {
+
+        if (!healthcheck) {
+            return null
+        }
+
+        Integer retries = null
+        Duration timeout = null
+        Duration interval = null
+
+        if (healthcheck.disable) {
+            if (healthcheck.test?.parts) {
+                throw new IllegalArgumentException("test and disable can't be set at the same time")
+            }
+            return [
+                    test: ["NONE"]
+            ]
+        }
+
+        if (healthcheck.timeout) {
+            timeout = parseDuration(healthcheck.timeout)
+        }
+        if (healthcheck.interval) {
+            interval = parseDuration(healthcheck.interval)
+        }
+        if (healthcheck.retries) {
+            retries = new Float(healthcheck.retries).intValue()
+        }
+
+        return [
+                test    : healthcheck.test.parts,
+                timeout : timeout,
+                interval: interval,
+                retries : retries,
+        ]
+    }
+
+    Map<String, ChronoUnit> unitBySymbol = [
+            "ns": ChronoUnit.NANOS,
+            "us": ChronoUnit.MICROS,
+            "µs": ChronoUnit.MICROS, // U+00B5 = micro symbol
+            "μs": ChronoUnit.MICROS, // U+03BC = Greek letter mu
+            "ms": ChronoUnit.MILLIS,
+            "s" : ChronoUnit.SECONDS,
+            "m" : ChronoUnit.MINUTES,
+            "h" : ChronoUnit.HOURS
+    ]
+
+    final def numberWithUnitRegex = /(\d*)\.?(\d*)(\D+)/
+    final def pattern = Pattern.compile(numberWithUnitRegex)
+
+    def parseDuration(String durationAsString) {
+        def sign = '+'
+        if (durationAsString.matches(/[-+].+/)) {
+            sign = durationAsString.substring(0, '-'.length())
+            durationAsString = durationAsString.substring('-'.length())
+        }
+        def matcher = pattern.matcher(durationAsString)
+
+        def duration = Duration.of(0, ChronoUnit.NANOS)
+        def ok = false
+        while (matcher.find()) {
+            if (matcher.groupCount() != 3) {
+                throw new IllegalStateException("expected 3 groups, but got ${matcher.groupCount()}")
+            }
+            def pre = matcher.group(1) ?: "0"
+            def post = matcher.group(2) ?: "0"
+            def symbol = matcher.group(3)
+            if (!symbol) {
+                throw new IllegalArgumentException("missing unit in duration '${durationAsString}'")
+            }
+            def unit = unitBySymbol[symbol]
+            if (!unit) {
+                throw new IllegalArgumentException("unknown unit ${symbol} in duration '${durationAsString}'")
+            }
+
+            def scale = Math.pow(10, post.length())
+
+            duration = duration
+                    .plus(parseInt(pre), unit)
+                    .plus((int) (parseInt(post) * (unit.duration.nano / scale)), ChronoUnit.NANOS)
+
+            ok = true
+        }
+
+        if (!ok) {
+            throw new IllegalStateException("duration couldn't be parsed: '${durationAsString}'")
+        }
+        return duration.multipliedBy(sign == '-' ? -1 : 1)
     }
 
     static enum RestartPolicyCondition {
@@ -156,7 +253,7 @@ class DeployConfigReader {
                 throw new IllegalArgumentException("maximum retry count must be an integer")
             }
 
-            restartPolicy.maximumRetryCount = Integer.parseInt(parts[1])
+            restartPolicy.maximumRetryCount = parseInt(parts[1])
         }
         restartPolicy.name = parts[0]
         return restartPolicy
@@ -175,7 +272,7 @@ class DeployConfigReader {
                     resourceRequirements['limits'].nanoCPUs = parseDouble(resources.limits.nanoCpus) * nanoMultiplier
                 }
             }
-            resourceRequirements['limits'].memoryBytes = Integer.parseInt(resources.limits.memory)
+            resourceRequirements['limits'].memoryBytes = parseInt(resources.limits.memory)
         }
         if (resources.reservations) {
             resourceRequirements['reservations'] = [:]
@@ -187,7 +284,7 @@ class DeployConfigReader {
                     resourceRequirements['reservations'].nanoCPUs = parseDouble(resources.reservations.nanoCpus) * nanoMultiplier
                 }
             }
-            resourceRequirements['reservations'].memoryBytes = Integer.parseInt(resources.reservations.memory)
+            resourceRequirements['reservations'].memoryBytes = parseInt(resources.reservations.memory)
         }
         return resourceRequirements
     }

@@ -3,9 +3,11 @@ package de.gesellix.docker.client.stack
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.stack.types.StackNetwork
 import de.gesellix.docker.client.stack.types.StackSecret
+import de.gesellix.docker.compose.types.Command
 import de.gesellix.docker.compose.types.Config
 import de.gesellix.docker.compose.types.DriverOpts
 import de.gesellix.docker.compose.types.External
+import de.gesellix.docker.compose.types.Healthcheck
 import de.gesellix.docker.compose.types.Ipam
 import de.gesellix.docker.compose.types.Labels
 import de.gesellix.docker.compose.types.Limits
@@ -17,6 +19,9 @@ import de.gesellix.docker.compose.types.Resources
 import de.gesellix.docker.compose.types.Secret
 import de.gesellix.docker.compose.types.Volume
 import spock.lang.Specification
+
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 
 class DeployConfigReaderTest extends Specification {
 
@@ -383,5 +388,52 @@ class DeployConfigReaderTest extends Specification {
         then:
         policy == [condition  : DeployConfigReader.RestartPolicyCondition.RestartPolicyConditionOnFailure,
                    maxAttempts: 4]
+    }
+
+    def "parse duration"() {
+        expect:
+        reader.parseDuration(input) == duration
+        where:
+        input   | duration
+        "1.2ms" | Duration.of(1200, ChronoUnit.MICROS)
+        "-1ns"  | Duration.of(-1, ChronoUnit.NANOS)
+        ".2us"  | Duration.of(200, ChronoUnit.NANOS)
+        "1.s"   | Duration.of(1, ChronoUnit.SECONDS)
+        "2h3m"  | Duration.of(2, ChronoUnit.HOURS).plus(3, ChronoUnit.MINUTES)
+    }
+
+    def "test ConvertHealthcheck"() {
+        expect:
+        reader.convertHealthcheck(new Healthcheck(
+                test: new Command(parts: ["EXEC", "touch", "/foo"]),
+                timeout: "30s",
+                interval: "2ms",
+                retries: 10
+        )) == [
+                test    : ["EXEC", "touch", "/foo"],
+                timeout : Duration.of(30, ChronoUnit.SECONDS),
+                interval: Duration.of(2, ChronoUnit.MILLIS),
+                retries : 10
+        ]
+    }
+
+    def "test ConvertHealthcheckDisable"() {
+        expect:
+        reader.convertHealthcheck(new Healthcheck(
+                disable: true
+        )) == [
+                test: ["NONE"]
+        ]
+    }
+
+    def "test ConvertHealthcheckDisableWithTest"() {
+        when:
+        reader.convertHealthcheck(new Healthcheck(
+                disable: true,
+                test: new Command(parts: ["EXEC", "touch"])
+        ))
+        then:
+        def exc = thrown(IllegalArgumentException)
+        exc.message =~ "test and disable can't be set"
     }
 }
