@@ -10,6 +10,7 @@ import de.gesellix.docker.compose.types.Config
 import de.gesellix.docker.compose.types.Network
 import de.gesellix.docker.compose.types.PortConfigs
 import de.gesellix.docker.compose.types.Resources
+import de.gesellix.docker.compose.types.RestartPolicy
 import de.gesellix.docker.compose.types.Secret
 import de.gesellix.docker.compose.types.Service
 import de.gesellix.docker.compose.types.Volume
@@ -71,12 +72,94 @@ class DeployConfigReader {
                             mounts: volumesToMounts(namespace, service.volumes as List, volumes)
                     ],
                     resources    : serviceResources(service.deploy.resources),
+                    restartPolicy: restartPolicy(service.restart, service.deploy.restartPolicy),
             ]
 
             serviceSpec[name] = serviceConfig
         }
         log.info("services $serviceSpec")
         return serviceSpec
+    }
+
+    static enum RestartPolicyCondition {
+        RestartPolicyConditionNone("none"),
+        RestartPolicyConditionOnFailure("on-failure"),
+        RestartPolicyConditionAny("any")
+
+        String value
+
+        RestartPolicyCondition(String value) {
+            this.value = value
+        }
+
+        static RestartPolicyCondition byValue(String needle) {
+            def entry = values().find { it.value == needle }
+            if (!entry) {
+                throw new IllegalArgumentException("no enum found for ${needle}")
+            }
+            return entry
+        }
+    }
+
+    def restartPolicy(String restart, RestartPolicy restartPolicy) {
+        // TODO: log if restart is being ignored
+        if (restartPolicy == null) {
+            def policy = parseRestartPolicy(restart)
+            if (!policy) {
+                return null
+            }
+            switch (policy.name) {
+                case "":
+                case "no":
+                    return null
+
+                case "always":
+                case "unless-stopped":
+                    return [
+                            condition: RestartPolicyCondition.RestartPolicyConditionAny
+                    ]
+
+                case "on-failure":
+                    return [
+                            condition  : RestartPolicyCondition.RestartPolicyConditionOnFailure,
+                            maxAttempts: policy.maximumRetryCount
+                    ]
+
+                default:
+                    throw new IllegalArgumentException("unknown restart policy: ${restart}")
+            }
+        } else {
+            return [
+                    condition  : RestartPolicyCondition.byValue(restartPolicy.condition),
+                    delay      : restartPolicy.delay,
+                    maxAttempts: restartPolicy.maxAttempts,
+                    window     : restartPolicy.window,
+            ]
+        }
+    }
+
+    def parseRestartPolicy(String policy) {
+        def restartPolicy = [
+                name: ""
+        ]
+        if (!policy) {
+            return restartPolicy
+        }
+
+        def parts = policy.split(':')
+        if (parts.length > 2) {
+            throw new IllegalArgumentException("invalid restart policy format: '${policy}")
+        }
+
+        if (parts.length == 2) {
+            if (!parts[1].isInteger()) {
+                throw new IllegalArgumentException("maximum retry count must be an integer")
+            }
+
+            restartPolicy.maximumRetryCount = Integer.parseInt(parts[1])
+        }
+        restartPolicy.name = parts[0]
+        return restartPolicy
     }
 
     def serviceResources(Resources resources) {

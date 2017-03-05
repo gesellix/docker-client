@@ -356,4 +356,32 @@ class DeployConfigReaderTest extends Specification {
                 limits      : [memoryBytes: 300000000],
                 reservations: [memoryBytes: 200000000]]
     }
+
+    def "test ConvertRestartPolicyFromNone"() {
+        expect:
+        null == reader.restartPolicy("no", null)
+    }
+
+    def "test ConvertRestartPolicyFromUnknown"() {
+        when:
+        reader.restartPolicy("unknown", null)
+        then:
+        def exc = thrown(IllegalArgumentException)
+        exc.message == "unknown restart policy: unknown"
+    }
+
+    def "test ConvertRestartPolicyFromAlways"() {
+        when:
+        def policy = reader.restartPolicy("always", null)
+        then:
+        policy == [condition: DeployConfigReader.RestartPolicyCondition.RestartPolicyConditionAny]
+    }
+
+    def "test ConvertRestartPolicyFromFailure"() {
+        when:
+        def policy = reader.restartPolicy("on-failure:4", null)
+        then:
+        policy == [condition  : DeployConfigReader.RestartPolicyCondition.RestartPolicyConditionOnFailure,
+                   maxAttempts: 4]
+    }
 }
