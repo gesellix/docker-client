@@ -8,9 +8,12 @@ import de.gesellix.docker.compose.types.DriverOpts
 import de.gesellix.docker.compose.types.External
 import de.gesellix.docker.compose.types.Ipam
 import de.gesellix.docker.compose.types.Labels
+import de.gesellix.docker.compose.types.Limits
 import de.gesellix.docker.compose.types.Network
 import de.gesellix.docker.compose.types.PortConfig
 import de.gesellix.docker.compose.types.PortConfigs
+import de.gesellix.docker.compose.types.Reservations
+import de.gesellix.docker.compose.types.Resources
 import de.gesellix.docker.compose.types.Secret
 import de.gesellix.docker.compose.types.Volume
 import spock.lang.Specification
@@ -318,5 +321,39 @@ class DeployConfigReaderTest extends Specification {
         then:
         def exc = thrown(IllegalArgumentException)
         exc.message == "undefined volume: unknown"
+    }
+
+    def "test ConvertResourcesFull"() {
+        when:
+        def result = reader.serviceResources(
+                new Resources(
+                        limits: new Limits(
+                                nanoCpus: "0.003",
+                                memory: "300000000"),
+                        reservations: new Reservations(
+                                nanoCpus: "0.002",
+                                memory: "200000000")
+                ))
+        then:
+        result == [
+                limits      : [nanoCPUs   : 3000000,
+                               memoryBytes: 300000000],
+                reservations: [nanoCPUs   : 2000000,
+                               memoryBytes: 200000000]]
+    }
+
+    def "test ConvertResourcesOnlyMemory"() {
+        when:
+        def result = reader.serviceResources(
+                new Resources(
+                        limits: new Limits(
+                                memory: "300000000"),
+                        reservations: new Reservations(
+                                memory: "200000000")
+                ))
+        then:
+        result == [
+                limits      : [memoryBytes: 300000000],
+                reservations: [memoryBytes: 200000000]]
     }
 }

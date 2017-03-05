@@ -9,6 +9,7 @@ import de.gesellix.docker.compose.types.ComposeConfig
 import de.gesellix.docker.compose.types.Config
 import de.gesellix.docker.compose.types.Network
 import de.gesellix.docker.compose.types.PortConfigs
+import de.gesellix.docker.compose.types.Resources
 import de.gesellix.docker.compose.types.Secret
 import de.gesellix.docker.compose.types.Service
 import de.gesellix.docker.compose.types.Volume
@@ -17,6 +18,8 @@ import groovy.util.logging.Slf4j
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+
+import static java.lang.Double.parseDouble
 
 @Slf4j
 class DeployConfigReader {
@@ -66,13 +69,44 @@ class DeployConfigReader {
             serviceConfig.taskTemplate = [
                     containerSpec: [
                             mounts: volumesToMounts(namespace, service.volumes as List, volumes)
-                    ]
+                    ],
+                    resources    : serviceResources(service.deploy.resources),
             ]
 
             serviceSpec[name] = serviceConfig
         }
         log.info("services $serviceSpec")
         return serviceSpec
+    }
+
+    def serviceResources(Resources resources) {
+        def resourceRequirements = [:]
+        def nanoMultiplier = Math.pow(10, 9)
+        if (resources.limits) {
+            resourceRequirements['limits'] = [:]
+            if (resources.limits.nanoCpus) {
+                if (resources.limits.nanoCpus.contains('/')) {
+                    // TODO
+                    throw new UnsupportedOperationException("not supported, yet")
+                } else {
+                    resourceRequirements['limits'].nanoCPUs = parseDouble(resources.limits.nanoCpus) * nanoMultiplier
+                }
+            }
+            resourceRequirements['limits'].memoryBytes = Integer.parseInt(resources.limits.memory)
+        }
+        if (resources.reservations) {
+            resourceRequirements['reservations'] = [:]
+            if (resources.reservations.nanoCpus) {
+                if (resources.reservations.nanoCpus.contains('/')) {
+                    // TODO
+                    throw new UnsupportedOperationException("not supported, yet")
+                } else {
+                    resourceRequirements['reservations'].nanoCPUs = parseDouble(resources.reservations.nanoCpus) * nanoMultiplier
+                }
+            }
+            resourceRequirements['reservations'].memoryBytes = Integer.parseInt(resources.reservations.memory)
+        }
+        return resourceRequirements
     }
 
     def volumesToMounts(String namespace, List<String> serviceVolumes, Map<String, Volume> stackVolumes) {
