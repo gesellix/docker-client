@@ -7,6 +7,8 @@ import de.gesellix.docker.client.stack.types.StackService
 import de.gesellix.docker.compose.ComposeFileReader
 import de.gesellix.docker.compose.types.ComposeConfig
 import de.gesellix.docker.compose.types.Config
+import de.gesellix.docker.compose.types.Environment
+import de.gesellix.docker.compose.types.ExtraHosts
 import de.gesellix.docker.compose.types.Healthcheck
 import de.gesellix.docker.compose.types.Logging
 import de.gesellix.docker.compose.types.Network
@@ -16,6 +18,7 @@ import de.gesellix.docker.compose.types.RestartPolicy
 import de.gesellix.docker.compose.types.Secret
 import de.gesellix.docker.compose.types.Service
 import de.gesellix.docker.compose.types.ServiceNetwork
+import de.gesellix.docker.compose.types.UpdateConfig
 import de.gesellix.docker.compose.types.Volume
 import groovy.util.logging.Slf4j
 
@@ -74,25 +77,81 @@ class DeployConfigReader {
             Map<String, Volume> volumes) {
         Map<String, StackService> serviceSpec = [:]
         services.each { name, service ->
-//            name = ("${namespace}_${name}" as String)
+            def annotationLabels = service.deploy.labels?.entries ?: [:]
+            annotationLabels[ManageStackClient.LabelNamespace] = namespace
+
+            def containerLabels = service.labels?.entries ?: [:]
+            containerLabels[ManageStackClient.LabelNamespace] = namespace
+
             def serviceConfig = new StackService()
             serviceConfig.endpointSpec = serviceEndpoints(service.ports)
             serviceConfig.mode = serviceMode(service.deploy.mode, service.deploy.replicas)
             serviceConfig.networks = convertServiceNetworks(service.networks, networks, namespace, name)
+            serviceConfig.updateConfig = convertUpdateConfig(service.deploy.updateConfig)
+            serviceConfig.annotations = [
+                    name  : ("${namespace}_${name}" as String),
+                    labels: annotationLabels,
+            ]
             serviceConfig.taskTemplate = [
                     containerSpec: [
-                            mounts     : volumesToMounts(namespace, service.volumes as List, volumes),
-                            healthcheck: convertHealthcheck(service.healthcheck)
+                            image          : service.image,
+                            command        : service.entrypoint,
+                            args           : service.command?.parts ?: [],
+                            hostname       : service.hostname,
+                            hosts          : Collections.sort(convertExtraHosts(service.extraHosts)),
+                            healthcheck    : convertHealthcheck(service.healthcheck),
+                            env            : Collections.sort(convertEnvironment(service.environment)),
+                            labels         : containerLabels,
+                            dir            : service.workingDir,
+                            user           : service.user,
+                            mounts         : volumesToMounts(namespace, service.volumes as List, volumes),
+                            stopGracePeriod: service.stopGracePeriod,
+                            tty            : service.tty,
+                            openStdin      : service.stdinOpen,
+//                            secrets        : secrets,
                     ],
                     logDriver    : logDriver(service.logging),
                     resources    : serviceResources(service.deploy.resources),
                     restartPolicy: restartPolicy(service.restart, service.deploy.restartPolicy),
+                    placement    : [
+                            constraints: service.deploy?.placement?.constraints,
+                    ],
             ]
 
             serviceSpec[name] = serviceConfig
         }
         log.info("services $serviceSpec")
         return serviceSpec
+    }
+
+    List<String> convertEnvironment(Environment environment) {
+        environment?.entries?.collect { name, value ->
+            "${name}=${value}" as String
+        } ?: []
+    }
+
+    List<String> convertExtraHosts(ExtraHosts extraHosts) {
+        extraHosts?.entries?.collect { host, ip ->
+            "${host} ${ip}" as String
+        } ?: []
+    }
+
+    def convertUpdateConfig(UpdateConfig updateConfig) {
+        if (!updateConfig) {
+            return null
+        }
+
+        def parallel = 1
+        if (updateConfig.parallelism) {
+            parallel = updateConfig.parallelism
+        }
+        return [
+                parallelism    : parallel,
+                delay          : updateConfig.delay,
+                failureAction  : updateConfig.failureAction,
+                monitor        : updateConfig.monitor,
+                maxFailureRatio: updateConfig.maxFailureRatio,
+        ]
     }
 
     def convertServiceNetworks(
@@ -113,10 +172,10 @@ class DeployConfigReader {
         def serviceNetworkConfigs = []
 
         serviceNetworks.each { networkName, serviceNetwork ->
-            def networkConfig = networkConfigs[networkName]
-            if (!networkConfig) {
+            if (!networkConfigs.containsKey(networkName)) {
                 throw new IllegalStateException("service ${serviceName} references network ${networkName}, which is not declared")
             }
+            def networkConfig = networkConfigs[networkName]
 
             List<String> aliases = []
             if (serviceNetwork) {
@@ -127,7 +186,7 @@ class DeployConfigReader {
             String namespacedName = "${namespace}_${networkName}" as String
 
             String target = namespacedName
-            if (networkConfig.external?.external && networkConfig.external.name) {
+            if (networkConfig?.external?.external && networkConfig?.external?.name) {
                 target = networkConfig.external.name
             }
 
@@ -334,7 +393,7 @@ class DeployConfigReader {
     def serviceResources(Resources resources) {
         def resourceRequirements = [:]
         def nanoMultiplier = Math.pow(10, 9)
-        if (resources.limits) {
+        if (resources?.limits) {
             resourceRequirements['limits'] = [:]
             if (resources.limits.nanoCpus) {
                 if (resources.limits.nanoCpus.contains('/')) {
@@ -346,7 +405,7 @@ class DeployConfigReader {
             }
             resourceRequirements['limits'].memoryBytes = parseInt(resources.limits.memory)
         }
-        if (resources.reservations) {
+        if (resources?.reservations) {
             resourceRequirements['reservations'] = [:]
             if (resources.reservations.nanoCpus) {
                 if (resources.reservations.nanoCpus.contains('/')) {
@@ -423,26 +482,26 @@ class DeployConfigReader {
             ]
         }
 
-        def stackVolume = stackVolumes[source]
-        if (!stackVolume) {
+        if (!stackVolumes.containsKey(source)) {
             throw new IllegalArgumentException("undefined volume: $source")
         }
+        def stackVolume = stackVolumes[source]
 
         def volumeOptions
-        if (stackVolume.external.name) {
+        if (stackVolume?.external?.name) {
             volumeOptions = [
                     noCopy: isNoCopy(modes),
             ]
             source = stackVolume.external.name
         } else {
-            def labels = stackVolume.labels?.entries ?: [:]
+            def labels = stackVolume?.labels?.entries ?: [:]
             labels[(ManageStackClient.LabelNamespace)] = namespace
             volumeOptions = [
                     labels: labels,
                     noCopy: isNoCopy(modes),
             ]
 
-            if (stackVolume.driver != "") {
+            if (stackVolume?.driver && stackVolume?.driver != "") {
                 volumeOptions.driverConfig = [
                         name   : stackVolume.driver,
                         options: stackVolume.driverOpts.options
