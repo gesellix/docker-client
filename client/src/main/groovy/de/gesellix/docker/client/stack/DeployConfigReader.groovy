@@ -15,6 +15,7 @@ import de.gesellix.docker.compose.types.Resources
 import de.gesellix.docker.compose.types.RestartPolicy
 import de.gesellix.docker.compose.types.Secret
 import de.gesellix.docker.compose.types.Service
+import de.gesellix.docker.compose.types.ServiceNetwork
 import de.gesellix.docker.compose.types.Volume
 import groovy.util.logging.Slf4j
 
@@ -57,7 +58,7 @@ class DeployConfigReader {
         List<String> externals
         (networkConfigs, externals) = networks(namespace, serviceNetworkNames, composeConfig.networks)
         def secrets = secrets(namespace, composeConfig.secrets)
-        def services = services(namespace, composeConfig.services, composeConfig.volumes)
+        def services = services(namespace, composeConfig.services, composeConfig.networks, composeConfig.volumes)
 
         def cfg = new DeployStackConfig()
         cfg.networks = networkConfigs
@@ -66,13 +67,18 @@ class DeployConfigReader {
         return cfg
     }
 
-    def services(String namespace, Map<String, Service> services, Map<String, Volume> volumes) {
+    def services(
+            String namespace,
+            Map<String, Service> services,
+            Map<String, Network> networks,
+            Map<String, Volume> volumes) {
         Map<String, StackService> serviceSpec = [:]
         services.each { name, service ->
 //            name = ("${namespace}_${name}" as String)
             def serviceConfig = new StackService()
             serviceConfig.endpointSpec = serviceEndpoints(service.ports)
             serviceConfig.mode = serviceMode(service.deploy.mode, service.deploy.replicas)
+            serviceConfig.networks = convertServiceNetworks(service.networks, networks, namespace, name)
             serviceConfig.taskTemplate = [
                     containerSpec: [
                             mounts     : volumesToMounts(namespace, service.volumes as List, volumes),
@@ -87,6 +93,60 @@ class DeployConfigReader {
         }
         log.info("services $serviceSpec")
         return serviceSpec
+    }
+
+    def convertServiceNetworks(
+            Map<String, ServiceNetwork> serviceNetworks,
+            Map<String, Network> networkConfigs,
+            String namespace,
+            String serviceName) {
+
+        if (networkConfigs?.isEmpty()) {
+            return [
+                    [
+                            target : ("${namespace}_default" as String),
+                            aliases: [serviceName],
+                    ]
+            ]
+        }
+
+        def serviceNetworkConfigs = []
+
+        serviceNetworks.each { networkName, serviceNetwork ->
+            def networkConfig = networkConfigs[networkName]
+            if (!networkConfig) {
+                throw new IllegalStateException("service ${serviceName} references network ${networkName}, which is not declared")
+            }
+
+            List<String> aliases = []
+            if (serviceNetwork) {
+                aliases = serviceNetwork.aliases
+            }
+            aliases << serviceName
+
+            String namespacedName = "${namespace}_${networkName}" as String
+
+            String target = namespacedName
+            if (networkConfig.external?.external && networkConfig.external.name) {
+                target = networkConfig.external.name
+            }
+
+            serviceNetworkConfigs << [
+                    target : target,
+                    aliases: aliases,
+            ]
+        }
+
+        Collections.sort(serviceNetworkConfigs, new NetworkConfigByTargetComparator())
+        return serviceNetworkConfigs
+    }
+
+    static class NetworkConfigByTargetComparator implements Comparator {
+
+        @Override
+        int compare(Object o1, Object o2) {
+            return o1.target.compareTo(o2.target)
+        }
     }
 
     def logDriver(Logging logging) {

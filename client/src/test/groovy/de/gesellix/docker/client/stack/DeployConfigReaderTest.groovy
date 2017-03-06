@@ -17,6 +17,7 @@ import de.gesellix.docker.compose.types.PortConfigs
 import de.gesellix.docker.compose.types.Reservations
 import de.gesellix.docker.compose.types.Resources
 import de.gesellix.docker.compose.types.Secret
+import de.gesellix.docker.compose.types.ServiceNetwork
 import de.gesellix.docker.compose.types.Volume
 import spock.lang.Specification
 
@@ -435,5 +436,49 @@ class DeployConfigReaderTest extends Specification {
         then:
         def exc = thrown(IllegalArgumentException)
         exc.message =~ "test and disable can't be set"
+    }
+
+    def "test ConvertServiceNetworksOnlyDefault"() {
+        given:
+        def networkConfigs = [:]
+        def networks = [:]
+        when:
+        def result = reader.convertServiceNetworks(networks, networkConfigs, "name-space", "service")
+        then:
+        result == [
+                [
+                        target : "name-space_default",
+                        aliases: ["service"]
+                ]
+        ]
+    }
+
+    def "test ConvertServiceNetworks"() {
+        given:
+        Map<String, Network> networkConfigs = [
+                "front": new Network(
+                        external: new External(
+                                external: true,
+                                name: "fronttier"
+                        )),
+                "back" : new Network(),
+        ]
+        Map<String, ServiceNetwork> networks = [
+                "front": new ServiceNetwork(aliases: ["something"]),
+                "back" : new ServiceNetwork(aliases: ["other"]),
+        ]
+        when:
+        def result = reader.convertServiceNetworks(networks, networkConfigs, "name-space", "service")
+        then:
+        result == [
+                [
+                        target : "fronttier",
+                        aliases: ["something", "service"],
+                ],
+                [
+                        target : "name-space_back",
+                        aliases: ["other", "service"],
+                ]
+        ]
     }
 }
