@@ -8,6 +8,7 @@ import de.gesellix.docker.compose.ComposeFileReader
 import de.gesellix.docker.compose.types.ComposeConfig
 import de.gesellix.docker.compose.types.Config
 import de.gesellix.docker.compose.types.Healthcheck
+import de.gesellix.docker.compose.types.Logging
 import de.gesellix.docker.compose.types.Network
 import de.gesellix.docker.compose.types.PortConfigs
 import de.gesellix.docker.compose.types.Resources
@@ -77,6 +78,7 @@ class DeployConfigReader {
                             mounts     : volumesToMounts(namespace, service.volumes as List, volumes),
                             healthcheck: convertHealthcheck(service.healthcheck)
                     ],
+                    logDriver    : logDriver(service.logging),
                     resources    : serviceResources(service.deploy.resources),
                     restartPolicy: restartPolicy(service.restart, service.deploy.restartPolicy),
             ]
@@ -85,6 +87,16 @@ class DeployConfigReader {
         }
         log.info("services $serviceSpec")
         return serviceSpec
+    }
+
+    def logDriver(Logging logging) {
+        if (logging) {
+            return [
+                    name   : logging.driver,
+                    options: logging.options,
+            ]
+        }
+        return null
     }
 
     def convertHealthcheck(Healthcheck healthcheck) {
