@@ -110,9 +110,7 @@ class ApiExploration {
             def namespace = "example"
             def composeStack = ApiExploration.class.getResourceAsStream('docker-stack.yml')
             def deployConfig = new DeployConfigReader(dockerClient).loadCompose(namespace, composeStack)
-            println dockerClient.stackDeploy(namespace, deployConfig)
-
-//            dockerClient.stackDeploy()
+            dockerClient.stackDeploy(namespace, deployConfig)
         } finally {
 //            dockerClient.leaveSwarm([force: true])
         }

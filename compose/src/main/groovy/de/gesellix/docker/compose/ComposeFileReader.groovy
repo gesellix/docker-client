@@ -91,11 +91,12 @@ class ComposeFileReader {
         def json = JsonOutput.toJson(composeContent)
         ComposeConfig cfg = jsonAdapter.fromJson(json)
 
-//        def forbiddenProperties = collectForbiddenServiceProperties(composeContent.services, ForbiddenProperties)
-//        if (forbiddenProperties) {
-//            log.error("Configuration contains forbidden properties: ${forbiddenProperties}")
-//            throw new UnsupportedOperationException("Configuration contains forbidden properties")
-//        }
+        def forbiddenProperties = collectForbiddenServiceProperties(composeContent.services, ForbiddenProperties)
+        if (forbiddenProperties) {
+            log.error("Configuration contains forbidden properties: ${forbiddenProperties}")
+            throw new IllegalStateException("Configuration contains forbidden properties")
+        }
+
 //        def valid = new SchemaValidator().validate(composeContent)
 
 //        composeContent.services.each{ serviceName, serviceDef ->
@@ -157,6 +158,16 @@ class ComposeFileReader {
 //            cfg.Secrets = secretsMapping
 //        }
 
+        def unsupportedProperties = collectUnsupportedServiceProperties(composeContent.services, UnsupportedProperties)
+        if (unsupportedProperties) {
+            log.warn("Ignoring unsupported options: ${unsupportedProperties.join(", ")}")
+        }
+
+        def deprecatedProperties = collectDeprecatedServiceProperties(composeContent.services, DeprecatedProperties)
+        if (deprecatedProperties) {
+            log.warn("Ignoring deprecated options: ${deprecatedProperties}")
+        }
+
         return cfg
     }
 
@@ -173,11 +184,23 @@ class ComposeFileReader {
     }
 
     def collectUnsupportedServiceProperties(services, List<String> unsupportedProperties) {
-        def hits = [:]
+        def hits = []
         services.each { service, serviceConfig ->
             unsupportedProperties.each { property ->
                 if (serviceConfig[property]) {
                     hits["$service.$property"]
+                }
+            }
+        }
+        return hits
+    }
+
+    def collectDeprecatedServiceProperties(services, Map<String, String> deprecatedProperties) {
+        def hits = [:]
+        services.each { service, serviceConfig ->
+            deprecatedProperties.each { property, description ->
+                if (serviceConfig[property]) {
+                    hits["$service.$property"] = description
                 }
             }
         }

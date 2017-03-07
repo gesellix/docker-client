@@ -91,38 +91,54 @@ class ManageStackClient implements ManageStack {
 //            manageSecret.createSecret(secret.name, secret.data, secret.labels)
         }
 
-        throw new UnsupportedOperationException("NYI")
+        def existingServicesByName = [:]
+        def existingServices = stackServices(namespace)
+        existingServices.content.each { service ->
+            existingServicesByName[service.Spec.Name] = service
+        }
+
+        deployConfig.services.each { internalName, serviceSpec ->
+            def name = "${namespace}_${internalName}" as String
+
+            def encodedAuth = ""
+//            if (sendAuth) {
+//                // Retrieve encoded auth token from the image reference
+//                def image = serviceSpec.taskTemplate.containerSpec.image
+//                encodedAuth, err = command.RetrieveAuthTokenFromImage(ctx, dockerCli, image)
+//                if err != nil {
+//                    return err
+//                }
+//            }
+
+            def service = existingServicesByName[name]
+            if (service) {
+                log.info("Updating service ${name} (id: ${service.ID})")
+
+                def updateOpts = [:]
+//                if (sendAuth) {
+//                    updateOpts.EncodedRegistryAuth = encodedAuth
+//                }
+//                def response = manageService.updateService(service.ID, service.Version, serviceSpec)
+//                manageService.updateService(service.ID, service.Version, serviceSpec, updateOpts)
+                response.content.Warnings.each { String warning ->
+                    log.warn(warning)
+                }
+            } else {
+                log.info("Creating service ${name}")
+
+                def createOpts = [:]
+//                if (sendAuth) {
+//                    createOpts.EncodedRegistryAuth = encodedAuth
+//                }
+//                def response = manageService.createService(serviceSpec)
+//                def response = manageService.createService(serviceSpec, createOpts)
+            }
+        }
     }
 
 /*
 
 func deployCompose(ctx context.Context, dockerCli *command.DockerCli, opts deployOptions) error {
-	configDetails, err := getConfigDetails(opts)
-	if err != nil {
-		return err
-	}
-
-	config, err := loader.Load(configDetails)
-	if err != nil {
-		if fpe, ok := err.(*loader.ForbiddenPropertiesError); ok {
-			return fmt.Errorf("Compose file contains unsupported options:\n\n%s\n",
-				propertyWarnings(fpe.Properties))
-		}
-
-		return err
-	}
-
-	unsupportedProperties := loader.GetUnsupportedProperties(configDetails)
-	if len(unsupportedProperties) > 0 {
-		fmt.Fprintf(dockerCli.Err(), "Ignoring unsupported options: %s\n\n",
-			strings.Join(unsupportedProperties, ", "))
-	}
-
-	deprecatedProperties := loader.GetDeprecatedProperties(configDetails)
-	if len(deprecatedProperties) > 0 {
-		fmt.Fprintf(dockerCli.Err(), "Ignoring deprecated options:\n\n%s\n\n",
-			propertyWarnings(deprecatedProperties))
-	}
 
 	if err := checkDaemonIsSwarmManager(ctx, dockerCli); err != nil {
 		return err
@@ -137,7 +153,7 @@ func deployCompose(ctx context.Context, dockerCli *command.DockerCli, opts deplo
 	return deployServices(ctx, dockerCli, services, namespace, opts.sendRegistryAuth)
 }
 
- */
+*/
 
     // checkDaemonIsSwarmManager does an Info API call to verify that the daemon is
     // a swarm manager. This is necessary because we must create networks before we
