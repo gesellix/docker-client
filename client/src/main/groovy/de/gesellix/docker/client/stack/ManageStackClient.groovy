@@ -120,9 +120,9 @@ class ManageStackClient implements ManageStack {
 //                }
 //                def response = manageService.updateService(service.ID, service.Version, serviceSpec)
 //                manageService.updateService(service.ID, service.Version, serviceSpec, updateOpts)
-                response.content.Warnings.each { String warning ->
-                    log.warn(warning)
-                }
+//                response.content.Warnings.each { String warning ->
+//                    log.warn(warning)
+//                }
             } else {
                 log.info("Creating service ${name}")
 
