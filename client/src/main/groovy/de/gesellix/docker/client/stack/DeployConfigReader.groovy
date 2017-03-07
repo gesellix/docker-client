@@ -160,19 +160,14 @@ class DeployConfigReader {
             String namespace,
             String serviceName) {
 
-        if (networkConfigs?.isEmpty()) {
-            return [
-                    [
-                            target : ("${namespace}_default" as String),
-                            aliases: [serviceName],
-                    ]
-            ]
+        if (serviceNetworks == null || serviceNetworks.isEmpty()) {
+            serviceNetworks = ["default": null]
         }
 
         def serviceNetworkConfigs = []
 
         serviceNetworks.each { networkName, serviceNetwork ->
-            if (!networkConfigs.containsKey(networkName)) {
+            if (!networkConfigs.containsKey(networkName) && networkName != "default") {
                 throw new IllegalStateException("service ${serviceName} references network ${networkName}, which is not declared")
             }
             def networkConfig = networkConfigs[networkName]

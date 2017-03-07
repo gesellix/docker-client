@@ -441,9 +441,8 @@ class DeployConfigReaderTest extends Specification {
     def "test ConvertServiceNetworksOnlyDefault"() {
         given:
         def networkConfigs = [:]
-        def networks = [:]
         when:
-        def result = reader.convertServiceNetworks(networks, networkConfigs, "name-space", "service")
+        def result = reader.convertServiceNetworks(null, networkConfigs, "name-space", "service")
         then:
         result == [
                 [
@@ -478,6 +477,27 @@ class DeployConfigReaderTest extends Specification {
                 [
                         target : "name-space_back",
                         aliases: ["other", "service"],
+                ]
+        ]
+    }
+
+    def "test ConvertServiceNetworksCustomDefault"() {
+        given:
+        Map<String, Network> networkConfigs = [
+                "default": new Network(
+                        external: new External(
+                                external: true,
+                                name: "custom"
+                        ))
+        ]
+        Map<String, ServiceNetwork> networks = [:]
+        when:
+        def result = reader.convertServiceNetworks(networks, networkConfigs, "name-space", "service")
+        then:
+        result == [
+                [
+                        target : "custom",
+                        aliases: ["service"],
                 ]
         ]
     }
