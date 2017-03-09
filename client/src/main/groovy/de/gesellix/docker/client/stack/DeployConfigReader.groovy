@@ -598,7 +598,7 @@ class DeployConfigReader {
             def network = networks[internalName]
             if (!network) {
                 def createOpts = new StackNetwork()
-                createOpts.labels = ["${ManageStackClient.LabelNamespace}=${namespace}" as String]
+                createOpts.labels = [(ManageStackClient.LabelNamespace): namespace]
                 createOpts.driver = "overlay"
                 networkSpec[internalName] = createOpts
             } else if (network?.external?.external) {
@@ -606,9 +606,9 @@ class DeployConfigReader {
             } else {
                 def createOpts = new StackNetwork()
 
-                def labels = new HashSet<String>()
-                labels.addAll(network.labels?.entries?.collect { k, v -> "$k=$v" } ?: [])
-                labels.add("${ManageStackClient.LabelNamespace}=${namespace}" as String)
+                def labels = [:]
+                labels.putAll(network.labels?.entries ?: [:])
+                labels[(ManageStackClient.LabelNamespace)] = namespace
                 createOpts.labels = labels
                 createOpts.driver = network.driver ?: "overlay"
                 createOpts.driverOpts = network.driverOpts.options

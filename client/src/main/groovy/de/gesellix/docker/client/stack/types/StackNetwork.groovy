@@ -6,7 +6,7 @@ import groovy.transform.ToString
 @EqualsAndHashCode
 @ToString
 class StackNetwork {
-    Set<String> labels = []
+    Map<String, String> labels = [:]
     String driver
     Map<String, String> driverOpts = [:]
     boolean internal

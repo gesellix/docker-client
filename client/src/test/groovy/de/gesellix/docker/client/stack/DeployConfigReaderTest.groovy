@@ -97,12 +97,12 @@ class DeployConfigReaderTest extends Specification {
         networks.keySet().sort() == ["default", "normal", "attachablenet"].sort()
         networks["default"] == new StackNetwork(
                 driver: "overlay",
-                labels: ["${ManageStackClient.LabelNamespace}=name-space" as String]
+                labels: [(ManageStackClient.LabelNamespace): "name-space"]
         )
         networks["attachablenet"] == new StackNetwork(
                 attachable: true,
                 driver: "overlay",
-                labels: ["${ManageStackClient.LabelNamespace}=name-space" as String]
+                labels: [(ManageStackClient.LabelNamespace): "name-space"]
         )
         networks["normal"] == new StackNetwork(
                 driver: "overlay",
@@ -116,8 +116,8 @@ class DeployConfigReaderTest extends Specification {
                         ]
                 ],
                 labels: [
-                        "${ManageStackClient.LabelNamespace}=name-space" as String,
-                        "something=labeled"
+                        (ManageStackClient.LabelNamespace): "name-space",
+                        something                         : "labeled"
                 ]
         )
     }
