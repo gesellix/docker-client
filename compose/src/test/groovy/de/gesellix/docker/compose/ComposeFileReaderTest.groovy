@@ -23,6 +23,7 @@ import de.gesellix.docker.compose.types.RestartPolicy
 import de.gesellix.docker.compose.types.Secret
 import de.gesellix.docker.compose.types.Service
 import de.gesellix.docker.compose.types.ServiceNetwork
+import de.gesellix.docker.compose.types.ServiceSecret
 import de.gesellix.docker.compose.types.Ulimits
 import de.gesellix.docker.compose.types.UpdateConfig
 import de.gesellix.docker.compose.types.Volume
@@ -204,11 +205,17 @@ class ComposeFileReaderTest extends Specification {
                 services: [
                         "foo": new Service(
                                 image: "busybox",
-                                secrets: ["super"]
+                                secrets: [
+                                        ["super": null],
+                                        ["duper": new ServiceSecret(source: "duper", mode: 0444)]
+                                ]
                         )
                 ],
                 secrets: [
                         super: new Secret(
+                                external: new External(external: true)
+                        ),
+                        duper: new Secret(
                                 external: new External(external: true)
                         )
                 ]

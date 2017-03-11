@@ -3,6 +3,7 @@ package de.gesellix.docker.compose
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import de.gesellix.docker.compose.adapters.ListToPortConfigsAdapter
+import de.gesellix.docker.compose.adapters.ListToServiceSecretsAdapter
 import de.gesellix.docker.compose.adapters.MapOrListToEnvironmentAdapter
 import de.gesellix.docker.compose.adapters.MapOrListToExtraHosts
 import de.gesellix.docker.compose.adapters.MapOrListToLabelAdapter
@@ -78,6 +79,7 @@ class ComposeFileReader {
 
         Moshi moshi = new Moshi.Builder()
                 .add(new ListToPortConfigsAdapter())
+                .add(new ListToServiceSecretsAdapter())
                 .add(new MapOrListToEnvironmentAdapter())
                 .add(new MapOrListToExtraHosts())
                 .add(new MapOrListToLabelAdapter())

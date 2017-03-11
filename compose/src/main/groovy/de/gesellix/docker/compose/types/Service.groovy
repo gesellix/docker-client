@@ -7,6 +7,7 @@ import de.gesellix.docker.compose.adapters.ExtraHostsType
 import de.gesellix.docker.compose.adapters.LabelsType
 import de.gesellix.docker.compose.adapters.PortConfigsType
 import de.gesellix.docker.compose.adapters.ServiceNetworksType
+import de.gesellix.docker.compose.adapters.ServiceSecretsType
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 
@@ -68,7 +69,8 @@ class Service {
     @Json(name = 'security_opt')
     Set<String> securityOpt
     float shmSize
-    List<String> secrets
+    @ServiceSecretsType
+    List<Map<String, ServiceSecret>> secrets
     Object sysctls
     @Json(name = "stdin_open")
     boolean stdinOpen
