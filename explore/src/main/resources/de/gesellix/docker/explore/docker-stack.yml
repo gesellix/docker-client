@@ -69,6 +69,10 @@ services:
         window: 120s
       placement:
         constraints: [node.role == manager]
+    secrets:
+      - another_secret
+      - source: a_secret
+        mode: 0444
 
   visualizer:
     image: dockersamples/visualizer:stable
@@ -87,3 +91,9 @@ networks:
 
 volumes:
   db-data:
+
+secrets:
+  a_secret:
+    file: my-secrets.txt
+  another_secret:
+    file: my-secrets.txt

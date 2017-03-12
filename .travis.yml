@@ -19,4 +19,3 @@ script:
 #  - ./gradlew clean build cobertura coveralls --stacktrace --info -Dscan
 after_success:
   - ./gradlew :client:bintrayUpload -x check --info --stacktrace
-  - ./gradlew :compose:bintrayUpload -x check --info --stacktrace

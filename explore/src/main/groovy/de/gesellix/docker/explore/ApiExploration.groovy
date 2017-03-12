@@ -3,6 +3,8 @@ package de.gesellix.docker.explore
 import de.gesellix.docker.client.DockerClientImpl
 import de.gesellix.docker.client.stack.DeployConfigReader
 
+import java.nio.file.Paths
+
 class ApiExploration {
 
     static void main(String[] args) {
@@ -109,7 +111,8 @@ class ApiExploration {
 
             def namespace = "example"
             def composeStack = ApiExploration.class.getResourceAsStream('docker-stack.yml')
-            def deployConfig = new DeployConfigReader(dockerClient).loadCompose(namespace, composeStack)
+            String workingDir = Paths.get(ApiExploration.class.getResource('docker-stack.yml').toURI()).parent
+            def deployConfig = new DeployConfigReader(dockerClient).loadCompose(namespace, composeStack, workingDir)
             dockerClient.stackDeploy(namespace, deployConfig)
         } finally {
 //            dockerClient.leaveSwarm([force: true])

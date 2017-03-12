@@ -66,6 +66,14 @@ class ManageStackClient implements ManageStack {
         return stacksByName.values()
     }
 
+    Map toMap(object) {
+        return object?.properties?.findAll {
+            (it.key != 'class')
+        }?.collectEntries {
+            it.value == null || it.value instanceof Serializable ? [it.key, it.value] : [it.key, toMap(it.value)]
+        }
+    }
+
     @Override
     stackDeploy(String namespace, DeployStackConfig deployConfig) {
         log.info "docker stack deploy"
@@ -83,12 +91,20 @@ class ManageStackClient implements ManageStack {
             name = "${namespace}_${name}" as String
             if (!existingNetworkNames.contains(name)) {
                 log.info("create network $name: $network")
-//                manageNetwork.createNetwork(name, network)
+                manageNetwork.createNetwork(name, toMap(network))
             }
         }
         deployConfig.secrets.each { name, secret ->
-            log.info("create secret ${secret.name}: $secret")
-//            manageSecret.createSecret(secret.name, secret.data, secret.labels)
+            List knownSecrets = manageSecret.secrets([filters: [names: [secret.name]]]).content
+            log.info("known: $knownSecrets")
+            if (knownSecrets.empty) {
+                log.info("create secret ${secret.name}: $secret")
+                manageSecret.createSecret(secret.name, secret.data, secret.labels)
+            } else {
+//                def existingSecret = manageSecret.inspectSecret(secret.name).content
+                log.info("update secret ${secret.name}: $secret")
+//                manageSecret.updateSecret(existingSecret.ID, existingSecret.Meta.Version, secret)
+            }
         }
 
         def existingServicesByName = [:]
@@ -135,25 +151,6 @@ class ManageStackClient implements ManageStack {
             }
         }
     }
-
-/*
-
-func deployCompose(ctx context.Context, dockerCli *command.DockerCli, opts deployOptions) error {
-
-	if err := checkDaemonIsSwarmManager(ctx, dockerCli); err != nil {
-		return err
-	}
-
-	namespace := convert.NewNamespace(opts.namespace)
-
-	services, err := convert.Services(namespace, config, dockerCli.Client())
-	if err != nil {
-		return err
-	}
-	return deployServices(ctx, dockerCli, services, namespace, opts.sendRegistryAuth)
-}
-
-*/
 
     // checkDaemonIsSwarmManager does an Info API call to verify that the daemon is
     // a swarm manager. This is necessary because we must create networks before we

@@ -43,7 +43,7 @@ class DeployConfigReader {
         this.dockerClient = dockerClient
     }
 
-    def loadCompose(String namespace, InputStream composeFile) {
+    def loadCompose(String namespace, InputStream composeFile, String workingDir) {
         ComposeConfig composeConfig = composeFileReader.load(composeFile)
         log.info("composeContent: $composeConfig}")
 
@@ -60,7 +60,7 @@ class DeployConfigReader {
         Map<String, StackNetwork> networkConfigs
         List<String> externals
         (networkConfigs, externals) = networks(namespace, serviceNetworkNames, composeConfig.networks)
-        def secrets = secrets(namespace, composeConfig.secrets)
+        def secrets = secrets(namespace, composeConfig.secrets, workingDir)
         def services = services(namespace, composeConfig.services, composeConfig.networks, composeConfig.volumes)
 
         def cfg = new DeployStackConfig()
@@ -654,11 +654,11 @@ class DeployConfigReader {
         }
     }
 
-    Map<String, StackSecret> secrets(String namespace, Map<String, Secret> secrets) {
+    Map<String, StackSecret> secrets(String namespace, Map<String, Secret> secrets, String workingDir) {
         Map<String, StackSecret> secretSpec = [:]
         secrets.each { name, secret ->
             if (!secret.external.external) {
-                Path filePath = Paths.get(secret.file)
+                Path filePath = Paths.get(workingDir, secret.file)
                 byte[] data = Files.readAllBytes(filePath)
 
                 def labels = new HashMap<String, String>()

@@ -25,6 +25,7 @@ apply plugin: 'com.jfrog.bintray'
 repositories {
     mavenLocal()
     jcenter()
+    maven { url "http://dl.bintray.com/gesellix/docker-utils" }
     mavenCentral()
 }
 
@@ -45,13 +46,12 @@ dependencies {
 
     compile 'org.bouncycastle:bcpkix-jdk15on:1.56'
 
-    compile 'de.gesellix:docker-compose:2017-03-01T20-29-02'
-//    compile project(':compose')
+    compile 'de.gesellix:docker-compose-v3:2017-03-12T12-44-12'
 
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
         exclude module: 'groovy-all'
     }
-    testCompile 'cglib:cglib-nodep:3.2.4'
+    testCompile 'cglib:cglib-nodep:3.2.5'
 
     testCompile 'commons-lang:commons-lang:2.6'
 }
