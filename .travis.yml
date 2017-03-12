@@ -17,5 +17,10 @@ before_install:
 script:
   - ./gradlew clean build --stacktrace --info -Dscan
 #  - ./gradlew clean build cobertura coveralls --stacktrace --info -Dscan
-after_success:
-  - ./gradlew :client:bintrayUpload -x check --info --stacktrace
+deploy:
+  provider: script
+  script: ./gradlew :client:bintrayUpload -x check --info --stacktrace
+  skip_cleanup: true
+  on:
+    branch: master
+#    tags: true
