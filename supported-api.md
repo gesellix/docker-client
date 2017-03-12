@@ -1,6 +1,6 @@
 # Supported Features
 
-*feature set based on the [Docker Engine API v1.25](https://docs.docker.com/engine/api/v1.25/)*
+*feature set based on the [Docker Engine API v1.26](https://docs.docker.com/engine/api/v1.26/)*
 
 Since the Docker engine api tends to be backwards compatible,
 the Docker Client currently supports most other api versions, too.
@@ -125,9 +125,9 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker service scale`: Scale one or multiple services
 * [x] `docker service update`: Update a service
 
-## Stack - Manage Docker stacks (4/5)
+## Stack - Manage Docker stacks (5/5)
 
-* [ ] `docker stack deploy`: Deploy a new stack or update an existing stack
+* [x] `docker stack deploy`: Deploy a new stack or update an existing stack
 * [x] `docker stack ls`: List stacks
 * [x] `docker stack ps`: List the tasks in the stack
 * [x] `docker stack rm`: Remove the stack
