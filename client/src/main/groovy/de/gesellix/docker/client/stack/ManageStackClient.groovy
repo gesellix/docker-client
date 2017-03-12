@@ -101,9 +101,12 @@ class ManageStackClient implements ManageStack {
                 log.info("create secret ${secret.name}: $secret")
                 manageSecret.createSecret(secret.name, secret.data, secret.labels)
             } else {
-//                def existingSecret = manageSecret.inspectSecret(secret.name).content
+                if (knownSecrets.size() != 1) {
+                    throw new IllegalStateException("ambiguous secret name '${secret.name}'")
+                }
+                def knownSecret = knownSecrets.first()
                 log.info("update secret ${secret.name}: $secret")
-//                manageSecret.updateSecret(existingSecret.ID, existingSecret.Meta.Version, secret)
+                manageSecret.updateSecret(knownSecret.ID as String, knownSecret.Version.Index, toMap(secret))
             }
         }
 
