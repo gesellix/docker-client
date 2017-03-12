@@ -36,12 +36,14 @@ class DeployConfigReaderTest extends Specification {
         given:
         def secret1 = new Secret()
         def secret1File = getClass().getResource('/secrets/secret1.txt').file
-        secret1.file = secret1File
+        def secret1FileDirectory = new File(secret1File).parent
+        secret1.file = 'secret1.txt'
 
         when:
         def result = reader.secrets("name-space", [
                 'secret-1'  : secret1,
-                'ext-secret': new Secret(external: new External(external: true))])
+                'ext-secret': new Secret(external: new External(external: true))],
+                secret1FileDirectory)
 
         then:
         result == [
