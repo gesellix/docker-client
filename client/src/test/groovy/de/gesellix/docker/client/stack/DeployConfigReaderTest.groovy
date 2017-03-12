@@ -24,6 +24,11 @@ import spock.lang.Specification
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 
+import static de.gesellix.docker.client.stack.types.MountPropagation.PropagationShared
+import static de.gesellix.docker.client.stack.types.MountPropagation.PropagationSlave
+import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.RestartPolicyConditionAny
+import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.RestartPolicyConditionOnFailure
+
 class DeployConfigReaderTest extends Specification {
 
     DeployConfigReader reader
@@ -197,7 +202,7 @@ class DeployConfigReaderTest extends Specification {
 
     def "test getBindOptions with known mode"() {
         expect:
-        reader.getBindOptions(["slave"]) == [propagation: DeployConfigReader.PropagationSlave]
+        reader.getBindOptions(["slave"]) == [propagation: PropagationSlave.value]
     }
 
     def "test getBindOptions with unknown mode"() {
@@ -318,7 +323,7 @@ class DeployConfigReaderTest extends Specification {
                 target     : "/foo",
                 readOnly   : true,
                 bindOptions: [
-                        propagation: DeployConfigReader.PropagationShared
+                        propagation: PropagationShared.value
                 ]
         ]
     }
@@ -382,14 +387,14 @@ class DeployConfigReaderTest extends Specification {
         when:
         def policy = reader.restartPolicy("always", null)
         then:
-        policy == [condition: DeployConfigReader.RestartPolicyCondition.RestartPolicyConditionAny]
+        policy == [condition: RestartPolicyConditionAny.value]
     }
 
     def "test ConvertRestartPolicyFromFailure"() {
         when:
         def policy = reader.restartPolicy("on-failure:4", null)
         then:
-        policy == [condition  : DeployConfigReader.RestartPolicyCondition.RestartPolicyConditionOnFailure,
+        policy == [condition  : RestartPolicyConditionOnFailure.value,
                    maxAttempts: 4]
     }
 
@@ -414,8 +419,8 @@ class DeployConfigReaderTest extends Specification {
                 retries: 10
         )) == [
                 test    : ["EXEC", "touch", "/foo"],
-                timeout : Duration.of(30, ChronoUnit.SECONDS),
-                interval: Duration.of(2, ChronoUnit.MILLIS),
+                timeout : Duration.of(30, ChronoUnit.SECONDS).toNanos(),
+                interval: Duration.of(2, ChronoUnit.MILLIS).toNanos(),
                 retries : 10
         ]
     }

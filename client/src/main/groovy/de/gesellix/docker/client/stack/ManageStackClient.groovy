@@ -131,26 +131,25 @@ class ManageStackClient implements ManageStack {
 
             def service = existingServicesByName[name]
             if (service) {
-                log.info("Updating service ${name} (id: ${service.ID})")
+                log.info("Updating service ${name} (id ${service.ID}): ${toMap(serviceSpec)}")
 
-                def updateOpts = [:]
+                def authConfig = [:]
 //                if (sendAuth) {
-//                    updateOpts.EncodedRegistryAuth = encodedAuth
+//                    authConfig.EncodedRegistryAuth = encodedAuth
 //                }
-//                def response = manageService.updateService(service.ID, service.Version, serviceSpec)
-//                manageService.updateService(service.ID, service.Version, serviceSpec, updateOpts)
+//                def response = manageService.updateService(service.ID, service.Version, toMap(serviceSpec))
+//                manageService.updateService(service.ID, service.Version, toMap(serviceSpec), authConfig)
 //                response.content.Warnings.each { String warning ->
 //                    log.warn(warning)
 //                }
             } else {
-                log.info("Creating service ${name}")
+                log.info("Creating service ${name}: ${serviceSpec}")
 
-                def createOpts = [:]
+                def authConfig = [:]
 //                if (sendAuth) {
-//                    createOpts.EncodedRegistryAuth = encodedAuth
+//                    authConfig.EncodedRegistryAuth = encodedAuth
 //                }
-//                def response = manageService.createService(serviceSpec)
-//                def response = manageService.createService(serviceSpec, createOpts)
+                def response = manageService.createService(toMap(serviceSpec), authConfig)
             }
         }
     }

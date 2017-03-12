@@ -8,6 +8,8 @@ interface ManageService {
 
     def createService(config)
 
+    def createService(config, authConfig)
+
 //    inspect     Display detailed information on one or more services
 
     def inspectService(name)

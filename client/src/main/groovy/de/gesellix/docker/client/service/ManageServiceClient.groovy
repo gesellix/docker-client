@@ -41,9 +41,10 @@ class ManageServiceClient implements ManageService {
     }
 
     @Override
-    createService(config) {
+    createService(config, authConfig = [:]) {
         log.info "docker service create"
         config = config ?: [:]
+        authConfig = authConfig ?: [:]
         def response = client.post([path              : "/services/create",
                                     body              : config,
                                     requestContentType: "application/json"])

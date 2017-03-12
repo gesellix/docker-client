@@ -5,7 +5,8 @@ import groovy.transform.ToString
 @ToString
 class StackService {
 
-    def annotations = [:]
+    String name
+    def labels = [:]
     def endpointSpec = [:]
     def mode = [:]
     def taskTemplate = [:]

@@ -1,6 +1,8 @@
 package de.gesellix.docker.client.stack
 
 import de.gesellix.docker.client.DockerClient
+import de.gesellix.docker.client.stack.types.MountPropagation
+import de.gesellix.docker.client.stack.types.RestartPolicyCondition
 import de.gesellix.docker.client.stack.types.StackNetwork
 import de.gesellix.docker.client.stack.types.StackSecret
 import de.gesellix.docker.client.stack.types.StackService
@@ -29,6 +31,8 @@ import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.regex.Pattern
 
+import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.RestartPolicyConditionAny
+import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.RestartPolicyConditionOnFailure
 import static java.lang.Double.parseDouble
 import static java.lang.Integer.parseInt
 
@@ -77,21 +81,19 @@ class DeployConfigReader {
             Map<String, Volume> volumes) {
         Map<String, StackService> serviceSpec = [:]
         services.each { name, service ->
-            def annotationLabels = service.deploy.labels?.entries ?: [:]
-            annotationLabels[ManageStackClient.LabelNamespace] = namespace
+            def serviceLabels = service.deploy.labels?.entries ?: [:]
+            serviceLabels[ManageStackClient.LabelNamespace] = namespace
 
             def containerLabels = service.labels?.entries ?: [:]
             containerLabels[ManageStackClient.LabelNamespace] = namespace
 
             def serviceConfig = new StackService()
+            serviceConfig.name = ("${namespace}_${name}" as String)
+            serviceConfig.labels = serviceLabels
             serviceConfig.endpointSpec = serviceEndpoints(service.ports)
             serviceConfig.mode = serviceMode(service.deploy.mode, service.deploy.replicas)
             serviceConfig.networks = convertServiceNetworks(service.networks, networks, namespace, name)
             serviceConfig.updateConfig = convertUpdateConfig(service.deploy.updateConfig)
-            serviceConfig.annotations = [
-                    name  : ("${namespace}_${name}" as String),
-                    labels: annotationLabels,
-            ]
             serviceConfig.taskTemplate = [
                     containerSpec: [
                             image          : service.image,
@@ -145,11 +147,22 @@ class DeployConfigReader {
         if (updateConfig.parallelism) {
             parallel = updateConfig.parallelism
         }
+
+        def delay = 0
+        if (updateConfig.delay) {
+            delay = parseDuration(updateConfig.delay).toNanos()
+        }
+
+        def monitor = 0
+        if (updateConfig.monitor) {
+            monitor = parseDuration(updateConfig.monitor).toNanos()
+        }
+
         return [
                 parallelism    : parallel,
-                delay          : updateConfig.delay,
+                delay          : delay,
                 failureAction  : updateConfig.failureAction,
-                monitor        : updateConfig.monitor,
+                monitor        : monitor,
                 maxFailureRatio: updateConfig.maxFailureRatio,
         ]
     }
@@ -220,8 +233,8 @@ class DeployConfigReader {
         }
 
         Integer retries = null
-        Duration timeout = null
-        Duration interval = null
+        Long timeout = null
+        Long interval = null
 
         if (healthcheck.disable) {
             if (healthcheck.test?.parts) {
@@ -233,10 +246,10 @@ class DeployConfigReader {
         }
 
         if (healthcheck.timeout) {
-            timeout = parseDuration(healthcheck.timeout)
+            timeout = parseDuration(healthcheck.timeout).toNanos()
         }
         if (healthcheck.interval) {
-            interval = parseDuration(healthcheck.interval)
+            interval = parseDuration(healthcheck.interval).toNanos()
         }
         if (healthcheck.retries) {
             retries = new Float(healthcheck.retries).intValue()
@@ -244,8 +257,8 @@ class DeployConfigReader {
 
         return [
                 test    : healthcheck.test.parts,
-                timeout : timeout,
-                interval: interval,
+                timeout : timeout ?: 0,
+                interval: interval ?: 0,
                 retries : retries,
         ]
     }
@@ -304,26 +317,6 @@ class DeployConfigReader {
         return duration.multipliedBy(sign == '-' ? -1 : 1)
     }
 
-    static enum RestartPolicyCondition {
-        RestartPolicyConditionNone("none"),
-        RestartPolicyConditionOnFailure("on-failure"),
-        RestartPolicyConditionAny("any")
-
-        String value
-
-        RestartPolicyCondition(String value) {
-            this.value = value
-        }
-
-        static RestartPolicyCondition byValue(String needle) {
-            def entry = values().find { it.value == needle }
-            if (!entry) {
-                throw new IllegalArgumentException("no enum found for ${needle}")
-            }
-            return entry
-        }
-    }
-
     def restartPolicy(String restart, RestartPolicy restartPolicy) {
         // TODO: log if restart is being ignored
         if (restartPolicy == null) {
@@ -339,12 +332,12 @@ class DeployConfigReader {
                 case "always":
                 case "unless-stopped":
                     return [
-                            condition: RestartPolicyCondition.RestartPolicyConditionAny
+                            condition: RestartPolicyConditionAny.value
                     ]
 
                 case "on-failure":
                     return [
-                            condition  : RestartPolicyCondition.RestartPolicyConditionOnFailure,
+                            condition  : RestartPolicyConditionOnFailure.value,
                             maxAttempts: policy.maximumRetryCount
                     ]
 
@@ -353,7 +346,7 @@ class DeployConfigReader {
             }
         } else {
             return [
-                    condition  : RestartPolicyCondition.byValue(restartPolicy.condition),
+                    condition  : RestartPolicyCondition.byValue(restartPolicy.condition).value,
                     delay      : restartPolicy.delay,
                     maxAttempts: restartPolicy.maxAttempts,
                     window     : restartPolicy.window,
@@ -522,31 +515,8 @@ class DeployConfigReader {
         return modes.contains("nocopy")
     }
 
-    // PropagationRPrivate RPRIVATE
-    static final String PropagationRPrivate = "rprivate"
-    // PropagationPrivate PRIVATE
-    static final String PropagationPrivate = "private"
-    // PropagationRShared RSHARED
-    static final String PropagationRShared = "rshared"
-    // PropagationShared SHARED
-    static final String PropagationShared = "shared"
-    // PropagationRSlave RSLAVE
-    static final String PropagationRSlave = "rslave"
-    // PropagationSlave SLAVE
-    static final String PropagationSlave = "slave"
-
-    // Propagations is the list of all valid mount propagations
-    List<String> propagations = [
-            PropagationRPrivate,
-            PropagationPrivate,
-            PropagationRShared,
-            PropagationShared,
-            PropagationRSlave,
-            PropagationSlave,
-    ]
-
     def getBindOptions(List<String> modes) {
-        def matchedModes = modes.intersect(propagations)
+        def matchedModes = modes.intersect(MountPropagation.values().collect { it.value })
         if (matchedModes) {
             return [propagation: matchedModes.first()]
         } else {
