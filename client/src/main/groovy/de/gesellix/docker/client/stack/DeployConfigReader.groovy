@@ -52,13 +52,13 @@ class DeployConfigReader {
         log.info("composeContent: $composeConfig}")
 
         List<String> serviceNetworkNames = composeConfig.services.collect { String name, Service service ->
-            service.networks.collect { String networkName, serviceNetwork ->
+            if (!service.networks) {
+                return ["default"]
+            }
+            return service.networks.collect { String networkName, serviceNetwork ->
                 networkName
             }
         }.flatten().unique()
-        if (!serviceNetworkNames) {
-            serviceNetworkNames = ["default"]
-        }
         log.info("service network names: ${serviceNetworkNames}")
 
         Map<String, StackNetwork> networkConfigs
@@ -87,6 +87,11 @@ class DeployConfigReader {
             def containerLabels = service.labels?.entries ?: [:]
             containerLabels[ManageStackClient.LabelNamespace] = namespace
 
+            Long stopGracePeriod = null
+            if (service.stopGracePeriod) {
+                stopGracePeriod = parseDuration(service.stopGracePeriod).toNanos()
+            }
+
             def serviceConfig = new StackService()
             serviceConfig.name = ("${namespace}_${name}" as String)
             serviceConfig.labels = serviceLabels
@@ -107,7 +112,7 @@ class DeployConfigReader {
                             dir            : service.workingDir,
                             user           : service.user,
                             mounts         : volumesToMounts(namespace, service.volumes as List, volumes),
-                            stopGracePeriod: service.stopGracePeriod,
+                            stopGracePeriod: stopGracePeriod,
                             tty            : service.tty,
                             openStdin      : service.stdinOpen,
 //                            secrets        : secrets,
@@ -345,11 +350,19 @@ class DeployConfigReader {
                     throw new IllegalArgumentException("unknown restart policy: ${restart}")
             }
         } else {
+            Long delay = null
+            if (restartPolicy.delay) {
+                delay = parseDuration(restartPolicy.delay).toNanos()
+            }
+            Long window = null
+            if (restartPolicy.window) {
+                window = parseDuration(restartPolicy.window).toNanos()
+            }
             return [
                     condition  : RestartPolicyCondition.byValue(restartPolicy.condition).value,
-                    delay      : restartPolicy.delay,
+                    delay      : delay,
                     maxAttempts: restartPolicy.maxAttempts,
-                    window     : restartPolicy.window,
+                    window     : window,
             ]
         }
     }
