@@ -123,8 +123,8 @@ Running a container being available on the host via HTTP port 4712 can be achiev
     ])
 
     def namespace = "example"
-    def composeStack = ApiExploration.class.getResourceAsStream('docker-stack.yml')
-    String workingDir = Paths.get(ApiExploration.class.getResource('docker-stack.yml').toURI()).parent
+    def composeStack = getClass().getResourceAsStream('docker-stack.yml')
+    String workingDir = Paths.get(getClass().getResource('docker-stack.yml').toURI()).parent
 
     def deployConfig = new DeployConfigReader(dockerClient).loadCompose(namespace, composeStack, workingDir)
 
