@@ -102,6 +102,34 @@ Running a container being available on the host via HTTP port 4712 can be achiev
     // callback.lines will now collect all log lines
     // you might implement it as a fifo instead of the List shown above
 
+### Example 4: `docker stack deploy --compose-file docker-stack.yml example`
+    
+    def dockerClient = new DockerClientImpl()
+    dockerClient.initSwarm([
+            "ListenAddr"     : "0.0.0.0:4554",
+            "ForceNewCluster": false,
+            "Spec"           : [
+                    "AcceptancePolicy": [
+                            "Policies": [
+                                    ["Role": "MANAGER", "Autoaccept": true],
+                                    ["Role": "WORKER", "Autoaccept": true]
+                            ]
+                    ],
+                    "Orchestration"   : [:],
+                    "Raft"            : [:],
+                    "Dispatcher"      : [:],
+                    "CAConfig"        : [:]
+            ]
+    ])
+
+    def namespace = "example"
+    def composeStack = ApiExploration.class.getResourceAsStream('docker-stack.yml')
+    String workingDir = Paths.get(ApiExploration.class.getResource('docker-stack.yml').toURI()).parent
+
+    def deployConfig = new DeployConfigReader(dockerClient).loadCompose(namespace, composeStack, workingDir)
+
+    dockerClient.stackDeploy(namespace, deployConfig)
+
 
 ## Usage with Gradle Docker Plugin
 
