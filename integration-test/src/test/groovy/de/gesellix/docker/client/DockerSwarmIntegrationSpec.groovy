@@ -465,7 +465,7 @@ class DockerSwarmIntegrationSpec extends Specification {
                         "Parallelism": 1
                 ]]
         def serviceId = dockerClient.createService(serviceConfig).content.ID
-        Thread.sleep(500)
+        Thread.sleep(1000)
         def firstTask = dockerClient.tasks().content.first()
         awaitTaskStarted(firstTask.ID)
 
