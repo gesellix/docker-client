@@ -26,6 +26,7 @@ import java.time.temporal.ChronoUnit
 
 import static de.gesellix.docker.client.stack.types.MountPropagation.PropagationShared
 import static de.gesellix.docker.client.stack.types.MountPropagation.PropagationSlave
+import static de.gesellix.docker.client.stack.types.ResolutionMode.ResolutionModeVIP
 import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.RestartPolicyConditionAny
 import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.RestartPolicyConditionOnFailure
 
@@ -144,23 +145,25 @@ class DeployConfigReaderTest extends Specification {
         ])
 
         when:
-        def endpoints = reader.serviceEndpoints(ports)
+        def endpoints = reader.serviceEndpoints('dnsrr', ports)
 
         then:
-        endpoints == [ports: [
-                [
-                        protocol     : "udp",
-                        targetPort   : 53,
-                        publishedPort: 1053,
-                        publishMode  : "host"
-                ],
-                [
-                        protocol     : null,
-                        targetPort   : 8080,
-                        publishedPort: 80,
-                        publishMode  : null
+        endpoints == [
+                mode : ResolutionModeVIP.value,
+                ports: [
+                        [
+                                protocol     : "udp",
+                                targetPort   : 53,
+                                publishedPort: 1053,
+                                publishMode  : "host"
+                        ],
+                        [
+                                protocol     : null,
+                                targetPort   : 8080,
+                                publishedPort: 80,
+                                publishMode  : null
+                        ]
                 ]
-        ]
         ]
     }
 

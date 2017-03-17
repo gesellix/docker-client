@@ -26,5 +26,4 @@ class ManageStackClientTest extends Specification {
                 Mock(ManageSecret),
                 Mock(ManageSystem))
     }
-
 }

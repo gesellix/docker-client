@@ -1,6 +1,7 @@
 package de.gesellix.docker.client.stack.types
 
 enum MountPropagation {
+
     PropagationRPrivate("rprivate"),
     PropagationPrivate("private"),
     PropagationRShared("rshared"),
@@ -8,7 +9,7 @@ enum MountPropagation {
     PropagationRSlave("rslave"),
     PropagationSlave("slave")
 
-    String value
+    final String value
 
     MountPropagation(String value) {
         this.value = value

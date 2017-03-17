@@ -2,6 +2,7 @@ package de.gesellix.docker.client.stack
 
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.stack.types.MountPropagation
+import de.gesellix.docker.client.stack.types.ResolutionMode
 import de.gesellix.docker.client.stack.types.RestartPolicyCondition
 import de.gesellix.docker.client.stack.types.StackNetwork
 import de.gesellix.docker.client.stack.types.StackSecret
@@ -95,7 +96,7 @@ class DeployConfigReader {
             def serviceConfig = new StackService()
             serviceConfig.name = ("${namespace}_${name}" as String)
             serviceConfig.labels = serviceLabels
-            serviceConfig.endpointSpec = serviceEndpoints(service.ports)
+            serviceConfig.endpointSpec = serviceEndpoints(service.deploy.endpointMode, service.ports)
             serviceConfig.mode = serviceMode(service.deploy.mode, service.deploy.replicas)
             serviceConfig.networks = convertServiceNetworks(service.networks, networks, namespace, name)
             serviceConfig.updateConfig = convertUpdateConfig(service.deploy.updateConfig)
@@ -537,8 +538,9 @@ class DeployConfigReader {
         }
     }
 
-    def serviceEndpoints(PortConfigs portConfigs) {
+    def serviceEndpoints(String endpointMode, PortConfigs portConfigs) {
         def endpointSpec = [
+                mode : endpointMode ? ResolutionMode.byValue(endpointMode).value : null,
                 ports: portConfigs.portConfigs.collect { portConfig ->
                     [
                             protocol     : portConfig.protocol,

@@ -1,18 +1,17 @@
 package de.gesellix.docker.client.stack.types
 
-enum RestartPolicyCondition {
+enum ResolutionMode {
 
-    RestartPolicyConditionNone("none"),
-    RestartPolicyConditionOnFailure("on-failure"),
-    RestartPolicyConditionAny("any")
+    ResolutionModeVIP("vip"),
+    ResolutionModeDNSRR("dnsrr")
 
     final String value
 
-    RestartPolicyCondition(String value) {
+    ResolutionMode(String value) {
         this.value = value
     }
 
-    static RestartPolicyCondition byValue(String needle) {
+    static ResolutionMode byValue(String needle) {
         def entry = values().find { it.value == needle }
         if (!entry) {
             throw new IllegalArgumentException("no enum found for ${needle}")
