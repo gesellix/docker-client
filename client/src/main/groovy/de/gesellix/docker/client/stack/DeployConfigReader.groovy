@@ -32,6 +32,7 @@ import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.regex.Pattern
 
+import static de.gesellix.docker.client.stack.types.ResolutionMode.ResolutionModeVIP
 import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.RestartPolicyConditionAny
 import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.RestartPolicyConditionOnFailure
 import static java.lang.Double.parseDouble
@@ -540,7 +541,7 @@ class DeployConfigReader {
 
     def serviceEndpoints(String endpointMode, PortConfigs portConfigs) {
         def endpointSpec = [
-                mode : endpointMode ? ResolutionMode.byValue(endpointMode).value : null,
+                mode : endpointMode ? ResolutionMode.byValue(endpointMode).value : ResolutionModeVIP.value,
                 ports: portConfigs.portConfigs.collect { portConfig ->
                     [
                             protocol     : portConfig.protocol,
