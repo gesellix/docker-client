@@ -25,6 +25,11 @@ Consider the client as a thin wrapper to perform HTTP requests, minimizing the n
  Due to its thin layer this client might feel a bit less convenient, though,
  while it gives you a bit more freedom to access the engine api and some less popular endpoints.
 
+The client also includes [Docker Compose version 3](https://docs.docker.com/compose/compose-file/) support
+ as part of the `docker stack --compose ...` command.
+ See the [docker stack deploy docs](https://docs.docker.com/engine/reference/commandline/stack_deploy/) for details.
+ Please note that you'll need at least Java 8 when using that feature. 
+
 ## Plain Usage
 
 For use in Gradle, add the Bintray repository first:
@@ -36,7 +41,7 @@ For use in Gradle, add the Bintray repository first:
 Then, you need to add the dependency, but please ensure to use the [latest version](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion):
 
     dependencies {
-      compile 'de.gesellix:docker-client:2017-03-12T21-38-17'
+      compile 'de.gesellix:docker-client:2017-03-18T21-28-50'
     }
 
 The tests in `DockerClientImplSpec` and `DockerClientImplIntegrationSpec` should give you an idea how to use the docker-client.
