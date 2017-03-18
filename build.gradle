@@ -31,13 +31,10 @@ subprojects {
     targetCompatibility = JavaVersion.VERSION_1_7
 
     def dependencyVersions = [
-            'com.google.code.findbugs:jsr305:3.0.0',
-            'joda-time:joda-time:2.9.7',
-            'junit:junit:4.12',
             'org.bouncycastle:bcprov-jdk15on:1.56',
-            'org.codehaus.groovy:groovy:2.4.9',
-            'org.codehaus.groovy:groovy-json:2.4.9',
-            'org.slf4j:slf4j-api:1.7.22'
+            'org.codehaus.groovy:groovy:2.4.10',
+            'org.codehaus.groovy:groovy-json:2.4.10',
+            'org.slf4j:slf4j-api:1.7.25'
     ]
 
     configurations.all {

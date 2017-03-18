@@ -29,3 +29,4 @@ dependencies {
     testCompile 'joda-time:joda-time:2.9.7'
     testCompile 'ch.qos.logback:logback-classic:1.2.2'
 }
+check.shouldRunAfter ':client:check'
