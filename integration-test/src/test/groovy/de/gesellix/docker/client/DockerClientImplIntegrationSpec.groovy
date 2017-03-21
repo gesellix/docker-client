@@ -106,7 +106,8 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     def auth() {
         given:
-        def authDetails = dockerClient.readAuthConfig(null, null)
+//        def authDetails = dockerClient.readAuthConfig(null, null)
+        def authDetails = dockerClient.readDefaultAuthConfig()
         def authPlain = authDetails
 
         when:
