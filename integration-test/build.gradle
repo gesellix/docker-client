@@ -26,7 +26,7 @@ dependencies {
     }
     testCompile 'cglib:cglib-nodep:3.2.5'
     testCompile 'commons-lang:commons-lang:2.6'
-    testCompile 'joda-time:joda-time:2.9.7'
+    testCompile 'joda-time:joda-time:2.9.9'
     testCompile 'ch.qos.logback:logback-classic:1.2.2'
 }
 check.shouldRunAfter ':client:check'
