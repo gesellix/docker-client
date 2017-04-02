@@ -9,7 +9,7 @@ import spock.lang.Requires
 import spock.lang.Specification
 
 @Slf4j
-@Requires({ LocalDocker.available() })
+@Requires({ LocalDocker.available() && LocalDocker.supportsStack() })
 class DockerStackIntegrationSpec extends Specification {
 
     static DockerClient dockerClient

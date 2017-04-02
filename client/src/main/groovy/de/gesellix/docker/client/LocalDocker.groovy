@@ -33,6 +33,17 @@ class LocalDocker {
         }
     }
 
+    static supportsStack() {
+        try {
+            def version = getDockerVersion()
+            return (version.major >= 1 && version.minor >= 13) || version.major >= 17
+        }
+        catch (Exception e) {
+            log.info("Docker not available", e)
+            return false
+        }
+    }
+
     static DockerVersion getDockerVersion() {
         try {
             def version = new DockerClientImpl().version().content.Version as String
