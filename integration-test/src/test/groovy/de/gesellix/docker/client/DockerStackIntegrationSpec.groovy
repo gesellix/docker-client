@@ -4,7 +4,6 @@ import de.gesellix.docker.client.stack.DeployStackConfig
 import de.gesellix.docker.client.stack.ManageStackClient
 import de.gesellix.docker.client.stack.types.StackService
 import groovy.util.logging.Slf4j
-import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
 
@@ -58,9 +57,9 @@ class DockerStackIntegrationSpec extends Specification {
         dockerClient.stackDeploy(namespace, config)
 
         then:
-        dockerClient.lsStacks().find { ManageStackClient.Stack stack ->
-            stack.name == namespace && stack.services == config.services.size()
-        }
+        Thread.sleep(1000)
+        def tasks = dockerClient.stackPs(namespace).content
+        tasks.size() == config.services.size()
 
         cleanup:
         performSilently { dockerClient.stackRm(namespace) }
@@ -107,24 +106,124 @@ class DockerStackIntegrationSpec extends Specification {
         performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
-    @Ignore
     def "list stacks"() {
-//        dockerClient.lsStacks()
+        given:
+        dockerClient.initSwarm(newSwarmConfig())
+
+        def namespace = "some-stack"
+        def config = new DeployStackConfig()
+        config.services = ["service1": new StackService().with {
+            networks = []
+            taskTemplate = [
+                    containerSpec: [
+                            image: "redis:3-alpine",
+                    ],
+            ]
+            it
+        }]
+
+        when:
+        dockerClient.stackDeploy(namespace, config)
+
+        then:
+        dockerClient.lsStacks().find { ManageStackClient.Stack stack ->
+            stack.name == namespace && stack.services == config.services.size()
+        }
+
+        cleanup:
+        performSilently { dockerClient.stackRm(namespace) }
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
-    @Ignore
     def "list tasks in a stack"() {
-//        dockerClient.stackPs("a-stack")
+        given:
+        dockerClient.initSwarm(newSwarmConfig())
+
+        def namespace = "new-stack"
+        def config = new DeployStackConfig()
+        config.services = ["service1": new StackService().with {
+            networks = []
+            taskTemplate = [
+                    containerSpec: [
+                            image: "redis:3-alpine",
+                    ],
+            ]
+            it
+        }]
+
+        when:
+        dockerClient.stackDeploy(namespace, config)
+
+        then:
+        Thread.sleep(1000)
+        def tasks = dockerClient.stackPs(namespace).content
+        tasks.size() == config.services.size()
+
+        cleanup:
+        performSilently { dockerClient.stackRm(namespace) }
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
-    @Ignore
     def "list services in a stack"() {
-//        dockerClient.stackServices("a-stack")
+        given:
+        dockerClient.initSwarm(newSwarmConfig())
+
+        def namespace = "new-stack"
+        def config = new DeployStackConfig()
+        config.services = ["service1": new StackService().with {
+            networks = []
+            taskTemplate = [
+                    containerSpec: [
+                            image: "redis:3-alpine",
+                    ],
+            ]
+            it
+        }]
+
+        when:
+        dockerClient.stackDeploy(namespace, config)
+
+        then:
+        Thread.sleep(1000)
+        def services = dockerClient.stackServices(namespace).content
+        services.size() == config.services.size()
+
+        cleanup:
+        performSilently { dockerClient.stackRm(namespace) }
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
-    @Ignore
     def "remove a stack"() {
-//        dockerClient.stackRm("a-stack")
+        given:
+        dockerClient.initSwarm(newSwarmConfig())
+
+        def namespace = "new-stack"
+        def config = new DeployStackConfig()
+        config.services = ["service1": new StackService().with {
+            networks = []
+            taskTemplate = [
+                    containerSpec: [
+                            image: "redis:3-alpine",
+                    ],
+            ]
+            it
+        }]
+        dockerClient.stackDeploy(namespace, config)
+        Thread.sleep(1000)
+        def originalServices = dockerClient.stackServices(namespace).content
+
+        when:
+        dockerClient.stackRm(namespace)
+
+        then:
+        originalServices.size() == 1
+
+        Thread.sleep(1000)
+        def services = dockerClient.stackServices(namespace).content
+        services.isEmpty()
+
+        cleanup:
+        performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
     def newSwarmConfig() {
