@@ -10,6 +10,7 @@ import de.gesellix.docker.client.service.ManageService
 import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.client.tasks.ManageTask
 import de.gesellix.util.QueryUtil
+import groovy.transform.EqualsAndHashCode
 import groovy.util.logging.Slf4j
 
 @Slf4j
@@ -265,6 +266,7 @@ class ManageStackClient implements ManageStack {
         return infoByServiceId
     }
 
+    @EqualsAndHashCode
     static class Stack {
         String name
         int services
