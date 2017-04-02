@@ -27,7 +27,6 @@ import java.time.temporal.ChronoUnit
 import static de.gesellix.docker.client.stack.types.MountPropagation.PropagationShared
 import static de.gesellix.docker.client.stack.types.MountPropagation.PropagationSlave
 import static de.gesellix.docker.client.stack.types.ResolutionMode.ResolutionModeDNSRR
-import static de.gesellix.docker.client.stack.types.ResolutionMode.ResolutionModeVIP
 import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.RestartPolicyConditionAny
 import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.RestartPolicyConditionOnFailure
 

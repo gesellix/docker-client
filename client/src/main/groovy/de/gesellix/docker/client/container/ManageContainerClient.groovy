@@ -9,14 +9,11 @@ import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.image.ManageImage
 import de.gesellix.docker.client.rawstream.RawInputStream
 import de.gesellix.docker.client.repository.RepositoryTagParser
-import de.gesellix.util.IOUtils
 import de.gesellix.util.QueryUtil
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 
 import static java.util.concurrent.Executors.newSingleThreadExecutor
 
