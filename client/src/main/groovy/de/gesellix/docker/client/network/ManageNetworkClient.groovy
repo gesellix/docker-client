@@ -1,5 +1,6 @@
 package de.gesellix.docker.client.network
 
+import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.HttpClient
 import de.gesellix.util.QueryUtil
@@ -19,7 +20,7 @@ class ManageNetworkClient implements ManageNetwork {
     }
 
     @Override
-    networks(query = [:]) {
+    DockerResponse networks(query = [:]) {
         log.info "docker network ls"
         def actualQuery = query ?: [:]
         queryUtil.jsonEncodeFilters(actualQuery)

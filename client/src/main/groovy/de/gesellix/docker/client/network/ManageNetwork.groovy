@@ -1,5 +1,7 @@
 package de.gesellix.docker.client.network
 
+import de.gesellix.docker.client.DockerResponse
+
 interface ManageNetwork {
 
 //    connect     Connect a container to a network
@@ -22,9 +24,9 @@ interface ManageNetwork {
 
 //    ls          List networks
 
-    def networks()
+    DockerResponse networks()
 
-    def networks(query)
+    DockerResponse networks(query)
 
 //    prune       Remove all unused networks
 

@@ -6,13 +6,13 @@ interface ManageService {
 
 //    create      Create a new service
 
-    def createService(config)
+    DockerResponse createService(config)
 
-    def createService(config, authConfig)
+    DockerResponse createService(config, authConfig)
 
 //    inspect     Display detailed information on one or more services
 
-    def inspectService(name)
+    DockerResponse inspectService(name)
 
 //    TODO logs        Fetch the logs of a service
 
@@ -38,6 +38,6 @@ interface ManageService {
 
 //    update      Update a service
 
-    def updateService(name, query, config)
+    DockerResponse updateService(name, query, config)
 
 }

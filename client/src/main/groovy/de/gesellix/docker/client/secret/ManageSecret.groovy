@@ -1,5 +1,7 @@
 package de.gesellix.docker.client.secret
 
+import de.gesellix.docker.client.DockerResponse
+
 interface ManageSecret {
 
 //    create      Create a secret using bytes as content
@@ -14,9 +16,9 @@ interface ManageSecret {
 
 //    ls          List secrets
 
-    def secrets()
+    DockerResponse secrets()
 
-    def secrets(Map query)
+    DockerResponse secrets(Map query)
 
 //    rm          Remove one or more secrets
 

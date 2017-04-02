@@ -7,6 +7,9 @@ import de.gesellix.docker.client.network.ManageNetwork
 import de.gesellix.docker.client.node.ManageNode
 import de.gesellix.docker.client.secret.ManageSecret
 import de.gesellix.docker.client.service.ManageService
+import de.gesellix.docker.client.stack.types.StackNetwork
+import de.gesellix.docker.client.stack.types.StackSecret
+import de.gesellix.docker.client.stack.types.StackService
 import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.client.tasks.ManageTask
 import de.gesellix.util.QueryUtil
@@ -81,6 +84,12 @@ class ManageStackClient implements ManageStack {
 
         checkDaemonIsSwarmManager()
 
+        createNetworks(namespace, deployConfig.networks)
+        createSecrets(namespace, deployConfig.secrets)
+        createOrUpdateServices(namespace, deployConfig.services)
+    }
+
+    def createNetworks(String namespace, Map<String, StackNetwork> networks) {
         def existingNetworks = manageNetwork.networks([
                 filters: [
                         label: [("${LabelNamespace}=${namespace}" as String): true]]])
@@ -88,16 +97,29 @@ class ManageStackClient implements ManageStack {
         existingNetworks.content.each {
             existingNetworkNames << it.Name
         }
-        deployConfig.networks.each { name, network ->
+        networks.each { name, network ->
             name = "${namespace}_${name}" as String
             if (!existingNetworkNames.contains(name)) {
                 log.info("create network $name: $network")
+                if (!network.labels) {
+                    network.labels = [:]
+                }
+                network.labels[(LabelNamespace)] = namespace
                 manageNetwork.createNetwork(name, toMap(network))
             }
         }
-        deployConfig.secrets.each { name, secret ->
+    }
+
+    def createSecrets(String namespace, Map<String, StackSecret> secrets) {
+        secrets.each { name, secret ->
             List knownSecrets = manageSecret.secrets([filters: [names: [secret.name]]]).content
             log.info("known: $knownSecrets")
+
+            if (!secret.labels) {
+                secret.labels = [:]
+            }
+            secret.labels[(LabelNamespace)] = namespace
+
             if (knownSecrets.empty) {
                 log.info("create secret ${secret.name}: $secret")
                 manageSecret.createSecret(secret.name, secret.data, secret.labels)
@@ -110,14 +132,16 @@ class ManageStackClient implements ManageStack {
                 manageSecret.updateSecret(knownSecret.ID as String, knownSecret.Version.Index, toMap(secret))
             }
         }
+    }
 
+    def createOrUpdateServices(String namespace, Map<String, StackService> services) {
         def existingServicesByName = [:]
         def existingServices = stackServices(namespace)
         existingServices.content.each { service ->
             existingServicesByName[service.Spec.Name] = service
         }
 
-        deployConfig.services.each { internalName, serviceSpec ->
+        services.each { internalName, serviceSpec ->
             def name = "${namespace}_${internalName}" as String
             serviceSpec.name = serviceSpec.name ?: name
             if (!serviceSpec.labels) {

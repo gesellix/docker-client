@@ -1,6 +1,7 @@
 package de.gesellix.docker.client.system
 
 import de.gesellix.docker.client.DockerAsyncCallback
+import de.gesellix.docker.client.DockerResponse
 
 interface ManageSystem {
 
@@ -16,13 +17,13 @@ interface ManageSystem {
 
     def events(DockerAsyncCallback callback, Map query)
 
-    def ping()
+    DockerResponse ping()
 
-    def version()
+    DockerResponse version()
 
 //    info        Display system-wide information
 
-    def info()
+    DockerResponse info()
 
 //    TODO prune       Remove unused data
 

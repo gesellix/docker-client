@@ -48,21 +48,21 @@ class ManageSystemClient implements ManageSystem {
     }
 
     @Override
-    ping() {
+    DockerResponse ping() {
         log.info "docker ping"
         def response = client.get([path: "/_ping", timeout: 2000])
         return response
     }
 
     @Override
-    version() {
+    DockerResponse version() {
         log.info "docker version"
         def response = client.get([path: "/version"])
         return response
     }
 
     @Override
-    info() {
+    DockerResponse info() {
         log.info "docker info"
         def response = client.get([path: "/info"])
         return response

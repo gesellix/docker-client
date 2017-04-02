@@ -41,7 +41,7 @@ class ManageServiceClient implements ManageService {
     }
 
     @Override
-    createService(config, authConfig = [:]) {
+    DockerResponse createService(config, authConfig = [:]) {
         log.info "docker service create"
         config = config ?: [:]
         authConfig = authConfig ?: [:]
@@ -61,7 +61,7 @@ class ManageServiceClient implements ManageService {
     }
 
     @Override
-    inspectService(name) {
+    DockerResponse inspectService(name) {
         log.info "docker service inspect"
         def response = client.get([path: "/services/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service inspect failed"))
@@ -78,7 +78,7 @@ class ManageServiceClient implements ManageService {
 //    }
 
     @Override
-    updateService(name, query, config) {
+    DockerResponse updateService(name, query, config) {
         log.info "docker service update"
         def actualQuery = query ?: [:]
         config = config ?: [:]

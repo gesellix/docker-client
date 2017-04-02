@@ -1,5 +1,6 @@
 package de.gesellix.docker.client.secret
 
+import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.HttpClient
 import de.gesellix.util.QueryUtil
@@ -41,7 +42,7 @@ class ManageSecretClient implements ManageSecret {
     }
 
     @Override
-    secrets(Map query = [:]) {
+    DockerResponse secrets(Map query = [:]) {
         log.info "docker secret ls"
         def actualQuery = query ?: [:]
         queryUtil.jsonEncodeFilters(actualQuery)
