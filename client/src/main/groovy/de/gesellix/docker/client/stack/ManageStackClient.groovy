@@ -118,6 +118,11 @@ class ManageStackClient implements ManageStack {
 
         deployConfig.services.each { internalName, serviceSpec ->
             def name = "${namespace}_${internalName}" as String
+            serviceSpec.name = serviceSpec.name ?: name
+            if (!serviceSpec.labels) {
+                serviceSpec.labels = [:]
+            }
+            serviceSpec.labels[(LabelNamespace)] = namespace
 
             def encodedAuth = ""
 //            if (sendAuth) {
@@ -137,11 +142,14 @@ class ManageStackClient implements ManageStack {
 //                if (sendAuth) {
 //                    authConfig.EncodedRegistryAuth = encodedAuth
 //                }
-//                def response = manageService.updateService(service.ID, service.Version, toMap(serviceSpec))
-//                manageService.updateService(service.ID, service.Version, toMap(serviceSpec), authConfig)
-//                response.content.Warnings.each { String warning ->
-//                    log.warn(warning)
-//                }
+                def response = manageService.updateService(
+                        service.ID,
+                        [version: service.Version.Index],
+                        toMap(serviceSpec))
+//                def response = manageService.updateService(service.ID, [version: service.Version.Index], toMap(serviceSpec), authConfig)
+                response.content.Warnings.each { String warning ->
+                    log.warn(warning)
+                }
             } else {
                 log.info("Creating service ${name}: ${serviceSpec}")
 
