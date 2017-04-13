@@ -47,7 +47,8 @@ class OkDockerClientIntegrationSpec extends Specification {
         when:
         def response = client.post(request)
         then:
-        response.content == [Status: "Login Succeeded"]
+        response.content == [IdentityToken: "",
+                             Status       : "Login Succeeded"]
     }
 
     def "should optionally stream a response"() {
