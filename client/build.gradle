@@ -33,19 +33,19 @@ dependencies {
     compile 'org.codehaus.groovy:groovy-json:2.4.10'
 
     compile 'org.slf4j:slf4j-api:1.7.25'
-    testCompile 'ch.qos.logback:logback-classic:1.2.2'
+    testCompile 'ch.qos.logback:logback-classic:1.2.3'
 
-    compile 'com.squareup.okio:okio:1.11.0'
+    compile 'com.squareup.okio:okio:1.12.0'
     compile 'com.squareup.okhttp3:okhttp:3.6.0'
     testCompile 'com.squareup.okhttp3:mockwebserver:3.6.0'
 
     compile 'org.apache.commons:commons-compress:1.13'
 
-    compile 'de.gesellix:docker-filesocket:2017-02-26T08-19-34'
+    compile 'de.gesellix:docker-filesocket:2017-04-13T20-02-54'
 
     compile 'org.bouncycastle:bcpkix-jdk15on:1.56'
 
-    compile 'de.gesellix:docker-compose:2017-03-14T22-35-49'
+    compile 'de.gesellix:docker-compose:2017-04-13T19-58-06'
 
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
         exclude module: 'groovy-all'
