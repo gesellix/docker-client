@@ -99,7 +99,7 @@ class ManageImageClient implements ManageImage {
 
     String getBuildResultAsImageId(List<Map<String, String>> chunks) {
         def buildResultMessage = chunks.find { Map<String, String> chunk ->
-            chunk.stream.trim().startsWith("Successfully built ")
+            chunk.stream?.trim()?.startsWith("Successfully built ")
         }
         return buildResultMessage.stream.trim() - "Successfully built "
     }
