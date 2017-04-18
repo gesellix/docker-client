@@ -963,7 +963,9 @@ class DockerContainerIntegrationSpec extends Specification {
         receiveMessage.await(500, MILLISECONDS)
 
         then:
-        receivedMessages.contains ourMessage
+        receivedMessages.find { message ->
+            message.contains ourMessage
+        }
 
         cleanup:
         webSocketReference?.get()?.close(NORMAL_CLOSURE.code, "cleanup")
