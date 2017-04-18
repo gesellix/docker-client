@@ -28,7 +28,7 @@ class ManageImageClientTest extends Specification {
                              query             : ["rm": true],
                              body              : buildContext,
                              requestContentType: "application/octet-stream",
-                             async             : false]) >> [content: [[stream: ""]]]
+                             async             : false]) >> [content: [[stream: "Successfully built foo"]]]
         and:
         responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
             assert arguments[1]?.message == "docker build failed"
@@ -47,7 +47,7 @@ class ManageImageClientTest extends Specification {
                              query             : ["rm": false],
                              body              : buildContext,
                              requestContentType: "application/octet-stream",
-                             async             : false]) >> [content: [[stream: ""]]]
+                             async             : false]) >> [content: [[stream: "Successfully built bar"]]]
         and:
         responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
             assert arguments[1]?.message == "docker build failed"
