@@ -70,7 +70,7 @@ class ManageImageClient implements ManageImage {
             throw new DockerClientException(new RuntimeException("docker build failed"), lastLogEvent)
         }
         return [log    : chunks,
-                imageId: getBuildResultAsImageId(chunks.last())]
+                imageId: getBuildResultAsImageId(chunks)]
     }
 
     @Override
@@ -93,13 +93,15 @@ class ManageImageClient implements ManageImage {
             response.taskFuture = future
             return response
         } else {
-            def lastChunk = response.content.last()
-            return getBuildResultAsImageId(lastChunk)
+            return getBuildResultAsImageId(response.content as List)
         }
     }
 
-    String getBuildResultAsImageId(streamItem) {
-        return streamItem.stream.trim() - "Successfully built "
+    String getBuildResultAsImageId(List<Map<String, String>> chunks) {
+        def buildResultMessage = chunks.find { Map<String, String> chunk ->
+            chunk.stream.trim().startsWith("Successfully built ")
+        }
+        return buildResultMessage.stream.trim() - "Successfully built "
     }
 
     @Override

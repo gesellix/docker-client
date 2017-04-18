@@ -56,7 +56,28 @@ class DockerImageIntegrationSpec extends Specification {
         def buildResult = dockerClient.build(newBuildContext(inputDirectory))
 
         then:
-        buildResult =~ "\\w{12}"
+        buildResult =~ "[0-9a-z]{12}"
+
+        cleanup:
+        dockerClient.rmi(buildResult)
+    }
+
+    def "build image with tag"() {
+        given:
+        def dockerfile = "build/build/Dockerfile"
+        if (isNativeWindows) {
+            dockerfile = "build/build-windows/Dockerfile"
+        }
+        def inputDirectory = new ResourceReader().getClasspathResourceAsFile(dockerfile, DockerClient).parentFile
+
+        when:
+        def buildResult = dockerClient.build(
+                newBuildContext(inputDirectory),
+                [rm: true,
+                 t : "docker-client/tests:tag"])
+
+        then:
+        buildResult =~ "[0-9a-z]{12}"
 
         cleanup:
         dockerClient.rmi(buildResult)
@@ -135,7 +156,7 @@ class DockerImageIntegrationSpec extends Specification {
         latch.await(5, SECONDS)
 
         then:
-        if (isNativeWindows){
+        if (isNativeWindows) {
             events.first().stream =~ "Step 1(/10)? : FROM microsoft/nanoserver\n"
         } else {
             events.first().stream =~ "Step 1(/10)? : FROM alpine:edge\n"
@@ -209,7 +230,7 @@ class DockerImageIntegrationSpec extends Specification {
         events.get(2).stream =~ "Step 2(/2)? : RUN i-will-fail\n"
         if (isNativeWindows) {
             events.get(5).error == "The command 'cmd /S /C i-will-fail' returned a non-zero code: 1"
-        }else {
+        } else {
             events.get(5).error == "The command '/bin/sh -c i-will-fail' returned a non-zero code: 127"
         }
         def containerId = getContainerId(events.get(3).stream as String)
