@@ -36,16 +36,16 @@ dependencies {
     testCompile 'ch.qos.logback:logback-classic:1.2.3'
 
     compile 'com.squareup.okio:okio:1.12.0'
-    compile 'com.squareup.okhttp3:okhttp:3.6.0'
-    testCompile 'com.squareup.okhttp3:mockwebserver:3.6.0'
+    compile 'com.squareup.okhttp3:okhttp:3.7.0'
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.7.0'
 
     compile 'org.apache.commons:commons-compress:1.13'
 
-    compile 'de.gesellix:docker-filesocket:2017-04-13T20-02-54'
+    compile 'de.gesellix:docker-filesocket:2017-04-19T21-32-19'
 
     compile 'org.bouncycastle:bcpkix-jdk15on:1.56'
 
-    compile 'de.gesellix:docker-compose:2017-04-13T19-58-06'
+    compile 'de.gesellix:docker-compose:2017-04-19T21-33-40'
 
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
         exclude module: 'groovy-all'

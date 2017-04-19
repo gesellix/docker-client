@@ -50,7 +50,7 @@ class DeployConfigReader {
     }
 
     def loadCompose(String namespace, InputStream composeFile, String workingDir) {
-        ComposeConfig composeConfig = composeFileReader.load(composeFile)
+        ComposeConfig composeConfig = composeFileReader.load(composeFile, workingDir)
         log.info("composeContent: $composeConfig}")
 
         List<String> serviceNetworkNames = composeConfig.services.collect { String name, Service service ->
