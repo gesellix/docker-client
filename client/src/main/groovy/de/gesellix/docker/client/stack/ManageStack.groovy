@@ -4,7 +4,7 @@ interface ManageStack {
 
 //    deploy      Deploy a new stack or update an existing stack
 
-    def stackDeploy(String namespace, DeployStackConfig deployConfig)
+    def stackDeploy(String namespace, DeployStackConfig deployConfig, DeployStackOptions options)
 
 //    ls          List stacks
 

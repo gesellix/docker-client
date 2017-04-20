@@ -79,14 +79,19 @@ class ManageStackClient implements ManageStack {
     }
 
     @Override
-    stackDeploy(String namespace, DeployStackConfig deployConfig) {
+    stackDeploy(String namespace, DeployStackConfig config, DeployStackOptions options) {
         log.info "docker stack deploy"
 
         checkDaemonIsSwarmManager()
 
-        createNetworks(namespace, deployConfig.networks)
-        createSecrets(namespace, deployConfig.secrets)
-        createOrUpdateServices(namespace, deployConfig.services)
+        if (options.pruneServices) {
+            def serviceNames = config.services.keySet()
+            pruneServices(namespace, serviceNames)
+        }
+
+        createNetworks(namespace, config.networks)
+        createSecrets(namespace, config.secrets)
+        createOrUpdateServices(namespace, config.services)
     }
 
     def createNetworks(String namespace, Map<String, StackNetwork> networks) {
@@ -113,7 +118,7 @@ class ManageStackClient implements ManageStack {
     def createSecrets(String namespace, Map<String, StackSecret> secrets) {
         secrets.each { name, secret ->
             List knownSecrets = manageSecret.secrets([filters: [names: [secret.name]]]).content
-            log.info("known: $knownSecrets")
+            log.debug("known: $knownSecrets")
 
             if (!secret.labels) {
                 secret.labels = [:]
@@ -131,6 +136,22 @@ class ManageStackClient implements ManageStack {
                 log.info("update secret ${secret.name}: $secret")
                 manageSecret.updateSecret(knownSecret.ID as String, knownSecret.Version.Index, toMap(secret))
             }
+        }
+    }
+
+    def pruneServices(String namespace, Collection<String> services) {
+        // Descope returns the name without the namespace prefix
+        def descope = { String name ->
+            return name.substring("${namespace}_".length())
+        }
+
+        def oldServices = stackServices(namespace)
+        def pruneServices = oldServices.content.findResults {
+            return services.contains(descope(it.Spec.Name as String)) ? null : it
+        }
+
+        pruneServices.each { service ->
+            manageService.rmService(service.ID)
         }
     }
 

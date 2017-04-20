@@ -161,7 +161,7 @@ class ManageStackClientTest extends Specification {
         String namespaceFilter = "${LabelNamespace}=${namespace}"
 
         when:
-        service.stackDeploy(namespace, new DeployStackConfig())
+        service.stackDeploy(namespace, new DeployStackConfig(), new DeployStackOptions())
 
         then:
         manageSystem.info() >> new DockerResponse(content: [Swarm: [ControlAvailable: true]])
@@ -181,7 +181,7 @@ class ManageStackClientTest extends Specification {
         config.secrets["secret1"] = new StackSecret(name: "secret-name-1", data: 'secret'.bytes)
 
         when:
-        service.stackDeploy(namespace, config)
+        service.stackDeploy(namespace, config, new DeployStackOptions())
 
         then:
         manageSystem.info() >> new DockerResponse(content: [Swarm: [ControlAvailable: true]])

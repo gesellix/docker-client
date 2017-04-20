@@ -1,6 +1,7 @@
 package de.gesellix.docker.client
 
 import de.gesellix.docker.client.stack.DeployStackConfig
+import de.gesellix.docker.client.stack.DeployStackOptions
 import de.gesellix.docker.client.stack.ManageStackClient
 import de.gesellix.docker.client.stack.types.StackService
 import groovy.util.logging.Slf4j
@@ -54,7 +55,7 @@ class DockerStackIntegrationSpec extends Specification {
         }]
 
         when:
-        dockerClient.stackDeploy(namespace, config)
+        dockerClient.stackDeploy(namespace, config, new DeployStackOptions())
 
         then:
         Thread.sleep(1000)
@@ -82,13 +83,13 @@ class DockerStackIntegrationSpec extends Specification {
             ]
             it
         }]
-        dockerClient.stackDeploy(namespace, config)
+        dockerClient.stackDeploy(namespace, config, new DeployStackOptions())
         Thread.sleep(1000)
         def originalTasks = dockerClient.stackPs(namespace).content
 
         when:
         config.services["service2"].mode = [replicated: [replicas: 2]]
-        dockerClient.stackDeploy(namespace, config)
+        dockerClient.stackDeploy(namespace, config, new DeployStackOptions())
 
         then:
         Thread.sleep(1000)
@@ -123,7 +124,7 @@ class DockerStackIntegrationSpec extends Specification {
         }]
 
         when:
-        dockerClient.stackDeploy(namespace, config)
+        dockerClient.stackDeploy(namespace, config, new DeployStackOptions())
 
         then:
         dockerClient.lsStacks().find { ManageStackClient.Stack stack ->
@@ -152,7 +153,7 @@ class DockerStackIntegrationSpec extends Specification {
         }]
 
         when:
-        dockerClient.stackDeploy(namespace, config)
+        dockerClient.stackDeploy(namespace, config, new DeployStackOptions())
 
         then:
         Thread.sleep(1000)
@@ -181,7 +182,7 @@ class DockerStackIntegrationSpec extends Specification {
         }]
 
         when:
-        dockerClient.stackDeploy(namespace, config)
+        dockerClient.stackDeploy(namespace, config, new DeployStackOptions())
 
         then:
         Thread.sleep(1000)
@@ -208,7 +209,7 @@ class DockerStackIntegrationSpec extends Specification {
             ]
             it
         }]
-        dockerClient.stackDeploy(namespace, config)
+        dockerClient.stackDeploy(namespace, config, new DeployStackOptions())
         Thread.sleep(1000)
         def originalServices = dockerClient.stackServices(namespace).content
 
