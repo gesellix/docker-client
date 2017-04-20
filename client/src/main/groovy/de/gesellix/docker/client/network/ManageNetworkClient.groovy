@@ -31,7 +31,7 @@ class ManageNetworkClient implements ManageNetwork {
     }
 
     @Override
-    inspectNetwork(name) {
+    DockerResponse inspectNetwork(name) {
         log.info "docker network inspect"
         def response = client.get([path: "/networks/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network inspect failed"))

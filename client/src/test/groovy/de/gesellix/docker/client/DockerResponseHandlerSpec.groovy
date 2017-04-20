@@ -5,7 +5,7 @@ import spock.lang.Unroll
 
 class DockerResponseHandlerSpec extends Specification {
 
-    def DockerResponseHandler responseHandler = new DockerResponseHandler()
+    DockerResponseHandler responseHandler = new DockerResponseHandler()
 
     @Unroll
     def "should not accept response with #response"() {
@@ -19,14 +19,13 @@ class DockerResponseHandlerSpec extends Specification {
         where:
         response << [
                 null,
-                [],
-                [:],
-                [status: [:]],
-                [status: [success: false]],
-                [status: [success: true], content: [error: "anything"]],
-                [status: [success: true], mimeType: "application/json", content: [error: "anything"]],
-                [status: [success: true], mimeType: "application/json", content: [[foo: "bar"], [error: "anything"]]],
-                [status: [success: false], mimeType: "text/plain", content: "any error"]]
+                new DockerResponse(),
+                new DockerResponse(status: new DockerResponseStatus()),
+                new DockerResponse(status: new DockerResponseStatus(success: false)),
+                new DockerResponse(status: new DockerResponseStatus(success: true), content: [error: "anything"]),
+                new DockerResponse(status: new DockerResponseStatus(success: true), mimeType: "application/json", content: [error: "anything"]),
+                new DockerResponse(status: new DockerResponseStatus(success: true), mimeType: "application/json", content: [[foo: "bar"], [error: "anything"]]),
+                new DockerResponse(status: new DockerResponseStatus(success: false), mimeType: "text/plain", content: "any error")]
     }
 
     @Unroll
@@ -37,8 +36,8 @@ class DockerResponseHandlerSpec extends Specification {
         notThrown(Exception)
         where:
         response << [
-                [status: [success: true]],
-                [status: [success: true], content: ["no-error": "anything"]]
+                new DockerResponse(status: new DockerResponseStatus(success: true)),
+                new DockerResponse(status: new DockerResponseStatus(success: true), content: ["no-error": "anything"])
         ]
     }
 }

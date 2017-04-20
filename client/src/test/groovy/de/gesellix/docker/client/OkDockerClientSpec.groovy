@@ -609,16 +609,16 @@ class OkDockerClientSpec extends Specification {
                                        path  : "/a-resource"])
 
         then:
-        response.status == expectedStatusLine
+        response.status == expectedStatus
 
         where:
-        statusMessage           | statusCode | expectedStatusLine
-        "Continue"              | 100        | [text: "Continue", code: 100, success: false]
-        "OK"                    | 200        | [text: "OK", code: 200, success: true]
-        "No Content"            | 204        | [text: "No Content", code: 204, success: true]
-        "Found"                 | 302        | [text: "Found", code: 302, success: false]
-        "Not Found"             | 404        | [text: "Not Found", code: 404, success: false]
-        "Internal Server Error" | 500        | [text: "Internal Server Error", code: 500, success: false]
+        statusMessage           | statusCode | expectedStatus
+        "Continue"              | 100        | new DockerResponseStatus(text: "Continue", code: 100, success: false)
+        "OK"                    | 200        | new DockerResponseStatus(text: "OK", code: 200, success: true)
+        "No Content"            | 204        | new DockerResponseStatus(text: "No Content", code: 204, success: true)
+        "Found"                 | 302        | new DockerResponseStatus(text: "Found", code: 302, success: false)
+        "Not Found"             | 404        | new DockerResponseStatus(text: "Not Found", code: 404, success: false)
+        "Internal Server Error" | 500        | new DockerResponseStatus(text: "Internal Server Error", code: 500, success: false)
     }
 
     def "request should return headers"() {

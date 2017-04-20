@@ -347,9 +347,10 @@ class OkDockerClient implements HttpClient {
     def readHeaders(Response httpResponse) {
         def dockerResponse = new DockerResponse()
 
-        dockerResponse.status = [text   : httpResponse.message(),
-                                 code   : httpResponse.code(),
-                                 success: httpResponse.successful]
+        dockerResponse.status = new DockerResponseStatus(
+                text: httpResponse.message(),
+                code: httpResponse.code(),
+                success: httpResponse.successful)
         log.debug("status: ${dockerResponse.status}")
 
         def headers = httpResponse.headers()

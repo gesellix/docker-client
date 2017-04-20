@@ -7,7 +7,7 @@ import java.util.concurrent.Future
 @ToString(includeNames = true)
 class DockerResponse {
 
-    def status
+    DockerResponseStatus status = new DockerResponseStatus()
     def headers
     def contentType
     def mimeType

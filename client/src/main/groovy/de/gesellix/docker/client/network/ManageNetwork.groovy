@@ -20,7 +20,7 @@ interface ManageNetwork {
 
 //    inspect     Display detailed information on one or more networks
 
-    def inspectNetwork(name)
+    DockerResponse inspectNetwork(name)
 
 //    ls          List networks
 

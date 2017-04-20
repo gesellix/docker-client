@@ -1,6 +1,7 @@
 package de.gesellix.docker.client.image
 
 import de.gesellix.docker.client.DockerResponseHandler
+import de.gesellix.docker.client.DockerResponseStatus
 import de.gesellix.docker.client.HttpClient
 import groovy.json.JsonBuilder
 import spock.lang.Specification
@@ -269,7 +270,7 @@ class ManageImageClientTest extends Specification {
             assert arguments[1]?.message == "docker load failed"
         }
         and:
-        response.status == [success: true]
+        response.status == new DockerResponseStatus(success: true)
     }
 
     def "inspect image"() {
