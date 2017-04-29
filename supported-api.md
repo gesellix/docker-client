@@ -114,7 +114,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] Update a Secret `POST /secrets/{id}/update`
 * [x] `docker secret rm`: Delete a secret
 
-## Service - Manage services (7/8)
+## Service - Manage services (7/9)
 
 * [x] `docker service create`: Create a service
 * [x] `docker service inspect`: Return information on the service `<id>`
@@ -124,6 +124,7 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [x] `docker service rm`: Remove a service
 * [x] `docker service scale`: Scale one or multiple services
 * [x] `docker service update`: Update a service
+* [ ] Get task logs (GET `/tasks/{id}/logs`)
 
 ## Stack - Manage Docker stacks (5/5)
 
