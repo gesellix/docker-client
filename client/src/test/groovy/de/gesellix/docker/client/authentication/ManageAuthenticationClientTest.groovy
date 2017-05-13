@@ -5,6 +5,7 @@ import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.config.DockerEnv
 import de.gesellix.docker.testutil.ResourceReader
+import spock.lang.Ignore
 import spock.lang.Specification
 
 class ManageAuthenticationClientTest extends Specification {
@@ -117,6 +118,30 @@ class ManageAuthenticationClientTest extends Specification {
 
         then:
         authDetails == [:]
+    }
+
+    @Ignore("Needs https://github.com/gesellix/docker-client/issues/41")
+    def "read default docker config file using credsStore"() {
+        given:
+        def oldDockerConfig = System.clearProperty("docker.config")
+        def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg-with-credsStore', DockerClient)
+        env.indexUrl_v1 >> 'https://index.docker.io/v1/'
+        env.getDockerConfigFile() >> expectedConfigFile
+
+        when:
+        def result = service.readDefaultAuthConfig()
+
+        then:
+        1 * service.readAuthConfig(null, expectedConfigFile)
+        result == ["username"     : "gesellix",
+                   "password"     : "-yet-another-password-",
+                   "email"        : "tobias@gesellix.de",
+                   "serveraddress": "https://index.docker.io/v1/"]
+
+        cleanup:
+        if (oldDockerConfig) {
+            System.setProperty("docker.config", oldDockerConfig)
+        }
     }
 
     def "read default docker config file"() {
