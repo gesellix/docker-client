@@ -3,6 +3,7 @@ package de.gesellix.docker.client.stack
 import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.HttpClient
+import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.client.network.ManageNetwork
 import de.gesellix.docker.client.node.ManageNode
 import de.gesellix.docker.client.secret.ManageSecret
@@ -28,6 +29,7 @@ class ManageStackClient implements ManageStack {
     private ManageNetwork manageNetwork
     private ManageSecret manageSecret
     private ManageSystem manageSystem
+    private ManageAuthentication manageAuthentication
 
     // see docker/docker/cli/compose/convert/compose.go:14
     static final String LabelNamespace = "com.docker.stack.namespace"
@@ -40,7 +42,8 @@ class ManageStackClient implements ManageStack {
             ManageNode manageNode,
             ManageNetwork manageNetwork,
             ManageSecret manageSecret,
-            ManageSystem manageSystem) {
+            ManageSystem manageSystem,
+            ManageAuthentication manageAuthentication) {
         this.client = client
         this.responseHandler = responseHandler
         this.queryUtil = new QueryUtil()
@@ -50,6 +53,7 @@ class ManageStackClient implements ManageStack {
         this.manageNetwork = manageNetwork
         this.manageSecret = manageSecret
         this.manageSystem = manageSystem
+        this.manageAuthentication = manageAuthentication
     }
 
     @Override
@@ -91,7 +95,7 @@ class ManageStackClient implements ManageStack {
 
         createNetworks(namespace, config.networks)
         createSecrets(namespace, config.secrets)
-        createOrUpdateServices(namespace, config.services)
+        createOrUpdateServices(namespace, config.services, options.sendRegistryAuth)
     }
 
     def createNetworks(String namespace, Map<String, StackNetwork> networks) {
@@ -155,7 +159,7 @@ class ManageStackClient implements ManageStack {
         }
     }
 
-    def createOrUpdateServices(String namespace, Map<String, StackService> services) {
+    def createOrUpdateServices(String namespace, Map<String, StackService> services, boolean sendRegistryAuth) {
         def existingServicesByName = [:]
         def existingServices = stackServices(namespace)
         existingServices.content.each { service ->
@@ -171,39 +175,36 @@ class ManageStackClient implements ManageStack {
             serviceSpec.labels[(LabelNamespace)] = namespace
 
             def encodedAuth = ""
-//            if (sendAuth) {
-//                // Retrieve encoded auth token from the image reference
-//                def image = serviceSpec.taskTemplate.containerSpec.image
-//                encodedAuth, err = command.RetrieveAuthTokenFromImage(ctx, dockerCli, image)
-//                if err != nil {
-//                    return err
-//                }
-//            }
+            if (sendRegistryAuth) {
+                // Retrieve encoded auth token from the image reference
+                String image = serviceSpec.taskTemplate.containerSpec.image
+                encodedAuth = manageAuthentication.retrieveEncodedAuthTokenForImage(image)
+            }
 
             def service = existingServicesByName[name]
             if (service) {
                 log.info("Updating service ${name} (id ${service.ID}): ${toMap(serviceSpec)}")
 
-                def authConfig = [:]
-//                if (sendAuth) {
-//                    authConfig.EncodedRegistryAuth = encodedAuth
-//                }
+                def updateOptions = [:]
+                if (sendRegistryAuth) {
+                    updateOptions.EncodedRegistryAuth = encodedAuth
+                }
                 def response = manageService.updateService(
                         service.ID,
                         [version: service.Version.Index],
-                        toMap(serviceSpec))
-//                def response = manageService.updateService(service.ID, [version: service.Version.Index], toMap(serviceSpec), authConfig)
+                        toMap(serviceSpec),
+                        updateOptions)
                 response.content.Warnings.each { String warning ->
                     log.warn(warning)
                 }
             } else {
                 log.info("Creating service ${name}: ${serviceSpec}")
 
-                def authConfig = [:]
-//                if (sendAuth) {
-//                    authConfig.EncodedRegistryAuth = encodedAuth
-//                }
-                def response = manageService.createService(toMap(serviceSpec), authConfig)
+                def updateOptions = [:]
+                if (sendRegistryAuth) {
+                    updateOptions.EncodedRegistryAuth = encodedAuth
+                }
+                def response = manageService.createService(toMap(serviceSpec), updateOptions)
             }
         }
     }

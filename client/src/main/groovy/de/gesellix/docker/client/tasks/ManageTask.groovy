@@ -1,10 +1,12 @@
 package de.gesellix.docker.client.tasks
 
+import de.gesellix.docker.client.DockerResponse
+
 interface ManageTask {
 
-    def tasks()
+    DockerResponse tasks()
 
-    def tasks(query)
+    DockerResponse tasks(query)
 
     def inspectTask(name)
 }

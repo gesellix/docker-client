@@ -114,7 +114,8 @@ class DockerClientImpl implements DockerClient {
                 manageNode,
                 manageNetwork,
                 manageSecret,
-                manageSystem)
+                manageSystem,
+                manageAuthentication)
     }
 
     @Override

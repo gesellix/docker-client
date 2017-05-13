@@ -1,5 +1,6 @@
 package de.gesellix.docker.client.node
 
+import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.tasks.ManageTask
@@ -28,7 +29,7 @@ class ManageNodeClient implements ManageNode {
     }
 
     @Override
-    nodes(query = [:]) {
+    DockerResponse nodes(query = [:]) {
         log.info "docker node ls"
         def actualQuery = query ?: [:]
         queryUtil.jsonEncodeFilters(actualQuery)

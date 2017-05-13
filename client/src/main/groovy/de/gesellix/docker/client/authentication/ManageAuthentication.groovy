@@ -6,7 +6,9 @@ interface ManageAuthentication {
 
     def readAuthConfig(hostnameOrNull, File dockerCfgOrNull)
 
-    def encodeAuthConfig(authConfig)
+    String retrieveEncodedAuthTokenForImage(String image)
+
+    String encodeAuthConfig(authConfig)
 
     def auth(authDetails)
 }

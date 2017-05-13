@@ -41,10 +41,10 @@ class ManageServiceClient implements ManageService {
     }
 
     @Override
-    DockerResponse createService(config, authConfig = [:]) {
+    DockerResponse createService(config, updateOptions = [:]) {
         log.info "docker service create"
         config = config ?: [:]
-        authConfig = authConfig ?: [:]
+        updateOptions = updateOptions ?: [:]
         def response = client.post([path              : "/services/create",
                                     body              : config,
                                     requestContentType: "application/json"])
@@ -78,10 +78,11 @@ class ManageServiceClient implements ManageService {
 //    }
 
     @Override
-    DockerResponse updateService(name, query, config) {
+    DockerResponse updateService(name, query, config, updateOptions = [:]) {
         log.info "docker service update"
         def actualQuery = query ?: [:]
         config = config ?: [:]
+        updateOptions = updateOptions ?: [:]
         def response = client.post([path              : "/services/$name/update",
                                     query             : actualQuery,
                                     body              : config,

@@ -1,5 +1,7 @@
 package de.gesellix.docker.client.node
 
+import de.gesellix.docker.client.DockerResponse
+
 interface ManageNode {
 
 //    demote      Demote one or more nodes from manager in the swarm
@@ -12,9 +14,9 @@ interface ManageNode {
 
 //    ls          List nodes in the swarm
 
-    def nodes()
+    DockerResponse nodes()
 
-    def nodes(query)
+    DockerResponse nodes(query)
 
 //    promote     Promote one or more nodes to manager in the swarm
 

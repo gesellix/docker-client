@@ -8,7 +8,7 @@ interface ManageService {
 
     DockerResponse createService(config)
 
-    DockerResponse createService(config, authConfig)
+    DockerResponse createService(config, updateOptions)
 
 //    inspect     Display detailed information on one or more services
 
@@ -40,4 +40,5 @@ interface ManageService {
 
     DockerResponse updateService(name, query, config)
 
+    DockerResponse updateService(name, query, config, updateOptions)
 }

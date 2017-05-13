@@ -1,5 +1,6 @@
 package de.gesellix.docker.client.tasks
 
+import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.HttpClient
 import de.gesellix.util.QueryUtil
@@ -19,7 +20,7 @@ class ManageTaskClient implements ManageTask {
     }
 
     @Override
-    tasks(query = [:]) {
+    DockerResponse tasks(query = [:]) {
         log.info "docker tasks"
         def actualQuery = query ?: [:]
         queryUtil.jsonEncodeFilters(actualQuery)
