@@ -26,6 +26,7 @@ class CredsStoreHelperTest extends Specification {
         ]
     }
 
+    @Requires({ System.properties['user.name'] == 'gesellix' })
     def "handles errors more or less gracefully"() {
         when:
         def result = helper.getAuthentication("osxkeychain", "foo")
