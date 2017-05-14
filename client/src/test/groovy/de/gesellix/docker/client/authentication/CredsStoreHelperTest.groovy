@@ -34,4 +34,13 @@ class CredsStoreHelperTest extends Specification {
         and:
         result.error =~ ".*credentials not found in native keychain.*"
     }
+
+    def "handles missing docker-credential-helper more or less gracefully"() {
+        when:
+        def result = helper.getAuthentication("should-be-missing", "foo")
+        then:
+        result.auth == null
+        and:
+        result.error =~ ".*Cannot run program \"docker-credential-should-be-missing\".*"
+    }
 }

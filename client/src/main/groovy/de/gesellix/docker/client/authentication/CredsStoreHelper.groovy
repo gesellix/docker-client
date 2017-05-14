@@ -13,10 +13,18 @@ class CredsStoreHelper {
 
         def dockerCredentialResult = [:]
 
-        def process = new ProcessBuilder("docker-credential-${credsStore}", "get")
-                .redirectErrorStream(true)
-                .redirectOutput(ProcessBuilder.Redirect.PIPE)
-                .start()
+        def process
+        try {
+            process = new ProcessBuilder("docker-credential-${credsStore}", "get")
+                    .redirectErrorStream(true)
+                    .redirectOutput(ProcessBuilder.Redirect.PIPE)
+                    .start()
+        } catch (Exception exc) {
+            log.error("error trying to execute docker-credential-${credsStore}", exc)
+            dockerCredentialResult['auth'] = null
+            dockerCredentialResult['error'] = exc.message
+            return dockerCredentialResult
+        }
 
         def buffer = new BufferedReader(new InputStreamReader(process.inputStream))
 
@@ -34,6 +42,10 @@ class CredsStoreHelper {
             }
         } catch (JsonException exc) {
             log.error("cannot parse docker-credential-${credsStore} result for ${System.properties['user.name']}@${hostname}", exc)
+            dockerCredentialResult['auth'] = null
+            dockerCredentialResult['error'] = exc.message
+        } catch (Exception exc) {
+            log.error("error trying to get credentials from docker-credential-${credsStore}", exc)
             dockerCredentialResult['auth'] = null
             dockerCredentialResult['error'] = exc.message
         }
