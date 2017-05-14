@@ -31,7 +31,7 @@ subprojects {
     targetCompatibility = JavaVersion.VERSION_1_7
 
     def dependencyVersions = [
-            'com.squareup.okio:okio:1.12.0',
+            'com.squareup.okio:okio:1.13.0',
             'org.bouncycastle:bcprov-jdk15on:1.56',
             'org.codehaus.groovy:groovy:2.4.10',
             'org.codehaus.groovy:groovy-json:2.4.10',

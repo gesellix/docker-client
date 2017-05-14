@@ -35,19 +35,19 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.25'
     testCompile 'ch.qos.logback:logback-classic:1.2.3'
 
-    compile 'com.squareup.okio:okio:1.12.0'
-    compile 'com.squareup.okhttp3:okhttp:3.7.0'
-    testCompile 'com.squareup.okhttp3:mockwebserver:3.7.0'
+    compile 'com.squareup.okio:okio:1.13.0'
+    compile 'com.squareup.okhttp3:okhttp:3.8.0'
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.8.0'
 
-    compile 'org.apache.commons:commons-compress:1.13'
+    compile 'org.apache.commons:commons-compress:1.14'
 
-    compile 'de.gesellix:docker-filesocket:2017-04-19T21-32-19'
+    compile 'de.gesellix:docker-filesocket:2017-05-14T22-09-34'
 
     compile 'org.bouncycastle:bcpkix-jdk15on:1.56'
 
-    compile 'de.gesellix:docker-compose:2017-04-19T21-33-40'
+    compile 'de.gesellix:docker-compose:2017-05-14T22-09-31'
 
-    testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
+    testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
         exclude module: 'groovy-all'
     }
     testCompile 'cglib:cglib-nodep:3.2.5'
