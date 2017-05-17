@@ -41,6 +41,20 @@ class CredsStoreHelperTest extends Specification {
     }
 
     @Requires({ System.properties['user.name'] == 'gesellix' })
+    def "can retrieve auth from secretservice"() {
+        when:
+        def result = helper.getAuthentication("secretservice")
+        then:
+        result == [
+                auth: [
+                        ServerURL: new DockerEnv().indexUrl_v1,
+                        Username : "gesellix",
+                        Secret   : "-yet-another-password-"
+                ]
+        ]
+    }
+
+    @Requires({ System.properties['user.name'] == 'gesellix' })
     def "handles errors more or less gracefully"() {
         when:
         def result = helper.getAuthentication("osxkeychain", "foo")
