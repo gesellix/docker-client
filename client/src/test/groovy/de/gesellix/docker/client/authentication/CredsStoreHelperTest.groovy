@@ -10,10 +10,11 @@ class CredsStoreHelperTest extends Specification {
 
     def setup() {
         helper = new CredsStoreHelper()
+        println "--- ${System.properties['os.name']}"
     }
 
-    @Requires({ System.properties['user.name'] == 'gesellix' })
-    def "can retrieve auth from osxkeychain"() {
+    @Requires({ System.properties['user.name'] == 'gesellix' && System.properties['os.name'] == "Mac OS X" })
+    def "can retrieve auth from osxkeychain on Mac OS X"() {
         when:
         def result = helper.getAuthentication("osxkeychain")
         then:
@@ -26,8 +27,8 @@ class CredsStoreHelperTest extends Specification {
         ]
     }
 
-    @Requires({ System.properties['user.name'] == 'gesellix' })
-    def "can retrieve auth from wincred"() {
+    @Requires({ System.properties['user.name'] == 'gesellix' && System.properties['os.name'] == "Windows" })
+    def "can retrieve auth from wincred on Windows"() {
         when:
         def result = helper.getAuthentication("wincred")
         then:
@@ -40,8 +41,8 @@ class CredsStoreHelperTest extends Specification {
         ]
     }
 
-    @Requires({ System.properties['user.name'] == 'gesellix' })
-    def "can retrieve auth from secretservice"() {
+    @Requires({ System.properties['user.name'] == 'gesellix' && System.properties['os.name'] == "Linux" })
+    def "can retrieve auth from secretservice on Linux"() {
         when:
         def result = helper.getAuthentication("secretservice")
         then:
