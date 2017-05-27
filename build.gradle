@@ -9,6 +9,7 @@ buildscript {
 
     dependencies {
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.14.0'
+        classpath "gradle.plugin.net.ossindex:ossindex-gradle-plugin:0.1.1"
     }
 }
 
@@ -23,6 +24,7 @@ subprojects {
     }
 
     apply plugin: 'groovy'
+    apply plugin: "net.ossindex.audit"
     apply plugin: 'com.github.ben-manes.versions'
 
     group = 'de.gesellix'
@@ -32,10 +34,8 @@ subprojects {
 
     def dependencyVersions = [
             'com.squareup.okio:okio:1.13.0',
-            'org.bouncycastle:bcprov-jdk15on:1.56',
-            'org.codehaus.groovy:groovy:2.4.10',
-            'org.codehaus.groovy:groovy-json:2.4.10',
-            'org.slf4j:slf4j-api:1.7.25'
+            'org.bouncycastle:bcpkix-jdk15on:1.57',
+            'org.bouncycastle:bcprov-jdk15on:1.57',
     ]
 
     configurations.all {

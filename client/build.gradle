@@ -6,8 +6,8 @@ buildscript {
     }
 
     dependencies {
-        classpath 'net.saliman:gradle-cobertura-plugin:2.4.0'
-        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.1'
+//        classpath 'net.saliman:gradle-cobertura-plugin:2.4.0'
+//        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.1'
 
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
     }
@@ -16,8 +16,8 @@ buildscript {
 apply plugin: 'groovy'
 
 apply plugin: 'jacoco'
-apply plugin: 'net.saliman.cobertura'
-apply plugin: 'com.github.kt3k.coveralls'
+//apply plugin: 'net.saliman.cobertura'
+//apply plugin: 'com.github.kt3k.coveralls'
 
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
@@ -43,7 +43,7 @@ dependencies {
 
     compile 'de.gesellix:docker-filesocket:2017-05-14T22-09-34'
 
-    compile 'org.bouncycastle:bcpkix-jdk15on:1.56'
+    compile 'org.bouncycastle:bcpkix-jdk15on:1.57'
 
     compile 'de.gesellix:docker-compose:2017-05-14T22-09-31'
 
@@ -66,10 +66,10 @@ test {
     environment "A_KNOWN_VARIABLE", "my value"
 }
 
-cobertura {
-    coverageSourceDirs = sourceSets.main.groovy.srcDirs
-    coverageFormats = ['html', 'xml']
-}
+//cobertura {
+//    coverageSourceDirs = sourceSets.main.groovy.srcDirs
+//    coverageFormats = ['html', 'xml']
+//}
 
 jacocoTestReport.reports {
     xml.enabled = true
