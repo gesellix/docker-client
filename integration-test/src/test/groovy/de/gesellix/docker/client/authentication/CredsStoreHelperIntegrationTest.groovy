@@ -4,7 +4,7 @@ import de.gesellix.docker.client.config.DockerEnv
 import spock.lang.Requires
 import spock.lang.Specification
 
-class CredsStoreHelperTest extends Specification {
+class CredsStoreHelperIntegrationTest extends Specification {
 
     CredsStoreHelper helper
 
