@@ -436,6 +436,7 @@ class ManageContainerClient implements ManageContainer {
         containerConfigWithImageName.Image = fromImage + (tag ? ":$tag" : "")
 
         def createContainerResponse = createContainer(containerConfigWithImageName, [name: name ?: ""])
+        log.debug "create container result: ${createContainerResponse}"
         def startContainerResponse = startContainer(createContainerResponse.content.Id)
         return [
                 container: createContainerResponse,
