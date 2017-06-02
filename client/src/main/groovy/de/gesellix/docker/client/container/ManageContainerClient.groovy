@@ -171,7 +171,7 @@ class ManageContainerClient implements ManageContainer {
 
     // TODO we might need some authentication here for the pull(...) step
     @Override
-    createContainer(containerConfig, query = [name: ""]) {
+    DockerResponse createContainer(containerConfig, query = [name: ""]) {
         log.info "docker create"
         def actualContainerConfig = [:] + containerConfig
 

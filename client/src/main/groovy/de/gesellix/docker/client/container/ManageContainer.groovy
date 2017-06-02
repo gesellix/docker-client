@@ -2,6 +2,7 @@ package de.gesellix.docker.client.container
 
 import de.gesellix.docker.client.AttachConfig
 import de.gesellix.docker.client.DockerAsyncCallback
+import de.gesellix.docker.client.DockerResponse
 import okhttp3.WebSocketListener
 
 interface ManageContainer {
@@ -36,9 +37,9 @@ interface ManageContainer {
 
 //    create      Create a new container
 
-    def createContainer(containerConfig)
+    DockerResponse createContainer(containerConfig)
 
-    def createContainer(containerConfig, query)
+    DockerResponse createContainer(containerConfig, query)
 
 //    diff        Inspect changes on a container's filesystem
 
