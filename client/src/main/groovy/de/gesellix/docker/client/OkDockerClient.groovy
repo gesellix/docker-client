@@ -242,7 +242,7 @@ class OkDockerClient implements HttpClient {
 
     def createRequestBody(String method, String contentType, body) {
         if (!body && HttpMethod.requiresRequestBody(method)) {
-            return RequestBody.create(MediaType.parse("application/json"), "{}")
+            return RequestBody.create(MediaType.parse("application/json"), "")
         }
 
         def requestBody = null
