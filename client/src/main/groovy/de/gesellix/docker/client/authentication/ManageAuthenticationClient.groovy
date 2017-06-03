@@ -102,7 +102,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
         def response = client.post([path              : "/auth",
                                     body              : authDetails,
                                     requestContentType: "application/json"])
-        if (!response.status.success) {
+        if (response == null || response.status == null || !response.status.success) {
             log.info "login failed for ${authDetails.username}@${authDetails.serveraddress}"
         }
         return response
