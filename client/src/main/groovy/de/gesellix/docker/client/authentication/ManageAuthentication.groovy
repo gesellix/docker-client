@@ -1,5 +1,7 @@
 package de.gesellix.docker.client.authentication
 
+import de.gesellix.docker.client.DockerResponse
+
 interface ManageAuthentication {
 
     def readDefaultAuthConfig()
@@ -10,5 +12,5 @@ interface ManageAuthentication {
 
     String encodeAuthConfig(authConfig)
 
-    def auth(authDetails)
+    DockerResponse auth(authDetails)
 }
