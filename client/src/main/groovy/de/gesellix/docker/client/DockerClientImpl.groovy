@@ -6,6 +6,8 @@ import de.gesellix.docker.client.config.DockerClientConfig
 import de.gesellix.docker.client.config.DockerEnv
 import de.gesellix.docker.client.container.ManageContainer
 import de.gesellix.docker.client.container.ManageContainerClient
+import de.gesellix.docker.client.distribution.ManageDistribution
+import de.gesellix.docker.client.distribution.ManageDistributionService
 import de.gesellix.docker.client.image.ManageImage
 import de.gesellix.docker.client.image.ManageImageClient
 import de.gesellix.docker.client.network.ManageNetwork
@@ -69,6 +71,8 @@ class DockerClientImpl implements DockerClient {
     ManageNode manageNode
     @Delegate
     ManageTask manageTask
+    @Delegate
+    ManageDistribution manageDistribution
 
     DockerClientImpl() {
         this(new DockerClientConfig())
@@ -97,6 +101,7 @@ class DockerClientImpl implements DockerClient {
         this.manageSystem = new ManageSystemClient(httpClient, responseHandler)
         this.manageAuthentication = new ManageAuthenticationClient(env, httpClient, responseHandler)
         this.manageImage = new ManageImageClient(httpClient, responseHandler)
+        this.manageDistribution = new ManageDistributionService(httpClient, responseHandler)
         this.manageContainer = new ManageContainerClient(httpClient, responseHandler, manageImage)
         this.manageVolume = new ManageVolumeClient(httpClient, responseHandler)
         this.manageNetwork = new ManageNetworkClient(httpClient, responseHandler)

@@ -18,6 +18,14 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [ ] `docker checkpoints ls`: List checkpoints for a container
 * [ ] `docker checkpoints rm`: Remove a checkpoint
 
+## Config - Manage Docker configs (0/5)
+
+* [ ] `GET /configs`
+* [ ] `POST /configs/create`
+* [ ] `DELETE /configs/{id}`
+* [ ] `GET /configs/{id}`
+* [ ] `POST /configs/{id}/update`
+
 ## Container - Manage containers (31/32)
 
 * [x] `docker container attach <container>`: Attach to a running container (supports interactive tty)
@@ -162,8 +170,9 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 
 # Other Commands
 
-## Misc (4/4)
+## Misc (5/5)
 
+* [x] Get image descriptor `GET /distribution/(name)/json`
 * [x] `docker search <term>`: Search the Docker Hub for images
 * [x] `docker version`: Show the docker version information
 * [x] Check auth configuration
