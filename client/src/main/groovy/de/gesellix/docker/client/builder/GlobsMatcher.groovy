@@ -15,19 +15,26 @@ class GlobsMatcher {
     GlobsMatcher(File base, List<String> globs) {
         this.base = base
         def fileSystem = FileSystems.getDefault()
-        this.matchers = globs.collect { new Matcher(fileSystem, it) }.reverse()
+        this.matchers = globs.collect {
+            new Matcher(fileSystem, it.replaceAll("/\$", ""))
+        }.reverse()
     }
 
     def matches(File path) {
         def relativePath = base.absoluteFile.toPath().relativize(path.absoluteFile.toPath())
-        def match = matchers.find { it.matches(relativePath) }
+        def match = matchers.find {
+            it.matches(relativePath)
+        }
         if (!match && relativePath.parent) {
-            match = matchers.find { it.matches(relativePath.parent) }
+            match = matchers.find {
+                it.matches(relativePath.parent)
+            }
         }
         return match && !match.negate
     }
 
     static class Matcher implements PathMatcher {
+
         String pattern
         PathMatcher matcher
         boolean negate
@@ -38,7 +45,8 @@ class GlobsMatcher {
             if (this.negate) {
                 def invertedPattern = pattern.substring("!".length())
                 this.matcher = fileSystem.getPathMatcher("glob:${invertedPattern}")
-            } else {
+            }
+            else {
                 this.matcher = fileSystem.getPathMatcher("glob:${pattern}")
             }
         }
