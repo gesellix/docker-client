@@ -15,9 +15,18 @@ class GlobsMatcher {
     GlobsMatcher(File base, List<String> globs) {
         this.base = base
         def fileSystem = FileSystems.getDefault()
-        this.matchers = globs.collect {
-            new Matcher(fileSystem, it.replaceAll("/\$", ""))
+        this.matchers = globs.collectMany {
+            if (it.endsWith("/")) {
+                [new Matcher(fileSystem, it.replaceAll("/\$", "")),
+                 new Matcher(fileSystem, it.replaceAll("/\$", "/**"))]
+            }
+            else {
+                [new Matcher(fileSystem, it)]
+            }
         }.reverse()
+        matchers.each {
+            log.debug("pattern: ${it.pattern}")
+        }
     }
 
     def matches(File path) {

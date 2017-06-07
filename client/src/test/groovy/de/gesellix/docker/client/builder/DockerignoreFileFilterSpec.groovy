@@ -35,6 +35,7 @@ class DockerignoreFileFilterSpec extends Specification {
         when:
         def collectedFiles = new DockerignoreFileFilter(base, []).collectFiles(base)
         then:
-        collectedFiles.sort() == [new File("${baseDir}/keepme/a-file-to-be-kept.txt")].sort()
+        collectedFiles.sort() == [new File("${baseDir}/keepme/a-file-to-be-kept.txt"),
+                                  new File("${baseDir}/keepme/subdir/keep-me.txt")].sort()
     }
 }
