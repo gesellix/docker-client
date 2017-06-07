@@ -1,5 +1,6 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.client.config.DockerVersion
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
 import spock.lang.Specification
@@ -14,6 +15,7 @@ class DockerDistributionIntegrationSpec extends Specification {
         dockerClient = new DockerClientImpl()
     }
 
+    @Requires({ LocalDocker.dockerVersion >= DockerVersion.parseDockerVersion("17.06") })
     def descriptor() {
         when:
         def alpineDescriptor = dockerClient.descriptor("alpine:edge")
