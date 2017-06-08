@@ -182,6 +182,10 @@ class OkDockerClient implements HttpClient {
     private OkHttpClient.Builder prepareClient(OkHttpClient.Builder builder, int currentTimeout) {
         String protocol = dockerClientConfig.scheme
         if (protocol == "unix") {
+            if (!socketFactories[protocol]){
+                log.error("Unix domain socket not supported, but configured (using defaults?). Please consider changing the DOCKER_HOST environment setting to use tcp.")
+                throw new IllegalStateException("Unix domain socket not supported.")
+            }
             def unixSocketFactory = socketFactories[protocol] as UnixSocketFactory
             builder
                     .socketFactory(unixSocketFactory)
