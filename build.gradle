@@ -36,6 +36,8 @@ subprojects {
             'com.squareup.okio:okio:1.13.0',
             'org.bouncycastle:bcpkix-jdk15on:1.57',
             'org.bouncycastle:bcprov-jdk15on:1.57',
+            'org.jetbrains.kotlin:kotlin-stdlib:1.1.2',
+            'org.slf4j:slf4j-api:1.7.25',
     ]
 
     configurations.all {

@@ -1,9 +1,11 @@
 package de.gesellix.docker.client
 
 import de.gesellix.docker.client.config.DockerClientConfig
-import de.gesellix.docker.client.filesocket.FileSocket
+import de.gesellix.docker.client.filesocket.NamedPipeSocket
 import de.gesellix.docker.client.filesocket.NpipeSocketFactory
+import de.gesellix.docker.client.filesocket.UnixSocket
 import de.gesellix.docker.client.filesocket.UnixSocketFactory
+import de.gesellix.docker.client.filesocket.UnixSocketFactorySupport
 import de.gesellix.docker.client.rawstream.RawInputStream
 import de.gesellix.docker.client.ssl.SslSocketConfigFactory
 import de.gesellix.util.IOUtils
@@ -43,7 +45,7 @@ class OkDockerClient implements HttpClient {
     }
 
     OkDockerClient(DockerClientConfig dockerClientConfig, Proxy proxy = NO_PROXY) {
-        if (UnixSocketFactory.supported) {
+        if (new UnixSocketFactorySupport().supported) {
             socketFactories.unix = new UnixSocketFactory()
         }
         socketFactories.npipe = new NpipeSocketFactory()
@@ -225,13 +227,13 @@ class OkDockerClient implements HttpClient {
         if (protocol == "unix") {
             httpUrl = urlBuilder
                     .scheme("http")
-                    .host(FileSocket.encodeHostname(host))
+                    .host(new UnixSocket().encodeHostname(host))
 //                    .port(/not/allowed/for/unix/socket/)
                     .build()
         } else if (protocol == "npipe") {
             httpUrl = urlBuilder
                     .scheme("http")
-                    .host(FileSocket.encodeHostname(host))
+                    .host(new NamedPipeSocket().encodeHostname(host))
 //                    .port(/not/allowed/for/npipe/socket/)
                     .build()
         } else {
