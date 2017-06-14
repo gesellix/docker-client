@@ -49,6 +49,7 @@ class DeployConfigReader {
         this.dockerClient = dockerClient
     }
 
+    // TODO test me
     def loadCompose(String namespace, InputStream composeFile, String workingDir) {
         ComposeConfig composeConfig = composeFileReader.load(composeFile, workingDir)
         log.info("composeContent: $composeConfig}")
@@ -65,7 +66,7 @@ class DeployConfigReader {
 
         Map<String, StackNetwork> networkConfigs
         List<String> externals
-        (networkConfigs, externals) = networks(namespace, serviceNetworkNames, composeConfig.networks)
+        (networkConfigs, externals) = networks(namespace, serviceNetworkNames, composeConfig.networks ?: [:])
         def secrets = secrets(namespace, composeConfig.secrets, workingDir)
         def services = services(namespace, composeConfig.services, composeConfig.networks, composeConfig.volumes)
 
@@ -351,7 +352,8 @@ class DeployConfigReader {
                 default:
                     throw new IllegalArgumentException("unknown restart policy: ${restart}")
             }
-        } else {
+        }
+        else {
             Long delay = null
             if (restartPolicy.delay) {
                 delay = parseDuration(restartPolicy.delay).toNanos()
@@ -402,7 +404,8 @@ class DeployConfigReader {
                 if (resources.limits.nanoCpus.contains('/')) {
                     // TODO
                     throw new UnsupportedOperationException("not supported, yet")
-                } else {
+                }
+                else {
                     resourceRequirements['limits'].nanoCPUs = parseDouble(resources.limits.nanoCpus) * nanoMultiplier
                 }
             }
@@ -414,7 +417,8 @@ class DeployConfigReader {
                 if (resources.reservations.nanoCpus.contains('/')) {
                     // TODO
                     throw new UnsupportedOperationException("not supported, yet")
-                } else {
+                }
+                else {
                     resourceRequirements['reservations'].nanoCPUs = parseDouble(resources.reservations.nanoCpus) * nanoMultiplier
                 }
             }
@@ -496,7 +500,8 @@ class DeployConfigReader {
                     noCopy: isNoCopy(modes),
             ]
             source = stackVolume.external.name
-        } else {
+        }
+        else {
             def labels = stackVolume?.labels?.entries ?: [:]
             labels[(ManageStackClient.LabelNamespace)] = namespace
             volumeOptions = [
@@ -534,7 +539,8 @@ class DeployConfigReader {
         def matchedModes = modes.intersect(MountPropagation.values().collect { it.value })
         if (matchedModes) {
             return [propagation: matchedModes.first()]
-        } else {
+        }
+        else {
             return null
         }
     }
@@ -587,9 +593,11 @@ class DeployConfigReader {
                 createOpts.labels = [(ManageStackClient.LabelNamespace): namespace]
                 createOpts.driver = "overlay"
                 networkSpec[internalName] = createOpts
-            } else if (network?.external?.external) {
+            }
+            else if (network?.external?.external) {
                 externalNetworkNames << (network.external.name ?: internalName)
-            } else {
+            }
+            else {
                 def createOpts = new StackNetwork()
 
                 def labels = [:]
@@ -629,7 +637,8 @@ class DeployConfigReader {
             def network
             try {
                 network = dockerClient.inspectNetwork(name)
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 log.error("network ${name} is declared as external, but could not be inspected. You need to create the network before the stack is deployed (with overlay driver)")
                 throw new IllegalStateException("network ${name} is declared as external, but could not be inspected.", e)
             }
