@@ -100,7 +100,7 @@ class DeployConfigReader {
             serviceConfig.labels = serviceLabels
             serviceConfig.endpointSpec = serviceEndpoints(service.deploy?.endpointMode, service.ports)
             serviceConfig.mode = serviceMode(service.deploy?.mode, service.deploy?.replicas)
-            serviceConfig.networks = convertServiceNetworks(service.networks, networks, namespace, name)
+            serviceConfig.networks = convertServiceNetworks(service.networks ?: [:], networks, namespace, name)
             serviceConfig.updateConfig = convertUpdateConfig(service.deploy?.updateConfig)
             serviceConfig.taskTemplate = [
                     containerSpec: [
