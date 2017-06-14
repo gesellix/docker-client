@@ -84,7 +84,7 @@ class DeployConfigReader {
             Map<String, Volume> volumes) {
         Map<String, StackService> serviceSpec = [:]
         services.each { name, service ->
-            def serviceLabels = service.deploy.labels?.entries ?: [:]
+            def serviceLabels = service.deploy?.labels?.entries ?: [:]
             serviceLabels[ManageStackClient.LabelNamespace] = namespace
 
             def containerLabels = service.labels?.entries ?: [:]
@@ -98,10 +98,10 @@ class DeployConfigReader {
             def serviceConfig = new StackService()
             serviceConfig.name = ("${namespace}_${name}" as String)
             serviceConfig.labels = serviceLabels
-            serviceConfig.endpointSpec = serviceEndpoints(service.deploy.endpointMode, service.ports)
-            serviceConfig.mode = serviceMode(service.deploy.mode, service.deploy.replicas)
+            serviceConfig.endpointSpec = serviceEndpoints(service.deploy?.endpointMode, service.ports)
+            serviceConfig.mode = serviceMode(service.deploy?.mode, service.deploy?.replicas)
             serviceConfig.networks = convertServiceNetworks(service.networks, networks, namespace, name)
-            serviceConfig.updateConfig = convertUpdateConfig(service.deploy.updateConfig)
+            serviceConfig.updateConfig = convertUpdateConfig(service.deploy?.updateConfig)
             serviceConfig.taskTemplate = [
                     containerSpec: [
                             image          : service.image,
@@ -121,8 +121,8 @@ class DeployConfigReader {
 //                            secrets        : secrets,
                     ],
                     logDriver    : logDriver(service.logging),
-                    resources    : serviceResources(service.deploy.resources),
-                    restartPolicy: restartPolicy(service.restart, service.deploy.restartPolicy),
+                    resources    : serviceResources(service.deploy?.resources),
+                    restartPolicy: restartPolicy(service.restart, service.deploy?.restartPolicy),
                     placement    : [
                             constraints: service.deploy?.placement?.constraints,
                     ],
