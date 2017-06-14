@@ -100,7 +100,7 @@ class DeployConfigReader {
             serviceConfig.labels = serviceLabels
             serviceConfig.endpointSpec = serviceEndpoints(service.deploy?.endpointMode, service.ports)
             serviceConfig.mode = serviceMode(service.deploy?.mode, service.deploy?.replicas)
-            serviceConfig.networks = convertServiceNetworks(service.networks, networks, namespace, name)
+            serviceConfig.networks = convertServiceNetworks(service.networks ?: [:], networks, namespace, name)
             serviceConfig.updateConfig = convertUpdateConfig(service.deploy?.updateConfig)
             serviceConfig.taskTemplate = [
                     containerSpec: [
@@ -188,10 +188,9 @@ class DeployConfigReader {
         def serviceNetworkConfigs = []
 
         serviceNetworks.each { networkName, serviceNetwork ->
-            if (!networkConfigs.containsKey(networkName) && networkName != "default") {
+            if (!networkConfigs?.containsKey(networkName) && networkName != "default") {
                 throw new IllegalStateException("service ${serviceName} references network ${networkName}, which is not declared")
             }
-            def networkConfig = networkConfigs[networkName]
 
             List<String> aliases = []
             if (serviceNetwork) {
@@ -202,8 +201,11 @@ class DeployConfigReader {
             String namespacedName = "${namespace}_${networkName}" as String
 
             String target = namespacedName
-            if (networkConfig?.external?.external && networkConfig?.external?.name) {
-                target = networkConfig.external.name
+            if (networkConfigs?.containsKey(networkName)){
+                def networkConfig = networkConfigs[networkName]
+                if (networkConfig?.external?.external && networkConfig?.external?.name) {
+                    target = networkConfig.external.name
+                }
             }
 
             serviceNetworkConfigs << [
