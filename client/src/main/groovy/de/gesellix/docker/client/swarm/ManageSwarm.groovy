@@ -2,7 +2,11 @@ package de.gesellix.docker.client.swarm
 
 interface ManageSwarm {
 
+    def newSwarmConfig()
+
 //    init        Initialize a swarm
+
+    def initSwarm()
 
     def initSwarm(config)
 

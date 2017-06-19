@@ -19,6 +19,31 @@ class ManageSwarmClient implements ManageSwarm {
     }
 
     @Override
+    def newSwarmConfig() {
+        return [
+                "ListenAddr"     : "0.0.0.0:2377",
+                "ForceNewCluster": false
+//                ,"Spec"           : [
+//                        "AcceptancePolicy": [
+//                                "Policies": [
+//                                        ["Role": "MANAGER", "Autoaccept": true],
+//                                        ["Role": "WORKER", "Autoaccept": true]
+//                                ]
+//                        ],
+//                        "Orchestration"   : [:],
+//                        "Raft"            : [:],
+//                        "Dispatcher"      : [:],
+//                        "CAConfig"        : [:]
+//                ]
+        ]
+    }
+
+    @Override
+    initSwarm() {
+        initSwarm(newSwarmConfig())
+    }
+
+    @Override
     initSwarm(config) {
         log.info "docker swarm init"
 

@@ -44,8 +44,7 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "list nodes"() {
         given:
-        def config = newSwarmConfig()
-        def nodeId = dockerClient.initSwarm(config).content
+        def nodeId = dockerClient.initSwarm().content
 
         when:
         def nodes = dockerClient.nodes().content
@@ -61,8 +60,7 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "inspect node"() {
         given:
-        def config = newSwarmConfig()
-        def nodeId = dockerClient.initSwarm(config).content
+        def nodeId = dockerClient.initSwarm().content
 
         when:
         def node = dockerClient.inspectNode(nodeId).content
@@ -77,13 +75,13 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "update node"() {
         given:
-        def config = newSwarmConfig()
-        def nodeId = dockerClient.initSwarm(config).content
+        def nodeId = dockerClient.initSwarm().content
         def nodeInfo = dockerClient.inspectNode(nodeId).content
         def oldSpec = nodeInfo.Spec
 
         when:
-        def response = dockerClient.updateNode(nodeId,
+        def response = dockerClient.updateNode(
+                nodeId,
                 [
                         "version": nodeInfo.Version.Index
                 ],
@@ -108,8 +106,7 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "rm node"() {
         given:
-        def config = newSwarmConfig()
-        def nodeId = dockerClient.initSwarm(config).content
+        def nodeId = dockerClient.initSwarm().content
 
         when:
         dockerClient.rmNode(nodeId)
@@ -125,8 +122,7 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "inspect swarm"() {
         given:
-        def config = newSwarmConfig()
-        def nodeId = dockerClient.initSwarm(config).content
+        def nodeId = dockerClient.initSwarm().content
 
         when:
         def response = dockerClient.inspectSwarm()
@@ -142,7 +138,7 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "init swarm"() {
         given:
-        def config = newSwarmConfig()
+        def config = dockerClient.newSwarmConfig()
 
         when:
         def response = dockerClient.initSwarm(config)
@@ -156,10 +152,10 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "join swarm"() {
         given:
-        def managerConfig = newSwarmConfig()
+        def managerConfig = dockerClient.newSwarmConfig()
         dockerClient.initSwarm(managerConfig)
         def nodeConfig = [
-                "ListenAddr": "0.0.0.0:4555",
+                "ListenAddr": "0.0.0.0:4711",
                 "RemoteAddr": managerConfig.ListenAddr,
                 "Secret"    : "",
                 "CAHash"    : "",
@@ -180,8 +176,7 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "leave swarm"() {
         given:
-        def config = newSwarmConfig()
-        dockerClient.initSwarm(config)
+        dockerClient.initSwarm()
 
         when:
         dockerClient.leaveSwarm([force: false])
@@ -197,8 +192,7 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "update swarm"() {
         given:
-        def config = newSwarmConfig()
-        dockerClient.initSwarm(config)
+        dockerClient.initSwarm()
         def swarmInfo = dockerClient.inspectSwarm().content
         def spec = swarmInfo.Spec
         spec.Annotations = [
@@ -222,8 +216,7 @@ class DockerSwarmIntegrationSpec extends Specification {
     def "rotate swarm worker token"() {
 
         given:
-        def config = newSwarmConfig()
-        dockerClient.initSwarm(config)
+        dockerClient.initSwarm()
         def previousToken = dockerClient.getSwarmWorkerToken()
 
         when:
@@ -241,8 +234,7 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "rotate swarm manager token"() {
         given:
-        def config = newSwarmConfig()
-        dockerClient.initSwarm(config)
+        dockerClient.initSwarm()
         def previousToken = dockerClient.getSwarmManagerToken()
 
         when:
@@ -260,8 +252,7 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "services"() {
         given:
-        def config = newSwarmConfig()
-        dockerClient.initSwarm(config)
+        dockerClient.initSwarm()
 
         when:
         def response = dockerClient.services()
@@ -276,8 +267,7 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "create service"() {
         given:
-        def config = newSwarmConfig()
-        dockerClient.initSwarm(config)
+        dockerClient.initSwarm()
         def serviceConfig = [
                 "Name"        : "redis",
                 "TaskTemplate": [
@@ -321,8 +311,7 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "rm service"() {
         given:
-        def config = newSwarmConfig()
-        dockerClient.initSwarm(config)
+        dockerClient.initSwarm()
         def serviceConfig = [
                 "Name"        : "redis",
                 "TaskTemplate": [
@@ -350,8 +339,7 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "inspect service"() {
         given:
-        def config = newSwarmConfig()
-        dockerClient.initSwarm(config)
+        dockerClient.initSwarm()
         def serviceConfig = [
                 "Name"        : "redis",
                 "TaskTemplate": [
@@ -381,8 +369,7 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "update service"() {
         given:
-        def config = newSwarmConfig()
-        dockerClient.initSwarm(config)
+        dockerClient.initSwarm()
         def serviceConfig = [
                 "TaskTemplate": [
                         "ContainerSpec": [
@@ -414,8 +401,7 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "tasks"() {
         given:
-        def config = newSwarmConfig()
-        dockerClient.initSwarm(config)
+        dockerClient.initSwarm()
         def serviceConfig = [
                 "Name"        : "redis",
                 "TaskTemplate": [
@@ -449,8 +435,7 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "inspect task"() {
         given:
-        def config = newSwarmConfig()
-        dockerClient.initSwarm(config)
+        dockerClient.initSwarm()
         def serviceConfig = [
                 "Name"        : "redis",
                 "TaskTemplate": [
@@ -483,25 +468,6 @@ class DockerSwarmIntegrationSpec extends Specification {
         performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
-    def newSwarmConfig() {
-        return [
-                "ListenAddr"     : "0.0.0.0:4554",
-                "ForceNewCluster": false,
-                "Spec"           : [
-                        "AcceptancePolicy": [
-                                "Policies": [
-                                        ["Role": "MANAGER", "Autoaccept": true],
-                                        ["Role": "WORKER", "Autoaccept": true]
-                                ]
-                        ],
-                        "Orchestration"   : [:],
-                        "Raft"            : [:],
-                        "Dispatcher"      : [:],
-                        "CAConfig"        : [:]
-                ]
-        ]
-    }
-
     def getWithRetry(Closure callable, Predicate retryIf) {
         RetryPolicy retryPolicy = new RetryPolicy()
                 .withDelay(100, MILLISECONDS)
@@ -518,7 +484,8 @@ class DockerSwarmIntegrationSpec extends Specification {
                 redisService = findService(name)
                 if (redisService) {
                     latch.countDown()
-                } else {
+                }
+                else {
                     Thread.sleep(1000)
                 }
             }
@@ -536,7 +503,8 @@ class DockerSwarmIntegrationSpec extends Specification {
                     task = dockerClient.inspectTask(taskId).content
                     if (task?.Status?.State == "running") {
                         latch.countDown()
-                    } else {
+                    }
+                    else {
                         Thread.sleep(1000)
                     }
                 }
@@ -555,7 +523,8 @@ class DockerSwarmIntegrationSpec extends Specification {
                     redisService = findService(name)
                     if (redisService == null) {
                         latch.countDown()
-                    } else {
+                    }
+                    else {
                         Thread.sleep(1000)
                     }
                 }
@@ -572,7 +541,8 @@ class DockerSwarmIntegrationSpec extends Specification {
     def performSilently(Closure action) {
         try {
             action()
-        } catch (Exception ignored) {
+        }
+        catch (Exception ignored) {
         }
     }
 }

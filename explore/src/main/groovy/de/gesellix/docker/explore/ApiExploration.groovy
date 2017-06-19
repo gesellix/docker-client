@@ -94,8 +94,7 @@ class ApiExploration {
 //        println dockerClient.rmSecret("5qyxxlxqbq6s5004io33miih6").content
 
         try {
-//            def config = newSwarmConfig()
-//            dockerClient.initSwarm(config)
+//            dockerClient.initSwarm()
 //            def serviceConfig = newServiceConfig()
 //            dockerClient.createService(serviceConfig)
 //            println dockerClient.services()
@@ -115,28 +114,31 @@ class ApiExploration {
             String workingDir = Paths.get(ApiExploration.class.getResource('docker-stack.yml').toURI()).parent
             def deployConfig = new DeployConfigReader(dockerClient).loadCompose(namespace, composeStack, workingDir)
             dockerClient.stackDeploy(namespace, deployConfig, new DeployStackOptions())
-        } finally {
+        }
+        finally {
 //            dockerClient.leaveSwarm([force: true])
         }
-    }
 
-    static Map newSwarmConfig() {
-        [
-                "ListenAddr"     : "0.0.0.0:4554",
-                "ForceNewCluster": false,
-                "Spec"           : [
-                        "AcceptancePolicy": [
-                                "Policies": [
-                                        ["Role": "MANAGER", "Autoaccept": true],
-                                        ["Role": "WORKER", "Autoaccept": true]
-                                ]
-                        ],
-                        "Orchestration"   : [:],
-                        "Raft"            : [:],
-                        "Dispatcher"      : [:],
-                        "CAConfig"        : [:]
-                ]
-        ]
+//        def okDockerClient = new OkDockerClient()
+//        def configs = okDockerClient.get([path: "/configs"])
+//        println configs
+
+//        def alpineDetails = dockerClient.descriptor("alpine")
+//        println alpineDetails
+
+//        def createResult = dockerClient.createContainer([
+//                Image    : "mongo:3",
+//                OpenStdin: true,
+//                Tty      : true
+//        ])
+//        println "created: ${createResult}"
+//        def startResult = dockerClient.startContainer(createResult.content.Id)
+//        def startResult = dockerClient.startContainer("3dba0b583987")
+//        println "started: ${startResult}"
+
+//        def base =new File("/Users/gesellix/dev/pku/vorgangsmanagement/ep-vm-frontend-webapp/static")
+//        def filtered = new DockerignoreFileFilter(base, []).collectFiles(base)
+//        println "filtered: ${filtered.size()}"
     }
 
     static Map newServiceConfig() {
