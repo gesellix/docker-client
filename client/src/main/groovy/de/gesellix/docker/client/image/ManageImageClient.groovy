@@ -185,7 +185,7 @@ class ManageImageClient implements ManageImage {
     }
 
     @Override
-    pull(imageName, tag = "", authBase64Encoded = ".", registry = "") {
+    String pull(imageName, tag = "", authBase64Encoded = ".", registry = "") {
         log.info "docker pull '${imageName}:${tag}'"
 
         def actualImageName = imageName
@@ -255,7 +255,7 @@ class ManageImageClient implements ManageImage {
         return response
     }
 
-    def findImageId(imageName, tag = "") {
+    String findImageId(imageName, tag = "") {
         def isDigest = imageName.contains '@'
         def images = images((isDigest) ? [digests: '1'] : [:]).content
 //        println new JsonBuilder(images).toString()

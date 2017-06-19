@@ -59,13 +59,13 @@ interface ManageImage {
 
 //    pull        Pull an image or a repository from a registry
 
-    def pull(image)
+    String pull(image)
 
-    def pull(image, tag)
+    String pull(image, tag)
 
-    def pull(image, tag, authBase64Encoded)
+    String pull(image, tag, authBase64Encoded)
 
-    def pull(image, tag, authBase64Encoded, registry)
+    String pull(image, tag, authBase64Encoded, registry)
 
 //    push        Push an image or a repository to a registry
 
