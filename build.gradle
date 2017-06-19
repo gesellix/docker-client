@@ -14,7 +14,7 @@ buildscript {
 }
 
 plugins {
-    id 'com.gradle.build-scan' version '1.0'
+    id 'com.gradle.build-scan' version '1.8'
 }
 
 subprojects {
@@ -36,6 +36,9 @@ subprojects {
             'com.squareup.okio:okio:1.13.0',
             'org.bouncycastle:bcpkix-jdk15on:1.57',
             'org.bouncycastle:bcprov-jdk15on:1.57',
+            'org.codehaus.groovy:groovy:2.4.11',
+            'org.codehaus.groovy:groovy-json:2.4.11',
+            'org.jetbrains.kotlin:kotlin-reflect:1.1.2',
             'org.jetbrains.kotlin:kotlin-stdlib:1.1.2',
             'org.slf4j:slf4j-api:1.7.25',
     ]
@@ -54,7 +57,7 @@ buildScan {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.5'
+    gradleVersion = '4.0'
     distributionType = Wrapper.DistributionType.ALL
 }
 
