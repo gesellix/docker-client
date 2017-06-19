@@ -594,7 +594,7 @@ class DockerContainerIntegrationSpec extends Specification {
         def imageName = "copy_container"
         def containerConfig = ["Cmd": ["sh", "-c", "echo -n -e 'to be or\nnot to be' > /file1.txt"]]
         dockerClient.tag(imageId, imageName)
-        def containerInfo = dockerClient.run(imageName, containerConfig, [:])
+        def containerInfo = dockerClient.run(imageName, containerConfig)
         def containerId = containerInfo.container.content.Id
 
         when:
