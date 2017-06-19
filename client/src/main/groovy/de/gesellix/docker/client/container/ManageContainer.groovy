@@ -103,7 +103,7 @@ interface ManageContainer {
 
 //    rename      Rename a container
 
-    def rename(container, newName)
+    def rename(String container, String newName)
 
 //    restart     Restart one or more containers
 
@@ -117,11 +117,11 @@ interface ManageContainer {
 
 //    run         Run a command in a new container
 
-    def run(image, containerConfig)
+    def run(String image, containerConfig)
 
-    def run(image, containerConfig, tag)
+    def run(String image, containerConfig, String tag)
 
-    def run(image, containerConfig, tag, name)
+    def run(String image, containerConfig, String tag, String name)
 
 //    start       Start one or more stopped containers
 

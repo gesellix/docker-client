@@ -391,9 +391,9 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    rename(containerId, newName) {
+    rename(String container, String newName) {
         log.info "docker rename"
-        def response = client.post([path : "/containers/${containerId}/rename".toString(),
+        def response = client.post([path : "/containers/${container}/rename".toString(),
                                     query: [name: newName]])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker rename failed"))
         return response
@@ -416,7 +416,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    run(fromImage, containerConfig, tag = "", name = "") {
+    run(String fromImage, containerConfig, String tag = "", String name = "") {
         log.info "docker run ${fromImage}${tag ? ':' : ''}${tag}"
 /*
     http://docs.docker.com/reference/api/docker_remote_api_v1.13/#31-inside-docker-run
