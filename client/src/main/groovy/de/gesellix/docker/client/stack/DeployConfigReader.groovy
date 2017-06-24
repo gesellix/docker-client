@@ -51,7 +51,7 @@ class DeployConfigReader {
 
     // TODO test me
     def loadCompose(String namespace, InputStream composeFile, String workingDir) {
-        ComposeConfig composeConfig = composeFileReader.load(composeFile, workingDir)
+        ComposeConfig composeConfig = composeFileReader.load(composeFile, workingDir, System.getenv())
         log.info("composeContent: $composeConfig}")
 
         List<String> serviceNetworkNames = composeConfig.services.collect { String name, Service service ->
@@ -608,7 +608,7 @@ class DeployConfigReader {
                 createOpts.labels = labels
                 createOpts.driver = network.driver ?: "overlay"
                 createOpts.driverOpts = network.driverOpts.options
-                createOpts.internal = network.internal
+                createOpts.internal = Boolean.valueOf(network.internal)
                 createOpts.attachable = network.attachable
                 if (network.ipam?.driver || network.ipam?.config) {
                     createOpts.ipam = [:]

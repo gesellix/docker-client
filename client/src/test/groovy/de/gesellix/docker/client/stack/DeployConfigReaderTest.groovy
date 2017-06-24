@@ -46,10 +46,12 @@ class DeployConfigReaderTest extends Specification {
         secret1.file = 'secret1.txt'
 
         when:
-        def result = reader.secrets("name-space", [
-                'secret-1'  : secret1,
-                'ext-secret': new Secret(external: new External(external: true))],
-                secret1FileDirectory)
+        def result = reader.secrets(
+                "name-space",
+                ['secret-1'  : secret1,
+                 'ext-secret': new Secret(external: new External(external: true))],
+                secret1FileDirectory
+        )
 
         then:
         result == [
@@ -64,12 +66,12 @@ class DeployConfigReaderTest extends Specification {
         given:
         def normalNet = new Network(
                 driver: "overlay",
-                driverOpts: new DriverOpts(options: [opt: "value"]),
+                driverOpts: new DriverOpts(["opt": "value"]),
                 ipam: new Ipam(
                         driver: "driver",
                         config: [new Config(subnet: '10.0.0.0')]
                 ),
-                labels: new Labels(entries: ["something": "labeled"])
+                labels: new Labels(["something": "labeled"])
         )
         def outsideNet = new Network(
                 external: new External(
@@ -133,14 +135,14 @@ class DeployConfigReaderTest extends Specification {
     def "converts service endpoints"() {
         given:
         def ports = new PortConfigs(portConfigs: [
-                new PortConfig(
-                        protocol: "udp",
-                        target: 53,
-                        published: 1053,
-                        mode: "host"),
-                new PortConfig(
-                        target: 8080,
-                        published: 80
+                new PortConfig("host",
+                               53,
+                               1053,
+                               "udp"),
+                new PortConfig(null,
+                               8080,
+                               80,
+                               null
                 )
         ])
 
@@ -236,12 +238,8 @@ class DeployConfigReaderTest extends Specification {
     def "test ConvertVolumeToMountNamedVolume"() {
         def stackVolumes = ["normal": new Volume(
                 driver: "glusterfs",
-                driverOpts: new DriverOpts(
-                        options: ["opt": "value"]
-                ),
-                labels: new Labels(entries: [
-                        "something": "labeled"
-                ])
+                driverOpts: new DriverOpts(["opt": "value"]),
+                labels: new Labels(["something": "labeled"])
         )]
 
         when:
