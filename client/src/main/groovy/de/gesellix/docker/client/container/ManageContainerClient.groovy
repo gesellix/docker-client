@@ -1,14 +1,14 @@
 package de.gesellix.docker.client.container
 
-import de.gesellix.docker.client.AttachConfig
 import de.gesellix.docker.client.DockerAsyncCallback
 import de.gesellix.docker.client.DockerAsyncConsumer
-import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.image.ManageImage
-import de.gesellix.docker.client.rawstream.RawInputStream
 import de.gesellix.docker.client.repository.RepositoryTagParser
+import de.gesellix.docker.engine.AttachConfig
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.docker.rawstream.RawInputStream
 import de.gesellix.util.QueryUtil
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
@@ -20,14 +20,14 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor
 @Slf4j
 class ManageContainerClient implements ManageContainer {
 
-    private HttpClient client
+    private EngineClient client
     private DockerResponseHandler responseHandler
     private QueryUtil queryUtil
     private ArchiveUtil archiveUtil
     private RepositoryTagParser repositoryTagParser
     private ManageImage manageImage
 
-    ManageContainerClient(HttpClient client, DockerResponseHandler responseHandler, ManageImage manageImage) {
+    ManageContainerClient(EngineClient client, DockerResponseHandler responseHandler, ManageImage manageImage) {
         this.client = client
         this.responseHandler = responseHandler
         this.manageImage = manageImage
@@ -171,7 +171,7 @@ class ManageContainerClient implements ManageContainer {
 
     // TODO we might need some authentication here for the pull(...) step
     @Override
-    DockerResponse createContainer(containerConfig, query = [name: ""]) {
+    EngineResponse createContainer(containerConfig, query = [name: ""]) {
         log.info "docker create"
         def actualContainerConfig = [:] + containerConfig
 
@@ -353,7 +353,7 @@ class ManageContainerClient implements ManageContainer {
                 response.stream = new RawInputStream(response.stream as InputStream)
             }
             def executor = newSingleThreadExecutor()
-            def future = executor.submit(new DockerAsyncConsumer(response as DockerResponse, callback))
+            def future = executor.submit(new DockerAsyncConsumer(response as EngineResponse, callback))
             response.taskFuture = future
         }
         return response
@@ -463,7 +463,7 @@ class ManageContainerClient implements ManageContainer {
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker stats failed"))
         if (async) {
             def executor = newSingleThreadExecutor()
-            def future = executor.submit(new DockerAsyncConsumer(response as DockerResponse, callback))
+            def future = executor.submit(new DockerAsyncConsumer(response as EngineResponse, callback))
             response.taskFuture = future
         }
         return response

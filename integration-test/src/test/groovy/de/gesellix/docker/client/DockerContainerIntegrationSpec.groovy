@@ -1,7 +1,8 @@
 package de.gesellix.docker.client
 
 import de.gesellix.docker.client.container.ArchiveUtil
-import de.gesellix.docker.client.websocket.DefaultWebSocketListener
+import de.gesellix.docker.engine.AttachConfig
+import de.gesellix.docker.websocket.DefaultWebSocketListener
 import de.gesellix.util.IOUtils
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
@@ -19,7 +20,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 
 import static de.gesellix.docker.client.TestConstants.CONSTANTS
-import static de.gesellix.docker.client.websocket.WebsocketStatusCode.NORMAL_CLOSURE
+import static de.gesellix.docker.websocket.WebsocketStatusCode.NORMAL_CLOSURE
 import static java.util.concurrent.TimeUnit.MILLISECONDS
 import static java.util.concurrent.TimeUnit.SECONDS
 

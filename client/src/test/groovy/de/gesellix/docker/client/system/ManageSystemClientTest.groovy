@@ -1,16 +1,16 @@
 package de.gesellix.docker.client.system
 
 import de.gesellix.docker.client.DockerAsyncCallback
-import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponse
 import spock.lang.Specification
 
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 class ManageSystemClientTest extends Specification {
-    HttpClient httpClient = Mock(HttpClient)
+    EngineClient httpClient = Mock(EngineClient)
     ManageSystemClient service
 
     def setup() {
@@ -73,7 +73,7 @@ class ManageSystemClientTest extends Specification {
         latch.await(5000, TimeUnit.SECONDS)
 
         then:
-        1 * httpClient.get([path: "/events", query: [:], async: true]) >> new DockerResponse(
+        1 * httpClient.get([path: "/events", query: [:], async: true]) >> new EngineResponse(
                 status: [success: true],
                 stream: content)
         and:
@@ -104,7 +104,7 @@ class ManageSystemClientTest extends Specification {
         latch.await(5000, TimeUnit.SECONDS)
 
         then:
-        1 * httpClient.get([path: "/events", query: [since: since], async: true]) >> new DockerResponse(
+        1 * httpClient.get([path: "/events", query: [since: since], async: true]) >> new EngineResponse(
                 status: [success: true],
                 stream: content)
         and:
@@ -116,7 +116,7 @@ class ManageSystemClientTest extends Specification {
         service.events(Mock(DockerAsyncCallback), [filters: [container: ["foo"]]])
 
         then:
-        1 * httpClient.get([path: "/events", query: ['filters': '{"container":["foo"]}'], async: true]) >> new DockerResponse(
+        1 * httpClient.get([path: "/events", query: ['filters': '{"container":["foo"]}'], async: true]) >> new EngineResponse(
                 status: [success: true])
     }
 }

@@ -25,10 +25,14 @@ apply plugin: 'com.jfrog.bintray'
 repositories {
     mavenLocal()
     jcenter()
+    // testutil
+    maven { url "http://dl.bintray.com/gesellix/docker-utils" }
     mavenCentral()
 }
 
 dependencies {
+    compile project(':engine')
+
     compile 'org.codehaus.groovy:groovy:2.4.11'
     compile 'org.codehaus.groovy:groovy-json:2.4.11'
 
@@ -46,6 +50,8 @@ dependencies {
     compile 'org.bouncycastle:bcpkix-jdk15on:1.57'
 
     compile 'de.gesellix:docker-compose:2017-06-24T14-17-28'
+
+    testCompile 'de.gesellix:testutil:2017-06-25T08-04-50'
 
     testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
         exclude module: 'groovy-all'

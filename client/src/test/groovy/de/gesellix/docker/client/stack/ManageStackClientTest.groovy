@@ -1,8 +1,6 @@
 package de.gesellix.docker.client.stack
 
-import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.client.network.ManageNetwork
 import de.gesellix.docker.client.node.ManageNode
@@ -13,13 +11,15 @@ import de.gesellix.docker.client.stack.types.StackSecret
 import de.gesellix.docker.client.stack.types.StackService
 import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.client.tasks.ManageTask
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponse
 import spock.lang.Specification
 
 import static de.gesellix.docker.client.stack.ManageStackClient.LabelNamespace
 
 class ManageStackClientTest extends Specification {
 
-    HttpClient httpClient = Mock(HttpClient)
+    EngineClient httpClient = Mock(EngineClient)
     DockerResponseHandler responseHandler = Mock(DockerResponseHandler)
     ManageService manageService = Mock(ManageService)
     ManageTask manageTask = Mock(ManageTask)
@@ -49,7 +49,7 @@ class ManageStackClientTest extends Specification {
         def stacks = service.lsStacks()
 
         then:
-        1 * manageService.services([filters: [label: [(LabelNamespace): true]]]) >> new DockerResponse(
+        1 * manageService.services([filters: [label: [(LabelNamespace): true]]]) >> new EngineResponse(
                 content: [
                         [Spec: [Labels: [(LabelNamespace): "service1"]]],
                         [Spec: [Labels: [(LabelNamespace): "service2"]]],
@@ -67,7 +67,7 @@ class ManageStackClientTest extends Specification {
         given:
         String namespace = "the-stack"
         String namespaceFilter = "${LabelNamespace}=${namespace}"
-        def expectedResponse = new DockerResponse()
+        def expectedResponse = new EngineResponse()
 
         when:
         def tasks = service.stackPs(namespace)
@@ -82,7 +82,7 @@ class ManageStackClientTest extends Specification {
         given:
         String namespace = "the-stack"
         String namespaceFilter = "${LabelNamespace}=${namespace}"
-        def expectedResponse = new DockerResponse()
+        def expectedResponse = new EngineResponse()
 
         when:
         def tasks = service.stackPs(namespace, [label: [foo: true]])
@@ -100,7 +100,7 @@ class ManageStackClientTest extends Specification {
         given:
         String namespace = "the-stack"
         String namespaceFilter = "${LabelNamespace}=${namespace}"
-        def expectedResponse = new DockerResponse()
+        def expectedResponse = new EngineResponse()
 
         when:
         def services = service.stackServices(namespace)
@@ -115,7 +115,7 @@ class ManageStackClientTest extends Specification {
         given:
         String namespace = "the-stack"
         String namespaceFilter = "${LabelNamespace}=${namespace}"
-        def expectedResponse = new DockerResponse()
+        def expectedResponse = new EngineResponse()
 
         when:
         def services = service.stackServices(namespace, [label: [bar: true]])
@@ -138,15 +138,15 @@ class ManageStackClientTest extends Specification {
         service.stackRm(namespace)
 
         then:
-        1 * manageService.services([filters: [label: [(namespaceFilter): true]]]) >> new DockerResponse(
+        1 * manageService.services([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
                 content: [[ID: "service1-id"]]
         )
         then:
-        1 * manageNetwork.networks([filters: [label: [(namespaceFilter): true]]]) >> new DockerResponse(
+        1 * manageNetwork.networks([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
                 content: [[Id: "network1-id"]]
         )
         then:
-        1 * manageSecret.secrets([filters: [label: [(namespaceFilter): true]]]) >> new DockerResponse(
+        1 * manageSecret.secrets([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
                 content: [[ID: "secret1-id"]]
         )
 
@@ -167,11 +167,11 @@ class ManageStackClientTest extends Specification {
         service.stackDeploy(namespace, new DeployStackConfig(), new DeployStackOptions())
 
         then:
-        manageSystem.info() >> new DockerResponse(content: [Swarm: [ControlAvailable: true]])
+        manageSystem.info() >> new EngineResponse(content: [Swarm: [ControlAvailable: true]])
         1 * manageNetwork.networks([
-                filters: [label: [(namespaceFilter): true]]]) >> new DockerResponse()
+                filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse()
         1 * manageService.services([
-                filters: ['label': [(namespaceFilter): true]]]) >> new DockerResponse()
+                filters: ['label': [(namespaceFilter): true]]]) >> new EngineResponse()
     }
 
     def "deploy a stack"() {
@@ -187,11 +187,11 @@ class ManageStackClientTest extends Specification {
         service.stackDeploy(namespace, config, new DeployStackOptions())
 
         then:
-        manageSystem.info() >> new DockerResponse(content: [Swarm: [ControlAvailable: true]])
+        manageSystem.info() >> new EngineResponse(content: [Swarm: [ControlAvailable: true]])
 
         and:
         1 * manageNetwork.networks([
-                filters: [label: [(namespaceFilter): true]]]) >> new DockerResponse()
+                filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse()
         1 * manageNetwork.createNetwork("the-stack_network1", [
                 'ipam'      : [:],
                 'driverOpts': [:],
@@ -203,14 +203,14 @@ class ManageStackClientTest extends Specification {
                 'attachable': false])
 
         and:
-        1 * manageSecret.secrets([filters: [names: ["secret-name-1"]]]) >> new DockerResponse(
+        1 * manageSecret.secrets([filters: [names: ["secret-name-1"]]]) >> new EngineResponse(
                 content: []
         )
         1 * manageSecret.createSecret("secret-name-1", 'secret'.bytes, [(LabelNamespace): namespace])
 
         and:
         1 * manageService.services([
-                filters: ['label': [(namespaceFilter): true]]]) >> new DockerResponse()
+                filters: ['label': [(namespaceFilter): true]]]) >> new EngineResponse()
         1 * manageService.createService([
                 'endpointSpec': [:],
                 'taskTemplate': [:],

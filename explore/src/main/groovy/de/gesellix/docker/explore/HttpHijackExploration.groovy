@@ -1,8 +1,8 @@
 package de.gesellix.docker.explore
 
-import de.gesellix.docker.client.AttachConfig
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.DockerClientImpl
+import de.gesellix.docker.engine.AttachConfig
 import groovy.util.logging.Slf4j
 import okhttp3.Response
 

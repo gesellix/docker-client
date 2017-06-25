@@ -1,5 +1,7 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.docker.engine.EngineResponseStatus
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -19,13 +21,13 @@ class DockerResponseHandlerSpec extends Specification {
         where:
         response << [
                 null,
-                new DockerResponse(),
-                new DockerResponse(status: new DockerResponseStatus()),
-                new DockerResponse(status: new DockerResponseStatus(success: false)),
-                new DockerResponse(status: new DockerResponseStatus(success: true), content: [error: "anything"]),
-                new DockerResponse(status: new DockerResponseStatus(success: true), mimeType: "application/json", content: [error: "anything"]),
-                new DockerResponse(status: new DockerResponseStatus(success: true), mimeType: "application/json", content: [[foo: "bar"], [error: "anything"]]),
-                new DockerResponse(status: new DockerResponseStatus(success: false), mimeType: "text/plain", content: "any error")]
+                new EngineResponse(),
+                new EngineResponse(status: new EngineResponseStatus()),
+                new EngineResponse(status: new EngineResponseStatus(success: false)),
+                new EngineResponse(status: new EngineResponseStatus(success: true), content: [error: "anything"]),
+                new EngineResponse(status: new EngineResponseStatus(success: true), mimeType: "application/json", content: [error: "anything"]),
+                new EngineResponse(status: new EngineResponseStatus(success: true), mimeType: "application/json", content: [[foo: "bar"], [error: "anything"]]),
+                new EngineResponse(status: new EngineResponseStatus(success: false), mimeType: "text/plain", content: "any error")]
     }
 
     @Unroll
@@ -36,8 +38,8 @@ class DockerResponseHandlerSpec extends Specification {
         notThrown(Exception)
         where:
         response << [
-                new DockerResponse(status: new DockerResponseStatus(success: true)),
-                new DockerResponse(status: new DockerResponseStatus(success: true), content: ["no-error": "anything"])
+                new EngineResponse(status: new EngineResponseStatus(success: true)),
+                new EngineResponse(status: new EngineResponseStatus(success: true), content: ["no-error": "anything"])
         ]
     }
 }

@@ -1,6 +1,6 @@
 package de.gesellix.docker.client.authentication
 
-import de.gesellix.docker.client.config.DockerEnv
+import de.gesellix.docker.engine.DockerEnv
 import spock.lang.Requires
 import spock.lang.Specification
 

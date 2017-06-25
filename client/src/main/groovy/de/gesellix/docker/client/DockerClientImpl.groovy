@@ -2,8 +2,6 @@ package de.gesellix.docker.client
 
 import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.client.authentication.ManageAuthenticationClient
-import de.gesellix.docker.client.config.DockerClientConfig
-import de.gesellix.docker.client.config.DockerEnv
 import de.gesellix.docker.client.container.ManageContainer
 import de.gesellix.docker.client.container.ManageContainerClient
 import de.gesellix.docker.client.distribution.ManageDistribution
@@ -30,6 +28,10 @@ import de.gesellix.docker.client.tasks.ManageTask
 import de.gesellix.docker.client.tasks.ManageTaskClient
 import de.gesellix.docker.client.volume.ManageVolume
 import de.gesellix.docker.client.volume.ManageVolumeClient
+import de.gesellix.docker.engine.DockerClientConfig
+import de.gesellix.docker.engine.DockerEnv
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.OkDockerClient
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 
@@ -45,7 +47,7 @@ class DockerClientImpl implements DockerClient {
     Proxy proxy
     DockerClientConfig dockerClientConfig
     DockerEnv env
-    HttpClient httpClient
+    EngineClient httpClient
 
     @Delegate
     ManageSystem manageSystem

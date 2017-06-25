@@ -1,12 +1,12 @@
 package de.gesellix.docker.client.swarm
 
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
+import de.gesellix.docker.engine.EngineClient
 import groovy.json.JsonBuilder
 import spock.lang.Specification
 
 class ManageSwarmClientTest extends Specification {
-    HttpClient httpClient = Mock(HttpClient)
+    EngineClient httpClient = Mock(EngineClient)
     ManageSwarmClient service
 
     def setup() {

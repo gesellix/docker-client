@@ -1,23 +1,23 @@
 package de.gesellix.docker.client.node
 
-import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.tasks.ManageTask
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 
 @Slf4j
 class ManageNodeClient implements ManageNode {
 
-    private HttpClient client
+    private EngineClient client
     private DockerResponseHandler responseHandler
     private QueryUtil queryUtil
     private ManageTask manageTask
     private NodeUtil nodeUtil
 
     ManageNodeClient(
-            HttpClient client,
+            EngineClient client,
             DockerResponseHandler responseHandler,
             ManageTask manageTask,
             NodeUtil nodeUtil) {
@@ -29,7 +29,7 @@ class ManageNodeClient implements ManageNode {
     }
 
     @Override
-    DockerResponse nodes(query = [:]) {
+    EngineResponse nodes(query = [:]) {
         log.info "docker node ls"
         def actualQuery = query ?: [:]
         queryUtil.jsonEncodeFilters(actualQuery)

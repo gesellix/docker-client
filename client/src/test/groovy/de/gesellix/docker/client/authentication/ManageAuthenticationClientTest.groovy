@@ -2,21 +2,21 @@ package de.gesellix.docker.client.authentication
 
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
-import de.gesellix.docker.client.config.DockerEnv
-import de.gesellix.docker.testutil.ResourceReader
+import de.gesellix.docker.engine.DockerEnv
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.testutil.ResourceReader
 import spock.lang.Requires
 import spock.lang.Specification
 
 class ManageAuthenticationClientTest extends Specification {
 
     DockerEnv env
-    HttpClient client
+    EngineClient client
     ManageAuthenticationClient service
 
     def setup() {
         env = Mock(DockerEnv)
-        client = Mock(HttpClient)
+        client = Mock(EngineClient)
         service = Spy(ManageAuthenticationClient, constructorArgs: [
                 env,
                 client,

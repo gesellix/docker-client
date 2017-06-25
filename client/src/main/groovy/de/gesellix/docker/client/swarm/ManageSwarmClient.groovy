@@ -1,18 +1,18 @@
 package de.gesellix.docker.client.swarm
 
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
+import de.gesellix.docker.engine.EngineClient
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 
 @Slf4j
 class ManageSwarmClient implements ManageSwarm {
 
-    private HttpClient client
+    private EngineClient client
     private DockerResponseHandler responseHandler
     private QueryUtil queryUtil
 
-    ManageSwarmClient(HttpClient client, DockerResponseHandler responseHandler) {
+    ManageSwarmClient(EngineClient client, DockerResponseHandler responseHandler) {
         this.client = client
         this.responseHandler = responseHandler
         this.queryUtil = new QueryUtil()

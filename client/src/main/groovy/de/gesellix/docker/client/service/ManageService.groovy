@@ -1,26 +1,26 @@
 package de.gesellix.docker.client.service
 
-import de.gesellix.docker.client.DockerResponse
+import de.gesellix.docker.engine.EngineResponse
 
 interface ManageService {
 
 //    create      Create a new service
 
-    DockerResponse createService(config)
+    EngineResponse createService(config)
 
-    DockerResponse createService(config, updateOptions)
+    EngineResponse createService(config, updateOptions)
 
 //    inspect     Display detailed information on one or more services
 
-    DockerResponse inspectService(name)
+    EngineResponse inspectService(name)
 
 //    TODO logs        Fetch the logs of a service
 
 //    ls          List services
 
-    DockerResponse services()
+    EngineResponse services()
 
-    DockerResponse services(query)
+    EngineResponse services(query)
 
 //    ps          List the tasks of a service
 
@@ -38,7 +38,7 @@ interface ManageService {
 
 //    update      Update a service
 
-    DockerResponse updateService(name, query, config)
+    EngineResponse updateService(name, query, config)
 
-    DockerResponse updateService(name, query, config, updateOptions)
+    EngineResponse updateService(name, query, config, updateOptions)
 }

@@ -1,26 +1,26 @@
 package de.gesellix.docker.client.tasks
 
-import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 
 @Slf4j
 class ManageTaskClient implements ManageTask {
 
-    private HttpClient client
+    private EngineClient client
     private DockerResponseHandler responseHandler
     private QueryUtil queryUtil
 
-    ManageTaskClient(HttpClient client, DockerResponseHandler responseHandler) {
+    ManageTaskClient(EngineClient client, DockerResponseHandler responseHandler) {
         this.client = client
         this.responseHandler = responseHandler
         this.queryUtil = new QueryUtil()
     }
 
     @Override
-    DockerResponse tasks(query = [:]) {
+    EngineResponse tasks(query = [:]) {
         log.info "docker tasks"
         def actualQuery = query ?: [:]
         queryUtil.jsonEncodeFilters(actualQuery)

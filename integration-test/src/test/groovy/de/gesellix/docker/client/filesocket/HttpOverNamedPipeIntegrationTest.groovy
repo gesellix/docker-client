@@ -2,10 +2,10 @@ package de.gesellix.docker.client.filesocket
 
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.DockerClientImpl
-import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.LocalDocker
-import de.gesellix.docker.client.OkDockerClient
 import de.gesellix.docker.client.container.ArchiveUtil
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.OkDockerClient
 import groovy.util.logging.Slf4j
 import org.apache.commons.lang.SystemUtils
 import spock.lang.Requires
@@ -31,7 +31,7 @@ class HttpOverNamedPipeIntegrationTest extends Specification {
         def process = runNpipe(npipeExe, pipePath, npipeLatch)
         npipeLatch.await(5, SECONDS)
 
-        HttpClient httpClient = new OkDockerClient("npipe://${pipePath}")
+        EngineClient httpClient = new OkDockerClient("npipe://${pipePath}")
 
         when:
         def response = httpClient.post([path              : "/foo",

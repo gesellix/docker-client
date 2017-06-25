@@ -29,8 +29,8 @@ subprojects {
 
     group = 'de.gesellix'
 
-    sourceCompatibility = JavaVersion.VERSION_1_7
-    targetCompatibility = JavaVersion.VERSION_1_7
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 
     def dependencyVersions = [
             'com.squareup.okio:okio:1.13.0',

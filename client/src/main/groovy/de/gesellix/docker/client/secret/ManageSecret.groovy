@@ -1,6 +1,6 @@
 package de.gesellix.docker.client.secret
 
-import de.gesellix.docker.client.DockerResponse
+import de.gesellix.docker.engine.EngineResponse
 
 interface ManageSecret {
 
@@ -16,9 +16,9 @@ interface ManageSecret {
 
 //    ls          List secrets
 
-    DockerResponse secrets()
+    EngineResponse secrets()
 
-    DockerResponse secrets(Map query)
+    EngineResponse secrets(Map query)
 
 //    rm          Remove one or more secrets
 

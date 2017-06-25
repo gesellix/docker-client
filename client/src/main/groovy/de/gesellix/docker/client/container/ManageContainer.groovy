@@ -1,8 +1,8 @@
 package de.gesellix.docker.client.container
 
-import de.gesellix.docker.client.AttachConfig
 import de.gesellix.docker.client.DockerAsyncCallback
-import de.gesellix.docker.client.DockerResponse
+import de.gesellix.docker.engine.AttachConfig
+import de.gesellix.docker.engine.EngineResponse
 import okhttp3.WebSocketListener
 
 interface ManageContainer {
@@ -37,9 +37,9 @@ interface ManageContainer {
 
 //    create      Create a new container
 
-    DockerResponse createContainer(containerConfig)
+    EngineResponse createContainer(containerConfig)
 
-    DockerResponse createContainer(containerConfig, query)
+    EngineResponse createContainer(containerConfig, query)
 
 //    diff        Inspect changes on a container's filesystem
 
@@ -156,5 +156,4 @@ interface ManageContainer {
 //    wait        Block until one or more containers stop, then print their exit codes
 
     def wait(container)
-
 }

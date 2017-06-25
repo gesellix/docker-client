@@ -1,12 +1,12 @@
 package de.gesellix.docker.client.secret
 
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
+import de.gesellix.docker.engine.EngineClient
 import spock.lang.Specification
 
 class ManageSecretClientTest extends Specification {
 
-    HttpClient httpClient = Mock(HttpClient)
+    EngineClient httpClient = Mock(EngineClient)
     ManageSecretClient service
 
     def setup() {

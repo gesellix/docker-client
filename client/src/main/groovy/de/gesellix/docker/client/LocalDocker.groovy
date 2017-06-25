@@ -1,9 +1,9 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.client.config.DockerVersion
+import de.gesellix.docker.engine.DockerVersion
 import groovy.util.logging.Slf4j
 
-import static de.gesellix.docker.client.config.DockerVersion.parseDockerVersion
+import static de.gesellix.docker.engine.DockerVersion.parseDockerVersion
 
 @Slf4j
 class LocalDocker {

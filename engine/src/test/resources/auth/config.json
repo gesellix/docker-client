@@ -1,0 +1,12 @@
+{
+    "auths": {
+        "https://index.docker.io/v1/": {
+            "auth": "Z2VzZWxsaXg6LXlldC1hbm90aGVyLXBhc3N3b3JkLQ=",
+            "email": "tobias@gesellix.de"
+        },
+        "quay.io": {
+            "auth": "Z2VzZWxsaXg6LWEtcGFzc3dvcmQtZm9yLXF1YXkt",
+            "email": "tobias@gesellix.de"
+        }
+    }
+}

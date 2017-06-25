@@ -1,15 +1,15 @@
 package de.gesellix.docker.client.image
 
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.DockerResponseStatus
-import de.gesellix.docker.client.HttpClient
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponseStatus
 import groovy.json.JsonBuilder
 import spock.lang.Specification
 
 class ManageImageClientTest extends Specification {
 
     ManageImageClient service
-    HttpClient httpClient = Mock(HttpClient)
+    EngineClient httpClient = Mock(EngineClient)
     DockerResponseHandler responseHandler = Mock(DockerResponseHandler)
 
     def setup() {
@@ -270,7 +270,7 @@ class ManageImageClientTest extends Specification {
             assert arguments[1]?.message == "docker load failed"
         }
         and:
-        response.status == new DockerResponseStatus(success: true)
+        response.status == new EngineResponseStatus(success: true)
     }
 
     def "inspect image"() {

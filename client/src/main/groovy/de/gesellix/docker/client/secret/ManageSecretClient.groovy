@@ -1,19 +1,19 @@
 package de.gesellix.docker.client.secret
 
-import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 
 @Slf4j
 class ManageSecretClient implements ManageSecret {
 
-    private HttpClient client
+    private EngineClient client
     private DockerResponseHandler responseHandler
     private QueryUtil queryUtil
 
-    ManageSecretClient(HttpClient client, DockerResponseHandler responseHandler) {
+    ManageSecretClient(EngineClient client, DockerResponseHandler responseHandler) {
         this.client = client
         this.responseHandler = responseHandler
         this.queryUtil = new QueryUtil()
@@ -42,7 +42,7 @@ class ManageSecretClient implements ManageSecret {
     }
 
     @Override
-    DockerResponse secrets(Map query = [:]) {
+    EngineResponse secrets(Map query = [:]) {
         log.info "docker secret ls"
         def actualQuery = query ?: [:]
         queryUtil.jsonEncodeFilters(actualQuery)

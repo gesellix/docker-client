@@ -2,9 +2,9 @@ package de.gesellix.docker.client.system
 
 import de.gesellix.docker.client.DockerAsyncCallback
 import de.gesellix.docker.client.DockerAsyncConsumer
-import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 
@@ -13,11 +13,11 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor
 @Slf4j
 class ManageSystemClient implements ManageSystem {
 
-    private HttpClient client
+    private EngineClient client
     private DockerResponseHandler responseHandler
     private QueryUtil queryUtil
 
-    ManageSystemClient(HttpClient client, DockerResponseHandler responseHandler) {
+    ManageSystemClient(EngineClient client, DockerResponseHandler responseHandler) {
         this.client = client
         this.responseHandler = responseHandler
         this.queryUtil = new QueryUtil()
@@ -42,27 +42,27 @@ class ManageSystemClient implements ManageSystem {
                                    async: true])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker events failed"))
         def executor = newSingleThreadExecutor()
-        def future = executor.submit(new DockerAsyncConsumer(response as DockerResponse, callback))
+        def future = executor.submit(new DockerAsyncConsumer(response as EngineResponse, callback))
         response.taskFuture = future
         return response
     }
 
     @Override
-    DockerResponse ping() {
+    EngineResponse ping() {
         log.info "docker ping"
         def response = client.get([path: "/_ping", timeout: 2000])
         return response
     }
 
     @Override
-    DockerResponse version() {
+    EngineResponse version() {
         log.info "docker version"
         def response = client.get([path: "/version"])
         return response
     }
 
     @Override
-    DockerResponse info() {
+    EngineResponse info() {
         log.info "docker info"
         def response = client.get([path: "/info"])
         return response

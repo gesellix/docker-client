@@ -1,6 +1,6 @@
 package de.gesellix.docker.client.network
 
-import de.gesellix.docker.client.DockerResponse
+import de.gesellix.docker.engine.EngineResponse
 
 interface ManageNetwork {
 
@@ -20,13 +20,13 @@ interface ManageNetwork {
 
 //    inspect     Display detailed information on one or more networks
 
-    DockerResponse inspectNetwork(name)
+    EngineResponse inspectNetwork(name)
 
 //    ls          List networks
 
-    DockerResponse networks()
+    EngineResponse networks()
 
-    DockerResponse networks(query)
+    EngineResponse networks(query)
 
 //    prune       Remove all unused networks
 

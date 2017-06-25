@@ -1,26 +1,26 @@
 package de.gesellix.docker.client.network
 
-import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 
 @Slf4j
 class ManageNetworkClient implements ManageNetwork {
 
-    private HttpClient client
+    private EngineClient client
     private DockerResponseHandler responseHandler
     private QueryUtil queryUtil
 
-    ManageNetworkClient(HttpClient client, DockerResponseHandler responseHandler) {
+    ManageNetworkClient(EngineClient client, DockerResponseHandler responseHandler) {
         this.client = client
         this.responseHandler = responseHandler
         this.queryUtil = new QueryUtil()
     }
 
     @Override
-    DockerResponse networks(query = [:]) {
+    EngineResponse networks(query = [:]) {
         log.info "docker network ls"
         def actualQuery = query ?: [:]
         queryUtil.jsonEncodeFilters(actualQuery)
@@ -31,7 +31,7 @@ class ManageNetworkClient implements ManageNetwork {
     }
 
     @Override
-    DockerResponse inspectNetwork(name) {
+    EngineResponse inspectNetwork(name) {
         log.info "docker network inspect"
         def response = client.get([path: "/networks/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network inspect failed"))

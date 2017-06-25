@@ -1,24 +1,24 @@
 package de.gesellix.docker.client.service
 
-import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.node.NodeUtil
 import de.gesellix.docker.client.tasks.ManageTask
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 
 @Slf4j
 class ManageServiceClient implements ManageService {
 
-    private HttpClient client
+    private EngineClient client
     private DockerResponseHandler responseHandler
     private QueryUtil queryUtil
     private ManageTask manageTask
     private NodeUtil nodeUtil
 
     ManageServiceClient(
-            HttpClient client,
+            EngineClient client,
             DockerResponseHandler responseHandler,
             ManageTask manageTask,
             NodeUtil nodeUtil) {
@@ -30,7 +30,7 @@ class ManageServiceClient implements ManageService {
     }
 
     @Override
-    DockerResponse services(query = [:]) {
+    EngineResponse services(query = [:]) {
         log.info "docker service ls"
         def actualQuery = query ?: [:]
         queryUtil.jsonEncodeFilters(actualQuery)
@@ -41,7 +41,7 @@ class ManageServiceClient implements ManageService {
     }
 
     @Override
-    DockerResponse createService(config, updateOptions = [:]) {
+    EngineResponse createService(config, updateOptions = [:]) {
         log.info "docker service create"
         config = config ?: [:]
         updateOptions = updateOptions ?: [:]
@@ -61,7 +61,7 @@ class ManageServiceClient implements ManageService {
     }
 
     @Override
-    DockerResponse inspectService(name) {
+    EngineResponse inspectService(name) {
         log.info "docker service inspect"
         def response = client.get([path: "/services/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service inspect failed"))
@@ -78,7 +78,7 @@ class ManageServiceClient implements ManageService {
 //    }
 
     @Override
-    DockerResponse updateService(name, query, config, updateOptions = [:]) {
+    EngineResponse updateService(name, query, config, updateOptions = [:]) {
         log.info "docker service update"
         def actualQuery = query ?: [:]
         config = config ?: [:]

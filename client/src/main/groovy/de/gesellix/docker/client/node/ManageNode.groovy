@@ -1,6 +1,6 @@
 package de.gesellix.docker.client.node
 
-import de.gesellix.docker.client.DockerResponse
+import de.gesellix.docker.engine.EngineResponse
 
 interface ManageNode {
 
@@ -14,9 +14,9 @@ interface ManageNode {
 
 //    ls          List nodes in the swarm
 
-    DockerResponse nodes()
+    EngineResponse nodes()
 
-    DockerResponse nodes(query)
+    EngineResponse nodes(query)
 
 //    promote     Promote one or more nodes to manager in the swarm
 

@@ -1,12 +1,12 @@
 package de.gesellix.docker.client.distribution
 
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
+import de.gesellix.docker.engine.EngineClient
 import spock.lang.Specification
 
 class ManageDistributionServiceTest extends Specification {
 
-    HttpClient httpClient = Mock(HttpClient)
+    EngineClient httpClient = Mock(EngineClient)
     ManageDistributionService service
 
     def setup() {

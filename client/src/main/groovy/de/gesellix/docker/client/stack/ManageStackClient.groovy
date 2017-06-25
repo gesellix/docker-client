@@ -1,8 +1,6 @@
 package de.gesellix.docker.client.stack
 
-import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.client.network.ManageNetwork
 import de.gesellix.docker.client.node.ManageNode
@@ -13,6 +11,8 @@ import de.gesellix.docker.client.stack.types.StackSecret
 import de.gesellix.docker.client.stack.types.StackService
 import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.client.tasks.ManageTask
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.util.QueryUtil
 import groovy.transform.EqualsAndHashCode
 import groovy.util.logging.Slf4j
@@ -20,7 +20,7 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class ManageStackClient implements ManageStack {
 
-    private HttpClient client
+    private EngineClient client
     private DockerResponseHandler responseHandler
     private QueryUtil queryUtil
     private ManageService manageService
@@ -35,7 +35,7 @@ class ManageStackClient implements ManageStack {
     static final String LabelNamespace = "com.docker.stack.namespace"
 
     ManageStackClient(
-            HttpClient client,
+            EngineClient client,
             DockerResponseHandler responseHandler,
             ManageService manageService,
             ManageTask manageTask,
@@ -62,7 +62,7 @@ class ManageStackClient implements ManageStack {
 
         Map<String, Stack> stacksByName = [:]
 
-        DockerResponse services = manageService.services([filters: [label: [(LabelNamespace): true]]])
+        EngineResponse services = manageService.services([filters: [label: [(LabelNamespace): true]]])
         services.content?.each { service ->
             String stackName = service.Spec.Labels[(LabelNamespace)]
             if (!stacksByName[(stackName)]) {
@@ -272,7 +272,7 @@ class ManageStackClient implements ManageStack {
         return services
     }
 
-    def getInfoByServiceId(DockerResponse services) {
+    def getInfoByServiceId(EngineResponse services) {
         def nodes = manageNode.nodes()
         List<String> activeNodes = nodes.content.findResults { node ->
             node.Status.State != 'down' ? node.ID : null

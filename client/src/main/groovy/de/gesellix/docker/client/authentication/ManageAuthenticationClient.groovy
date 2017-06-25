@@ -1,9 +1,9 @@
 package de.gesellix.docker.client.authentication
 
-import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
-import de.gesellix.docker.client.config.DockerEnv
+import de.gesellix.docker.engine.DockerEnv
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.util.QueryUtil
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
@@ -13,12 +13,12 @@ import groovy.util.logging.Slf4j
 class ManageAuthenticationClient implements ManageAuthentication {
 
     private DockerEnv env
-    private HttpClient client
+    private EngineClient client
     private DockerResponseHandler responseHandler
     private QueryUtil queryUtil
     private CredsStoreHelper credsStoreHelper
 
-    ManageAuthenticationClient(DockerEnv env, HttpClient client, DockerResponseHandler responseHandler) {
+    ManageAuthenticationClient(DockerEnv env, EngineClient client, DockerResponseHandler responseHandler) {
         this.env = env
         this.client = client
         this.responseHandler = responseHandler
@@ -97,7 +97,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
     }
 
     @Override
-    DockerResponse auth(authDetails) {
+    EngineResponse auth(authDetails) {
         log.info "docker login"
         def response = client.post([path              : "/auth",
                                     body              : authDetails,

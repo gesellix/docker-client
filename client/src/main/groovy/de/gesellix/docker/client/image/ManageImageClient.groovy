@@ -3,11 +3,11 @@ package de.gesellix.docker.client.image
 import de.gesellix.docker.client.DockerAsyncCallback
 import de.gesellix.docker.client.DockerAsyncConsumer
 import de.gesellix.docker.client.DockerClientException
-import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.Timeout
 import de.gesellix.docker.client.repository.RepositoryTagParser
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.util.QueryUtil
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
@@ -20,12 +20,12 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor
 @Slf4j
 class ManageImageClient implements ManageImage {
 
-    private HttpClient client
+    private EngineClient client
     private DockerResponseHandler responseHandler
     private RepositoryTagParser repositoryTagParser
     private QueryUtil queryUtil
 
-    ManageImageClient(HttpClient client, DockerResponseHandler responseHandler) {
+    ManageImageClient(EngineClient client, DockerResponseHandler responseHandler) {
         this.client = client
         this.responseHandler = responseHandler
         this.repositoryTagParser = new RepositoryTagParser()
@@ -37,6 +37,7 @@ class ManageImageClient implements ManageImage {
         def buildLatch = new CountDownLatch(1)
         def chunks = []
         def callback = new DockerAsyncCallback() {
+
             @Override
             onEvent(Object event) {
                 log.info "$event"
@@ -59,7 +60,8 @@ class ManageImageClient implements ManageImage {
         if (chunks.empty) {
             log.warn("no build log collected - timeout of ${timeout} reached?")
             lastLogEvent = null
-        } else {
+        }
+        else {
             lastLogEvent = chunks.last()
         }
 
@@ -89,10 +91,11 @@ class ManageImageClient implements ManageImage {
 
         if (async) {
             def executor = newSingleThreadExecutor()
-            def future = executor.submit(new DockerAsyncConsumer(response as DockerResponse, callback))
+            def future = executor.submit(new DockerAsyncConsumer(response as EngineResponse, callback))
             response.taskFuture = future
             return response
-        } else {
+        }
+        else {
             return getBuildResultAsImageId(response.content as List)
         }
     }
@@ -236,7 +239,8 @@ class ManageImageClient implements ManageImage {
         def response
         if (images.length == 1) {
             response = client.get([path: "/images/${images.first()}/get"])
-        } else {
+        }
+        else {
             response = client.get([path : "/images/get",
                                    query: [names: images]])
         }
@@ -280,7 +284,8 @@ class ManageImageClient implements ManageImage {
             }
             log.warn("couldn't find imageId for `${imageName}` via `docker images`")
             return imageName
-        } else {
+        }
+        else {
             def canonicalImageName = "$imageName:${tag ?: 'latest'}".toString()
             if (imageIdsByName[canonicalImageName]) {
                 return imageIdsByName[canonicalImageName]

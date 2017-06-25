@@ -1,16 +1,18 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.client.config.DockerEnv
 import de.gesellix.docker.client.container.ManageContainer
 import de.gesellix.docker.client.image.ManageImage
 import de.gesellix.docker.client.node.ManageNode
 import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.client.volume.ManageVolume
+import de.gesellix.docker.engine.DockerEnv
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponse
 import spock.lang.Specification
 
 class DockerClientImplSpec extends Specification {
 
-    HttpClient httpClient = Mock(HttpClient)
+    EngineClient httpClient = Mock(EngineClient)
     DockerClientImpl dockerClient = new DockerClientImpl()
 
     def setup() {
@@ -51,11 +53,11 @@ class DockerClientImplSpec extends Specification {
         when:
         def managerAddress = dockerClient.getSwarmMangerAddress()
         then:
-        1 * dockerClient.manageSystem.info() >> new DockerResponse(
+        1 * dockerClient.manageSystem.info() >> new EngineResponse(
                 status: [success: true],
                 content: [Swarm: [NodeID: "node-id"]])
         then:
-        1 * dockerClient.manageNode.inspectNode("node-id") >> new DockerResponse(
+        1 * dockerClient.manageNode.inspectNode("node-id") >> new EngineResponse(
                 status: [success: true],
                 content: [ManagerStatus: [Addr: "192.168.42.2:2377"]])
         and:
@@ -74,7 +76,7 @@ class DockerClientImplSpec extends Specification {
         dockerClient.cleanupStorage keepContainer
 
         then:
-        1 * dockerClient.manageContainer.ps([filters: [status: ["exited"]]]) >> new DockerResponse(
+        1 * dockerClient.manageContainer.ps([filters: [status: ["exited"]]]) >> new EngineResponse(
                 content: [
                         [Command: "ping 127.0.0.1",
                          Id     : "container-id-1",
@@ -92,9 +94,9 @@ class DockerClientImplSpec extends Specification {
         and:
         0 * dockerClient.manageContainer.rm("container-id-2")
         and:
-        1 * dockerClient.manageImage.images([filters: [dangling: ["true"]]]) >> new DockerResponse()
+        1 * dockerClient.manageImage.images([filters: [dangling: ["true"]]]) >> new EngineResponse()
         and:
-        1 * dockerClient.manageVolume.volumes([filters: [dangling: ["true"]]]) >> new DockerResponse(
+        1 * dockerClient.manageVolume.volumes([filters: [dangling: ["true"]]]) >> new EngineResponse(
                 content: [[Name: "volume-id"]])
         and:
         0 * dockerClient.manageVolume.rmVolume(_)
@@ -105,9 +107,9 @@ class DockerClientImplSpec extends Specification {
         dockerClient.cleanupStorage { container -> false }
 
         then:
-        1 * dockerClient.manageContainer.ps([filters: [status: ["exited"]]]) >> new DockerResponse()
+        1 * dockerClient.manageContainer.ps([filters: [status: ["exited"]]]) >> new EngineResponse()
         and:
-        1 * dockerClient.manageImage.images([filters: [dangling: ["true"]]]) >> new DockerResponse(
+        1 * dockerClient.manageImage.images([filters: [dangling: ["true"]]]) >> new EngineResponse(
                 content: [
                         [Created    : 1420075526,
                          Id         : "image-id-1",
@@ -119,7 +121,7 @@ class DockerClientImplSpec extends Specification {
         then:
         1 * dockerClient.manageImage.rmi("image-id-1")
         and:
-        1 * dockerClient.manageVolume.volumes([filters: [dangling: ["true"]]]) >> new DockerResponse(
+        1 * dockerClient.manageVolume.volumes([filters: [dangling: ["true"]]]) >> new EngineResponse(
                 content: [[Name: "volume-id"]])
         and:
         0 * dockerClient.manageVolume.rmVolume(_)
@@ -130,11 +132,11 @@ class DockerClientImplSpec extends Specification {
         dockerClient.cleanupStorage { container -> false }
 
         then:
-        1 * dockerClient.manageContainer.ps([filters: [status: ["exited"]]]) >> new DockerResponse()
+        1 * dockerClient.manageContainer.ps([filters: [status: ["exited"]]]) >> new EngineResponse()
         and:
-        1 * dockerClient.manageImage.images([filters: [dangling: ["true"]]]) >> new DockerResponse()
+        1 * dockerClient.manageImage.images([filters: [dangling: ["true"]]]) >> new EngineResponse()
         and:
-        1 * dockerClient.manageVolume.volumes([filters: [dangling: ["true"]]]) >> new DockerResponse(
+        1 * dockerClient.manageVolume.volumes([filters: [dangling: ["true"]]]) >> new EngineResponse(
                 content: [[Name: "volume-id"]])
         and:
         0 * dockerClient.manageVolume.rmVolume(_)
@@ -145,17 +147,17 @@ class DockerClientImplSpec extends Specification {
         dockerClient.cleanupStorage({ container -> false }, { volume -> volume.Name != "volume-id-1" })
 
         then:
-        1 * dockerClient.manageContainer.ps([filters: [status: ["exited"]]]) >> new DockerResponse()
+        1 * dockerClient.manageContainer.ps([filters: [status: ["exited"]]]) >> new EngineResponse()
         and:
-        1 * dockerClient.manageImage.images([filters: [dangling: ["true"]]]) >> new DockerResponse()
+        1 * dockerClient.manageImage.images([filters: [dangling: ["true"]]]) >> new EngineResponse()
         and:
-        1 * dockerClient.manageVolume.volumes([filters: [dangling: ["true"]]]) >> new DockerResponse(
+        1 * dockerClient.manageVolume.volumes([filters: [dangling: ["true"]]]) >> new EngineResponse(
                 content: [
                         Volumes: [
                                 [Name: "volume-id-1"],
                                 [Name: "volume-id-2"]]])
         and:
-        1 * dockerClient.manageVolume.rmVolume("volume-id-1") >> new DockerResponse(
+        1 * dockerClient.manageVolume.rmVolume("volume-id-1") >> new EngineResponse(
                 status: [success: true])
         and:
         0 * dockerClient.manageVolume.rmVolume("volume-id-2")

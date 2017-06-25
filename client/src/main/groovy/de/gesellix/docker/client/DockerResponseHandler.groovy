@@ -1,11 +1,12 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.engine.EngineResponse
 import groovy.util.logging.Slf4j
 
 @Slf4j
 class DockerResponseHandler {
 
-    def ensureSuccessfulResponse(DockerResponse response, Throwable context) {
+    def ensureSuccessfulResponse(EngineResponse response, Throwable context) {
         if (!response || !response.status?.success || hasError(response)) {
             logError(response)
             throw new DockerClientException(context, response)
@@ -15,7 +16,8 @@ class DockerResponseHandler {
     def logError(response) {
         if (response?.content instanceof String) {
             log.error "request failed: '${response?.content}'"
-        } else {
+        }
+        else {
             log.error "request failed: ${getErrors(response)}"
         }
     }
@@ -34,13 +36,16 @@ class DockerResponseHandler {
             def foundErrors = []
             if (content instanceof List) {
                 foundErrors.addAll content.findAll { it.error }
-            } else if (content instanceof Map) {
+            }
+            else if (content instanceof Map) {
                 if (content.error) {
                     foundErrors << content.error
-                } else if (content.message) {
+                }
+                else if (content.message) {
                     foundErrors << content.message
                 }
-            } else {
+            }
+            else {
                 log.debug("won't search for errors in ${content.getClass()}")
             }
             return foundErrors

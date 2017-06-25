@@ -1,6 +1,6 @@
 package de.gesellix.docker.client.authentication
 
-import de.gesellix.docker.client.DockerResponse
+import de.gesellix.docker.engine.EngineResponse
 
 interface ManageAuthentication {
 
@@ -12,5 +12,5 @@ interface ManageAuthentication {
 
     String encodeAuthConfig(authConfig)
 
-    DockerResponse auth(authDetails)
+    EngineResponse auth(authDetails)
 }

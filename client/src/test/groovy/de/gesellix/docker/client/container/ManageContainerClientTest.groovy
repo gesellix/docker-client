@@ -1,11 +1,12 @@
 package de.gesellix.docker.client.container
 
+import ch.qos.logback.classic.spi.LoggingEvent
 import de.gesellix.docker.client.DockerClientException
-import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.image.ManageImage
-import de.gesellix.docker.testutil.MemoryAppender
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.testutil.MemoryAppender
 import groovy.json.JsonBuilder
 import spock.lang.Ignore
 import spock.lang.Specification
@@ -15,7 +16,7 @@ import static ch.qos.logback.classic.Level.ERROR
 class ManageContainerClientTest extends Specification {
 
     ManageContainerClient service
-    HttpClient httpClient = Mock(HttpClient)
+    EngineClient httpClient = Mock(EngineClient)
     DockerResponseHandler responseHandler = Mock(DockerResponseHandler)
 
     def setup() {
@@ -176,7 +177,9 @@ class ManageContainerClientTest extends Specification {
         service.createExec("a-missing-container", execCreateConfig)
 
         then:
-        MemoryAppender.findLoggedEvent([level: ERROR, message: "no such container 'a-missing-container'"])
+        MemoryAppender.findLoggedEvent(new LoggingEvent(
+                level: ERROR,
+                message: "no such container 'a-missing-container'"))
         and:
         1 * responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
             assert arguments[1]?.message == "docker exec create failed"
@@ -253,9 +256,11 @@ class ManageContainerClientTest extends Specification {
         service.inspectExec("a-missing-exec")
 
         then:
-        1 * httpClient.get([path: "/exec/a-missing-exec/json"]) >> new DockerResponse(status: [code: 404])
+        1 * httpClient.get([path: "/exec/a-missing-exec/json"]) >> new EngineResponse(status: [code: 404])
         and:
-        MemoryAppender.findLoggedEvent([level: ERROR, message: "no such exec 'a-missing-exec'"])
+        MemoryAppender.findLoggedEvent(new LoggingEvent(
+                level: ERROR,
+                message: "no such exec 'a-missing-exec'"))
         and:
         responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
             assert arguments[1]?.message == "docker inspect exec failed"
@@ -495,13 +500,13 @@ class ManageContainerClientTest extends Specification {
     def "commit container with changed container config"() {
         when:
         service.commit("a-container",
-                [
-                        repo   : 'a-repo',
-                        tag    : 'the-tag',
-                        comment: 'a test',
-                        author : 'Andrew Niccol <g@tta.ca>'
-                ],
-                [Cmd: "date"])
+                       [
+                               repo   : 'a-repo',
+                               tag    : 'the-tag',
+                               comment: 'a test',
+                               author : 'Andrew Niccol <g@tta.ca>'
+                       ],
+                       [Cmd: "date"])
 
         then:
         1 * httpClient.post([path              : "/commit",

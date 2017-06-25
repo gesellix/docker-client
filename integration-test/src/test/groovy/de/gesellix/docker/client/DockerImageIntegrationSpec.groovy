@@ -282,7 +282,7 @@ class DockerImageIntegrationSpec extends Specification {
 //                             query             : ["rm": true],
 //                             body              : buildContext,
 //                             requestContentType: "application/octet-stream",
-//                             async             : true]) >> new DockerResponse(
+//                             async             : true]) >> new EngineResponse(
 //                headers: headersBuilder.build(),
 //                stream: new ByteArrayInputStream(new JsonBuilder(response).toString().bytes))
 //        and:

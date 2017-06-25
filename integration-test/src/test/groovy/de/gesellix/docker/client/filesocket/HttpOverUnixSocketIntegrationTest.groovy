@@ -1,13 +1,10 @@
 package de.gesellix.docker.client.filesocket
 
-import de.gesellix.docker.client.HttpClient
-import de.gesellix.docker.client.OkDockerClient
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.OkDockerClient
 import de.gesellix.docker.testutil.UnixSocketTestServer
 import spock.lang.Requires
 import spock.lang.Specification
-
-import static org.apache.commons.lang.SystemUtils.IS_OS_LINUX
-import static org.apache.commons.lang.SystemUtils.IS_OS_MAC
 
 @Requires({ new File("/var/run/docker.sock").exists() || org.apache.commons.lang.SystemUtils.IS_OS_LINUX || org.apache.commons.lang.SystemUtils.IS_OS_MAC })
 class HttpOverUnixSocketIntegrationTest extends Specification {
@@ -15,7 +12,7 @@ class HttpOverUnixSocketIntegrationTest extends Specification {
     File defaultDockerSocket = new File("/var/run/docker.sock")
     def runDummyDaemon = !defaultDockerSocket.exists()
     File socketFile = defaultDockerSocket
-    HttpClient httpClient
+    EngineClient httpClient
 
     def setup() {
         String unixSocket

@@ -1,14 +1,14 @@
 package de.gesellix.docker.client.node
 
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.tasks.ManageTask
+import de.gesellix.docker.engine.EngineClient
 import groovy.json.JsonBuilder
 import spock.lang.Specification
 
 class ManageNodeClientTest extends Specification {
 
-    HttpClient httpClient = Mock(HttpClient)
+    EngineClient httpClient = Mock(EngineClient)
     ManageTask manageTask = Mock(ManageTask)
     NodeUtil nodeUtil = Mock(NodeUtil)
 

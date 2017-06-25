@@ -1,12 +1,12 @@
 package de.gesellix.docker.client.network
 
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
+import de.gesellix.docker.engine.EngineClient
 import groovy.json.JsonBuilder
 import spock.lang.Specification
 
 class ManageNetworkClientTest extends Specification {
-    HttpClient httpClient = Mock(HttpClient)
+    EngineClient httpClient = Mock(EngineClient)
     ManageNetworkClient service
 
     def setup() {

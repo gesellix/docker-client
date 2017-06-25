@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit
 import static java.util.concurrent.TimeUnit.MINUTES
 
 class Timeout {
+
     long timeout
     TimeUnit unit
 

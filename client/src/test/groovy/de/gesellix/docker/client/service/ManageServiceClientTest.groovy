@@ -1,10 +1,10 @@
 package de.gesellix.docker.client.service
 
-import de.gesellix.docker.client.DockerResponse
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.HttpClient
 import de.gesellix.docker.client.node.NodeUtil
 import de.gesellix.docker.client.tasks.ManageTask
+import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponse
 import groovy.json.JsonBuilder
 import spock.lang.Specification
 
@@ -12,7 +12,7 @@ class ManageServiceClientTest extends Specification {
 
     ManageTask manageTask = Mock(ManageTask)
     NodeUtil nodeUtil = Mock(NodeUtil)
-    HttpClient httpClient = Mock(HttpClient)
+    EngineClient httpClient = Mock(EngineClient)
 
     ManageServiceClient service
 
@@ -134,7 +134,7 @@ class ManageServiceClientTest extends Specification {
         given:
         def filters = [service: ["service-name"]]
         def query = [filters: filters]
-        def expectedResponse = new DockerResponse()
+        def expectedResponse = new EngineResponse()
 
         when:
         def result = service.tasksOfService("service-name", query)
