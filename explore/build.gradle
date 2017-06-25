@@ -11,6 +11,8 @@ apply plugin: 'groovy'
 repositories {
     mavenLocal()
     jcenter()
+    // testutil, docker-engine
+    maven { url "http://dl.bintray.com/gesellix/docker-utils" }
     mavenCentral()
 }
 
