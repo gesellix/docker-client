@@ -35,13 +35,13 @@ The client also includes [Docker Compose version 3](https://docs.docker.com/comp
 For use in Gradle, add the Bintray repository first:
 
     repositories {
-      maven { url 'http://dl.bintray.com/gesellix/docker-utils' }
+      jcenter()
     }
 
 Then, you need to add the dependency, but please ensure to use the [latest version](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion):
 
     dependencies {
-      compile 'de.gesellix:docker-client:2017-06-24T14-57-15'
+      compile 'de.gesellix:docker-client:2017-06-25T15-38-14'
     }
 
 The tests in `DockerClientImplSpec` and `DockerClientImplIntegrationSpec` should give you an idea how to use the docker-client.
