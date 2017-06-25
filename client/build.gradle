@@ -25,13 +25,13 @@ apply plugin: 'com.jfrog.bintray'
 repositories {
     mavenLocal()
     jcenter()
-    // testutil
+    // testutil, docker-engine
     maven { url "http://dl.bintray.com/gesellix/docker-utils" }
     mavenCentral()
 }
 
 dependencies {
-    compile project(':engine')
+    compile 'de.gesellix:docker-engine:2017-06-25T07-04-55'
 
     compile 'org.codehaus.groovy:groovy:2.4.11'
     compile 'org.codehaus.groovy:groovy-json:2.4.11'
@@ -44,8 +44,6 @@ dependencies {
     testCompile 'com.squareup.okhttp3:mockwebserver:3.8.1'
 
     compile 'org.apache.commons:commons-compress:1.14'
-
-    compile 'de.gesellix:docker-filesocket:2017-06-24T14-21-18'
 
     compile 'org.bouncycastle:bcpkix-jdk15on:1.57'
 
