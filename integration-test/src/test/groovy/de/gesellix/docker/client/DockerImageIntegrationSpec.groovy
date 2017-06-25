@@ -3,7 +3,7 @@ package de.gesellix.docker.client
 import de.gesellix.docker.client.builder.BuildContextBuilder
 import de.gesellix.docker.registry.DockerRegistry
 import de.gesellix.docker.testutil.HttpTestServer
-import de.gesellix.docker.testutil.ResourceReader
+import de.gesellix.testutil.ResourceReader
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import spock.lang.Ignore
