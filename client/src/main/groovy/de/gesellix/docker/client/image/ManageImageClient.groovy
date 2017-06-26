@@ -108,7 +108,7 @@ class ManageImageClient implements ManageImage {
     }
 
     @Override
-    history(imageId) {
+    EngineResponse history(imageId) {
         log.info "docker history"
         def response = client.get([path: "/images/${imageId}/history"])
         return response
@@ -145,14 +145,14 @@ class ManageImageClient implements ManageImage {
     }
 
     @Override
-    inspectImage(imageId) {
+    EngineResponse inspectImage(imageId) {
         log.info "docker inspect image"
         def response = client.get([path: "/images/${imageId}/json"])
         return response
     }
 
     @Override
-    load(stream) {
+    EngineResponse load(stream) {
         log.info "docker load"
 
         def response = client.post([path              : "/images/load",
@@ -164,7 +164,7 @@ class ManageImageClient implements ManageImage {
     }
 
     @Override
-    images(query = [:]) {
+    EngineResponse images(query = [:]) {
         log.info "docker images"
         def actualQuery = query ?: [:]
         def defaults = [all: false]
@@ -177,7 +177,7 @@ class ManageImageClient implements ManageImage {
     }
 
     @Override
-    pruneImages(query = [:]) {
+    EngineResponse pruneImages(query = [:]) {
         log.info "docker image prune"
         def actualQuery = query ?: [:]
         queryUtil.jsonEncodeFilters(actualQuery)
@@ -208,7 +208,7 @@ class ManageImageClient implements ManageImage {
     }
 
     @Override
-    push(imageName, authBase64Encoded = ".", registry = "") {
+    EngineResponse push(String imageName, String authBase64Encoded = ".", String registry = "") {
         log.info "docker push '${imageName}'"
 
         def actualImageName = imageName
@@ -226,14 +226,14 @@ class ManageImageClient implements ManageImage {
     }
 
     @Override
-    rmi(imageId) {
+    EngineResponse rmi(imageId) {
         log.info "docker rmi"
         def response = client.delete([path: "/images/${imageId}".toString()])
         return response
     }
 
     @Override
-    save(... images) {
+    EngineResponse save(... images) {
         log.info "docker save"
 
         def response
@@ -250,7 +250,7 @@ class ManageImageClient implements ManageImage {
     }
 
     @Override
-    tag(imageId, repository) {
+    EngineResponse tag(imageId, repository) {
         log.info "docker tag"
         def repoAndTag = repositoryTagParser.parseRepositoryTag(repository)
         def response = client.post([path : "/images/${imageId}/tag".toString(),

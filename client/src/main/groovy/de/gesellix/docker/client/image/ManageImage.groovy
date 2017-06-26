@@ -2,6 +2,7 @@ package de.gesellix.docker.client.image
 
 import de.gesellix.docker.client.DockerAsyncCallback
 import de.gesellix.docker.client.Timeout
+import de.gesellix.docker.engine.EngineResponse
 
 interface ManageImage {
 
@@ -21,7 +22,7 @@ interface ManageImage {
 
 //    history     Show the history of an image
 
-    def history(image)
+    EngineResponse history(image)
 
 //    import      Import the contents from a tarball to create a filesystem image
 
@@ -39,23 +40,23 @@ interface ManageImage {
 
 //    inspect     Display detailed information on one or more images
 
-    def inspectImage(image)
+    EngineResponse inspectImage(image)
 
 //    load        Load an image from a tar archive or STDIN
 
-    def load(stream)
+    EngineResponse load(stream)
 
 //    ls          List images
 
-    def images()
+    EngineResponse images()
 
-    def images(query)
+    EngineResponse images(query)
 
 //    prune       Remove unused images
 
-    def pruneImages()
+    EngineResponse pruneImages()
 
-    def pruneImages(query)
+    EngineResponse pruneImages(query)
 
 //    pull        Pull an image or a repository from a registry
 
@@ -69,21 +70,21 @@ interface ManageImage {
 
 //    push        Push an image or a repository to a registry
 
-    def push(image)
+    EngineResponse push(String image)
 
-    def push(image, authBase64Encoded)
+    EngineResponse push(String image, String authBase64Encoded)
 
-    def push(image, authBase64Encoded, registry)
+    EngineResponse push(String image, String authBase64Encoded, String registry)
 
 //    rm          Remove one or more images
 
-    def rmi(image)
+    EngineResponse rmi(image)
 
 //    save        Save one or more images to a tar archive (streamed to STDOUT by default)
 
-    def save(... images)
+    EngineResponse save(... images)
 
 //    tag         Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE
 
-    def tag(image, repository)
+    EngineResponse tag(image, repository)
 }
