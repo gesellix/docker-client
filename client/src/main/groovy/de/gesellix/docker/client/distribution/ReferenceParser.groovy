@@ -35,7 +35,7 @@ class ReferenceParser {
 
     String DomainRegexp = "${domainComponentRegexp}(?:(?:\\.${domainComponentRegexp})+)?(?::[0-9]+)?"
 
-    String NameRegexp = "(?:${DomainRegexp})?/${nameComponentRegexp}(?:(?:/)+)?${nameComponentRegexp}"
+    String NameRegexp = "(?:${DomainRegexp}/)?${nameComponentRegexp}(?:(?:/${nameComponentRegexp})+)?"
 
     String TagRegexp = "[\\w][\\w.-]{0,127}"
 
@@ -82,10 +82,9 @@ class ReferenceParser {
         log.debug "anchoredNameMatcher.groupCount(): ${anchoredNameMatcher.groupCount()}"
 
         if (anchoredNameMatcher.matches()
-                && anchoredNameMatcher.groupCount() == 3
-                && anchoredNameMatcher.group(1) != null
+                && anchoredNameMatcher.groupCount() >= 2
                 && anchoredNameMatcher.group(2) != null) {
-            repo.domain = anchoredNameMatcher.group(1)
+            repo.domain = anchoredNameMatcher.group(1) ?: ""
             repo.path = anchoredNameMatcher.group(2)
         }
         else {
@@ -158,13 +157,13 @@ class ReferenceParser {
             throw new IllegalArgumentException("invalid checksum digest format")
         }
 
-        def algorithm = s.substring(0, i)
+        def algorithm = s.substring(0, i).toUpperCase()
         if (!knownAlgorithms.contains(algorithm)) {
             throw new IllegalArgumentException("unsupported digest algorithm")
         }
 
         // Digests much always be hex-encoded, ensuring that their hex portion will always be size*2
-        if (algorithmDigestSizes[algorithm] * 2 != s.substring(i + 1)) {
+        if (algorithmDigestSizes[algorithm] * 2 != s.substring(i + 1).length()) {
             throw new IllegalArgumentException("invalid checksum digest length")
         }
     }
