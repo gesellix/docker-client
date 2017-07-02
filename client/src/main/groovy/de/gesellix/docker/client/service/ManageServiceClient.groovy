@@ -41,11 +41,16 @@ class ManageServiceClient implements ManageService {
     }
 
     @Override
-    EngineResponse createService(config, updateOptions = [:]) {
+    EngineResponse createService(config, createOptions = [:]) {
         log.info "docker service create"
         config = config ?: [:]
-        updateOptions = updateOptions ?: [:]
+        createOptions = createOptions ?: [:]
+        def headers = [:]
+        if (createOptions.EncodedRegistryAuth) {
+            headers["X-Registry-Auth"] = createOptions.EncodedRegistryAuth as String
+        }
         def response = client.post([path              : "/services/create",
+                                    headers           : headers,
                                     body              : config,
                                     requestContentType: "application/json"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service create failed"))
@@ -83,8 +88,13 @@ class ManageServiceClient implements ManageService {
         def actualQuery = query ?: [:]
         config = config ?: [:]
         updateOptions = updateOptions ?: [:]
+        def headers = [:]
+        if (updateOptions.EncodedRegistryAuth) {
+            headers["X-Registry-Auth"] = updateOptions.EncodedRegistryAuth as String
+        }
         def response = client.post([path              : "/services/$name/update",
                                     query             : actualQuery,
+                                    headers           : headers,
                                     body              : config,
                                     requestContentType: "application/json"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service update failed"))

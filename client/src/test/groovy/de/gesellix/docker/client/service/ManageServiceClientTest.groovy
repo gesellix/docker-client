@@ -69,6 +69,7 @@ class ManageServiceClientTest extends Specification {
 
         then:
         1 * httpClient.post([path              : "/services/create",
+                             headers           : [:],
                              body              : config,
                              requestContentType: "application/json"]) >> [status: [success: true]]
     }
@@ -115,6 +116,7 @@ class ManageServiceClientTest extends Specification {
         then:
         1 * httpClient.post([path              : "/services/service-name/update",
                              query             : query,
+                             headers           : [:],
                              body              : config,
                              requestContentType: "application/json"]) >> [status: [success: true]]
     }
