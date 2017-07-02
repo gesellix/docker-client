@@ -45,4 +45,26 @@ class ReferenceParserTest extends Specification {
         "test:5000/repo@sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"                                                                                    || [repo: [domain: "test:5000", path: "repo"], digest: "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"]
         "test:5000/repo:tag@sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"                                                                                || [repo: [domain: "test:5000", path: "repo"], tag: "tag", digest: "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"]
     }
+
+    @Unroll
+    def "doesn't parse '#s'"() {
+        when:
+        parser.parse(s)
+        then:
+        thrown(Exception)
+        where:
+        s << [
+                "",
+                ":justtag",
+                "@sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "repo@sha256:ffffffffffffffffffffffffffffffffff",
+                "validname@invaliddigest:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "Uppercase:tag",
+                // FIXME "Uppercase" is incorrectly handled as a domain-name here, therefore passes.
+                // See https://github.com/docker/distribution/pull/1778, and https://github.com/docker/docker/pull/20175
+//                "Uppercase/lowercase:tag",
+                "test:5000/Uppercase/lowercase:tag",
+                "aa/asdf\$\$^/aa",
+        ]
+    }
 }
