@@ -120,7 +120,7 @@ class ReferenceParser {
                 log.debug "--> digest"
                 return ref.digest
             }
-            log.debug "--> null"
+            log.debug "--> null (no name, no digest)"
             return null
         }
         if (!ref.tag) {

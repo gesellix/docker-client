@@ -101,7 +101,7 @@ class DockerClientImpl implements DockerClient {
         this.queryUtil = new QueryUtil()
 
         this.manageSystem = new ManageSystemClient(httpClient, responseHandler)
-        this.manageAuthentication = new ManageAuthenticationClient(env, httpClient, responseHandler)
+        this.manageAuthentication = new ManageAuthenticationClient(env, httpClient, responseHandler, manageSystem)
         this.manageImage = new ManageImageClient(httpClient, responseHandler)
         this.manageDistribution = new ManageDistributionService(httpClient, responseHandler)
         this.manageContainer = new ManageContainerClient(httpClient, responseHandler, manageImage)

@@ -2,6 +2,7 @@ package de.gesellix.docker.client.authentication
 
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.DockerResponseHandler
+import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.engine.DockerEnv
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.testutil.ResourceReader
@@ -20,7 +21,8 @@ class ManageAuthenticationClientTest extends Specification {
         service = Spy(ManageAuthenticationClient, constructorArgs: [
                 env,
                 client,
-                Mock(DockerResponseHandler)])
+                Mock(DockerResponseHandler),
+                Mock(ManageSystem)])
     }
 
     def "read and encode authConfig (old format)"() {
