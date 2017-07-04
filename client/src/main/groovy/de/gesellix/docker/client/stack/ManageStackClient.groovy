@@ -200,11 +200,11 @@ class ManageStackClient implements ManageStack {
             } else {
                 log.info("Creating service ${name}: ${serviceSpec}")
 
-                def updateOptions = [:]
+                def createOptions = [:]
                 if (sendRegistryAuth) {
-                    updateOptions.EncodedRegistryAuth = encodedAuth
+                    createOptions.EncodedRegistryAuth = encodedAuth
                 }
-                def response = manageService.createService(toMap(serviceSpec), updateOptions)
+                def response = manageService.createService(toMap(serviceSpec), createOptions)
             }
         }
     }
