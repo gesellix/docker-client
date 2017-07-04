@@ -25,7 +25,7 @@ class DockerDistributionIntegrationSpec extends Specification {
         alpineDescriptor.content == [
                 Descriptor: [
                         mediaType: "application/vnd.docker.distribution.manifest.v2+json",
-                        digest   : "sha256:a436069451b8e07a83898775e1413274321cd02f54f9617f2cb2aff8fa2ba14e",
+                        digest   : "sha256:84cada644406eed697ebf7fcd619764dd0140e516544e6690f4f7153a77410fd",
                         size     : 528
                 ],
                 Platforms : [
