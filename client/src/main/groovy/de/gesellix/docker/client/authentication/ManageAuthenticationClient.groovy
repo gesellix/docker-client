@@ -120,10 +120,10 @@ class ManageAuthenticationClient implements ManageAuthentication {
         return response
     }
 
+    @Override
     String retrieveEncodedAuthTokenForImage(String image) {
-        return ""
-//        def authConfig = resolveAuthConfigForImage(image)
-//        return encodeAuthConfig(authConfig)
+        def authConfig = resolveAuthConfigForImage(image)
+        return encodeAuthConfig(authConfig)
     }
 
     def resolveAuthConfigForImage(String image) {
