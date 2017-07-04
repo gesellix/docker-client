@@ -13,7 +13,7 @@ import spock.lang.Specification
 import java.util.concurrent.CountDownLatch
 import java.util.regex.Pattern
 
-import static TestConstants.CONSTANTS
+import static de.gesellix.docker.client.TestConstants.CONSTANTS
 import static java.util.concurrent.TimeUnit.SECONDS
 
 @Slf4j
@@ -142,6 +142,7 @@ class DockerImageIntegrationSpec extends Specification {
         CountDownLatch latch = new CountDownLatch(1)
         def events = []
         def response = dockerClient.build(newBuildContext(inputDirectory), [rm: true], new DockerAsyncCallback() {
+
             @Override
             onEvent(Object event) {
                 def parsedEvent = new JsonSlurper().parseText(event as String)
@@ -158,7 +159,8 @@ class DockerImageIntegrationSpec extends Specification {
         then:
         if (isNativeWindows) {
             events.first().stream =~ "Step 1(/10)? : FROM microsoft/nanoserver\n"
-        } else {
+        }
+        else {
             events.first().stream =~ "Step 1(/10)? : FROM alpine:edge\n"
         }
         def imageId = events.last().stream.trim() - "Successfully built "
@@ -182,7 +184,8 @@ class DockerImageIntegrationSpec extends Specification {
         then:
         if (isNativeWindows) {
             result.log.first().stream =~ "Step 1(/10)? : FROM microsoft/nanoserver\n"
-        } else {
+        }
+        else {
             result.log.first().stream =~ "Step 1(/10)? : FROM alpine:edge\n"
         }
         result.log.last().stream.startsWith("Successfully built ")
@@ -205,6 +208,7 @@ class DockerImageIntegrationSpec extends Specification {
         CountDownLatch latch = new CountDownLatch(1)
         def events = []
         def result = dockerClient.build(newBuildContext(inputDirectory), [rm: true], new DockerAsyncCallback() {
+
             @Override
             onEvent(Object event) {
                 def parsedEvent = new JsonSlurper().parseText(event as String)
@@ -223,14 +227,16 @@ class DockerImageIntegrationSpec extends Specification {
         println events
         if (isNativeWindows) {
             events.get(0).stream =~ "Step 1(/2)? : FROM microsoft/nanoserver\n"
-        } else {
+        }
+        else {
             events.get(0).stream =~ "Step 1(/2)? : FROM alpine:edge\n"
         }
         events.get(1).stream =~ "\\s---> \\w+\n"
         events.get(2).stream =~ "Step 2(/2)? : RUN i-will-fail\n"
         if (isNativeWindows) {
             events.get(5).error == "The command 'cmd /S /C i-will-fail' returned a non-zero code: 1"
-        } else {
+        }
+        else {
             events.get(5).error == "The command '/bin/sh -c i-will-fail' returned a non-zero code: 127"
         }
         def containerId = getContainerId(events.get(3).stream as String)
@@ -329,7 +335,8 @@ class DockerImageIntegrationSpec extends Specification {
         def matcher = Pattern.compile(pattern).matcher(input)
         if (matcher.find()) {
             return matcher.group(1)
-        } else {
+        }
+        else {
             return null
         }
     }
