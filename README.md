@@ -110,22 +110,7 @@ Running a container being available on the host via HTTP port 4712 can be achiev
 ### Example 4: `docker stack deploy --compose-file docker-stack.yml example`
     
     def dockerClient = new DockerClientImpl()
-    dockerClient.initSwarm([
-            "ListenAddr"     : "0.0.0.0:4554",
-            "ForceNewCluster": false,
-            "Spec"           : [
-                    "AcceptancePolicy": [
-                            "Policies": [
-                                    ["Role": "MANAGER", "Autoaccept": true],
-                                    ["Role": "WORKER", "Autoaccept": true]
-                            ]
-                    ],
-                    "Orchestration"   : [:],
-                    "Raft"            : [:],
-                    "Dispatcher"      : [:],
-                    "CAConfig"        : [:]
-            ]
-    ])
+    dockerClient.initSwarm()
 
     def namespace = "example"
     def composeStack = getClass().getResourceAsStream('docker-stack.yml')
