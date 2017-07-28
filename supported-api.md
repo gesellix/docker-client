@@ -18,13 +18,13 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 * [ ] `docker checkpoints ls`: List checkpoints for a container
 * [ ] `docker checkpoints rm`: Remove a checkpoint
 
-## Config - Manage Docker configs (0/5)
+## Config - Manage Docker configs (5/5)
 
-* [ ] `GET /configs`
-* [ ] `POST /configs/create`
-* [ ] `DELETE /configs/{id}`
-* [ ] `GET /configs/{id}`
-* [ ] `POST /configs/{id}/update`
+* [x] `GET /configs`: List configs
+* [x] `POST /configs/create`: Create a config
+* [x] `DELETE /configs/{id}`: Delete a config
+* [x] `GET /configs/{id}`: Inspect a config
+* [x] `POST /configs/{id}/update`: Update a config
 
 ## Container - Manage containers (31/32)
 

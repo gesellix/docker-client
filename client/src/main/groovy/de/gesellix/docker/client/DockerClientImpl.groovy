@@ -2,6 +2,8 @@ package de.gesellix.docker.client
 
 import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.client.authentication.ManageAuthenticationClient
+import de.gesellix.docker.client.config.ManageConfig
+import de.gesellix.docker.client.config.ManageConfigClient
 import de.gesellix.docker.client.container.ManageContainer
 import de.gesellix.docker.client.container.ManageContainerClient
 import de.gesellix.docker.client.distribution.ManageDistribution
@@ -66,6 +68,8 @@ class DockerClientImpl implements DockerClient {
     @Delegate
     ManageSecret manageSecret
     @Delegate
+    ManageConfig manageConfig
+    @Delegate
     ManageService manageService
     @Delegate
     ManageStack manageStack
@@ -109,6 +113,7 @@ class DockerClientImpl implements DockerClient {
         this.manageNetwork = new ManageNetworkClient(httpClient, responseHandler)
         this.manageSwarm = new ManageSwarmClient(httpClient, responseHandler)
         this.manageSecret = new ManageSecretClient(httpClient, responseHandler)
+        this.manageConfig = new ManageConfigClient(httpClient, responseHandler)
         this.manageTask = new ManageTaskClient(httpClient, responseHandler)
         NodeUtil nodeUtil = new NodeUtil(manageSystem)
         this.manageService = new ManageServiceClient(httpClient, responseHandler, manageTask, nodeUtil)
@@ -121,6 +126,7 @@ class DockerClientImpl implements DockerClient {
                 manageNode,
                 manageNetwork,
                 manageSecret,
+                manageConfig,
                 manageSystem,
                 manageAuthentication)
     }
