@@ -126,6 +126,7 @@ class DockerClientImpl implements DockerClient {
                 manageNode,
                 manageNetwork,
                 manageSecret,
+                manageConfig,
                 manageSystem,
                 manageAuthentication)
     }

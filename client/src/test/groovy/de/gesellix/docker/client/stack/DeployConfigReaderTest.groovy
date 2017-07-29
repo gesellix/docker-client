@@ -4,11 +4,11 @@ import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.stack.types.StackNetwork
 import de.gesellix.docker.client.stack.types.StackSecret
 import de.gesellix.docker.compose.types.Command
-import de.gesellix.docker.compose.types.Config
 import de.gesellix.docker.compose.types.DriverOpts
 import de.gesellix.docker.compose.types.External
 import de.gesellix.docker.compose.types.Healthcheck
 import de.gesellix.docker.compose.types.Ipam
+import de.gesellix.docker.compose.types.IpamConfig
 import de.gesellix.docker.compose.types.Labels
 import de.gesellix.docker.compose.types.Limits
 import de.gesellix.docker.compose.types.Network
@@ -69,7 +69,7 @@ class DeployConfigReaderTest extends Specification {
                 driverOpts: new DriverOpts(["opt": "value"]),
                 ipam: new Ipam(
                         driver: "driver",
-                        config: [new Config(subnet: '10.0.0.0')]
+                        config: [new IpamConfig(subnet: '10.0.0.0')]
                 ),
                 labels: new Labels(["something": "labeled"])
         )

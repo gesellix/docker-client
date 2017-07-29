@@ -1,4 +1,4 @@
-version: "3.1"
+version: "3.4"
 
 services:
 
@@ -77,6 +77,9 @@ services:
       - another_secret
       - source: a_secret
         mode: 0444
+    configs:
+      - source: a_config
+        mode: 0444
 
   visualizer:
     image: dockersamples/visualizer:stable
@@ -101,3 +104,7 @@ secrets:
     file: my-secrets.txt
   another_secret:
     file: my-secrets.txt
+
+configs:
+  a_config:
+    file: my-config.txt

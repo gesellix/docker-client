@@ -2,6 +2,7 @@ package de.gesellix.docker.client.stack
 
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.authentication.ManageAuthentication
+import de.gesellix.docker.client.config.ManageConfig
 import de.gesellix.docker.client.network.ManageNetwork
 import de.gesellix.docker.client.node.ManageNode
 import de.gesellix.docker.client.secret.ManageSecret
@@ -26,6 +27,7 @@ class ManageStackClientTest extends Specification {
     ManageNode manageNode = Mock(ManageNode)
     ManageNetwork manageNetwork = Mock(ManageNetwork)
     ManageSecret manageSecret = Mock(ManageSecret)
+    ManageConfig manageConfig = Mock(ManageConfig)
     ManageSystem manageSystem = Mock(ManageSystem)
     ManageAuthentication manageAuthentication = Mock(ManageAuthentication)
 
@@ -40,6 +42,7 @@ class ManageStackClientTest extends Specification {
                 manageNode,
                 manageNetwork,
                 manageSecret,
+                manageConfig,
                 manageSystem,
                 manageAuthentication)
     }

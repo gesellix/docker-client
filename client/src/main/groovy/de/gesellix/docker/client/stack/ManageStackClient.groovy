@@ -2,10 +2,12 @@ package de.gesellix.docker.client.stack
 
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.authentication.ManageAuthentication
+import de.gesellix.docker.client.config.ManageConfig
 import de.gesellix.docker.client.network.ManageNetwork
 import de.gesellix.docker.client.node.ManageNode
 import de.gesellix.docker.client.secret.ManageSecret
 import de.gesellix.docker.client.service.ManageService
+import de.gesellix.docker.client.stack.types.StackConfig
 import de.gesellix.docker.client.stack.types.StackNetwork
 import de.gesellix.docker.client.stack.types.StackSecret
 import de.gesellix.docker.client.stack.types.StackService
@@ -28,6 +30,7 @@ class ManageStackClient implements ManageStack {
     private ManageNode manageNode
     private ManageNetwork manageNetwork
     private ManageSecret manageSecret
+    private ManageConfig manageConfig
     private ManageSystem manageSystem
     private ManageAuthentication manageAuthentication
 
@@ -42,6 +45,7 @@ class ManageStackClient implements ManageStack {
             ManageNode manageNode,
             ManageNetwork manageNetwork,
             ManageSecret manageSecret,
+            ManageConfig manageConfig,
             ManageSystem manageSystem,
             ManageAuthentication manageAuthentication) {
         this.client = client
@@ -52,6 +56,7 @@ class ManageStackClient implements ManageStack {
         this.manageNode = manageNode
         this.manageNetwork = manageNetwork
         this.manageSecret = manageSecret
+        this.manageConfig = manageConfig
         this.manageSystem = manageSystem
         this.manageAuthentication = manageAuthentication
     }
@@ -95,6 +100,7 @@ class ManageStackClient implements ManageStack {
 
         createNetworks(namespace, config.networks)
         createSecrets(namespace, config.secrets)
+        createConfigs(namespace, config.configs)
         createOrUpdateServices(namespace, config.services, options.sendRegistryAuth)
     }
 
@@ -139,6 +145,30 @@ class ManageStackClient implements ManageStack {
                 def knownSecret = knownSecrets.first()
                 log.info("update secret ${secret.name}: $secret")
                 manageSecret.updateSecret(knownSecret.ID as String, knownSecret.Version.Index, toMap(secret))
+            }
+        }
+    }
+
+    def createConfigs(String namespace, Map<String, StackConfig> configs) {
+        configs.each { name, config ->
+            List knownConfigs = manageConfig.configs([filters: [name: [config.name]]]).content
+            log.debug("known: $knownConfigs")
+
+            if (!config.labels) {
+                config.labels = [:]
+            }
+            config.labels[(LabelNamespace)] = namespace
+
+            if (knownConfigs.empty) {
+                log.info("create config ${config.name}: $config")
+                manageConfig.createConfig(config.name, config.data, config.labels)
+            } else {
+                if (knownConfigs.size() != 1) {
+                    throw new IllegalStateException("ambiguous config name '${config.name}'")
+                }
+                def knownConfig = knownConfigs.first()
+                log.info("update config ${config.name}: $config")
+                manageConfig.updateConfig(knownConfig.ID as String, knownConfig.Version.Index, toMap(config))
             }
         }
     }

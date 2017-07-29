@@ -4,6 +4,7 @@ import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.stack.types.MountPropagation
 import de.gesellix.docker.client.stack.types.ResolutionMode
 import de.gesellix.docker.client.stack.types.RestartPolicyCondition
+import de.gesellix.docker.client.stack.types.StackConfig
 import de.gesellix.docker.client.stack.types.StackNetwork
 import de.gesellix.docker.client.stack.types.StackSecret
 import de.gesellix.docker.client.stack.types.StackService
@@ -13,6 +14,7 @@ import de.gesellix.docker.compose.types.Config
 import de.gesellix.docker.compose.types.Environment
 import de.gesellix.docker.compose.types.ExtraHosts
 import de.gesellix.docker.compose.types.Healthcheck
+import de.gesellix.docker.compose.types.IpamConfig
 import de.gesellix.docker.compose.types.Logging
 import de.gesellix.docker.compose.types.Network
 import de.gesellix.docker.compose.types.PortConfigs
@@ -68,11 +70,13 @@ class DeployConfigReader {
         List<String> externals
         (networkConfigs, externals) = networks(namespace, serviceNetworkNames, composeConfig.networks ?: [:])
         def secrets = secrets(namespace, composeConfig.secrets, workingDir)
+        def configs = configs(namespace, composeConfig.configs, workingDir)
         def services = services(namespace, composeConfig.services, composeConfig.networks, composeConfig.volumes)
 
         def cfg = new DeployStackConfig()
         cfg.networks = networkConfigs
         cfg.secrets = secrets
+        cfg.configs = configs
         cfg.services = services
         return cfg
     }
@@ -201,7 +205,7 @@ class DeployConfigReader {
             String namespacedName = "${namespace}_${networkName}" as String
 
             String target = namespacedName
-            if (networkConfigs?.containsKey(networkName)){
+            if (networkConfigs?.containsKey(networkName)) {
                 def networkConfig = networkConfigs[networkName]
                 if (networkConfig?.external?.external && networkConfig?.external?.name) {
                     target = networkConfig.external.name
@@ -518,6 +522,9 @@ class DeployConfigReader {
                 ]
             }
             source = "${namespace}_${source}" as String
+            if (stackVolume?.name) {
+                source = stackVolume.name
+            }
         }
 
         return [
@@ -618,7 +625,7 @@ class DeployConfigReader {
                 }
                 if (network.ipam?.config) {
                     createOpts.ipam.config = []
-                    network.ipam.config.each { Config config ->
+                    network.ipam.config.each { IpamConfig config ->
                         createOpts.ipam.config << [subnet: config.subnet]
                     }
                 }
@@ -673,5 +680,29 @@ class DeployConfigReader {
         }
         log.info("secrets ${secretSpec.keySet()}")
         return secretSpec
+    }
+
+    Map<String, StackConfig> configs(String namespace, Map<String, Config> configs, String workingDir) {
+        Map<String, StackConfig> configSpec = [:]
+        configs.each { name, config ->
+            if (!config.external.external) {
+                Path filePath = Paths.get(workingDir, config.file)
+                byte[] data = Files.readAllBytes(filePath)
+
+                def labels = new HashMap<String, String>()
+                if (config.labels?.entries) {
+                    labels.putAll(config.labels.entries)
+                }
+                labels[ManageStackClient.LabelNamespace] = namespace
+
+                configSpec[name] = new StackConfig(
+                        name: ("${namespace}_${name}" as String),
+                        data: data,
+                        labels: labels
+                )
+            }
+        }
+        log.info("config ${configSpec.keySet()}")
+        return configSpec
     }
 }

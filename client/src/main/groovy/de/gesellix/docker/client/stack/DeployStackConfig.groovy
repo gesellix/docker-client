@@ -1,5 +1,6 @@
 package de.gesellix.docker.client.stack
 
+import de.gesellix.docker.client.stack.types.StackConfig
 import de.gesellix.docker.client.stack.types.StackNetwork
 import de.gesellix.docker.client.stack.types.StackSecret
 import de.gesellix.docker.client.stack.types.StackService
@@ -11,4 +12,5 @@ class DeployStackConfig {
     Map<String, StackNetwork> networks = [:]
     Map<String, StackVolume> volumes = [:]
     Map<String, StackSecret> secrets = [:]
+    Map<String, StackConfig> configs = [:]
 }
