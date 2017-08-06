@@ -206,7 +206,7 @@ class ManageStackClientTest extends Specification {
                 'attachable': false])
 
         and:
-        1 * manageSecret.secrets([filters: [names: ["secret-name-1"]]]) >> new EngineResponse(
+        1 * manageSecret.secrets([filters: [name: ["secret-name-1"]]]) >> new EngineResponse(
                 content: []
         )
         1 * manageSecret.createSecret("secret-name-1", 'secret'.bytes, [(LabelNamespace): namespace])
