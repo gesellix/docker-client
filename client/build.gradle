@@ -29,7 +29,7 @@ repositories {
 }
 
 dependencies {
-    compile 'de.gesellix:docker-engine:2017-07-24T09-05-54'
+    compile 'de.gesellix:docker-engine:2017-08-01T21-37-25'
     compile 'de.gesellix:docker-compose:2017-07-29T21-05-39'
 
     compile 'org.codehaus.groovy:groovy:2.4.11'
