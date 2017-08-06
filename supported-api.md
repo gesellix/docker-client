@@ -1,6 +1,6 @@
 # Supported Features
 
-*feature set based on the [Docker Engine API v1.26](https://docs.docker.com/engine/api/v1.26/)*
+*feature set based on the [Docker Engine API v1.31](https://docs.docker.com/engine/api/v1.31/)*
 
 Since the Docker engine api tends to be backwards compatible,
 the Docker Client currently supports most other api versions, too.
