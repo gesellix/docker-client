@@ -33,6 +33,28 @@ class LocalDocker {
         }
     }
 
+    static supportsSecrets() {
+        try {
+            def version = getDockerVersion()
+            return (version.major >= 1 && version.minor >= 13) || version.major >= 17
+        }
+        catch (Exception e) {
+            log.info("Docker not available", e)
+            return false
+        }
+    }
+
+    static supportsConfigs() {
+        try {
+            def version = getDockerVersion()
+            return version.major >= 17 && version.minor >= 6
+        }
+        catch (Exception e) {
+            log.info("Docker not available", e)
+            return false
+        }
+    }
+
     static supportsStack() {
         try {
             def version = getDockerVersion()

@@ -5,7 +5,7 @@ import spock.lang.Requires
 import spock.lang.Specification
 
 @Slf4j
-@Requires({ LocalDocker.available() && LocalDocker.supportsSwarmMode() })
+@Requires({ LocalDocker.available() && LocalDocker.supportsConfigs() })
 class DockerServiceConfigIntegrationSpec extends Specification {
 
     static DockerClient dockerClient
