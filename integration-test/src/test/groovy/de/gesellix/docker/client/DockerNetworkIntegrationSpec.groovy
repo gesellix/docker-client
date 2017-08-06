@@ -45,7 +45,7 @@ class DockerNetworkIntegrationSpec extends Specification {
         performSilently { dockerClient.rmNetwork('test-net') }
     }
 
-    @Requires({ LocalDocker.hasSwarmMode() })
+    @Requires({ LocalDocker.supportsSwarmMode() })
     def "create overlay network"() {
         given:
         performSilently { dockerClient.leaveSwarm([force: true]) }

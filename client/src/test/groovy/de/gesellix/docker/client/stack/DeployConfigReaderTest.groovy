@@ -11,24 +11,28 @@ import de.gesellix.docker.compose.types.Ipam
 import de.gesellix.docker.compose.types.IpamConfig
 import de.gesellix.docker.compose.types.Labels
 import de.gesellix.docker.compose.types.Limits
-import de.gesellix.docker.compose.types.Network
 import de.gesellix.docker.compose.types.PortConfig
 import de.gesellix.docker.compose.types.PortConfigs
 import de.gesellix.docker.compose.types.Reservations
 import de.gesellix.docker.compose.types.Resources
-import de.gesellix.docker.compose.types.Secret
 import de.gesellix.docker.compose.types.ServiceNetwork
-import de.gesellix.docker.compose.types.Volume
+import de.gesellix.docker.compose.types.ServiceVolume
+import de.gesellix.docker.compose.types.ServiceVolumeBind
+import de.gesellix.docker.compose.types.ServiceVolumeVolume
+import de.gesellix.docker.compose.types.StackVolume
+import spock.lang.Ignore
 import spock.lang.Specification
 
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 
-import static de.gesellix.docker.client.stack.types.MountPropagation.PropagationShared
-import static de.gesellix.docker.client.stack.types.MountPropagation.PropagationSlave
 import static de.gesellix.docker.client.stack.types.ResolutionMode.ResolutionModeDNSRR
 import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.RestartPolicyConditionAny
 import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.RestartPolicyConditionOnFailure
+import static de.gesellix.docker.compose.types.MountPropagation.PropagationShared
+import static de.gesellix.docker.compose.types.MountPropagation.PropagationSlave
+import static de.gesellix.docker.compose.types.ServiceVolumeType.TypeBind
+import static de.gesellix.docker.compose.types.ServiceVolumeType.TypeVolume
 
 class DeployConfigReaderTest extends Specification {
 
@@ -40,7 +44,7 @@ class DeployConfigReaderTest extends Specification {
 
     def "converts secrets"() {
         given:
-        def secret1 = new Secret()
+        def secret1 = new de.gesellix.docker.compose.types.StackSecret()
         def secret1File = getClass().getResource('/secrets/secret1.txt').file
         def secret1FileDirectory = new File(secret1File).parent
         secret1.file = 'secret1.txt'
@@ -49,7 +53,7 @@ class DeployConfigReaderTest extends Specification {
         def result = reader.secrets(
                 "name-space",
                 ['secret-1'  : secret1,
-                 'ext-secret': new Secret(external: new External(external: true))],
+                 'ext-secret': new de.gesellix.docker.compose.types.StackSecret(external: new External(external: true))],
                 secret1FileDirectory
         )
 
@@ -64,7 +68,7 @@ class DeployConfigReaderTest extends Specification {
 
     def "converts networks"() {
         given:
-        def normalNet = new Network(
+        def normalNet = new de.gesellix.docker.compose.types.StackNetwork(
                 driver: "overlay",
                 driverOpts: new DriverOpts(["opt": "value"]),
                 ipam: new Ipam(
@@ -73,11 +77,11 @@ class DeployConfigReaderTest extends Specification {
                 ),
                 labels: new Labels(["something": "labeled"])
         )
-        def outsideNet = new Network(
+        def outsideNet = new de.gesellix.docker.compose.types.StackNetwork(
                 external: new External(
                         external: true,
                         name: "special"))
-        def attachableNet = new Network(
+        def attachableNet = new de.gesellix.docker.compose.types.StackNetwork(
                 driver: "overlay",
                 attachable: true)
 
@@ -207,17 +211,20 @@ class DeployConfigReaderTest extends Specification {
 
     def "test getBindOptions with known mode"() {
         expect:
-        reader.getBindOptions(["slave"]) == [propagation: PropagationSlave.value]
+        reader.getBindOptions(new ServiceVolumeBind(propagation: PropagationSlave.propagation)) == [propagation: PropagationSlave.propagation]
     }
 
     def "test getBindOptions with unknown mode"() {
         expect:
-        reader.getBindOptions(["ro"]) == null
+        reader.getBindOptions(new ServiceVolumeBind()) == null
     }
 
     def "test ConvertVolumeToMountAnonymousVolume"() {
         when:
-        def mounts = reader.volumeToMount("name-space", "/foo/bar", [:])
+        def mounts = reader.volumeToMount(
+                "name-space",
+                new ServiceVolume(type: TypeVolume.typeName, target: "/foo/bar"),
+                [:])
         then:
         mounts == [
                 type  : "volume",
@@ -225,9 +232,14 @@ class DeployConfigReaderTest extends Specification {
         ]
     }
 
+    // TODO move to docker-compose-v3 project
+    @Ignore
     def "test ConvertVolumeToMountInvalidFormat"() {
         when:
-        reader.volumeToMount("name-space", volume, [:])
+        reader.volumeToMount(
+                "name-space",
+                new ServiceVolume(type: TypeVolume.typeName, target: volume),
+                [:])
         then:
         def exc = thrown(IllegalArgumentException)
         exc.message == "invalid volume: $volume"
@@ -236,14 +248,17 @@ class DeployConfigReaderTest extends Specification {
     }
 
     def "test ConvertVolumeToMountNamedVolume"() {
-        def stackVolumes = ["normal": new Volume(
+        def stackVolumes = ["normal": new StackVolume(
                 driver: "glusterfs",
                 driverOpts: new DriverOpts(["opt": "value"]),
                 labels: new Labels(["something": "labeled"])
         )]
 
         when:
-        def mount = reader.volumeToMount("name-space", "normal:/foo:ro", stackVolumes)
+        def mount = reader.volumeToMount(
+                "name-space",
+                new ServiceVolume(type: TypeVolume.typeName, source: "normal", target: "/foo", readOnly: true),
+                stackVolumes)
 
         then:
         mount == [
@@ -268,7 +283,7 @@ class DeployConfigReaderTest extends Specification {
     }
 
     def "test ConvertVolumeToMountNamedVolumeExternal"() {
-        def stackVolumes = ["outside": new Volume(
+        def stackVolumes = ["outside": new StackVolume(
                 external: new External(
                         external: true,
                         name: "special"
@@ -276,7 +291,10 @@ class DeployConfigReaderTest extends Specification {
         )]
 
         when:
-        def mount = reader.volumeToMount("name-space", "outside:/foo", stackVolumes)
+        def mount = reader.volumeToMount(
+                "name-space",
+                new ServiceVolume(type: TypeVolume.typeName, source: "outside", target: "/foo"),
+                stackVolumes)
 
         then:
         mount == [
@@ -291,7 +309,7 @@ class DeployConfigReaderTest extends Specification {
     }
 
     def "test ConvertVolumeToMountNamedVolumeExternalNoCopy"() {
-        def stackVolumes = ["outside": new Volume(
+        def stackVolumes = ["outside": new StackVolume(
                 external: new External(
                         external: true,
                         name: "special"
@@ -299,7 +317,10 @@ class DeployConfigReaderTest extends Specification {
         )]
 
         when:
-        def mount = reader.volumeToMount("name-space", "outside:/foo:nocopy", stackVolumes)
+        def mount = reader.volumeToMount(
+                "name-space",
+                new ServiceVolume(type: TypeVolume.typeName, source: "outside", target: "/foo", volume: new ServiceVolumeVolume(true)),
+                stackVolumes)
 
         then:
         mount == [
@@ -315,7 +336,10 @@ class DeployConfigReaderTest extends Specification {
 
     def "test ConvertVolumeToMountBind"() {
         when:
-        def mount = reader.volumeToMount("name-space", "/bar:/foo:ro,shared", [:])
+        def mount = reader.volumeToMount(
+                "name-space",
+                new ServiceVolume(type: TypeBind.typeName, source: "/bar", target: "/foo", readOnly: true, bind: new ServiceVolumeBind(propagation: PropagationShared.propagation)),
+                [:])
 
         then:
         mount == [
@@ -324,14 +348,17 @@ class DeployConfigReaderTest extends Specification {
                 target     : "/foo",
                 readOnly   : true,
                 bindOptions: [
-                        propagation: PropagationShared.value
+                        propagation: PropagationShared.propagation
                 ]
         ]
     }
 
     def "test ConvertVolumeToMountVolumeDoesNotExist"() {
         when:
-        reader.volumeToMount("name-space", "unknown:/foo:ro", [:])
+        reader.volumeToMount(
+                "name-space",
+                new ServiceVolume(type: TypeVolume.typeName, source: "unknown", target: "/foo", readOnly: true),
+                [:])
         then:
         def exc = thrown(IllegalArgumentException)
         exc.message == "undefined volume: unknown"
@@ -450,7 +477,11 @@ class DeployConfigReaderTest extends Specification {
         given:
         def networkConfigs = [:]
         when:
-        def result = reader.convertServiceNetworks(null, networkConfigs, "name-space", "service")
+        def result = reader.convertServiceNetworks(
+                null,
+                networkConfigs,
+                "name-space",
+                "service")
         then:
         result == [
                 [
@@ -462,20 +493,24 @@ class DeployConfigReaderTest extends Specification {
 
     def "test ConvertServiceNetworks"() {
         given:
-        Map<String, Network> networkConfigs = [
-                "front": new Network(
+        Map<String, de.gesellix.docker.compose.types.StackNetwork> networkConfigs = [
+                "front": new de.gesellix.docker.compose.types.StackNetwork(
                         external: new External(
                                 external: true,
                                 name: "fronttier"
                         )),
-                "back" : new Network(),
+                "back" : new de.gesellix.docker.compose.types.StackNetwork(),
         ]
         Map<String, ServiceNetwork> networks = [
                 "front": new ServiceNetwork(aliases: ["something"]),
                 "back" : new ServiceNetwork(aliases: ["other"]),
         ]
         when:
-        def result = reader.convertServiceNetworks(networks, networkConfigs, "name-space", "service")
+        def result = reader.convertServiceNetworks(
+                networks,
+                networkConfigs,
+                "name-space",
+                "service")
         then:
         result == [
                 [
@@ -491,8 +526,8 @@ class DeployConfigReaderTest extends Specification {
 
     def "test ConvertServiceNetworksCustomDefault"() {
         given:
-        Map<String, Network> networkConfigs = [
-                "default": new Network(
+        Map<String, de.gesellix.docker.compose.types.StackNetwork> networkConfigs = [
+                "default": new de.gesellix.docker.compose.types.StackNetwork(
                         external: new External(
                                 external: true,
                                 name: "custom"
@@ -500,7 +535,11 @@ class DeployConfigReaderTest extends Specification {
         ]
         Map<String, ServiceNetwork> networks = [:]
         when:
-        def result = reader.convertServiceNetworks(networks, networkConfigs, "name-space", "service")
+        def result = reader.convertServiceNetworks(
+                networks,
+                networkConfigs,
+                "name-space",
+                "service")
         then:
         result == [
                 [

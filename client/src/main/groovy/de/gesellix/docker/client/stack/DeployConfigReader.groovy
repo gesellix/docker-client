@@ -1,7 +1,6 @@
 package de.gesellix.docker.client.stack
 
 import de.gesellix.docker.client.DockerClient
-import de.gesellix.docker.client.stack.types.MountPropagation
 import de.gesellix.docker.client.stack.types.ResolutionMode
 import de.gesellix.docker.client.stack.types.RestartPolicyCondition
 import de.gesellix.docker.client.stack.types.StackConfig
@@ -10,21 +9,20 @@ import de.gesellix.docker.client.stack.types.StackSecret
 import de.gesellix.docker.client.stack.types.StackService
 import de.gesellix.docker.compose.ComposeFileReader
 import de.gesellix.docker.compose.types.ComposeConfig
-import de.gesellix.docker.compose.types.Config
 import de.gesellix.docker.compose.types.Environment
 import de.gesellix.docker.compose.types.ExtraHosts
 import de.gesellix.docker.compose.types.Healthcheck
 import de.gesellix.docker.compose.types.IpamConfig
 import de.gesellix.docker.compose.types.Logging
-import de.gesellix.docker.compose.types.Network
 import de.gesellix.docker.compose.types.PortConfigs
 import de.gesellix.docker.compose.types.Resources
 import de.gesellix.docker.compose.types.RestartPolicy
-import de.gesellix.docker.compose.types.Secret
-import de.gesellix.docker.compose.types.Service
 import de.gesellix.docker.compose.types.ServiceNetwork
+import de.gesellix.docker.compose.types.ServiceVolume
+import de.gesellix.docker.compose.types.ServiceVolumeBind
+import de.gesellix.docker.compose.types.ServiceVolumeType
+import de.gesellix.docker.compose.types.StackVolume
 import de.gesellix.docker.compose.types.UpdateConfig
-import de.gesellix.docker.compose.types.Volume
 import groovy.util.logging.Slf4j
 
 import java.nio.file.Files
@@ -37,6 +35,7 @@ import java.util.regex.Pattern
 import static de.gesellix.docker.client.stack.types.ResolutionMode.ResolutionModeVIP
 import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.RestartPolicyConditionAny
 import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.RestartPolicyConditionOnFailure
+import static de.gesellix.docker.compose.types.ServiceVolumeType.TypeVolume
 import static java.lang.Double.parseDouble
 import static java.lang.Integer.parseInt
 
@@ -56,7 +55,7 @@ class DeployConfigReader {
         ComposeConfig composeConfig = composeFileReader.load(composeFile, workingDir, System.getenv())
         log.info("composeContent: $composeConfig}")
 
-        List<String> serviceNetworkNames = composeConfig.services.collect { String name, Service service ->
+        List<String> serviceNetworkNames = composeConfig.services.collect { String name, de.gesellix.docker.compose.types.StackService service ->
             if (!service.networks) {
                 return ["default"]
             }
@@ -83,9 +82,9 @@ class DeployConfigReader {
 
     def services(
             String namespace,
-            Map<String, Service> services,
-            Map<String, Network> networks,
-            Map<String, Volume> volumes) {
+            Map<String, de.gesellix.docker.compose.types.StackService> services,
+            Map<String, de.gesellix.docker.compose.types.StackNetwork> networks,
+            Map<String, StackVolume> volumes) {
         Map<String, StackService> serviceSpec = [:]
         services.each { name, service ->
             def serviceLabels = service.deploy?.labels?.entries ?: [:]
@@ -118,8 +117,9 @@ class DeployConfigReader {
                             labels         : containerLabels,
                             dir            : service.workingDir,
                             user           : service.user,
-                            mounts         : volumesToMounts(namespace, service.volumes as List, volumes),
+                            mounts         : volumesToMounts(namespace, service.volumes as List<ServiceVolume>, volumes),
                             stopGracePeriod: stopGracePeriod,
+                            stopSignal     : service.stopSignal,
                             tty            : service.tty,
                             openStdin      : service.stdinOpen,
 //                            secrets        : secrets,
@@ -176,12 +176,13 @@ class DeployConfigReader {
                 failureAction  : updateConfig.failureAction,
                 monitor        : monitor,
                 maxFailureRatio: updateConfig.maxFailureRatio,
+                order          : updateConfig.order
         ]
     }
 
     def convertServiceNetworks(
             Map<String, ServiceNetwork> serviceNetworks,
-            Map<String, Network> networkConfigs,
+            Map<String, de.gesellix.docker.compose.types.StackNetwork> networkConfigs,
             String namespace,
             String serviceName) {
 
@@ -433,77 +434,42 @@ class DeployConfigReader {
         return resourceRequirements
     }
 
-    def volumesToMounts(String namespace, List<String> serviceVolumes, Map<String, Volume> stackVolumes) {
+    def volumesToMounts(String namespace, List<ServiceVolume> serviceVolumes, Map<String, StackVolume> stackVolumes) {
         def mounts = serviceVolumes.collect { serviceVolume ->
             return volumeToMount(namespace, serviceVolume, stackVolumes)
         }
         return mounts
     }
 
-    // TypeBind is the type for mounting host dir
-    String TypeBind = "bind"
-    // TypeVolume is the type for remote storage volumes
-    String TypeVolume = "volume"
-    // TypeTmpfs is the type for mounting tmpfs
-    String TypeTmpfs = "tmpfs"
-
-    Map volumeToMount(String namespace, String volumeSpec, Map<String, Volume> stackVolumes) {
-        def parts = volumeSpec.split(':', 3)
-        parts.each { part ->
-            if (part?.trim().isEmpty()) {
-                throw new IllegalArgumentException("invalid volume: $volumeSpec")
-            }
-        }
-
-        String source = ""
-        String target
-        List<String> modes = []
-
-        switch (parts.length) {
-            case 3:
-                source = parts[0]
-                target = parts[1]
-                modes = parts[2].split(",")
-                break
-            case 2:
-                source = parts[0]
-                target = parts[1]
-                break
-            case 1:
-                target = parts[0]
-                break
-            default:
-                throw new IllegalStateException("invalid volume $volumeSpec")
-        }
-
-        if (source == "") {
+    Map volumeToMount(String namespace, ServiceVolume volumeSpec, Map<String, StackVolume> stackVolumes) {
+        if (volumeSpec.source == "") {
             // Anonymous volume
             return [
-                    type  : TypeVolume,
-                    target: target,
+                    type  : volumeSpec.type,
+                    target: volumeSpec.target,
             ]
         }
 
-        // TODO: catch Windows paths here
-        if (source?.startsWith("/")) {
+        if (volumeSpec.type == ServiceVolumeType.TypeBind.typeName) {
             return [
-                    type       : TypeBind,
-                    source     : source,
-                    target     : target,
-                    readOnly   : isReadOnly(modes),
-                    bindOptions: getBindOptions(modes)
+                    type       : volumeSpec.type,
+                    source     : volumeSpec.source,
+                    target     : volumeSpec.target,
+                    readOnly   : volumeSpec.readOnly,
+                    bindOptions: getBindOptions(volumeSpec.bind)
             ]
         }
 
-        if (!stackVolumes.containsKey(source)) {
-            throw new IllegalArgumentException("undefined volume: $source")
+        if (!stackVolumes.containsKey(volumeSpec.source)) {
+            throw new IllegalArgumentException("undefined volume: ${volumeSpec.source}")
         }
-        def stackVolume = stackVolumes[source]
+        def stackVolume = stackVolumes[volumeSpec.source]
 
+        String source = volumeSpec.source
         def volumeOptions
         if (stackVolume?.external?.name) {
             volumeOptions = [
-                    noCopy: isNoCopy(modes),
+                    noCopy: volumeSpec.volume?.noCopy ?: false,
             ]
             source = stackVolume.external.name
         }
@@ -512,7 +478,7 @@ class DeployConfigReader {
             labels[(ManageStackClient.LabelNamespace)] = namespace
             volumeOptions = [
                     labels: labels,
-                    noCopy: isNoCopy(modes),
+                    noCopy: volumeSpec.volume?.noCopy ?: false,
             ]
 
             if (stackVolume?.driver && stackVolume?.driver != "") {
@@ -521,17 +487,17 @@ class DeployConfigReader {
                         options: stackVolume.driverOpts.options
                 ]
             }
-            source = "${namespace}_${source}" as String
+            source = "${namespace}_${volumeSpec.source}" as String
             if (stackVolume?.name) {
                 source = stackVolume.name
             }
         }
 
         return [
-                type         : TypeVolume,
-                target       : target,
+                type         : TypeVolume.typeName,
+                target       : volumeSpec.target,
                 source       : source,
-                readOnly     : isReadOnly(modes),
+                readOnly     : volumeSpec.readOnly,
                 volumeOptions: volumeOptions
         ]
     }
@@ -544,10 +510,9 @@ class DeployConfigReader {
         return modes.contains("nocopy")
     }
 
-    def getBindOptions(List<String> modes) {
-        def matchedModes = modes.intersect(MountPropagation.values().collect { it.value })
-        if (matchedModes) {
-            return [propagation: matchedModes.first()]
+    def getBindOptions(ServiceVolumeBind bind) {
+        if (bind?.propagation) {
+            return [propagation: bind.propagation]
         }
         else {
             return null
@@ -591,7 +556,7 @@ class DeployConfigReader {
     Tuple2<Map<String, StackNetwork>, List<String>> networks(
             String namespace,
             List<String> serviceNetworkNames,
-            Map<String, Network> networks) {
+            Map<String, de.gesellix.docker.compose.types.StackNetwork> networks) {
         Map<String, StackNetwork> networkSpec = [:]
 
         def externalNetworkNames = []
@@ -658,7 +623,7 @@ class DeployConfigReader {
         }
     }
 
-    Map<String, StackSecret> secrets(String namespace, Map<String, Secret> secrets, String workingDir) {
+    Map<String, StackSecret> secrets(String namespace, Map<String, de.gesellix.docker.compose.types.StackSecret> secrets, String workingDir) {
         Map<String, StackSecret> secretSpec = [:]
         secrets.each { name, secret ->
             if (!secret.external.external) {
@@ -682,7 +647,7 @@ class DeployConfigReader {
         return secretSpec
     }
 
-    Map<String, StackConfig> configs(String namespace, Map<String, Config> configs, String workingDir) {
+    Map<String, StackConfig> configs(String namespace, Map<String, de.gesellix.docker.compose.types.StackConfig> configs, String workingDir) {
         Map<String, StackConfig> configSpec = [:]
         configs.each { name, config ->
             if (!config.external.external) {

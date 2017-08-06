@@ -2,6 +2,7 @@ package de.gesellix.docker.client
 
 import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.client.checkpoint.ManageCheckpoint
+import de.gesellix.docker.client.config.ManageConfig
 import de.gesellix.docker.client.container.ManageContainer
 import de.gesellix.docker.client.distribution.ManageDistribution
 import de.gesellix.docker.client.image.ManageImage
@@ -26,6 +27,7 @@ interface DockerClient
                 ManageNode,
                 ManagePlugin,
                 ManageSecret,
+                ManageConfig,
                 ManageService,
                 ManageStack,
                 ManageSwarm,

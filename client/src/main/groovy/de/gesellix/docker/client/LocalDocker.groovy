@@ -22,10 +22,10 @@ class LocalDocker {
         }
     }
 
-    static hasSwarmMode() {
+    static supportsSwarmMode() {
         try {
             def version = getDockerVersion()
-            return version.major >= 1 && version.minor >= 12
+            return (version.major >= 1 && version.minor >= 12) || version.major >= 17
         }
         catch (Exception e) {
             log.info("Docker not available", e)

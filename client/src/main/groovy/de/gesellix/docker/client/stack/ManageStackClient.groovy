@@ -127,7 +127,7 @@ class ManageStackClient implements ManageStack {
 
     def createSecrets(String namespace, Map<String, StackSecret> secrets) {
         secrets.each { name, secret ->
-            List knownSecrets = manageSecret.secrets([filters: [names: [secret.name]]]).content
+            List knownSecrets = manageSecret.secrets([filters: [name: [secret.name]]]).content
             log.debug("known: $knownSecrets")
 
             if (!secret.labels) {

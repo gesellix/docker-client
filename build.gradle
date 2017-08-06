@@ -34,6 +34,7 @@ subprojects {
 
     def dependencyVersions = [
             'com.squareup.okio:okio:1.13.0',
+            'io.github.microutils:kotlin-logging:1.4.6',
             'org.bouncycastle:bcpkix-jdk15on:1.57',
             'org.bouncycastle:bcprov-jdk15on:1.57',
             'org.codehaus.groovy:groovy:2.4.11',
