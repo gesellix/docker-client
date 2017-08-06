@@ -20,11 +20,11 @@ check out the project at [Java Docker API Client](https://github.com/docker-java
 
 ## Config - Manage Docker configs (5/5)
 
-* [x] `GET /configs`: List configs
-* [x] `POST /configs/create`: Create a config
-* [x] `DELETE /configs/{id}`: Delete a config
-* [x] `GET /configs/{id}`: Inspect a config
-* [x] `POST /configs/{id}/update`: Update a config
+* [x] `docker configs create`: Create a configuration file
+* [x] `docker configs inspect`: Display detailed information on one or more configuration files
+* [x] `docker configs ls`: List configs
+* [x] `docker configs rm`: Remove one or more configuration files
+* [x] Update a config `POST /configs/{id}/update`
 
 ## Container - Manage containers (31/32)
 
