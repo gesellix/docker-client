@@ -2,7 +2,7 @@
 
 A Docker HTTP client for the Java VM written in Groovy
 
-[![Engine API v1.26 Coverage Status (99/121 endpoints)](http://progressed.io/bar/82?title=api%20coverage%20(v1.30))](https://github.com/gesellix/docker-client/blob/master/supported-api.md)
+[![Engine API v1.31 Coverage Status (104/122 endpoints)](http://progressed.io/bar/85?title=api%20coverage%20(v1.31))](https://github.com/gesellix/docker-client/blob/master/supported-api.md)
 [![Build Status](https://travis-ci.org/gesellix/docker-client.svg)](https://travis-ci.org/gesellix/docker-client)
 [![Latest version](https://api.bintray.com/packages/gesellix/docker-utils/docker-client/images/download.svg) ](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion)
 
@@ -41,7 +41,7 @@ For use in Gradle, add the Bintray repository first:
 Then, you need to add the dependency, but please ensure to use the [latest version](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion):
 
     dependencies {
-      compile 'de.gesellix:docker-client:2017-07-19T21-12-05'
+      compile 'de.gesellix:docker-client:2017-08-06T11-45-15'
     }
 
 The tests in `DockerClientImplSpec` and `DockerClientImplIntegrationSpec` should give you an idea how to use the docker-client.
