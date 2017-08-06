@@ -20,7 +20,7 @@ class ManageSecretClient implements ManageSecret {
     }
 
     @Override
-    createSecret(String name, byte[] secretData, Map<String, String> labels = [:]) {
+    EngineResponse createSecret(String name, byte[] secretData, Map<String, String> labels = [:]) {
         log.info "docker secret create"
         // TODO do we need to base64 encode the secret data?
         def secretConfig = [Name  : name,
@@ -34,7 +34,7 @@ class ManageSecretClient implements ManageSecret {
     }
 
     @Override
-    inspectSecret(String secretId) {
+    EngineResponse inspectSecret(String secretId) {
         log.info "docker secret inspect"
         def response = client.get([path: "/secrets/${secretId}"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker secret inspect failed"))
@@ -53,7 +53,7 @@ class ManageSecretClient implements ManageSecret {
     }
 
     @Override
-    rmSecret(String secretId) {
+    EngineResponse rmSecret(String secretId) {
         log.info "docker secret rm"
         def response = client.delete([path: "/secrets/${secretId}"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker secret rm failed"))
@@ -61,7 +61,7 @@ class ManageSecretClient implements ManageSecret {
     }
 
     @Override
-    updateSecret(String secretId, version, secretSpec) {
+    EngineResponse updateSecret(String secretId, version, secretSpec) {
         log.info "docker secret update"
         def response = client.post([path              : "/secrets/${secretId}/update",
                                     query             : [version: version],

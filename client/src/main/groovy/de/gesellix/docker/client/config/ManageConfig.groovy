@@ -6,13 +6,13 @@ interface ManageConfig {
 
 //    create      Create a config using bytes as content
 
-    def createConfig(String name, byte[] configData)
+    EngineResponse createConfig(String name, byte[] configData)
 
-    def createConfig(String name, byte[] configData, Map<String, String> labels)
+    EngineResponse createConfig(String name, byte[] configData, Map<String, String> labels)
 
 //    inspect     Display detailed information on one or more configs
 
-    def inspectConfig(String configId)
+    EngineResponse inspectConfig(String configId)
 
 //    ls          List configs
 
@@ -22,9 +22,9 @@ interface ManageConfig {
 
 //    rm          Remove one or more configs
 
-    def rmConfig(String configId)
+    EngineResponse rmConfig(String configId)
 
 //    update      Update a Config
 
-    def updateConfig(String configId, version, configSpec)
+    EngineResponse updateConfig(String configId, version, configSpec)
 }
