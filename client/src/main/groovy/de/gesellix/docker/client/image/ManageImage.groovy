@@ -58,15 +58,41 @@ interface ManageImage {
 
     EngineResponse pruneImages(query)
 
+//    create      Create an image by either pulling it from a registry or importing it
+
+    EngineResponse create(Map query)
+
+    EngineResponse create(Map query, Map createOptions)
+
 //    pull        Pull an image or a repository from a registry
 
+    /**
+     * @deprecated please use #create(query, createOptions)
+     * @see #create(Map, Map)
+     */
+    @Deprecated
     String pull(image)
 
-    String pull(image, tag)
+    /**
+     * @deprecated please use #create(query, createOptions)
+     * @see #create(Map, Map)
+     */
+    @Deprecated
+    String pull(image, String tag)
 
-    String pull(image, tag, authBase64Encoded)
+    /**
+     * @deprecated please use #create(query, createOptions)
+     * @see #create(Map, Map)
+     */
+    @Deprecated
+    String pull(image, String tag, String authBase64Encoded)
 
-    String pull(image, tag, authBase64Encoded, registry)
+    /**
+     * @deprecated please use #create(query, createOptions)
+     * @see #create(Map, Map)
+     */
+    @Deprecated
+    String pull(image, String tag, String authBase64Encoded, String registry)
 
 //    push        Push an image or a repository to a registry
 

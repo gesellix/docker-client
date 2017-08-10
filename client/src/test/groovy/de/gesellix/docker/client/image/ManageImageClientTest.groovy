@@ -109,12 +109,11 @@ class ManageImageClientTest extends Specification {
         then:
         1 * httpClient.post([path   : "/images/create",
                              query  : [fromImage: "an-image",
-                                       tag      : "",
-                                       registry : ""],
+                                       tag      : ""],
                              headers: ["X-Registry-Auth": "."]]) >> [content: [[id: "image-id"]]]
         and:
-        responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-            assert arguments[1]?.message == "docker pull failed"
+        1 * responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+            assert arguments[1]?.message == "docker images create failed"
         }
     }
 
@@ -128,12 +127,11 @@ class ManageImageClientTest extends Specification {
         then:
         1 * httpClient.post([path   : "/images/create",
                              query  : [fromImage: "an-image",
-                                       tag      : "a-tag",
-                                       registry : ""],
+                                       tag      : "a-tag"],
                              headers: ["X-Registry-Auth": "."]]) >> [content: [[id: "image-id"]]]
         and:
-        responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-            assert arguments[1]?.message == "docker pull failed"
+        1 * responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+            assert arguments[1]?.message == "docker images create failed"
         }
     }
 
@@ -147,12 +145,11 @@ class ManageImageClientTest extends Specification {
         then:
         1 * httpClient.post([path   : "/images/create",
                              query  : [fromImage: "registry:port/an-image",
-                                       tag      : "",
-                                       registry : "registry:port"],
+                                       tag      : ""],
                              headers: ["X-Registry-Auth": "."]]) >> [content: [[id: "image-id"]]]
         and:
-        responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-            assert arguments[1]?.message == "docker pull failed"
+        1 * responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+            assert arguments[1]?.message == "docker images create failed"
         }
     }
 
@@ -166,12 +163,11 @@ class ManageImageClientTest extends Specification {
         then:
         1 * httpClient.post([path   : "/images/create",
                              query  : [fromImage: "registry:port/an-image",
-                                       tag      : "",
-                                       registry : "registry:port"],
+                                       tag      : ""],
                              headers: ["X-Registry-Auth": "some-base64-encoded-auth"]]) >> [content: [[id: "image-id"]]]
         and:
-        responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-            assert arguments[1]?.message == "docker pull failed"
+        1 * responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+            assert arguments[1]?.message == "docker images create failed"
         }
     }
 

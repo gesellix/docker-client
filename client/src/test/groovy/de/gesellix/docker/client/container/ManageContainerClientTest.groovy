@@ -371,7 +371,7 @@ class ManageContainerClientTest extends Specification {
         service.run("an-image", [:])
 
         then:
-        1 * service.createContainer(["Image": "an-image"], [name: ""]) >> [content: [Id: "container-id"]]
+        1 * service.createContainer(["Image": "an-image"], [name: ""], "") >> [content: [Id: "container-id"]]
 
         then:
         1 * service.startContainer("container-id")

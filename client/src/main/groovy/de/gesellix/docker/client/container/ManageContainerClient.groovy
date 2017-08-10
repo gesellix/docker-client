@@ -169,9 +169,8 @@ class ManageContainerClient implements ManageContainer {
         return response
     }
 
-    // TODO we might need some authentication here for the pull(...) step
     @Override
-    EngineResponse createContainer(containerConfig, query = [name: ""]) {
+    EngineResponse createContainer(containerConfig, query = [name: ""], String authBase64Encoded = "") {
         log.info "docker create"
         def actualContainerConfig = [:] + containerConfig
 
@@ -184,7 +183,10 @@ class ManageContainerClient implements ManageContainer {
             if (response.status?.code == 404) {
                 def repoAndTag = repositoryTagParser.parseRepositoryTag(containerConfig.Image)
                 log.info "'${repoAndTag.repo}:${repoAndTag.tag}' not found."
-                manageImage.pull(repoAndTag.repo, repoAndTag.tag)
+                manageImage.create([fromImage: repoAndTag.repo,
+                                    tag      : repoAndTag.tag],
+                                   [EncodedRegistryAuth: authBase64Encoded ?: ""])
+//                manageImage.pull(repoAndTag.repo, repoAndTag.tag, authBase64Encoded)
                 // retry...
                 response = client.post([path              : "/containers/create".toString(),
                                         query             : query,
@@ -416,7 +418,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    run(String fromImage, containerConfig, String tag = "", String name = "") {
+    run(String fromImage, containerConfig, String tag = "", String name = "", String authBase64Encoded = "") {
         log.info "docker run ${fromImage}${tag ? ':' : ''}${tag}"
 /*
     http://docs.docker.com/reference/api/docker_remote_api_v1.13/#31-inside-docker-run
@@ -435,7 +437,7 @@ class ManageContainerClient implements ManageContainer {
         def containerConfigWithImageName = [:] + containerConfig
         containerConfigWithImageName.Image = fromImage + (tag ? ":$tag" : "")
 
-        def createContainerResponse = createContainer(containerConfigWithImageName, [name: name ?: ""])
+        def createContainerResponse = createContainer(containerConfigWithImageName, [name: name ?: ""], authBase64Encoded)
         log.debug "create container result: ${createContainerResponse}"
         def startContainerResponse = startContainer(createContainerResponse.content.Id)
         return [

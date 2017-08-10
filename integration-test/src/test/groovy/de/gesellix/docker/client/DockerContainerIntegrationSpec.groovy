@@ -188,7 +188,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
         then:
         DockerClientException ex = thrown()
-        ex.cause.message == 'docker pull failed'
+        ex.cause.message == 'docker images create failed'
         if (expectManifestNotFound()) {
             ex.detail.content.message == "manifest for gesellix/testimage:unknown not found"
         } else {

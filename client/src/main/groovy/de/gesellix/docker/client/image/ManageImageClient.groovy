@@ -188,7 +188,28 @@ class ManageImageClient implements ManageImage {
     }
 
     @Override
-    String pull(imageName, tag = "", authBase64Encoded = ".", registry = "") {
+    EngineResponse create(Map query = [:], Map createOptions = [:]) {
+        log.info "docker image create"
+        createOptions = createOptions ?: [:]
+        def headers = [:]
+        if (createOptions.EncodedRegistryAuth) {
+            headers["X-Registry-Auth"] = createOptions.EncodedRegistryAuth as String
+        }
+        def actualQuery = query ?: [:]
+        def response = client.post([path   : "/images/create",
+                                    query  : actualQuery,
+                                    headers: headers])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker images create failed"))
+        return response
+    }
+
+    /**
+     * @deprecated please use #create(query, createOptions)
+     * @see #create(Map, Map)
+     */
+    @Deprecated
+    @Override
+    String pull(imageName, String tag = "", String authBase64Encoded = ".", String registry = "") {
         log.info "docker pull '${imageName}:${tag}'"
 
         def actualImageName = imageName
@@ -196,15 +217,16 @@ class ManageImageClient implements ManageImage {
             actualImageName = "$registry/$imageName".toString()
         }
 
-        def response = client.post([path   : "/images/create",
-                                    query  : [fromImage: actualImageName,
-                                              tag      : tag,
-                                              registry : registry],
-                                    headers: ["X-Registry-Auth": authBase64Encoded ?: "."]])
-        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker pull failed"))
+        def response = create([fromImage: actualImageName,
+                               tag      : tag],
+                              [EncodedRegistryAuth: authBase64Encoded])
 //        println new JsonBuilder(response.content).toString()
-
-        return findImageId(actualImageName, tag)
+        if (response.status.success) {
+            return findImageId(actualImageName, tag)
+        }
+        else {
+            return null
+        }
     }
 
     @Override

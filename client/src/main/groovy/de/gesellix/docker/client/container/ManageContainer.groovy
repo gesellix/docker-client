@@ -41,6 +41,8 @@ interface ManageContainer {
 
     EngineResponse createContainer(containerConfig, query)
 
+    EngineResponse createContainer(containerConfig, query, String authBase64Encoded)
+
 //    diff        Inspect changes on a container's filesystem
 
     def diff(container)
@@ -122,6 +124,8 @@ interface ManageContainer {
     def run(String image, containerConfig, String tag)
 
     def run(String image, containerConfig, String tag, String name)
+
+    def run(String image, containerConfig, String tag, String name, String authBase64Encoded)
 
 //    start       Start one or more stopped containers
 
