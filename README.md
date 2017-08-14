@@ -6,7 +6,7 @@ A Docker HTTP client for the Java VM written in Groovy
 [![Build Status](https://travis-ci.org/gesellix/docker-client.svg)](https://travis-ci.org/gesellix/docker-client)
 [![Latest version](https://api.bintray.com/packages/gesellix/docker-utils/docker-client/images/download.svg) ](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion)
 
-This client library aims at supporting all existing [Docker api endpoints](https://docs.docker.com/engine/reference/api/docker_remote_api/),
+This client library aims at supporting all existing [Docker api endpoints](https://docs.docker.com/engine/api/),
  which effectively allows to use it in place of the official Docker client binary.
 
 See the [supported-api.md](https://github.com/gesellix/docker-client/blob/master/supported-api.md)
