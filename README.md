@@ -120,7 +120,8 @@ Running a container being available on the host via HTTP port 4712 can be achiev
 
     def deployConfig = new DeployConfigReader(dockerClient).loadCompose(namespace, composeStack, workingDir)
 
-    dockerClient.stackDeploy(namespace, deployConfig)
+    def options = new DeployStackOptions()
+    dockerClient.stackDeploy(namespace, deployConfig, options)
 
 
 ## Usage with Gradle Docker Plugin
