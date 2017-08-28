@@ -98,6 +98,12 @@ class DeployConfigReader {
                 stopGracePeriod = parseDuration(service.stopGracePeriod).toNanos()
             }
 
+            def env = convertEnvironment(service.environment)
+            Collections.sort(env)
+
+            def extraHosts = convertExtraHosts(service.extraHosts)
+            Collections.sort(extraHosts)
+
             def serviceConfig = new StackService()
             serviceConfig.name = ("${namespace}_${name}" as String)
             serviceConfig.labels = serviceLabels
@@ -111,9 +117,9 @@ class DeployConfigReader {
                             command        : service.entrypoint,
                             args           : service.command?.parts ?: [],
                             hostname       : service.hostname,
-                            hosts          : Collections.sort(convertExtraHosts(service.extraHosts)),
+                            hosts          : extraHosts,
                             healthcheck    : convertHealthcheck(service.healthcheck),
-                            env            : Collections.sort(convertEnvironment(service.environment)),
+                            env            : env,
                             labels         : containerLabels,
                             dir            : service.workingDir,
                             user           : service.user,
