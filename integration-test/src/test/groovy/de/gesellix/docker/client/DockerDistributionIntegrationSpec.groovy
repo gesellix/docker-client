@@ -16,7 +16,7 @@ class DockerDistributionIntegrationSpec extends Specification {
     }
 
     @Requires({ LocalDocker.dockerVersion >= DockerVersion.parseDockerVersion("17.06") })
-    def descriptor() {
+    def "can retrieve an image descriptor"() {
         when:
         def alpineDescriptor = dockerClient.descriptor("alpine:edge")
 
@@ -24,9 +24,9 @@ class DockerDistributionIntegrationSpec extends Specification {
         alpineDescriptor.status.code == 200
         alpineDescriptor.content == [
                 Descriptor: [
-                        mediaType: "application/vnd.docker.distribution.manifest.v2+json",
-                        digest   : "sha256:79d50d15bd7ea48ea00cf3dd343b0e740c1afaa8e899bee475236ef338e1b53b",
-                        size     : 528
+                        mediaType: "application/vnd.docker.distribution.manifest.list.v2+json",
+                        digest   : "sha256:2b796ae57cb164a11ce4dcc9e62a9ad10b64b38c4cc9748e456b5c11a19dc0f3",
+                        size     : 433
                 ],
                 Platforms : [
                         [
