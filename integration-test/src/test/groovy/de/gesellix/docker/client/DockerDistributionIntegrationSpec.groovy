@@ -16,7 +16,7 @@ class DockerDistributionIntegrationSpec extends Specification {
     }
 
     @Requires({ LocalDocker.dockerVersion >= DockerVersion.parseDockerVersion("17.06") })
-    def "can retrieve an image descriptor"() {
+    def "can retrieve an image descriptor for alpine:edge"() {
         when:
         def alpineDescriptor = dockerClient.descriptor("alpine:edge")
 
@@ -33,6 +33,31 @@ class DockerDistributionIntegrationSpec extends Specification {
                                 architecture: "amd64",
                                 os          : "linux"
                         ]
+                ]
+        ]
+    }
+
+    @Requires({ LocalDocker.dockerVersion >= DockerVersion.parseDockerVersion("17.06") })
+    def "can retrieve an image descriptor for debian:latest"() {
+        when:
+        def debianDescriptor = dockerClient.descriptor("debian:latest")
+
+        then:
+        debianDescriptor.status.code == 200
+        debianDescriptor.content == [
+                Descriptor: [
+                        mediaType: "application/vnd.docker.distribution.manifest.list.v2+json",
+                        digest   : "sha256:126052225b62db18c32f03a4462a92fad2ef243c6509371edb82a2298087b12c",
+                        size     : 2364
+                ],
+                Platforms : [
+                        [architecture: "amd64", os: "linux"],
+                        [architecture: "arm", os: "linux", variant: "v5"],
+                        [architecture: "arm", os: "linux", variant: "v7"],
+                        [architecture: "arm64", os: "linux", variant: "v8"],
+                        [architecture: "386", os: "linux"],
+                        [architecture: "ppc64le", os: "linux"],
+                        [architecture: "s390x", os: "linux"]
                 ]
         ]
     }
