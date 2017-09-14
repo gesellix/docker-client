@@ -33,14 +33,10 @@ subprojects {
     targetCompatibility = JavaVersion.VERSION_1_8
 
     def dependencyVersions = [
-            'com.squareup.okio:okio:1.13.0',
-            'org.bouncycastle:bcpkix-jdk15on:1.57',
-            'org.bouncycastle:bcprov-jdk15on:1.57',
-            'org.codehaus.groovy:groovy:2.4.12',
-            'org.codehaus.groovy:groovy-json:2.4.12',
-            'org.jetbrains.kotlin:kotlin-reflect:1.1.4-2',
-            'org.jetbrains.kotlin:kotlin-stdlib:1.1.4-2',
-            'org.jetbrains.kotlin:kotlin-stdlib-jre8:1.1.4-2',
+            'org.bouncycastle:bcpkix-jdk15on:1.58',
+            'org.bouncycastle:bcprov-jdk15on:1.58',
+            'org.jetbrains.kotlin:kotlin-reflect:1.1.4-3',
+            'org.jetbrains.kotlin:kotlin-stdlib:1.1.4-3',
             'org.slf4j:slf4j-api:1.7.25',
     ]
 

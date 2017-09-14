@@ -29,8 +29,8 @@ repositories {
 }
 
 dependencies {
-    compile 'de.gesellix:docker-engine:2017-09-08T19-56-59'
-    compile 'de.gesellix:docker-compose:2017-08-27T22-23-50'
+    compile 'de.gesellix:docker-engine:2017-09-14T21-16-39'
+    compile 'de.gesellix:docker-compose:2017-09-14T21-19-35'
 
     compile 'org.codehaus.groovy:groovy:2.4.12'
     compile 'org.codehaus.groovy:groovy-json:2.4.12'
@@ -39,14 +39,14 @@ dependencies {
     testCompile 'ch.qos.logback:logback-classic:1.2.3'
 
     compile 'com.squareup.okio:okio:1.13.0'
-    compile 'com.squareup.okhttp3:okhttp:3.8.1'
-    testCompile 'com.squareup.okhttp3:mockwebserver:3.8.1'
+    compile 'com.squareup.okhttp3:okhttp:3.9.0'
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.9.0'
 
     compile 'org.apache.commons:commons-compress:1.14'
 
-    compile 'org.bouncycastle:bcpkix-jdk15on:1.57'
+    compile 'org.bouncycastle:bcpkix-jdk15on:1.58'
 
-    testCompile 'de.gesellix:testutil:2017-08-13T22-50-36'
+    testCompile 'de.gesellix:testutil:2017-09-14T20-57-51'
 
     testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
         exclude module: 'groovy-all'
