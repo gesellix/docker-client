@@ -35,8 +35,8 @@ subprojects {
     def dependencyVersions = [
             'org.bouncycastle:bcpkix-jdk15on:1.58',
             'org.bouncycastle:bcprov-jdk15on:1.58',
-            'org.jetbrains.kotlin:kotlin-reflect:1.1.4-3',
-            'org.jetbrains.kotlin:kotlin-stdlib:1.1.4-3',
+            'org.jetbrains.kotlin:kotlin-reflect:1.1.51',
+            'org.jetbrains.kotlin:kotlin-stdlib:1.1.51',
             'org.slf4j:slf4j-api:1.7.25',
     ]
 
@@ -54,7 +54,7 @@ buildScan {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.1'
+    gradleVersion = '4.2.1'
     distributionType = Wrapper.DistributionType.ALL
 }
 

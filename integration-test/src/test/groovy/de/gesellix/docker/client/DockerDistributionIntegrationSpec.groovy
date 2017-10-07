@@ -47,7 +47,7 @@ class DockerDistributionIntegrationSpec extends Specification {
         debianDescriptor.content == [
                 Descriptor: [
                         mediaType: "application/vnd.docker.distribution.manifest.list.v2+json",
-                        digest   : "sha256:126052225b62db18c32f03a4462a92fad2ef243c6509371edb82a2298087b12c",
+                        digest   : "sha256:5fafd38cdee6c7e6b97356092b97389faa0aa069595f1c3cc3344428b5fd2339",
                         size     : 2364
                 ],
                 Platforms : [
