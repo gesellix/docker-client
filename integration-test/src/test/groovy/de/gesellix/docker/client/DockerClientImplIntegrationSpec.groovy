@@ -98,10 +98,10 @@ class DockerClientImplIntegrationSpec extends Specification {
         def version = dockerClient.version().content
 
         then:
-        def nonMatchingEntries = CONSTANTS.versionDetails.findResults { key, matcher ->
-            !matcher(version[key]) ? [(key): version[key]] : null
+        def missingKeys = CONSTANTS.versionDetails.findResults { key, matcher ->
+            !version[key] ? (key) : null
         }
-        nonMatchingEntries.empty
+        missingKeys.empty
     }
 
     def auth() {

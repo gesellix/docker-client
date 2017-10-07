@@ -1,0 +1,32 @@
+version: "3.3"
+services:
+  service:
+    image: alpine:${IMAGE_VERSION}
+    command: sh
+    deploy:
+      endpoint_mode: vip
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    environment:
+      SOME_VAR: ${SOME_VAR}
+    networks:
+      - "my-subnet"
+    volumes:
+      - type: volume
+        source: shm
+        target: /dev/shm
+
+networks:
+  my-subnet:
+
+volumes:
+  shm:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: size=128m

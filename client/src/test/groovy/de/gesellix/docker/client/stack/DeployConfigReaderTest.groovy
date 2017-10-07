@@ -178,7 +178,7 @@ class DeployConfigReaderTest extends Specification {
         reader.serviceMode(mode, replicas) == serviceMode
         where:
         mode         | replicas || serviceMode
-        "global"     | null     || [global: true]
+        "global"     | null     || [global: [:]]
         null         | null     || [replicated: [replicas: 1]]
         ""           | null     || [replicated: [replicas: 1]]
         "replicated" | null     || [replicated: [replicas: 1]]

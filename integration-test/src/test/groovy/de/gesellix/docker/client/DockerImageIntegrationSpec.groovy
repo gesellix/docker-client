@@ -468,10 +468,10 @@ class DockerImageIntegrationSpec extends Specification {
         def serverAddress = server.start('/images/', new HttpTestServer.FileServer(importUrl))
         def port = serverAddress.port
         def addresses = listPublicIps()
-        def fileServerIp = addresses.first()
 
         when:
-        def imageId = dockerClient.importUrl("http://${fileServerIp}:$port/images/${importUrl.path}", "import-from-url", "foo")
+        // not all interfaces addresses will be valid targets, especially on a machine running a docker host
+        def imageId = tryUntilSuccessful(addresses) { address -> dockerClient.importUrl("http://${address}:$port/images/${importUrl.path}", "import-from-url", "foo") }
 
         then:
         imageId =~ "\\w+"
@@ -670,5 +670,17 @@ class DockerImageIntegrationSpec extends Specification {
             }
         }
         addresses
+    }
+
+    def tryUntilSuccessful(List<String> listOfClosureArgsToTry, Closure oneArgClosure) {
+        def retVal = null
+        for (arg in listOfClosureArgsToTry) {
+            try {
+                retVal = oneArgClosure(arg)
+                break
+            } catch (Exception e) { /* ignore here; already logged by DockerResponseHandler */ }
+        }
+
+        retVal
     }
 }
