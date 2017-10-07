@@ -50,9 +50,14 @@ class DeployConfigReader {
         this.dockerClient = dockerClient
     }
 
-    // TODO test me
+    @Deprecated
     def loadCompose(String namespace, InputStream composeFile, String workingDir) {
-        ComposeConfig composeConfig = composeFileReader.load(composeFile, workingDir, System.getenv())
+        loadCompose(namespace, composeFile, workingDir, System.getenv())
+    }
+
+    // TODO test me
+    def loadCompose(String namespace, InputStream composeFile, String workingDir, Map<String, String> environment) {
+        ComposeConfig composeConfig = composeFileReader.load(composeFile, workingDir, environment)
         log.info("composeContent: $composeConfig}")
 
         List<String> serviceNetworkNames = composeConfig.services.collect { String name, de.gesellix.docker.compose.types.StackService service ->
@@ -547,7 +552,7 @@ class DeployConfigReader {
                 if (replicas) {
                     throw new IllegalArgumentException("replicas can only be used with replicated mode")
                 }
-                return [global: true]
+                return [global: [:]]
 
             case null:
             case "":

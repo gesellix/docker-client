@@ -22,18 +22,11 @@ class DockerDistributionIntegrationSpec extends Specification {
 
         then:
         alpineDescriptor.status.code == 200
-        alpineDescriptor.content == [
-                Descriptor: [
-                        mediaType: "application/vnd.docker.distribution.manifest.list.v2+json",
-                        digest   : "sha256:2b796ae57cb164a11ce4dcc9e62a9ad10b64b38c4cc9748e456b5c11a19dc0f3",
-                        size     : 433
-                ],
-                Platforms : [
-                        [
-                                architecture: "amd64",
-                                os          : "linux"
-                        ]
-                ]
+        alpineDescriptor.content.Descriptor.mediaType == "application/vnd.docker.distribution.manifest.list.v2+json"
+        alpineDescriptor.content.Descriptor.digest =~ "sha256:[a-f0-9]{64}"
+        alpineDescriptor.content.Descriptor.size =~ "\\d{3,4}"
+        alpineDescriptor.content.Platforms == [
+                [architecture: "amd64", os: "linux"]
         ]
     }
 
@@ -44,21 +37,17 @@ class DockerDistributionIntegrationSpec extends Specification {
 
         then:
         debianDescriptor.status.code == 200
-        debianDescriptor.content == [
-                Descriptor: [
-                        mediaType: "application/vnd.docker.distribution.manifest.list.v2+json",
-                        digest   : "sha256:5fafd38cdee6c7e6b97356092b97389faa0aa069595f1c3cc3344428b5fd2339",
-                        size     : 2364
-                ],
-                Platforms : [
-                        [architecture: "amd64", os: "linux"],
-                        [architecture: "arm", os: "linux", variant: "v5"],
-                        [architecture: "arm", os: "linux", variant: "v7"],
-                        [architecture: "arm64", os: "linux", variant: "v8"],
-                        [architecture: "386", os: "linux"],
-                        [architecture: "ppc64le", os: "linux"],
-                        [architecture: "s390x", os: "linux"]
-                ]
+        debianDescriptor.content.Descriptor.mediaType == "application/vnd.docker.distribution.manifest.list.v2+json"
+        debianDescriptor.content.Descriptor.digest =~ "sha256:[a-f0-9]{64}"
+        debianDescriptor.content.Descriptor.size =~ "\\d{3,4}"
+        debianDescriptor.content.Platforms == [
+                [architecture: "amd64", os: "linux"],
+                [architecture: "arm", os: "linux", variant: "v5"],
+                [architecture: "arm", os: "linux", variant: "v7"],
+                [architecture: "arm64", os: "linux", variant: "v8"],
+                [architecture: "386", os: "linux"],
+                [architecture: "ppc64le", os: "linux"],
+                [architecture: "s390x", os: "linux"]
         ]
     }
 }

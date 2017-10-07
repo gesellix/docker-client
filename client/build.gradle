@@ -19,6 +19,7 @@ apply plugin: 'jacoco'
 //apply plugin: 'net.saliman.cobertura'
 //apply plugin: 'com.github.kt3k.coveralls'
 
+apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
@@ -79,6 +80,14 @@ jacocoTestReport.reports {
 
 artifacts {
     archives sourcesJar
+}
+
+install {
+    repositories.mavenInstaller {
+        pom.groupId = 'de.gesellix'
+        pom.artifactId = 'docker-client'
+        pom.version = '1.0.0-SNAPSHOT'
+    }
 }
 
 publishing {
