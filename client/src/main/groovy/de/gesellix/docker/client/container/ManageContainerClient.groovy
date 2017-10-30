@@ -37,7 +37,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    attach(containerId, query, AttachConfig callback = null) {
+    EngineResponse attach(containerId, query, AttachConfig callback = null) {
         log.info "docker attach"
 
         // When using the TTY setting is enabled in POST /containers/create,
@@ -69,7 +69,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    resizeTTY(container, height, width) {
+    EngineResponse resizeTTY(container, height, width) {
         log.info "docker resize container"
 //        if (!inspectContainer(container).Config.Tty) {
 //            log.warn "container '${container}' hasn't been configured with a TTY!"
@@ -83,7 +83,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    commit(container, query, config = [:]) {
+    EngineResponse commit(container, query, config = [:]) {
         log.info "docker commit"
 
         def finalQuery = query ?: [:]
@@ -132,7 +132,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    getArchive(container, path) {
+    EngineResponse getArchive(container, path) {
         log.info "docker download from ${container}|${path}"
 
         def response = client.get([path : "/containers/${container}/archive".toString(),
@@ -151,7 +151,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    putArchive(container, path, InputStream archive, query = [:]) {
+    EngineResponse putArchive(container, path, InputStream archive, query = [:]) {
         log.info "docker upload to ${container}|${path}"
 
         def finalQuery = query ?: [:]
@@ -200,14 +200,14 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    diff(containerId) {
+    EngineResponse diff(containerId) {
         log.info "docker diff"
         def response = client.get([path: "/containers/${containerId}/changes"])
         return response
     }
 
     @Override
-    createExec(containerId, Map execConfig) {
+    EngineResponse createExec(containerId, Map execConfig) {
         log.info "docker create exec on '${containerId}'"
 
         def response = client.post([path              : "/containers/${containerId}/exec".toString(),
@@ -223,7 +223,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    startExec(execId, Map execConfig, AttachConfig attachConfig = null) {
+    EngineResponse startExec(execId, Map execConfig, AttachConfig attachConfig = null) {
         log.info "docker start exec '${execId}'"
 
         // When using the TTY setting is enabled in POST /containers/create,
@@ -250,7 +250,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    inspectExec(execId) {
+    EngineResponse inspectExec(execId) {
         log.info "docker inspect exec '${execId}'"
 
         def response = client.get([path: "/exec/${execId}/json".toString()])
@@ -263,7 +263,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    exec(containerId, command, Map execConfig = [
+    EngineResponse exec(containerId, command, Map execConfig = [
             "Detach"     : false,
             "AttachStdin": false,
             "Tty"        : false]) {
@@ -283,7 +283,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    resizeExec(exec, height, width) {
+    EngineResponse resizeExec(exec, height, width) {
         log.info "docker resize exec"
 //        if (!inspectExec(exec).ProcessConfig.tty) {
 //            log.warn "exec '${exec}' hasn't been configured with a TTY!"
@@ -297,7 +297,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    export(container) {
+    EngineResponse export(container) {
         log.info "docker export $container"
 
         def response = client.get([path: "/containers/$container/export"])
@@ -307,7 +307,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    inspectContainer(containerId) {
+    EngineResponse inspectContainer(containerId) {
         log.info "docker inspect container"
         def response = client.get([path: "/containers/${containerId}/json"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker inspect failed"))
@@ -315,19 +315,19 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    kill(containerId) {
+    EngineResponse kill(containerId) {
         log.info "docker kill"
         def response = client.post([path: "/containers/${containerId}/kill".toString()])
         return response
     }
 
     @Override
-    logs(container, DockerAsyncCallback callback = null) {
+    EngineResponse logs(container, DockerAsyncCallback callback = null) {
         return logs(container, [:], callback)
     }
 
     @Override
-    logs(container, query, DockerAsyncCallback callback = null) {
+    EngineResponse logs(container, query, DockerAsyncCallback callback = null) {
         log.info "docker logs"
 
         def async = callback ? true : false
@@ -362,7 +362,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    ps(query = [:]) {
+    EngineResponse ps(query = [:]) {
         log.info "docker ps"
         def actualQuery = query ?: [:]
         def defaults = [all: true, size: false]
@@ -375,14 +375,14 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    pause(containerId) {
+    EngineResponse pause(containerId) {
         log.info "docker pause"
         def response = client.post([path: "/containers/${containerId}/pause".toString()])
         return response
     }
 
     @Override
-    pruneContainers(query = [:]) {
+    EngineResponse pruneContainers(query = [:]) {
         log.info "docker container prune"
         def actualQuery = query ?: [:]
         queryUtil.jsonEncodeFilters(actualQuery)
@@ -393,7 +393,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    rename(String container, String newName) {
+    EngineResponse rename(String container, String newName) {
         log.info "docker rename"
         def response = client.post([path : "/containers/${container}/rename".toString(),
                                     query: [name: newName]])
@@ -402,7 +402,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    restart(containerId) {
+    EngineResponse restart(containerId) {
         log.info "docker restart"
         def response = client.post([path : "/containers/${containerId}/restart".toString(),
                                     query: [t: 5]])
@@ -410,7 +410,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    rm(containerId, query = [:]) {
+    EngineResponse rm(containerId, query = [:]) {
         log.info "docker rm"
         def response = client.delete([path : "/containers/${containerId}".toString(),
                                       query: query])
@@ -447,7 +447,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    startContainer(containerId) {
+    EngineResponse startContainer(containerId) {
         log.info "docker start"
         def response = client.post([path              : "/containers/${containerId}/start".toString(),
                                     requestContentType: "application/json"])
@@ -455,7 +455,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    stats(container, DockerAsyncCallback callback = null) {
+    EngineResponse stats(container, DockerAsyncCallback callback = null) {
         log.info "docker stats"
 
         def async = callback ? true : false
@@ -472,14 +472,14 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    stop(containerId) {
+    EngineResponse stop(containerId) {
         log.info "docker stop"
         def response = client.post([path: "/containers/${containerId}/stop".toString()])
         return response
     }
 
     @Override
-    top(container, ps_args = null) {
+    EngineResponse top(container, ps_args = null) {
         log.info "docker top"
 
         def query = ps_args ? [ps_args: ps_args] : [:]
@@ -490,19 +490,19 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    unpause(containerId) {
+    EngineResponse unpause(containerId) {
         log.info "docker unpause"
         def response = client.post([path: "/containers/${containerId}/unpause".toString()])
         return response
     }
 
     @Override
-    updateContainer(container, updateConfig) {
+    EngineResponse updateContainer(String container, updateConfig) {
         return updateContainers([container], updateConfig)[container]
     }
 
     @Override
-    updateContainers(List containers, updateConfig) {
+    Map<String, EngineResponse> updateContainers(List<String> containers, updateConfig) {
         log.info "docker update '${containers}'"
 
         def responses = containers.collectEntries { container ->
@@ -519,8 +519,26 @@ class ManageContainerClient implements ManageContainer {
         return responses
     }
 
+
+// TODO
+// ContainerWait waits until the specified container is in a certain state
+// indicated by the given condition, either "not-running" (default),
+// "next-exit", or "removed".
+//
+// If this client's API version is before 1.30, condition is ignored and
+// ContainerWait will return immediately with the two channels, as the server
+// will wait as if the condition were "not-running".
+//
+// If this client's API version is at least 1.30, ContainerWait blocks until
+// the request has been acknowledged by the server (with a response header),
+// then returns two channels on which the caller can wait for the exit status
+// of the container or an error if there was a problem either beginning the
+// wait request or in getting the response. This allows the caller to
+// synchronize ContainerWait with other calls, such as specifying a
+// "next-exit" condition before issuing a ContainerStart request.
+
     @Override
-    wait(containerId) {
+    EngineResponse wait(containerId) {
         log.info "docker wait"
         def response = client.post([path: "/containers/${containerId}/wait".toString()])
         return response
