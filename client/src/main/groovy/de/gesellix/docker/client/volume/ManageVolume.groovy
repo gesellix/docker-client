@@ -1,31 +1,32 @@
 package de.gesellix.docker.client.volume
 
+import de.gesellix.docker.engine.EngineResponse
+
 interface ManageVolume {
 
 //    create      Create a volume
 
-    def createVolume()
+    EngineResponse createVolume()
 
-    def createVolume(config)
+    EngineResponse createVolume(config)
 
 //    inspect     Display detailed information on one or more volumes
 
-    def inspectVolume(name)
+    EngineResponse inspectVolume(name)
 
 //    ls          List volumes
 
-    def volumes()
+    EngineResponse volumes()
 
-    def volumes(query)
+    EngineResponse volumes(query)
 
 //    prune       Remove all unused volumes
 
-    def pruneVolumes()
+    EngineResponse pruneVolumes()
 
-    def pruneVolumes(query)
+    EngineResponse pruneVolumes(query)
 
 //    rm          Remove one or more volumes
 
-    def rmVolume(name)
-
+    EngineResponse rmVolume(name)
 }

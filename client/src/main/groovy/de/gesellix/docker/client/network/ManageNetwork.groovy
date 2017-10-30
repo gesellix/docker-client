@@ -6,17 +6,17 @@ interface ManageNetwork {
 
 //    connect     Connect a container to a network
 
-    def connectNetwork(network, container)
+    EngineResponse connectNetwork(network, container)
 
 //    create      Create a network
 
-    def createNetwork(name)
+    EngineResponse createNetwork(name)
 
-    def createNetwork(name, config)
+    EngineResponse createNetwork(name, config)
 
 //    disconnect  Disconnect a container from a network
 
-    def disconnectNetwork(network, container)
+    EngineResponse disconnectNetwork(network, container)
 
 //    inspect     Display detailed information on one or more networks
 
@@ -30,11 +30,11 @@ interface ManageNetwork {
 
 //    prune       Remove all unused networks
 
-    def pruneNetworks()
+    EngineResponse pruneNetworks()
 
-    def pruneNetworks(query)
+    EngineResponse pruneNetworks(query)
 
 //    rm          Remove one or more networks
 
-    def rmNetwork(name)
+    EngineResponse rmNetwork(name)
 }

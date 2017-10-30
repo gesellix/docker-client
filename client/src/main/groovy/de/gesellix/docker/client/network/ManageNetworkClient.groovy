@@ -39,7 +39,7 @@ class ManageNetworkClient implements ManageNetwork {
     }
 
     @Override
-    createNetwork(name, config = [:]) {
+    EngineResponse createNetwork(name, config = [:]) {
         log.info "docker network create"
         def actualConfig = config ?: [:]
         def defaults = [Name          : name,
@@ -53,7 +53,7 @@ class ManageNetworkClient implements ManageNetwork {
     }
 
     @Override
-    connectNetwork(network, container) {
+    EngineResponse connectNetwork(network, container) {
         log.info "docker network connect"
         def response = client.post([path              : "/networks/$network/connect",
                                     body              : [container: container],
@@ -63,7 +63,7 @@ class ManageNetworkClient implements ManageNetwork {
     }
 
     @Override
-    disconnectNetwork(network, container) {
+    EngineResponse disconnectNetwork(network, container) {
         log.info "docker network disconnect"
         def response = client.post([path              : "/networks/$network/disconnect",
                                     body              : [container: container],
@@ -73,7 +73,7 @@ class ManageNetworkClient implements ManageNetwork {
     }
 
     @Override
-    rmNetwork(name) {
+    EngineResponse rmNetwork(name) {
         log.info "docker network rm"
         def response = client.delete([path: "/networks/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network rm failed"))
@@ -81,7 +81,7 @@ class ManageNetworkClient implements ManageNetwork {
     }
 
     @Override
-    pruneNetworks(query = [:]) {
+    EngineResponse pruneNetworks(query = [:]) {
         log.info "docker network prune"
         def actualQuery = query ?: [:]
         queryUtil.jsonEncodeFilters(actualQuery)

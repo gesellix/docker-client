@@ -2,6 +2,7 @@ package de.gesellix.docker.client.volume
 
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 
@@ -19,7 +20,7 @@ class ManageVolumeClient implements ManageVolume {
     }
 
     @Override
-    volumes(query = [:]) {
+    EngineResponse volumes(query = [:]) {
         log.info "docker volume ls"
         def actualQuery = query ?: [:]
         queryUtil.jsonEncodeFilters(actualQuery)
@@ -30,7 +31,7 @@ class ManageVolumeClient implements ManageVolume {
     }
 
     @Override
-    inspectVolume(name) {
+    EngineResponse inspectVolume(name) {
         log.info "docker volume inspect"
         def response = client.get([path: "/volumes/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume inspect failed"))
@@ -38,7 +39,7 @@ class ManageVolumeClient implements ManageVolume {
     }
 
     @Override
-    createVolume(config = [:]) {
+    EngineResponse createVolume(config = [:]) {
         log.info "docker volume create"
         def response = client.post([path              : "/volumes/create",
                                     body              : config ?: [:],
@@ -48,7 +49,7 @@ class ManageVolumeClient implements ManageVolume {
     }
 
     @Override
-    rmVolume(name) {
+    EngineResponse rmVolume(name) {
         log.info "docker volume rm"
         def response = client.delete([path: "/volumes/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume rm failed"))
@@ -56,7 +57,7 @@ class ManageVolumeClient implements ManageVolume {
     }
 
     @Override
-    pruneVolumes(query = [:]) {
+    EngineResponse pruneVolumes(query = [:]) {
         log.info "docker volume prune"
         def actualQuery = query ?: [:]
         queryUtil.jsonEncodeFilters(actualQuery)
