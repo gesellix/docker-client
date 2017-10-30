@@ -33,6 +33,7 @@ subprojects {
     targetCompatibility = JavaVersion.VERSION_1_8
 
     def dependencyVersions = [
+            'org.apache.commons:commons-compress:1.15',
             'org.bouncycastle:bcpkix-jdk15on:1.58',
             'org.bouncycastle:bcprov-jdk15on:1.58',
             'org.jetbrains.kotlin:kotlin-reflect:1.1.51',
