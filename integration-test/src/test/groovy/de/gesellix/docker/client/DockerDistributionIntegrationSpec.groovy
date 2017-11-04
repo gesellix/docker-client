@@ -26,7 +26,13 @@ class DockerDistributionIntegrationSpec extends Specification {
         alpineDescriptor.content.Descriptor.digest =~ "sha256:[a-f0-9]{64}"
         alpineDescriptor.content.Descriptor.size =~ "\\d{3,4}"
         alpineDescriptor.content.Platforms == [
-                [architecture: "amd64", os: "linux"]
+                [architecture: "amd64", os: "linux"],
+                [architecture: "arm", os: "linux", variant: "v6"],
+                [architecture: "arm64", os: "linux", variant: "v8"],
+                [architecture: "386", os: "linux"],
+                [architecture: "ppc64le", os: "linux"],
+                [architecture: "s390x", os: "linux"],
+
         ]
     }
 
