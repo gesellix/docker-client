@@ -191,7 +191,8 @@ class DockerContainerIntegrationSpec extends Specification {
         ex.cause.message == 'docker images create failed'
         if (expectManifestNotFound()) {
             ex.detail.content.message == "manifest for gesellix/testimage:unknown not found"
-        } else {
+        }
+        else {
             ex.detail.content.last().error == "Tag unknown not found in repository docker.io/gesellix/testimage"
         }
     }
@@ -817,6 +818,28 @@ class DockerContainerIntegrationSpec extends Specification {
         dockerClient.rm(containerId)
     }
 
+    def "attach (read only)"() {
+        given:
+        def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+        def containerConfig = [Cmd: ["ping", "127.0.0.1"]]
+        def containerId = dockerClient.run(imageId, containerConfig).container.content.Id
+
+        when:
+        dockerClient.attach(
+                containerId,
+                [logs: 1, stream: 1, stdin: 0, stdout: 1, stderr: 1],
+                new AttachConfig())
+        dockerClient.stop(containerId)
+        dockerClient.wait(containerId)
+
+        then:
+        // Something like `*PING 127.0.0.1 (127.0.0.1): 56 data bytes` should appear on StdOut.
+        notThrown()
+
+        cleanup:
+        dockerClient.rm(containerId)
+    }
+
     def "attach (interactive)"() {
         given:
         def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
@@ -859,7 +882,8 @@ class DockerContainerIntegrationSpec extends Specification {
             if (outputStream.toByteArray() == expectedOutput.bytes) {
                 log.info("[attach (interactive)] fully consumed \n${outputStream.toString()}")
                 onSourceConsumed.countDown()
-            } else {
+            }
+            else {
                 log.info("[attach (interactive)] partially consumed \n${outputStream.toString()}")
             }
         }
