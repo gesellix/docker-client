@@ -204,6 +204,22 @@ class DockerImageIntegrationSpec extends Specification {
         }
         def inputDirectory = new ResourceReader().getClasspathResourceAsFile(dockerfile, DockerClient).parentFile
 
+        def toBeMatched = []
+        if (isNativeWindows) {
+            toBeMatched << new EventMatch(pattern: "Step 1(/2)? : FROM microsoft/nanoserver\n?")
+        }
+        else {
+            toBeMatched << new EventMatch(pattern: "Step 1(/2)? : FROM alpine:edge\n?")
+        }
+        toBeMatched << new EventMatch(pattern: "\\s---> \\w+\n?")
+        toBeMatched << new EventMatch(pattern: "Step 2(/2)? : RUN i-will-fail\n?")
+        if (isNativeWindows) {
+            toBeMatched << new EventMatch(matches: EventMatch.EXACT_MATCH, message: EventMatch.GET_ERROR, pattern: "The command 'cmd /S /C i-will-fail' returned a non-zero code: 1")
+        }
+        else {
+            toBeMatched << new EventMatch(matches: EventMatch.EXACT_MATCH, message: EventMatch.GET_ERROR, pattern: "The command '/bin/sh -c i-will-fail' returned a non-zero code: 127")
+        }
+
         when:
         CountDownLatch latch = new CountDownLatch(1)
         def events = []
@@ -225,22 +241,10 @@ class DockerImageIntegrationSpec extends Specification {
         then:
         println "count: ${events.size()}"
         println events
-        if (isNativeWindows) {
-            events.get(0).stream =~ "Step 1(/2)? : FROM microsoft/nanoserver\n"
-        }
-        else {
-            events.get(0).stream =~ "Step 1(/2)? : FROM alpine:edge\n"
-        }
-        events.get(1).stream =~ "\\s---> \\w+\n"
-        events.get(2).stream =~ "Step 2(/2)? : RUN i-will-fail\n"
-        if (isNativeWindows) {
-            events.get(5).error == "The command 'cmd /S /C i-will-fail' returned a non-zero code: 1"
-        }
-        else {
-            events.get(5).error == "The command '/bin/sh -c i-will-fail' returned a non-zero code: 127"
-        }
-        def containerId = getContainerId(events.get(3).stream as String)
-        def imageId = getImageId(events.get(1).stream as String)
+        def nonMatched = filterNeedlesInSequence(events, toBeMatched)
+        nonMatched.empty
+        def containerId = getContainerId(events)
+        def imageId = getImageId(events)
 
         cleanup:
         result.taskFuture.cancel(true)
@@ -323,12 +327,52 @@ class DockerImageIntegrationSpec extends Specification {
 //        }
 //    }
 
-    def getContainerId(String buildImageLogEvent) {
-        return getFirstMatchingGroup("\\s---> Running in (\\w+)\n", buildImageLogEvent)
+    static class EventMatch {
+        String pattern
+
+        static Closure PATTERN_MATCH = { String msg, String pattern -> msg =~ pattern }
+        static Closure EXACT_MATCH = { String msg, String pattern -> msg == pattern }
+
+        Closure matches = PATTERN_MATCH
+
+        static Closure GET_STREAM = { event -> event.stream }
+        static Closure GET_ERROR = { event -> event.error }
+
+        Closure message = GET_STREAM
+
+        @Override
+        String toString() {
+            return pattern
+        }
     }
 
-    def getImageId(String buildImageLogEvent) {
-        return getFirstMatchingGroup("\\s---> (\\w+)\n", buildImageLogEvent)
+    def filterNeedlesInSequence(List<Map> events, List<EventMatch> needles) {
+        List<EventMatch> toBeMatched = new ArrayList<>(needles)
+        events.each { Map event ->
+            def expected = toBeMatched.first()
+            if (expected.matches(expected.message(event), expected.pattern)) {
+                toBeMatched.remove(expected)
+            }
+        }
+        return toBeMatched
+    }
+
+    def findNeedleInSequence(List<Map> events, EventMatch needle) {
+        return events.find { Map event ->
+            if (needle.matches(needle.message(event), needle.pattern)) {
+                return event
+            }
+        }
+    }
+
+    def getContainerId(List events) {
+        def event = findNeedleInSequence(events, new EventMatch(pattern: "\\s---> Running in (\\w+)\n?"))
+        return getFirstMatchingGroup("\\s---> Running in (\\w+)\n?", event.stream as String)
+    }
+
+    def getImageId(List events) {
+        def event = findNeedleInSequence(events, new EventMatch(pattern: "\\s---> (\\w+)\n?"))
+        return getFirstMatchingGroup("\\s---> (\\w+)\n?", event.stream as String)
     }
 
     def getFirstMatchingGroup(String pattern, String input) {
@@ -678,7 +722,8 @@ class DockerImageIntegrationSpec extends Specification {
             try {
                 retVal = oneArgClosure(arg)
                 break
-            } catch (Exception e) { /* ignore here; already logged by DockerResponseHandler */ }
+            }
+            catch (Exception e) { /* ignore here; already logged by DockerResponseHandler */ }
         }
 
         retVal
