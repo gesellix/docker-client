@@ -2,7 +2,7 @@ package de.gesellix.docker.explore
 
 class NamedPipeExploration {
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         try {
             // Connect to the named pipe
             RandomAccessFile pipe = new RandomAccessFile("\\\\.\\pipe\\docker_engine", "rw")
