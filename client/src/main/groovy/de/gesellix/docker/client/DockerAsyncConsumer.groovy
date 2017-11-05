@@ -19,10 +19,14 @@ class DockerAsyncConsumer implements Runnable {
         def reader = new BufferedReader(new InputStreamReader(response.stream as InputStream))
         try {
             String line
-            while ((line = reader.readLine()) != null) {
+            while ((line = readLineWhenNotInterrupted(reader)) != null) {
                 log.trace("event: $line")
                 callback.onEvent(line)
             }
+        }
+        catch (InterruptedException e) {
+            log.debug("consumer interrupted", e)
+            Thread.currentThread().interrupt()
         }
         catch (Exception e) {
             log.error("error reading from stream", e)
@@ -31,5 +35,12 @@ class DockerAsyncConsumer implements Runnable {
         finally {
             callback?.onFinish()
         }
+    }
+
+    private String readLineWhenNotInterrupted(Reader reader) {
+        if (Thread.currentThread().isInterrupted()) {
+            return null
+        }
+        return reader.readLine()
     }
 }
