@@ -1,5 +1,9 @@
 package de.gesellix.docker.explore
 
+import java.lang.management.ManagementFactory
+import java.lang.management.ThreadInfo
+import java.lang.management.ThreadMXBean
+
 class ThreadDumpHook extends Thread {
 
     void run() {
