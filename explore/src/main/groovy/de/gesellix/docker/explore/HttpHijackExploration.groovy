@@ -7,6 +7,7 @@ import groovy.util.logging.Slf4j
 import okhttp3.Response
 
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 @Slf4j
 class HttpHijackExploration {
@@ -51,10 +52,9 @@ class HttpHijackExploration {
         runningContainers << containerName
 
         def stdin = new ByteArrayInputStream(("more input!\n").getBytes())
-        def doneLatch = new CountDownLatch(1)
-        def done = { Response response ->
-//            println response.body().string()
-            doneLatch.countDown()
+        def closedLatch = new CountDownLatch(1)
+        def closed = { Response response ->
+            closedLatch.countDown()
         }
         def responseLatch = new CountDownLatch(1)
         def onResponseCallback = { Response response ->
@@ -77,9 +77,10 @@ class HttpHijackExploration {
                                 stdout: System.out,
                                 stderr: System.err),
                         onResponse: onResponseCallback,
-                        onSinkClosed: done))
-        responseLatch.await()
-        doneLatch.await()
+                        onSinkClosed: closed))
+        responseLatch.await(10, TimeUnit.SECONDS)
+        closedLatch.await(10, TimeUnit.SECONDS)
+//        stdin.close()
     }
 
     static class ShutdownContainersHook extends Thread {

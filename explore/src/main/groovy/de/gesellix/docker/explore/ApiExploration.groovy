@@ -21,9 +21,22 @@ class ApiExploration {
 //        println dockerClient.info().content
 //        println dockerClient.version().content
 
-//    def runResult = dockerClient.run("gesellix/testimage", [Cmd: ["ping", "127.0.0.1"]])
-//    println runResult.container.content.Id
-//    dockerClient.attach(runResult.content.Id)
+//        try {
+//            def runResult = dockerClient.run("gesellix/testimage:os-linux",
+//                                             [Cmd: ["ping", "127.0.0.1"]])
+//            def containerId = runResult.container.content.Id
+//            println containerId
+//            dockerClient.attach(containerId,
+//                                [logs: 1, stream: 1, stdin: 0, stdout: 1, stderr: 1],
+//                                new AttachConfig())
+//            Thread.sleep(500)
+//            dockerClient.stop(containerId)
+//            dockerClient.wait(containerId)
+//            dockerClient.rm(containerId)
+//        }
+//        catch (Throwable t) {
+//            println("## $t")
+//        }
 
 //    def keepDataContainers = { container ->
 //      container.Names.any { String name ->
