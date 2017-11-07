@@ -3,6 +3,7 @@ package de.gesellix.docker.explore
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.DockerClientImpl
 import de.gesellix.docker.engine.AttachConfig
+import de.gesellix.docker.engine.OkResponseCallback
 import groovy.util.logging.Slf4j
 import okhttp3.Response
 
@@ -62,7 +63,7 @@ class HttpHijackExploration {
             responseLatch.countDown()
         }
 
-        dockerClient.attach(
+        def attachResponse = dockerClient.attach(
                 containerName,
                 [
                         logs  : false,
@@ -80,7 +81,14 @@ class HttpHijackExploration {
                         onSinkClosed: closed))
         responseLatch.await(10, TimeUnit.SECONDS)
         closedLatch.await(10, TimeUnit.SECONDS)
-//        stdin.close()
+
+        shutdownConnections(attachResponse.responseCallback)
+    }
+
+    static void shutdownConnections(OkResponseCallback responseCallback) {
+        responseCallback.client.dispatcher().executorService().shutdown()
+        responseCallback.client.connectionPool().evictAll()
+        System.gc()
     }
 
     static class ShutdownContainersHook extends Thread {
