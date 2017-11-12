@@ -131,6 +131,13 @@ class DockerClientImpl implements DockerClient {
                 manageAuthentication)
     }
 
+    /**
+     * @deprecated Please use the prune* commands.
+     * @see ManageContainer#pruneContainers(java.lang.Object)
+     * @see ManageImage#pruneImages(java.lang.Object)
+     * @see ManageVolume#pruneVolumes(java.lang.Object)
+     */
+    @Deprecated
     @Override
     cleanupStorage(Closure shouldKeepContainer, Closure shouldKeepVolume = { true }) {
         cleanupContainers shouldKeepContainer
@@ -138,6 +145,11 @@ class DockerClientImpl implements DockerClient {
         cleanupVolumes shouldKeepVolume
     }
 
+    /**
+     * @deprecated Please use the prune* commands.
+     * @see ManageContainer#pruneContainers(java.lang.Object)
+     */
+    @Deprecated
     @Override
     cleanupContainers(Closure shouldKeepContainer) {
         def allContainers = ps([filters: [status: ["exited"]]]).content
@@ -149,6 +161,11 @@ class DockerClientImpl implements DockerClient {
         }
     }
 
+    /**
+     * @deprecated Please use the prune* commands.
+     * @see ManageImage#pruneImages(java.lang.Object)
+     */
+    @Deprecated
     @Override
     cleanupImages() {
         images([filters: [dangling: ["true"]]]).content.each { image ->
@@ -157,6 +174,11 @@ class DockerClientImpl implements DockerClient {
         }
     }
 
+    /**
+     * @deprecated Please use the prune* commands.
+     * @see ManageVolume#pruneVolumes(java.lang.Object)
+     */
+    @Deprecated
     @Override
     cleanupVolumes(Closure shouldKeepVolume) {
         def allVolumes = volumes([filters: [dangling: ["true"]]]).content.Volumes

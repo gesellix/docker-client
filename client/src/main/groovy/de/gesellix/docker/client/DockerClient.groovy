@@ -35,14 +35,43 @@ interface DockerClient
                 ManageTask,
                 ManageVolume {
 
+    /**
+     * @deprecated Please use the prune* commands.
+     * @see ManageContainer#pruneContainers(java.lang.Object)
+     * @see ManageImage#pruneImages(java.lang.Object)
+     * @see ManageVolume#pruneVolumes(java.lang.Object)
+     */
+    @Deprecated
     def cleanupStorage(Closure shouldKeepContainer)
 
+    /**
+     * @deprecated Please use the prune* commands.
+     * @see ManageContainer#pruneContainers(java.lang.Object)
+     * @see ManageImage#pruneImages(java.lang.Object)
+     * @see ManageVolume#pruneVolumes(java.lang.Object)
+     */
+    @Deprecated
     def cleanupStorage(Closure shouldKeepContainer, Closure shouldKeepVolume)
 
+    /**
+     * @deprecated Please use the prune* commands.
+     * @see ManageImage#pruneImages(java.lang.Object)
+     */
+    @Deprecated
     def cleanupImages()
 
+    /**
+     * @deprecated Please use the prune* commands.
+     * @see ManageContainer#pruneContainers(java.lang.Object)
+     */
+    @Deprecated
     def cleanupContainers(Closure shouldKeepContainer)
 
+    /**
+     * @deprecated Please use the prune* commands.
+     * @see ManageVolume#pruneVolumes(java.lang.Object)
+     */
+    @Deprecated
     def cleanupVolumes(Closure shouldKeepVolume)
 
     def search(term)
