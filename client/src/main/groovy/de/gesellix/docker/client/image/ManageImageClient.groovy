@@ -240,7 +240,10 @@ class ManageImageClient implements ManageImage {
         }
         def repoAndTag = repositoryTagParser.parseRepositoryTag(actualImageName)
 
-        def response = client.post([path   : "/images/${repoAndTag.repo}/push".toString(),
+        def repo = URLEncoder.encode(repoAndTag.repo,"UTF-8").replace("/","%2f")
+
+        def response = client.post([path   : "/images/${repo}/push".toString(),
+                                    pathAlreadyEncoded: true,
                                     query  : [tag: repoAndTag.tag],
                                     headers: ["X-Registry-Auth": authBase64Encoded ?: "."]])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker push failed"))
