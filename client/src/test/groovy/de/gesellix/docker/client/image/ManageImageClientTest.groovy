@@ -70,9 +70,10 @@ class ManageImageClientTest extends Specification {
         service.push("an-image")
 
         then:
-        1 * httpClient.post([path   : "/images/an-image/push",
-                             query  : [tag: ""],
-                             headers: ["X-Registry-Auth": "."]]) >> [status: [success: true]]
+        1 * httpClient.post([path              : "/images/an-image/push",
+                             query             : [tag: ""],
+                             pathAlreadyEncoded: true,
+                             headers           : ["X-Registry-Auth": "."]]) >> [status: [success: true]]
     }
 
     def "push with auth"() {
@@ -80,9 +81,10 @@ class ManageImageClientTest extends Specification {
         service.push("an-image:a-tag", "some-base64-encoded-auth")
 
         then:
-        1 * httpClient.post([path   : "/images/an-image/push",
-                             query  : [tag: "a-tag"],
-                             headers: ["X-Registry-Auth": "some-base64-encoded-auth"]]) >> [status: [success: true]]
+        1 * httpClient.post([path              : "/images/an-image/push",
+                             query             : [tag: "a-tag"],
+                             pathAlreadyEncoded: true,
+                             headers           : ["X-Registry-Auth": "some-base64-encoded-auth"]]) >> [status: [success: true]]
     }
 
     def "push with registry"() {
@@ -92,11 +94,12 @@ class ManageImageClientTest extends Specification {
         then:
         1 * httpClient.post([path : "/images/an-image/tag",
                              query: [repo: "registry:port/an-image",
-                                     tag : ""]])
+                             tag  : ""]])
         then:
-        1 * httpClient.post([path   : "/images/registry:port/an-image/push",
-                             query  : [tag: ""],
-                             headers: ["X-Registry-Auth": "."]]) >> [status: [success: true]]
+        1 * httpClient.post([path              : "/images/registry%3Aport%2Fan-image/push",
+                             query             : [tag: ""],
+                             pathAlreadyEncoded: true,
+                             headers           : ["X-Registry-Auth": "."]]) >> [status: [success: true]]
     }
 
     def "pull with defaults"() {
