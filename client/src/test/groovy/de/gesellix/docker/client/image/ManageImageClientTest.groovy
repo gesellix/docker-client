@@ -55,6 +55,63 @@ class ManageImageClientTest extends Specification {
         }
     }
 
+    def "build with duplicates"() {
+        def buildContext = new ByteArrayInputStream([42] as byte[])
+
+        when:
+        def imageId = service.build(buildContext)
+
+        then:
+        1 * httpClient.post([path              : "/build",
+                             query             : ["rm": true],
+                             body              : buildContext,
+                             requestContentType: "application/octet-stream",
+                             async             : false]) >> [content: [
+                ["stream":"Step 8/12 : RUN pip3 install arrow tornado\n"],
+                ["stream":"Collecting arrow\n"],
+                ["stream": "  Downloading https://pypi/repo/default/download/arrow/1/arrow-0.10.0.tar.gz (86kB)\n"],
+                ["stream": "Collecting tornado\n"],
+                ["stream": "  Downloading https://pypi/repo/default/tornado/2/tornado-4.5.2.tar.gz (483kB)\n"],
+                ["stream": "Building wheels for collected packages: sklearn, arrow, tornado\n"],
+                ["stream": "  Running setup.py bdist_wheel for arrow: started\n"],
+                ["stream": "  Running setup.py bdist_wheel for arrow: finished with status 'done'\n"],
+                ["stream": "  Stored in directory: /root/.cache/pip/wheels/24/09/97/5d45b2048a3e\n"],
+                ["stream": "  Running setup.py bdist_wheel for tornado: started\n"],
+                ["stream": "  Running setup.py bdist_wheel for tornado: finished with status 'done'\n"],
+                ["stream": "  Stored in directory: " +
+                        "/root/.cache/pip/wheels/7b/74/fe/bef8d4cda4b54242c3d55547422eadbce0a25f205c2734814a\n"],
+                ["stream": "Successfully built arrow tornado\n"],
+                ["stream": "Installing collected packages: arrow, tornado\n"],
+                ["stream": "Successfully installed arrow-0.10.0 tornado-4.5.2\n"],
+                ["stream": "\u001b[91mYou are using pip version 8.1.1, however version 9.0.1 is available.\n" +
+                        "You should consider upgrading via the 'pip install --upgrade pip' command.\n\u001b[0m"],
+                ["stream": " ---\u003e 23ffa972ecb8\n"],
+                ["stream": "Removing intermediate container 3ff894d3b066\n"],
+                ["stream": "Step 10/12 : ENV TZ Europe/Moscow\n"],
+                ["stream": " ---\u003e Running in 00d596afb9f3\n"],
+                ["stream": " ---\u003e 873ade4307a3\n"],
+                ["stream": "Removing intermediate container 00d596afb9f3\n"],
+                ["stream": "Step 11/12 : RUN ln -snf /usr/share/zoneinfo/\$TZ " +
+                        "/etc/localtime \u0026\u0026 echo \$TZ \u003e /etc/timezone\n"],
+                ["stream": " ---\u003e Running in 4d29df7f7339\n"],
+                ["stream": "\u001b[91m/bin/sh: warning: setlocale: LC_ALL: " +
+                        "cannot change locale (ru_RU.UTF-8)\n\u001b[0m"],
+                ["stream": " ---\u003e 4fec66462017\n"],
+                ["stream": "Removing intermediate container 4d29df7f7339\n"],
+                ["stream": "Step 12/12 : CMD java \$JAVA_OPTIONS -cp /root/lib/*:/root/\$JAR_FILE \$MAIN_CLASS\n"],
+                ["stream": " ---\u003e Running in 1a1597b19623\n"],
+                ["stream": " ---\u003e 5d45b2048a3e\n"],
+                ["stream": "Removing intermediate container 1a1597b19623\n"],
+                ["stream": "Successfully built 5d45b2048a3e\n"]
+        ]]
+        and:
+        responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+            assert arguments[1]?.message == "docker build failed"
+        }
+        and:
+        imageId == "5d45b2048a3e"
+    }
+
     def "tag with defaults"() {
         when:
         service.tag("an-image", "registry:port/username/image-name:a-tag")
