@@ -22,18 +22,21 @@ class ManageImageClientTest extends Specification {
         def buildContext = new ByteArrayInputStream([42] as byte[])
 
         when:
-        service.build(buildContext)
+        def imageId = service.build(buildContext)
 
         then:
         1 * httpClient.post([path              : "/build",
                              query             : ["rm": true],
                              body              : buildContext,
                              requestContentType: "application/octet-stream",
-                             async             : false]) >> [content: [[stream: "Successfully built foo"]]]
+                             async             : false]) >> [content: [[stream: "Successfully built foo"],
+                                                                       [aux: [ID: "sha256:23455"]]]]
         and:
         responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
             assert arguments[1]?.message == "docker build failed"
         }
+        and:
+        imageId == "sha256:23455"
     }
 
     def "build with query"() {
@@ -41,18 +44,21 @@ class ManageImageClientTest extends Specification {
         def query = ["rm": false]
 
         when:
-        service.build(buildContext, query)
+        def imageId = service.build(buildContext, query)
 
         then:
         1 * httpClient.post([path              : "/build",
                              query             : ["rm": false],
                              body              : buildContext,
                              requestContentType: "application/octet-stream",
-                             async             : false]) >> [content: [[stream: "Successfully built bar"]]]
+                             async             : false]) >> [content: [[stream: "Successfully built bar"],
+                                                                       [aux: [ID: "sha256:23455"]]]]
         and:
         responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
             assert arguments[1]?.message == "docker build failed"
         }
+        and:
+        imageId == "sha256:23455"
     }
 
     def "build with duplicates"() {

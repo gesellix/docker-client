@@ -101,7 +101,18 @@ class ManageImageClient implements ManageImage {
     }
 
     String getBuildResultAsImageId(List<Map<String, String>> chunks) {
-        def buildResultMessage = chunks.reverse().find { Map<String, String> chunk ->
+        def reversedChunks = chunks.reverse()
+        def buildResultMessage = reversedChunks.find { Map<String, String> chunk ->
+            chunk.aux?.ID
+        }
+        if (buildResultMessage) {
+            return buildResultMessage.aux.ID
+        }
+//        throw new IllegalStateException("Couldn't find image id in build output.")
+
+        log.warn("Couldn't find aux.ID in build output, trying via fallback.")
+
+        buildResultMessage = reversedChunks.find { Map<String, String> chunk ->
             chunk.stream?.trim()?.startsWith("Successfully built ")
         }
         return buildResultMessage.stream.trim() - "Successfully built "

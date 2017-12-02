@@ -190,7 +190,7 @@ class DockerImageIntegrationSpec extends Specification {
         }
         result.log.last().stream.startsWith("Successfully built ")
         def imageId = result.log.last().stream.trim() - "Successfully built "
-        result.imageId == imageId
+        result.imageId =~ "(sha256:)?$imageId"
 
         cleanup:
         dockerClient.rmi(imageId)
@@ -621,6 +621,7 @@ class DockerImageIntegrationSpec extends Specification {
         }
         def inputDirectory = new ResourceReader().getClasspathResourceAsFile(dockerfile, DockerClient).parentFile
         def buildResult = dockerClient.build(newBuildContext(inputDirectory))
+        log.info("buildResult: $buildResult")
 
         when:
         def images = dockerClient.images([filters: [dangling: ["true"]]]).content
@@ -629,7 +630,7 @@ class DockerImageIntegrationSpec extends Specification {
         images.findAll { image ->
             image.RepoTags == ["<none>:<none>"] || image.RepoTags == null
         }.find { image ->
-            image.Id.startsWith "sha256:$buildResult"
+            image.Id =~ buildResult
         }
 
         cleanup:
