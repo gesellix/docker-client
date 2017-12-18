@@ -77,7 +77,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         info.Images > 0
         info.IndexServerAddress == "https://index.docker.io/v1/"
         info.IPv4Forwarding == true
-        info.Labels == null
+        info.Labels == null || info.Labels == []
         info.LoggingDriver == "json-file"
         info.MemTotal > 0
         info.MemoryLimit != nativeWindows

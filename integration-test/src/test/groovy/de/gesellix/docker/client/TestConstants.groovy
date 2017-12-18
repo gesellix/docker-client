@@ -27,15 +27,15 @@ class TestConstants {
         // TODO consider checking the Docker api version instead of "TRAVIS"
         if (System.env.TRAVIS) {
             versionDetails = [
-                    ApiVersion   : { it == "1.27" },
+                    ApiVersion   : { it == "1.32" },
                     Arch         : { it == "amd64" },
-                    BuildTime    : { it == "2017-03-27T17:10:36.401799458+00:00" },
-                    GitCommit    : { it == "c6d412e" },
-                    GoVersion    : { it == "go1.7.5" },
+                    BuildTime    : { it == "2017-09-26T22:41:20.000000000+00:00" },
+                    GitCommit    : { it == "afdb6d4" },
+                    GoVersion    : { it == "go1.8.3" },
                     KernelVersion: { it =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?" },
                     MinAPIVersion: { it == "1.12" },
                     Os           : { it == "linux" },
-                    Version      : { it == "17.03.1-ce" }]
+                    Version      : { it == "17.09.0-ce" }]
         } else if (LocalDocker.isNativeWindows()) {
             versionDetails = [
                     ApiVersion   : { it == "1.30" },

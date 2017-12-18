@@ -8,13 +8,13 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.github.ben-manes:gradle-versions-plugin:0.15.0'
+        classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
         classpath "gradle.plugin.net.ossindex:ossindex-gradle-plugin:0.1.1"
     }
 }
 
 plugins {
-    id 'com.gradle.build-scan' version '1.8'
+    id 'com.gradle.build-scan' version '1.11'
 }
 
 subprojects {
@@ -33,12 +33,10 @@ subprojects {
     targetCompatibility = JavaVersion.VERSION_1_8
 
     def dependencyVersions = [
-            'org.apache.commons:commons-compress:1.15',
             'org.bouncycastle:bcpkix-jdk15on:1.58',
             'org.bouncycastle:bcprov-jdk15on:1.58',
-            'org.jetbrains.kotlin:kotlin-reflect:1.1.51',
-            'org.jetbrains.kotlin:kotlin-stdlib:1.1.51',
-            'org.slf4j:slf4j-api:1.7.25',
+            'org.jetbrains.kotlin:kotlin-reflect:1.2.10',
+            'org.jetbrains.kotlin:kotlin-stdlib:1.2.10',
     ]
 
     configurations.all {
@@ -55,7 +53,7 @@ buildScan {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.2.1'
+    gradleVersion = '4.4'
     distributionType = Wrapper.DistributionType.ALL
 }
 

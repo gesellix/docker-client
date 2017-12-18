@@ -9,7 +9,7 @@ buildscript {
 //        classpath 'net.saliman:gradle-cobertura-plugin:2.4.0'
 //        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.1'
 
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0'
     }
 }
 
@@ -31,24 +31,24 @@ repositories {
 
 dependencies {
 //    compile 'de.gesellix:docker-engine:local'
-    compile 'de.gesellix:docker-engine:2017-11-06T21-54-43'
-    compile 'de.gesellix:docker-compose:2017-10-05T22-41-04'
+    compile 'de.gesellix:docker-engine:2017-12-18T19-07-00'
+    compile 'de.gesellix:docker-compose:2017-12-18T19-13-48'
 
-    compile 'org.codehaus.groovy:groovy:2.4.12'
-    compile 'org.codehaus.groovy:groovy-json:2.4.12'
+    compile 'org.codehaus.groovy:groovy:2.4.13'
+    compile 'org.codehaus.groovy:groovy-json:2.4.13'
 
     compile 'org.slf4j:slf4j-api:1.7.25'
     testCompile 'ch.qos.logback:logback-classic:1.2.3'
 
     compile 'com.squareup.okio:okio:1.13.0'
-    compile 'com.squareup.okhttp3:okhttp:3.9.0'
-    testCompile 'com.squareup.okhttp3:mockwebserver:3.9.0'
+    compile 'com.squareup.okhttp3:okhttp:3.9.1'
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.9.1'
 
     compile 'org.apache.commons:commons-compress:1.15'
 
     compile 'org.bouncycastle:bcpkix-jdk15on:1.58'
 
-    testCompile 'de.gesellix:testutil:2017-10-07T20-41-30'
+    testCompile 'de.gesellix:testutil:2017-12-18T18-44-17'
 
     testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
         exclude module: 'groovy-all'
