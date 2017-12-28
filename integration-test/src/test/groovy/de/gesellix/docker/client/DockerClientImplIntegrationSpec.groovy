@@ -1,5 +1,6 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.engine.DockerEnv
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
 import spock.lang.Specification
@@ -22,7 +23,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         )
     }
 
-    def ping() {
+    def "ping"() {
         when:
         def ping = dockerClient.ping()
 
@@ -31,7 +32,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         ping.content == "OK"
     }
 
-    def info() {
+    def "info"() {
         when:
         def info = dockerClient.info().content
 
@@ -58,14 +59,16 @@ class DockerClientImplIntegrationSpec extends Specification {
         info.Containers >= 0
         if (nativeWindows) {
             info.DockerRootDir == "C:\\\\ProgramData\\\\Docker"
-        } else {
+        }
+        else {
             info.DockerRootDir =~ "(/mnt/sda1)?/var/lib/docker"
         }
 
         def expectedDriverStatusProperties
         if (nativeWindows) {
             expectedDriverStatusProperties = ["Windows"]
-        } else {
+        }
+        else {
             expectedDriverStatusProperties = ["Backing Filesystem"]
         }
         info.DriverStatus.findAll {
@@ -93,7 +96,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         info.SystemTime =~ "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2,}.(\\d{3,}Z)?"
     }
 
-    def version() {
+    def "version"() {
         when:
         def version = dockerClient.version().content
 
@@ -104,7 +107,7 @@ class DockerClientImplIntegrationSpec extends Specification {
         missingKeys.empty
     }
 
-    def auth() {
+    def "auth"() {
         given:
 //        def authDetails = dockerClient.readAuthConfig(null, null)
         def authDetails = dockerClient.readDefaultAuthConfig()
@@ -114,11 +117,26 @@ class DockerClientImplIntegrationSpec extends Specification {
         def authResult
         if (authDetails.username == null) {
             log.warn("no username configured to auth")
-        } else {
+        }
+        else {
             authResult = dockerClient.auth(authPlain)
         }
 
         then:
         authDetails.username == null || authResult.status.code == 200
+    }
+
+    def "allows configuration via setter"() {
+        given:
+        def exampleHost = "tcp://foo.bar:1234"
+        assert new DockerEnv().dockerHost != exampleHost
+
+        when:
+        def client = new DockerClientImpl(env: new DockerEnv(dockerHost: exampleHost))
+
+        then:
+        client.httpClient.dockerClientConfig.env.dockerHost == exampleHost
+        client.dockerClientConfig.env.dockerHost == exampleHost
+        client.env.dockerHost == exampleHost
     }
 }

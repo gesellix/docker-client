@@ -93,6 +93,10 @@ class DockerClientImpl implements DockerClient {
     }
 
     DockerClientImpl(DockerClientConfig dockerClientConfig, Proxy proxy = NO_PROXY) {
+        apply(dockerClientConfig, proxy)
+    }
+
+    def apply(DockerClientConfig dockerClientConfig, Proxy proxy = NO_PROXY) {
         this.dockerClientConfig = dockerClientConfig
         this.env = dockerClientConfig.env
         this.proxy = proxy
@@ -129,6 +133,14 @@ class DockerClientImpl implements DockerClient {
                 manageConfig,
                 manageSystem,
                 manageAuthentication)
+    }
+
+    void setDockerClientConfig(DockerClientConfig dockerClientConfig) {
+        apply(dockerClientConfig, proxy)
+    }
+
+    void setEnv(DockerEnv env) {
+        setDockerClientConfig(new DockerClientConfig(env))
     }
 
     /**
