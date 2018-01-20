@@ -2,4 +2,4 @@ pipeline:
   build:
     image: java:8
     commands:
-      - ./gradlew clean :client:check
+      - ./gradlew clean :client:check -i -s
