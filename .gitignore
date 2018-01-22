@@ -6,3 +6,7 @@
 npipe.exe
 .DS_Store
 out/
+*.settings
+*.project
+*bin/
+*.classpath
