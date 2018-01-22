@@ -61,6 +61,30 @@ class ManageImageClientTest extends Specification {
         imageId == "sha256:23455"
     }
 
+    def "build with auth"() {
+        def buildContext = new ByteArrayInputStream([42] as byte[])
+        def query = ["rm": false]
+        def buildOptions = [ EncodedRegistryAuth : "NDI="]
+
+        when:
+        def imageId = service.build(buildContext, query, buildOptions)
+
+        then:
+        1 * httpClient.post([path              : "/build",
+                             query             : ["rm": false],
+                             body              : buildContext,
+                             headers           : ["X-Registry-Auth" : "NDI="],
+                             requestContentType: "application/octet-stream",
+                             async             : false]) >> [content: [[stream: "Successfully built bar"],
+                                                                       [aux: [ID: "sha256:23455"]]]]
+        and:
+        responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+            assert arguments[1]?.message == "docker build failed"
+        }
+        and:
+        imageId == "sha256:23455"
+    }
+
     def "build with duplicates"() {
         def buildContext = new ByteArrayInputStream([42] as byte[])
 
