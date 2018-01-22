@@ -33,7 +33,7 @@ class ManageImageClient implements ManageImage {
     }
 
     @Override
-    buildWithLogs(InputStream buildContext, query = ["rm": true], Timeout timeout = TEN_MINUTES) {
+    buildWithLogs(InputStream buildContext, query = ["rm": true], buildOptions = [:], Timeout timeout = TEN_MINUTES) {
         def buildLatch = new CountDownLatch(1)
         def chunks = []
         def callback = new DockerAsyncCallback() {
@@ -51,7 +51,7 @@ class ManageImageClient implements ManageImage {
                 buildLatch.countDown()
             }
         }
-        def asyncBuildResponse = build(buildContext, query, callback)
+        def asyncBuildResponse = build(buildContext, query, buildOptions, callback)
 
         def builtInTime = buildLatch.await(timeout.timeout, timeout.unit)
         asyncBuildResponse.taskFuture.cancel(false)
@@ -76,16 +76,21 @@ class ManageImageClient implements ManageImage {
     }
 
     @Override
-    build(InputStream buildContext, query = ["rm": true], DockerAsyncCallback callback = null) {
+    build(InputStream buildContext, query = ["rm": true], buildOptions = [:], DockerAsyncCallback callback = null) {
         log.info "docker build"
         def async = callback ? true : false
         def actualQuery = query ?: [:]
         queryUtil.jsonEncodeBuildargs(actualQuery)
-        def response = client.post([path              : "/build",
-                                    query             : actualQuery,
-                                    body              : buildContext,
-                                    requestContentType: "application/octet-stream",
-                                    async             : async])
+        buildOptions = buildOptions ?: [:]
+        def request = [path              : "/build",
+                       query             : actualQuery,
+                       body              : buildContext,
+                       requestContentType: "application/octet-stream",
+                       async             : async]
+        if (buildOptions.EncodedRegistryAuth) {
+            request.headers = ["X-Registry-Auth" : buildOptions.EncodedRegistryAuth as String]
+        }
+        def response = client.post(request)
 
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker build failed"))
 
