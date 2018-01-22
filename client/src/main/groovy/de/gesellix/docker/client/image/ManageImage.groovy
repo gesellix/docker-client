@@ -11,14 +11,18 @@ interface ManageImage {
     def buildWithLogs(InputStream buildContext)
 
     def buildWithLogs(InputStream buildContext, query)
+    
+    def buildWithLogs(InputStream buildContext, query, buildOptions)
 
-    def buildWithLogs(InputStream buildContext, query, Timeout timeout)
+    def buildWithLogs(InputStream buildContext, query, buildOptions, Timeout timeout)
 
     def build(InputStream buildContext)
 
     def build(InputStream buildContext, query)
 
-    def build(InputStream buildContext, query, DockerAsyncCallback callback)
+    def build(InputStream buildContext, query, buildOptions)
+
+    def build(InputStream buildContext, query, buildOptions, DockerAsyncCallback callback)
 
 //    history     Show the history of an image
 
