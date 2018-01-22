@@ -64,7 +64,7 @@ class ManageImageClientTest extends Specification {
     def "build with auth"() {
         def buildContext = new ByteArrayInputStream([42] as byte[])
         def query = ["rm": false]
-        def buildOptions = [ EncodedRegistryAuth : "NDI="]
+        def buildOptions = [ EncodedRegistryConfig : "NDI="]
 
         when:
         def imageId = service.build(buildContext, query, buildOptions)
@@ -73,7 +73,7 @@ class ManageImageClientTest extends Specification {
         1 * httpClient.post([path              : "/build",
                              query             : ["rm": false],
                              body              : buildContext,
-                             headers           : ["X-Registry-Auth" : "NDI="],
+                             headers           : ["X-Registry-Config" : "NDI="],
                              requestContentType: "application/octet-stream",
                              async             : false]) >> [content: [[stream: "Successfully built bar"],
                                                                        [aux: [ID: "sha256:23455"]]]]
