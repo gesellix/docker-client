@@ -87,8 +87,8 @@ class ManageImageClient implements ManageImage {
                        body              : buildContext,
                        requestContentType: "application/octet-stream",
                        async             : async]
-        if (buildOptions.EncodedRegistryConfig) {
-            request.headers = ["X-Registry-Config" : buildOptions.EncodedRegistryConfig as String]
+        if (buildOptions.EncodedRegistryAuth) {
+            request.headers = ["X-Registry-Config" : buildOptions.EncodedRegistryAuth as String]
         }
         def response = client.post(request)
 
