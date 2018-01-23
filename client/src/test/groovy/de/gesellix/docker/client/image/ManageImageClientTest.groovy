@@ -64,7 +64,7 @@ class ManageImageClientTest extends Specification {
     def "build with auth"() {
         def buildContext = new ByteArrayInputStream([42] as byte[])
         def query = ["rm": false]
-        def buildOptions = [ EncodedRegistryConfig : "NDI="]
+        def buildOptions = [ EncodedRegistryAuth : "NDI="]
 
         when:
         def imageId = service.build(buildContext, query, buildOptions)
