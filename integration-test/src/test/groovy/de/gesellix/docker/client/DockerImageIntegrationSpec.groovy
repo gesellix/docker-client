@@ -141,7 +141,7 @@ class DockerImageIntegrationSpec extends Specification {
         when:
         CountDownLatch latch = new CountDownLatch(1)
         def events = []
-        def response = dockerClient.build(newBuildContext(inputDirectory), [rm: true], [:], new DockerAsyncCallback() {
+        def response = dockerClient.build(newBuildContext(inputDirectory), [rm: true], new DockerAsyncCallback() {
 
             @Override
             onEvent(Object event) {
@@ -223,7 +223,7 @@ class DockerImageIntegrationSpec extends Specification {
         when:
         CountDownLatch latch = new CountDownLatch(1)
         def events = []
-        def result = dockerClient.build(newBuildContext(inputDirectory), [rm: true], [:], new DockerAsyncCallback() {
+        def result = dockerClient.build(newBuildContext(inputDirectory), [rm: true], new DockerAsyncCallback() {
 
             @Override
             onEvent(Object event) {
