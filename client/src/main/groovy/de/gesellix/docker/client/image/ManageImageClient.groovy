@@ -33,7 +33,7 @@ class ManageImageClient implements ManageImage {
     }
 
     @Override
-    buildWithLogs(InputStream buildContext, query = ["rm": true], buildOptions = [:], Timeout timeout = TEN_MINUTES) {
+    buildWithLogs(InputStream buildContext, query = ["rm": true], Timeout timeout = TEN_MINUTES,  Map<String, String> buildOptions = [:]) {
         def buildLatch = new CountDownLatch(1)
         def chunks = []
         def callback = new DockerAsyncCallback() {
@@ -51,7 +51,7 @@ class ManageImageClient implements ManageImage {
                 buildLatch.countDown()
             }
         }
-        def asyncBuildResponse = build(buildContext, query, buildOptions, callback)
+        def asyncBuildResponse = build(buildContext, query, callback, buildOptions)
 
         def builtInTime = buildLatch.await(timeout.timeout, timeout.unit)
         asyncBuildResponse.taskFuture.cancel(false)
@@ -76,7 +76,12 @@ class ManageImageClient implements ManageImage {
     }
 
     @Override
-    build(InputStream buildContext, query = ["rm": true], buildOptions = [:], DockerAsyncCallback callback = null) {
+    build(BuildConfig config) {
+        build(config.buildContext, config.query, config.callback, config.options)
+    }
+
+    @Override
+    build(InputStream buildContext, query = ["rm": true], DockerAsyncCallback callback = null, Map<String, String> buildOptions = [:]) {
         log.info "docker build"
         def async = callback ? true : false
         def actualQuery = query ?: [:]
@@ -87,8 +92,8 @@ class ManageImageClient implements ManageImage {
                        body              : buildContext,
                        requestContentType: "application/octet-stream",
                        async             : async]
-        if (buildOptions.EncodedRegistryAuth) {
-            request.headers = ["X-Registry-Config" : buildOptions.EncodedRegistryAuth as String]
+        if (buildOptions.EncodedRegistryConfig) {
+            request.headers = ["X-Registry-Config" : buildOptions.EncodedRegistryConfig as String]
         }
         def response = client.post(request)
 
