@@ -14,7 +14,6 @@ import groovy.util.logging.Slf4j
 
 import java.util.concurrent.CountDownLatch
 
-import static de.gesellix.docker.client.Timeout.TEN_MINUTES
 import static java.util.concurrent.Executors.newSingleThreadExecutor
 
 @Slf4j
@@ -32,8 +31,22 @@ class ManageImageClient implements ManageImage {
         this.queryUtil = new QueryUtil()
     }
 
+    /**
+     * @deprecated use buildWithLogs(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
+     * @see #buildWithLogs(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
+     */
+    @Deprecated
     @Override
-    buildWithLogs(InputStream buildContext, query = ["rm": true], Timeout timeout = TEN_MINUTES,  Map<String, String> buildOptions = [:]) {
+    buildWithLogs(InputStream buildContext, Map query, Timeout timeout = null) {
+        return buildWithLogs(buildContext, new BuildConfig(query: query, timeout: timeout))
+    }
+
+    @Override
+    BuildResult buildWithLogs(InputStream buildContext, BuildConfig buildConfig = new BuildConfig()) {
+        if (buildConfig.callback) {
+            throw new UnsupportedOperationException("Currently cannot handle two callbacks.")
+        }
+
         def buildLatch = new CountDownLatch(1)
         def chunks = []
         def callback = new DockerAsyncCallback() {
@@ -51,14 +64,15 @@ class ManageImageClient implements ManageImage {
                 buildLatch.countDown()
             }
         }
-        def asyncBuildResponse = build(buildContext, query, callback, buildOptions)
+        buildConfig.callback = callback
+        def asyncBuildResponse = build(buildContext, buildConfig)
 
-        def builtInTime = buildLatch.await(timeout.timeout, timeout.unit)
-        asyncBuildResponse.taskFuture.cancel(false)
+        def builtInTime = buildLatch.await(buildConfig.timeout.timeout, buildConfig.timeout.unit)
+        asyncBuildResponse.response.taskFuture.cancel(false)
 
         def lastLogEvent
         if (chunks.empty) {
-            log.warn("no build log collected - timeout of ${timeout} reached?")
+            log.warn("no build log collected - timeout of ${buildConfig.timeout} reached?")
             lastLogEvent = null
         }
         else {
@@ -75,39 +89,55 @@ class ManageImageClient implements ManageImage {
                 imageId: getBuildResultAsImageId(chunks)]
     }
 
+    /**
+     * @deprecated use build(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
+     * @see #build(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
+     */
+    @Deprecated
     @Override
-    build(BuildConfig config) {
-        build(config.buildContext, config.query, config.callback, config.options)
+    build(InputStream buildContext, Map query, DockerAsyncCallback callback = null) {
+        BuildResult result = build(buildContext, new BuildConfig(query: query, callback: callback))
+        if (callback) {
+            return result.response
+        }
+        else {
+            return result.imageId
+        }
     }
 
     @Override
-    build(InputStream buildContext, query = ["rm": true], DockerAsyncCallback callback = null, Map<String, String> buildOptions = [:]) {
+    BuildResult build(InputStream buildContext, BuildConfig config = new BuildConfig()) {
+        EngineResponse response = buildAsync(buildContext, config, config.callback)
+        if (config.callback) {
+            def executor = newSingleThreadExecutor()
+            def future = executor.submit(new DockerAsyncConsumer(response as EngineResponse, config.callback))
+            response.taskFuture = future
+            return new BuildResult(response: response)
+        }
+        else {
+            String imageId = getBuildResultAsImageId(response.content as List)
+            return new BuildResult(response: response, imageId: imageId)
+        }
+    }
+
+    EngineResponse buildAsync(InputStream buildContext, BuildConfig config = new BuildConfig(), DockerAsyncCallback callback) {
         log.info "docker build"
-        def async = callback ? true : false
-        def actualQuery = query ?: [:]
+        def actualQuery = config.query ?: [:]
         queryUtil.jsonEncodeBuildargs(actualQuery)
-        buildOptions = buildOptions ?: [:]
+        def actualBuildOptions = config.options ?: [:]
         def request = [path              : "/build",
                        query             : actualQuery,
                        body              : buildContext,
                        requestContentType: "application/octet-stream",
-                       async             : async]
-        if (buildOptions.EncodedRegistryConfig) {
-            request.headers = ["X-Registry-Config" : buildOptions.EncodedRegistryConfig as String]
+                       async             : callback ? true : false]
+        if (actualBuildOptions.EncodedRegistryConfig) {
+            request.headers = ["X-Registry-Config": actualBuildOptions.EncodedRegistryConfig as String]
         }
         def response = client.post(request)
 
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker build failed"))
 
-        if (async) {
-            def executor = newSingleThreadExecutor()
-            def future = executor.submit(new DockerAsyncConsumer(response as EngineResponse, callback))
-            response.taskFuture = future
-            return response
-        }
-        else {
-            return getBuildResultAsImageId(response.content as List)
-        }
+        return response
     }
 
     String getBuildResultAsImageId(List<Map<String, String>> chunks) {
@@ -120,7 +150,7 @@ class ManageImageClient implements ManageImage {
         }
 //        throw new IllegalStateException("Couldn't find image id in build output.")
 
-        log.warn("Couldn't find aux.ID in build output, trying via fallback.")
+        log.info("Couldn't find aux.ID in build output, trying via fallback.")
 
         buildResultMessage = reversedChunks.find { Map<String, String> chunk ->
             chunk.stream?.trim()?.startsWith("Successfully built ")
@@ -150,7 +180,7 @@ class ManageImageClient implements ManageImage {
     }
 
     @Override
-    importStream(stream, repository = "", tag = "") {
+    String importStream(stream, repository = "", tag = "") {
         log.info "docker import stream into ${repository}:${tag}"
 
         def response = client.post([path              : "/images/create",
@@ -269,7 +299,7 @@ class ManageImageClient implements ManageImage {
     }
 
     @Override
-    EngineResponse rmi(imageId) {
+    EngineResponse rmi(String imageId) {
         log.info "docker rmi"
         def response = client.delete([path: "/images/${imageId}".toString()])
         return response

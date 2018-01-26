@@ -8,23 +8,41 @@ interface ManageImage {
 
 //    build       Build an image from a Dockerfile
 
-    def buildWithLogs(InputStream buildContext)
+    BuildResult buildWithLogs(InputStream buildContext)
 
-    def buildWithLogs(InputStream buildContext, query)
-    
-    def buildWithLogs(InputStream buildContext, query, Timeout timeout)
+    BuildResult buildWithLogs(InputStream buildContext, BuildConfig config)
 
-    def buildWithLogs(InputStream buildContext, query, Timeout timeout, Map<String, String> buildOptions)
+    /**
+     * @deprecated use buildWithLogs(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
+     * @see #buildWithLogs(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
+     */
+    @Deprecated
+    def buildWithLogs(InputStream buildContext, Map query)
 
-    def build(BuildConfig config)
+    /**
+     * @deprecated use buildWithLogs(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
+     * @see #buildWithLogs(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
+     */
+    @Deprecated
+    def buildWithLogs(InputStream buildContext, Map query, Timeout timeout)
 
-    def build(InputStream buildContext)
+    BuildResult build(InputStream buildContext)
 
-    def build(InputStream buildContext, query)
+    BuildResult build(InputStream buildContext, BuildConfig config)
 
-    def build(InputStream buildContext, query, DockerAsyncCallback callback)
+    /**
+     * @deprecated use build(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
+     * @see #build(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
+     */
+    @Deprecated
+    def build(InputStream buildContext, Map query)
 
-    def build(InputStream buildContext, query, DockerAsyncCallback callback, Map<String, String> buildOptions)
+    /**
+     * @deprecated use build(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
+     * @see #build(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
+     */
+    @Deprecated
+    def build(InputStream buildContext, Map query, DockerAsyncCallback callback)
 
 //    history     Show the history of an image
 
@@ -38,11 +56,11 @@ interface ManageImage {
 
     def importUrl(url, repository, tag)
 
-    def importStream(stream)
+    String importStream(stream)
 
-    def importStream(stream, repository)
+    String importStream(stream, repository)
 
-    def importStream(stream, repository, tag)
+    String importStream(stream, repository, tag)
 
 //    inspect     Display detailed information on one or more images
 
@@ -110,7 +128,7 @@ interface ManageImage {
 
 //    rm          Remove one or more images
 
-    EngineResponse rmi(image)
+    EngineResponse rmi(String image)
 
 //    save        Save one or more images to a tar archive (streamed to STDOUT by default)
 

@@ -1,6 +1,8 @@
 package de.gesellix.docker.client
 
 import de.gesellix.docker.client.builder.BuildContextBuilder
+import de.gesellix.docker.client.image.BuildConfig
+import de.gesellix.docker.client.image.BuildResult
 import de.gesellix.docker.registry.DockerRegistry
 import de.gesellix.docker.testutil.HttpTestServer
 import de.gesellix.testutil.ResourceReader
@@ -56,10 +58,10 @@ class DockerImageIntegrationSpec extends Specification {
         def buildResult = dockerClient.build(newBuildContext(inputDirectory))
 
         then:
-        buildResult =~ "[0-9a-z]{12}"
+        buildResult.imageId =~ "[0-9a-z]{12}"
 
         cleanup:
-        dockerClient.rmi(buildResult)
+        dockerClient.rmi(buildResult.imageId)
     }
 
     def "build image with tag"() {
@@ -73,14 +75,16 @@ class DockerImageIntegrationSpec extends Specification {
         when:
         def buildResult = dockerClient.build(
                 newBuildContext(inputDirectory),
-                [rm: true,
-                 t : "docker-client/tests:tag"])
+                new BuildConfig(query: [
+                        rm: true,
+                        t : 'docker-client/tests:tag'
+                ]))
 
         then:
-        buildResult =~ "[0-9a-z]{12}"
+        buildResult.imageId =~ "[0-9a-z]{12}"
 
         cleanup:
-        dockerClient.rmi(buildResult)
+        dockerClient.rmi(buildResult.imageId)
     }
 
     def "build image with unknown base image"() {
@@ -114,20 +118,22 @@ class DockerImageIntegrationSpec extends Specification {
         def inputDirectory = new ResourceReader().getClasspathResourceAsFile(dockerfile, DockerClient).parentFile
 
         when:
-        def buildResult = dockerClient.build(newBuildContext(inputDirectory), [
-                rm        : true,
-                dockerfile: './Dockerfile.custom',
-                buildargs : [the_arg: "custom-arg"]
-        ])
+        def buildResult = dockerClient.build(
+                newBuildContext(inputDirectory),
+                new BuildConfig(query: [
+                        rm        : true,
+                        dockerfile: './Dockerfile.custom',
+                        buildargs : [the_arg: "custom-arg"]
+                ]))
 
         then:
-        def history = dockerClient.history(buildResult).content
+        def history = dockerClient.history(buildResult.imageId).content
         def mostRecentEntry = history.first()
         mostRecentEntry.CreatedBy.startsWith("|1 the_arg=custom-arg ")
         mostRecentEntry.CreatedBy.endsWith("'custom \${the_arg}'")
 
         cleanup:
-        dockerClient.rmi(buildResult)
+        dockerClient.rmi(buildResult.imageId)
     }
 
     def "build image with custom stream callback"() {
@@ -141,19 +147,22 @@ class DockerImageIntegrationSpec extends Specification {
         when:
         CountDownLatch latch = new CountDownLatch(1)
         def events = []
-        def response = dockerClient.build(newBuildContext(inputDirectory), [rm: true], new DockerAsyncCallback() {
+        BuildResult result = dockerClient.build(
+                newBuildContext(inputDirectory),
+                new BuildConfig(query: [rm: true],
+                                callback: new DockerAsyncCallback() {
 
-            @Override
-            onEvent(Object event) {
-                def parsedEvent = new JsonSlurper().parseText(event as String)
-                events << parsedEvent
-            }
+                                    @Override
+                                    onEvent(Object event) {
+                                        def parsedEvent = new JsonSlurper().parseText(event as String)
+                                        events << parsedEvent
+                                    }
 
-            @Override
-            onFinish() {
-                latch.countDown()
-            }
-        })
+                                    @Override
+                                    onFinish() {
+                                        latch.countDown()
+                                    }
+                                }))
         latch.await(5, SECONDS)
 
         then:
@@ -163,10 +172,10 @@ class DockerImageIntegrationSpec extends Specification {
         else {
             events.first().stream =~ "Step 1(/10)? : FROM alpine:edge\n"
         }
-        def imageId = events.last().stream.trim() - "Successfully built "
+        String imageId = events.last().stream.trim() - "Successfully built "
 
         cleanup:
-        response.taskFuture.cancel(true)
+        result?.response?.taskFuture?.cancel(true)
         dockerClient.rmi(imageId)
     }
 
@@ -189,7 +198,7 @@ class DockerImageIntegrationSpec extends Specification {
             result.log.first().stream =~ "Step 1(/10)? : FROM alpine:edge\n"
         }
         result.log.last().stream.startsWith("Successfully built ")
-        def imageId = result.log.last().stream.trim() - "Successfully built "
+        String imageId = result.log.last().stream.trim() - "Successfully built "
         result.imageId =~ "(sha256:)?$imageId"
 
         cleanup:
@@ -223,19 +232,22 @@ class DockerImageIntegrationSpec extends Specification {
         when:
         CountDownLatch latch = new CountDownLatch(1)
         def events = []
-        def result = dockerClient.build(newBuildContext(inputDirectory), [rm: true], new DockerAsyncCallback() {
+        BuildResult result = dockerClient.build(
+                newBuildContext(inputDirectory),
+                new BuildConfig(query: [rm: true],
+                                callback: new DockerAsyncCallback() {
 
-            @Override
-            onEvent(Object event) {
-                def parsedEvent = new JsonSlurper().parseText(event as String)
-                events << parsedEvent
-            }
+                                    @Override
+                                    onEvent(Object event) {
+                                        def parsedEvent = new JsonSlurper().parseText(event as String)
+                                        events << parsedEvent
+                                    }
 
-            @Override
-            onFinish() {
-                latch.countDown()
-            }
-        })
+                                    @Override
+                                    onFinish() {
+                                        latch.countDown()
+                                    }
+                                }))
         latch.await(20, SECONDS)
 
         then:
@@ -247,7 +259,7 @@ class DockerImageIntegrationSpec extends Specification {
         def imageId = getImageId(events)
 
         cleanup:
-        result.taskFuture.cancel(true)
+        result.response.taskFuture.cancel(true)
         dockerClient.rm(containerId)
         dockerClient.rmi(imageId)
     }
@@ -530,7 +542,7 @@ class DockerImageIntegrationSpec extends Specification {
         def archive = getClass().getResourceAsStream('importUrl/import-from-url.tar')
 
         when:
-        def imageId = dockerClient.importStream(archive, "import-from-url", "foo")
+        String imageId = dockerClient.importStream(archive, "import-from-url", "foo")
 
         then:
         imageId =~ "\\w+"
@@ -620,21 +632,26 @@ class DockerImageIntegrationSpec extends Specification {
             dockerfile = "build/build-windows/Dockerfile"
         }
         def inputDirectory = new ResourceReader().getClasspathResourceAsFile(dockerfile, DockerClient).parentFile
-        def buildResult = dockerClient.build(newBuildContext(inputDirectory))
-        log.info("buildResult: $buildResult")
+        def imageId = dockerClient.build(newBuildContext(inputDirectory)).imageId
+        log.info("buildResult: $imageId")
 
         when:
-        def images = dockerClient.images([filters: [dangling: ["true"]]]).content
+        Thread.sleep(500)
 
         then:
-        images.findAll { image ->
+        def images = dockerClient.images([filters: [dangling: ["true"]]]).content
+        println "images (1) ${images}"
+        def found = images.findAll { image ->
             image.RepoTags == ["<none>:<none>"] || image.RepoTags == null
         }.find { image ->
-            image.Id =~ buildResult
+            image.Id =~ imageId
         }
+        def images2 = dockerClient.images([filters: [dangling: ["true"]]]).content
+        println "images (2) ${images2}"
+        found
 
         cleanup:
-        dockerClient.rmi(buildResult)
+        dockerClient.rmi(imageId)
     }
 
     def "rm image"() {
@@ -724,7 +741,9 @@ class DockerImageIntegrationSpec extends Specification {
                 retVal = oneArgClosure(arg)
                 break
             }
-            catch (Exception e) { /* ignore here; already logged by DockerResponseHandler */ }
+            catch (Exception ignored) {
+                /* ignore here; already logged by DockerResponseHandler */
+            }
         }
 
         retVal
