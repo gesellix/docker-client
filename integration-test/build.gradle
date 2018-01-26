@@ -17,7 +17,7 @@ repositories {
 dependencies {
     compile project(':client')
 
-    testCompile 'net.jodah:failsafe:1.0.4'
+    testCompile 'net.jodah:failsafe:1.0.5'
 
     runtime 'ch.qos.logback:logback-classic:1.2.3'
 
@@ -25,7 +25,7 @@ dependencies {
     testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
         exclude module: 'groovy-all'
     }
-    testCompile 'cglib:cglib-nodep:3.2.5'
+    testCompile 'cglib:cglib-nodep:3.2.6'
     testCompile 'commons-lang:commons-lang:2.6'
     testCompile 'joda-time:joda-time:2.9.9'
     testCompile 'ch.qos.logback:logback-classic:1.2.3'
