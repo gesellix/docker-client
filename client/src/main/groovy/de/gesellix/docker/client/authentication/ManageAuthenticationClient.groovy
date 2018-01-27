@@ -2,6 +2,7 @@ package de.gesellix.docker.client.authentication
 
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.distribution.ReferenceParser
+import de.gesellix.docker.client.registry.RegistryElection
 import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.engine.DockerEnv
 import de.gesellix.docker.engine.EngineClient
@@ -17,7 +18,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
     private DockerEnv env
     private EngineClient client
     private DockerResponseHandler responseHandler
-    private ManageSystem manageSystem
+    private RegistryElection registryElection
     private QueryUtil queryUtil
     private CredsStoreHelper credsStoreHelper
 
@@ -28,7 +29,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
         this.env = env
         this.client = client
         this.responseHandler = responseHandler
-        this.manageSystem = manageSystem
+        this.registryElection = new RegistryElection(manageSystem, this)
         this.queryUtil = new QueryUtil()
         this.credsStoreHelper = new CredsStoreHelper()
     }
@@ -157,40 +158,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
                 official: false,
                 secure  : false
         ]
-        return resolveAuthConfig(indexInfo)
-    }
-
-    // ResolveAuthConfig is like registry.ResolveAuthConfig, but if using the
-    // default index, it uses the default index name for the daemon's platform,
-    // not the client's platform.
-    def resolveAuthConfig(Map indexInfo) {//types.AuthConfig {
-        String configKey = indexInfo.name
-        if (indexInfo.official) {
-            configKey = electAuthServer()
-        }
-        return readAuthConfig(configKey, null)
-    }
-
-    // ElectAuthServer returns the default registry to use (by asking the daemon)
-    def electAuthServer() {
-        // The daemon `/info` endpoint informs us of the default registry being
-        // used. This is essential in cross-platforms environment, where for
-        // example a Linux client might be interacting with a Windows daemon, hence
-        // the default registry URL might be Windows specific.
-        def serverAddress = new DockerEnv().indexUrl_v1
-        try {
-            def info = manageSystem.info().content
-            if (info.IndexServerAddress == "") {
-                log.warn("Warning: Empty registry endpoint from daemon. Using system default: ${serverAddress}")
-            }
-            else {
-                serverAddress = info.IndexServerAddress
-            }
-        }
-        catch (Exception e) {
-            log.warn("Warning: failed to get default registry endpoint from daemon. Using system default: ${serverAddress}", e)
-        }
-        return serverAddress
+        return registryElection.resolveAuthConfig(indexInfo.name, indexInfo.official)
     }
 
     def validateIndexName(String val) {
