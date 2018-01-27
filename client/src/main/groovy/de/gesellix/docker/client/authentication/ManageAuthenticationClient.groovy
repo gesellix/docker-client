@@ -34,12 +34,12 @@ class ManageAuthenticationClient implements ManageAuthentication {
     }
 
     @Override
-    readDefaultAuthConfig() {
+    Map readDefaultAuthConfig() {
         return readAuthConfig(null, env.getDockerConfigFile())
     }
 
     @Override
-    readAuthConfig(hostname, File dockerCfg) {
+    Map readAuthConfig(String hostname, File dockerCfg) {
         log.debug "read authConfig"
 
         if (!dockerCfg) {
@@ -164,7 +164,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
     // default index, it uses the default index name for the daemon's platform,
     // not the client's platform.
     def resolveAuthConfig(Map indexInfo) {//types.AuthConfig {
-        def configKey = indexInfo.name
+        String configKey = indexInfo.name
         if (indexInfo.official) {
             configKey = electAuthServer()
         }

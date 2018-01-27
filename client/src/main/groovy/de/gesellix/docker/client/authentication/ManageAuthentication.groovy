@@ -4,9 +4,9 @@ import de.gesellix.docker.engine.EngineResponse
 
 interface ManageAuthentication {
 
-    def readDefaultAuthConfig()
+    Map readDefaultAuthConfig()
 
-    def readAuthConfig(hostnameOrNull, File dockerCfgOrNull)
+    Map readAuthConfig(String hostnameOrNull, File dockerCfgOrNull)
 
     String retrieveEncodedAuthTokenForImage(String image)
 
