@@ -21,7 +21,7 @@ dependencies {
 
     runtime 'ch.qos.logback:logback-classic:1.2.3'
 
-    testCompile 'de.gesellix:testutil:2017-12-18T18-44-17'
+    testCompile 'de.gesellix:testutil:2018-02-17T21-48-43'
     testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
         exclude module: 'groovy-all'
     }

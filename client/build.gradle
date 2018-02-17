@@ -31,8 +31,8 @@ repositories {
 
 dependencies {
 //    compile 'de.gesellix:docker-engine:local'
-    compile 'de.gesellix:docker-engine:2018-01-22T23-17-39'
-    compile 'de.gesellix:docker-compose:2017-12-18T19-13-48'
+    compile 'de.gesellix:docker-engine:2018-02-17T22-09-45'
+    compile 'de.gesellix:docker-compose:2018-02-17T22-19-12'
 
     compile 'org.codehaus.groovy:groovy:2.4.13'
     compile 'org.codehaus.groovy:groovy-json:2.4.13'
@@ -44,11 +44,11 @@ dependencies {
     compile 'com.squareup.okhttp3:okhttp:3.9.1'
     testCompile 'com.squareup.okhttp3:mockwebserver:3.9.1'
 
-    compile 'org.apache.commons:commons-compress:1.15'
+    compile 'org.apache.commons:commons-compress:1.16.1'
 
-    compile 'org.bouncycastle:bcpkix-jdk15on:1.58'
+    compile 'org.bouncycastle:bcpkix-jdk15on:1.59'
 
-    testCompile 'de.gesellix:testutil:2017-12-18T18-44-17'
+    testCompile 'de.gesellix:testutil:2018-02-17T21-48-43'
 
     testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
         exclude module: 'groovy-all'

@@ -33,10 +33,11 @@ subprojects {
     targetCompatibility = JavaVersion.VERSION_1_8
 
     def dependencyVersions = [
-            'org.bouncycastle:bcpkix-jdk15on:1.58',
-            'org.bouncycastle:bcprov-jdk15on:1.58',
-            'org.jetbrains.kotlin:kotlin-reflect:1.2.10',
-            'org.jetbrains.kotlin:kotlin-stdlib:1.2.10',
+            'com.squareup.okio:okio:1.14.0',
+            'org.bouncycastle:bcpkix-jdk15on:1.59',
+            'org.bouncycastle:bcprov-jdk15on:1.59',
+            'org.jetbrains.kotlin:kotlin-reflect:1.2.21',
+            'org.jetbrains.kotlin:kotlin-stdlib:1.2.21',
     ]
 
     configurations.all {
@@ -53,7 +54,7 @@ buildScan {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.4.1'
+    gradleVersion = '4.5.1'
     distributionType = Wrapper.DistributionType.ALL
 }
 
