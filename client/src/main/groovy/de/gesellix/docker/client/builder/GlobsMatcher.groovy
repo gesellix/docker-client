@@ -16,8 +16,11 @@ class GlobsMatcher {
         this.base = base
         def fileSystem = FileSystems.getDefault()
         this.matchers = globs.collectMany {
-            if (it.contains("\\") && fileSystem.separator != "\\") {
-                it = it.replaceAll('\\\\', fileSystem.separator)
+            if (it.contains("\\")) {
+//                if .dockerignore contains backslashes (for windows) something nasty will happen.
+//                Caught: java.util.regex.PatternSyntaxException: No character to escape near index 3
+//                bin\
+                 it = it.replaceAll('\\\\', '/')
             }
             if (it.endsWith("/")) {
                 [new Matcher(fileSystem, it.replaceAll("/\$", "")),
