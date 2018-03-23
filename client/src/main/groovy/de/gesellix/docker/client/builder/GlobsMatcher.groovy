@@ -16,6 +16,9 @@ class GlobsMatcher {
         this.base = base
         def fileSystem = FileSystems.getDefault()
         this.matchers = globs.collectMany {
+            if (it.contains("\\") && fileSystem.separator != "\\") {
+                it = it.replaceAll('\\\\', fileSystem.separator)
+            }
             if (it.endsWith("/")) {
                 [new Matcher(fileSystem, it.replaceAll("/\$", "")),
                  new Matcher(fileSystem, it.replaceAll("/\$", "/**"))]

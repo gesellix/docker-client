@@ -38,4 +38,15 @@ class DockerignoreFileFilterSpec extends Specification {
         collectedFiles.sort() == [new File("${baseDir}/keepme/a-file-to-be-kept.txt"),
                                   new File("${baseDir}/keepme/subdir/keep-me.txt")].sort()
     }
+
+
+    def "handles backslashes in patterns (for windows)"() {
+        given:
+        def baseDir = IOUtils.getResource("/dockerignore_windows").file
+        def base = new File(baseDir)
+        when:
+        def collectedFiles = new DockerignoreFileFilter(base, []).collectFiles(base)
+        then:
+        collectedFiles == [new File("${baseDir}/keepme/to-be-kept.txt")]
+    }
 }
