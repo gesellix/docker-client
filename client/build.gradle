@@ -34,8 +34,8 @@ dependencies {
     compile 'de.gesellix:docker-engine:2018-02-17T22-09-45'
     compile 'de.gesellix:docker-compose:2018-02-17T22-19-12'
 
-    compile 'org.codehaus.groovy:groovy:2.4.13'
-    compile 'org.codehaus.groovy:groovy-json:2.4.13'
+    compile 'org.codehaus.groovy:groovy:2.4.15'
+    compile 'org.codehaus.groovy:groovy-json:2.4.15'
 
     compile 'org.slf4j:slf4j-api:1.7.25'
     testCompile 'ch.qos.logback:logback-classic:1.2.3'

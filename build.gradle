@@ -36,6 +36,8 @@ subprojects {
             'com.squareup.okio:okio:1.14.0',
             'org.bouncycastle:bcpkix-jdk15on:1.59',
             'org.bouncycastle:bcprov-jdk15on:1.59',
+            'org.codehaus.groovy:groovy:2.4.15',
+            'org.codehaus.groovy:groovy-json:2.4.15',
             'org.jetbrains.kotlin:kotlin-reflect:1.2.21',
             'org.jetbrains.kotlin:kotlin-stdlib:1.2.21',
     ]
