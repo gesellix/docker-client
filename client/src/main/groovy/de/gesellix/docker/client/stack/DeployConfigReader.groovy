@@ -198,8 +198,10 @@ class DeployConfigReader {
             String namespace,
             String serviceName) {
 
+        def isWindows = LocalDocker.isNativeWindows()
+
         if (serviceNetworks == null || serviceNetworks.isEmpty()) {
-            serviceNetworks = ["default": null]
+            serviceNetworks = ["default": null as ServiceNetwork]
         }
 
         def serviceNetworkConfigs = []
@@ -213,7 +215,6 @@ class DeployConfigReader {
             if (serviceNetwork) {
                 aliases = serviceNetwork.aliases
             }
-            aliases << serviceName
 
             String namespacedName = "${namespace}_${networkName}" as String
 
@@ -223,6 +224,10 @@ class DeployConfigReader {
                 if (networkConfig?.external?.external && networkConfig?.external?.name) {
                     target = networkConfig.external.name
                 }
+            }
+
+            if (isUserDefined(target, isWindows)) {
+                aliases << serviceName
             }
 
             serviceNetworkConfigs << [
