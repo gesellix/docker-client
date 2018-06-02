@@ -17,7 +17,7 @@ repositories {
 dependencies {
     compile project(':client')
 
-    testCompile 'net.jodah:failsafe:1.0.5'
+    testCompile 'net.jodah:failsafe:1.1.0'
 
     runtime 'ch.qos.logback:logback-classic:1.2.3'
 
@@ -27,7 +27,7 @@ dependencies {
     }
     testCompile 'cglib:cglib-nodep:3.2.6'
     testCompile 'commons-lang:commons-lang:2.6'
-    testCompile 'joda-time:joda-time:2.9.9'
+    testCompile 'joda-time:joda-time:2.10'
     testCompile 'ch.qos.logback:logback-classic:1.2.3'
 }
 check.shouldRunAfter ':client:check'

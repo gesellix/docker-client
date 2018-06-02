@@ -33,7 +33,8 @@ subprojects {
     targetCompatibility = JavaVersion.VERSION_1_8
 
     def dependencyVersions = [
-            'com.squareup.okio:okio:1.14.0',
+            'com.squareup.okhttp3:okhttp:3.10.0',
+            'com.squareup.okio:okio:1.14.1',
             'org.bouncycastle:bcpkix-jdk15on:1.59',
             'org.bouncycastle:bcprov-jdk15on:1.59',
             'org.codehaus.groovy:groovy:2.4.15',
@@ -56,7 +57,7 @@ buildScan {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.5.1'
+    gradleVersion = '4.7'
     distributionType = Wrapper.DistributionType.ALL
 }
 

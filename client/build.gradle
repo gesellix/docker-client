@@ -40,9 +40,9 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.25'
     testCompile 'ch.qos.logback:logback-classic:1.2.3'
 
-    compile 'com.squareup.okio:okio:1.13.0'
-    compile 'com.squareup.okhttp3:okhttp:3.9.1'
-    testCompile 'com.squareup.okhttp3:mockwebserver:3.9.1'
+    compile 'com.squareup.okio:okio:1.14.1'
+    compile 'com.squareup.okhttp3:okhttp:3.10.0'
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.10.0'
 
     compile 'org.apache.commons:commons-compress:1.16.1'
 
