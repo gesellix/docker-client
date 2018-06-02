@@ -22,9 +22,9 @@ class ManageSecretClient implements ManageSecret {
     @Override
     EngineResponse createSecret(String name, byte[] secretData, Map<String, String> labels = [:]) {
         log.info "docker secret create"
-        // TODO do we need to base64 encode the secret data?
+        def secretDataBase64 = Base64.encoder.encode(secretData)
         def secretConfig = [Name  : name,
-                            Data  : secretData,
+                            Data  : secretDataBase64,
                             Labels: labels]
         def response = client.post([path              : "/secrets/create",
                                     body              : secretConfig,
