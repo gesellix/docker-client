@@ -1,6 +1,7 @@
 package de.gesellix.docker.client.stack
 
 import de.gesellix.docker.client.DockerClient
+import de.gesellix.docker.client.LocalDocker
 import de.gesellix.docker.client.stack.types.ResolutionMode
 import de.gesellix.docker.client.stack.types.RestartPolicyCondition
 import de.gesellix.docker.client.stack.types.StackConfig
@@ -133,7 +134,7 @@ class DeployConfigReader {
                             stopSignal     : service.stopSignal,
                             tty            : service.tty,
                             openStdin      : service.stdinOpen,
-//                            secrets        : secrets,
+//                            secrets        : service.secrets,
                     ],
                     logDriver    : logDriver(service.logging),
                     resources    : serviceResources(service.deploy?.resources),
@@ -617,8 +618,23 @@ class DeployConfigReader {
         return [networkSpec, externalNetworkNames]
     }
 
+    boolean isContainerNetwork(String networkName) {
+        String[] elements = networkName?.split(':', 2)
+        return elements?.size() > 1 && elements[0] == "container"
+    }
+
+    boolean isUserDefined(String networkName, boolean isWindows) {
+        List<String> blacklist = isWindows ? ["default", "none", "nat"] : ["default", "bridge", "host", "none"]
+        return !(networkName in blacklist || isContainerNetwork(networkName))
+    }
+
     def validateExternalNetworks(List<String> externalNetworks) {
-        externalNetworks.each { name ->
+        boolean isWindows = LocalDocker.isNativeWindows()
+        externalNetworks.findAll { name ->
+            // Networks that are not user defined always exist on all nodes as
+            // local-scoped networks, so there's no need to inspect them.
+            isUserDefined(name, isWindows)
+        }.each { name ->
             def network
             try {
                 network = dockerClient.inspectNetwork(name)
@@ -627,6 +643,7 @@ class DeployConfigReader {
                 log.error("network ${name} is declared as external, but could not be inspected. You need to create the network before the stack is deployed (with overlay driver)")
                 throw new IllegalStateException("network ${name} is declared as external, but could not be inspected.", e)
             }
+
             if (network.content.Scope != "swarm") {
                 log.error("network ${name} is declared as external, but it is not in the right scope: '${network.content.Scope}' instead of 'swarm'")
                 throw new IllegalStateException("network ${name} is declared as external, but is not in 'swarm' scope.")
