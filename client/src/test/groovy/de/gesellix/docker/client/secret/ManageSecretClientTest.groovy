@@ -20,7 +20,7 @@ class ManageSecretClientTest extends Specification {
         then:
         1 * httpClient.post([path              : "/secrets/create",
                              body              : [Name  : "a-secret",
-                                                  Data  : "secret-content".bytes,
+                                                  Data  : "c2VjcmV0LWNvbnRlbnQ=".bytes,
                                                   Labels: [:]],
                              requestContentType: "application/json"]) >> [status: [success: true]]
     }
