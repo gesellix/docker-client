@@ -38,15 +38,15 @@ class TestConstants {
                     Version      : { it == "17.09.0-ce" }]
         } else if (LocalDocker.isNativeWindows()) {
             versionDetails = [
-                    ApiVersion   : { it == "1.30" },
+                    ApiVersion   : { it == "1.39" },
                     Arch         : { it == "amd64" },
-                    BuildTime    : { it == "2017-06-23T22:19:00.683892733+00:00" },
-                    GitCommit    : { it == "02c1d87" },
-                    GoVersion    : { it == "go1.8.3" },
+                    BuildTime    : { it == "2018-09-06T22:57:45.000000000+00:00" },
+                    GitCommit    : { it == "78a6bdb" },
+                    GoVersion    : { it == "go1.10.3" },
                     KernelVersion: { it =~ "\\d.\\d{1,2}.\\d{1,2}(-\\w+)?" },
                     MinAPIVersion: { it == "1.24" },
                     Os           : { it == "windows" },
-                    Version      : { it == "17.06.0-ce" }]
+                    Version      : { it == "18.09.0-ce-beta1" }]
         } else {
             versionDetails = [
                     ApiVersion   : { it == "1.32" },
