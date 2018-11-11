@@ -61,6 +61,9 @@ class GlobsMatcher {
         static String separator = File.separatorChar
 
         Matcher(FileSystem fileSystem, String pattern) {
+            // According to https://docs.docker.com/engine/reference/builder/#dockerignore-file
+            // and https://golang.org/pkg/path/filepath/#Clean we clean paths
+            // by removing trailing slashes and also by replacing slashes with the path separator.
             this.pattern = pattern.replaceAll("/", "\\${separator}")
                     .split("\\${separator}")
                     .join("\\${separator}")
