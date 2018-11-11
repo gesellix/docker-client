@@ -1,6 +1,8 @@
 package de.gesellix.docker.client.builder
 
 import de.gesellix.util.IOUtils
+import org.apache.commons.lang.SystemUtils
+import spock.lang.Requires
 import spock.lang.Specification
 
 class DockerignoreFileFilterSpec extends Specification {
@@ -39,8 +41,8 @@ class DockerignoreFileFilterSpec extends Specification {
                                   new File("${baseDir}/keepme/subdir/keep-me.txt")].sort()
     }
 
-
-    def "handles backslashes in patterns (for windows)"() {
+    @Requires({ SystemUtils.IS_OS_WINDOWS })
+    def "handles trailing backslashes in patterns (windows only)"() {
         given:
         def baseDir = IOUtils.getResource("/dockerignore_windows").file
         def base = new File(baseDir)

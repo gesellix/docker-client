@@ -1,7 +1,7 @@
 package de.gesellix.docker.client.builder
 
 import org.apache.commons.lang.SystemUtils
-import spock.lang.IgnoreIf
+import spock.lang.Requires
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -12,6 +12,7 @@ class GlobsMatcherSpec extends Specification {
     def "matches all patterns"() {
         given:
         def matcher = new GlobsMatcher(new File(""), ["abc", "cde"])
+        matcher.initMatchers()
 
         expect:
         matcher.matchers.size() == 2
@@ -48,7 +49,7 @@ class GlobsMatcherSpec extends Specification {
         "[-]"          | new File("")  | new File("-")
     }
 
-    @IgnoreIf({ !SystemUtils.IS_OS_LINUX && !SystemUtils.IS_OS_MAC })
+    @Requires({ SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC })
     @Unroll
     "#pattern should match #path on unix systems"(String pattern, File base, File path) {
         expect:
@@ -61,6 +62,17 @@ class GlobsMatcherSpec extends Specification {
         "[x\\-]" | new File("") | new File("x")
         "[\\-x]" | new File("") | new File("x")
 //    "[\\]a]" | new File("") | new File("]")
+    }
+
+    @Requires({ SystemUtils.IS_OS_WINDOWS })
+    @Unroll
+    "#pattern should match #path on windows systems"(String pattern, File base, File path) {
+        expect:
+        new GlobsMatcher(base, [pattern]).matches(path)
+
+        where:
+        pattern | base         | path
+        "bin\\" | new File("") | new File("bin\\foo")
     }
 
     @Unroll
@@ -83,7 +95,7 @@ class GlobsMatcherSpec extends Specification {
         "a*b"          | new File("a/b")
     }
 
-    @IgnoreIf({ !SystemUtils.IS_OS_LINUX && !SystemUtils.IS_OS_MAC })
+    @Requires({ SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC })
     @Unroll
     "#pattern should not match #path on unix systems"(String pattern, File base, File path) {
         expect:
@@ -107,6 +119,23 @@ class GlobsMatcherSpec extends Specification {
         where:
         pattern | base         | path
         "[]a]"  | new File("") | new File("]")
+    }
+
+    @Requires({ SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC })
+    @Unroll
+    "#pattern should throw exception on unix systems"(String pattern, File base, File path) {
+        when:
+        new GlobsMatcher(base, [pattern]).matches(path)
+
+        then:
+        thrown(PatternSyntaxException)
+
+        where:
+        pattern | base         | path
+        // On *nix, the backslash is the escape character, so it's invalid to be used at the end of a pattern
+        // A trailing backslash is only valid on Windows.
+        // We actually differ from the official client's behaviour, which silently ignores invalid patterns.
+        "bin\\" | new File("") | new File("bin/foo")
     }
 
     def "allows pattern exclusions"() {

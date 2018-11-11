@@ -2,6 +2,7 @@ package de.gesellix.docker.client.builder
 
 import groovy.util.logging.Slf4j
 
+import java.nio.file.FileSystem
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.PathMatcher
@@ -10,32 +11,35 @@ import java.nio.file.PathMatcher
 class GlobsMatcher {
 
     File base
+    List<String> globs
     List<Matcher> matchers
 
     GlobsMatcher(File base, List<String> globs) {
         this.base = base
-        def fileSystem = FileSystems.getDefault()
-        this.matchers = globs.collectMany {
-            if (it.contains("\\")) {
-//                if .dockerignore contains backslashes (for windows) something nasty will happen.
-//                Caught: java.util.regex.PatternSyntaxException: No character to escape near index 3
-//                bin\
-                 it = it.replaceAll('\\\\', '/')
+        this.globs = globs
+    }
+
+    void initMatchers() {
+        if (this.matchers == null) {
+            def fileSystem = FileSystems.getDefault()
+            this.matchers = globs.collectMany {
+                if (it.endsWith("/")) {
+                    return [new Matcher(fileSystem, it.replaceAll("/\$", "")),
+                            new Matcher(fileSystem, it.replaceAll("/\$", "/**"))]
+                }
+                else {
+                    return [new Matcher(fileSystem, it)]
+                }
+            }.reverse()
+            matchers.each {
+                log.debug("pattern: ${it.pattern}")
             }
-            if (it.endsWith("/")) {
-                [new Matcher(fileSystem, it.replaceAll("/\$", "")),
-                 new Matcher(fileSystem, it.replaceAll("/\$", "/**"))]
-            }
-            else {
-                [new Matcher(fileSystem, it)]
-            }
-        }.reverse()
-        matchers.each {
-            log.debug("pattern: ${it.pattern}")
         }
     }
 
-    def matches(File path) {
+    boolean matches(File path) {
+        initMatchers()
+
         def relativePath = base.absoluteFile.toPath().relativize(path.absoluteFile.toPath())
         def match = matchers.find {
             it.matches(relativePath)
@@ -54,16 +58,25 @@ class GlobsMatcher {
         PathMatcher matcher
         boolean negate
 
-        Matcher(fileSystem, String pattern) {
-            this.negate = pattern.startsWith("!")
-            this.pattern = pattern
+        static String separator = File.separatorChar
+
+        Matcher(FileSystem fileSystem, String pattern) {
+            this.pattern = pattern.replaceAll("/", "\\${separator}")
+                    .split("\\${separator}")
+                    .join("\\${separator}")
+            String negation = "!"
+            this.negate = pattern.startsWith(negation)
             if (this.negate) {
-                def invertedPattern = pattern.substring("!".length())
-                this.matcher = fileSystem.getPathMatcher("glob:${invertedPattern}")
+                String invertedPattern = this.pattern.substring(negation.length())
+                this.matcher = createGlob(fileSystem, invertedPattern)
             }
             else {
-                this.matcher = fileSystem.getPathMatcher("glob:${pattern}")
+                this.matcher = createGlob(fileSystem, this.pattern)
             }
+        }
+
+        static PathMatcher createGlob(FileSystem fileSystem, String glob) {
+            return fileSystem.getPathMatcher("glob:${glob}")
         }
 
         @Override
