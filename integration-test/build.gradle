@@ -17,11 +17,11 @@ repositories {
 dependencies {
     compile project(':client')
 
-    testCompile 'net.jodah:failsafe:1.1.0'
+    testCompile 'net.jodah:failsafe:1.1.1'
 
     runtime 'ch.qos.logback:logback-classic:1.2.3'
 
-    testCompile 'de.gesellix:testutil:2018-02-17T21-48-43'
+    testCompile 'de.gesellix:testutil:2018-11-27T22-08-49'
     testCompile 'org.spockframework:spock-core:1.2-groovy-2.5'
     testCompile 'cglib:cglib-nodep:3.2.9'
     testCompile 'commons-lang:commons-lang:2.6'

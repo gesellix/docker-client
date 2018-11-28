@@ -31,24 +31,24 @@ repositories {
 
 dependencies {
 //    compile 'de.gesellix:docker-engine:local'
-    compile 'de.gesellix:docker-engine:2018-02-17T22-09-45'
-    compile 'de.gesellix:docker-compose:2018-02-17T22-19-12'
+    compile 'de.gesellix:docker-engine:2018-11-27T23-19-06'
+    compile 'de.gesellix:docker-compose:2018-11-27T23-40-40'
 
-    compile 'org.codehaus.groovy:groovy:2.5.3'
-    compile 'org.codehaus.groovy:groovy-json:2.5.3'
+    compile 'org.codehaus.groovy:groovy:2.5.4'
+    compile 'org.codehaus.groovy:groovy-json:2.5.4'
 
     compile 'org.slf4j:slf4j-api:1.7.25'
     testCompile 'ch.qos.logback:logback-classic:1.2.3'
 
-    compile 'com.squareup.okio:okio:1.16.0'
-    compile 'com.squareup.okhttp3:okhttp:3.11.0'
-    testCompile 'com.squareup.okhttp3:mockwebserver:3.11.0'
+    compile 'com.squareup.okio:okio:2.1.0'
+    compile 'com.squareup.okhttp3:okhttp:3.12.0'
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.12.0'
 
     compile 'org.apache.commons:commons-compress:1.18'
 
     compile 'org.bouncycastle:bcpkix-jdk15on:1.60'
 
-    testCompile 'de.gesellix:testutil:2018-02-17T21-48-43'
+    testCompile 'de.gesellix:testutil:2018-11-27T22-08-49'
 
     testCompile 'org.spockframework:spock-core:1.2-groovy-2.5'
     testCompile 'cglib:cglib-nodep:3.2.9'
