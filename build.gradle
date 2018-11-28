@@ -4,17 +4,17 @@ buildscript {
     repositories {
         mavenLocal()
         jcenter()
+        gradlePluginPortal()
         mavenCentral()
     }
 
     dependencies {
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.20.0'
-        classpath "gradle.plugin.net.ossindex:ossindex-gradle-plugin:0.1.1"
+        classpath "gradle.plugin.net.ossindex:ossindex-gradle-plugin:0.3.21"
     }
 }
 
 plugins {
-    id 'com.gradle.build-scan' version '1.11'
 }
 
 subprojects {
@@ -48,13 +48,8 @@ subprojects {
     }
 }
 
-buildScan {
-    licenseAgreementUrl = 'https://gradle.com/terms-of-service'
-    licenseAgree = 'yes'
-}
-
 task updateWrapper(type: Wrapper) {
-    gradleVersion = '4.10.2'
+    gradleVersion = '5.0'
     distributionType = Wrapper.DistributionType.ALL
 }
 
