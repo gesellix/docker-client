@@ -332,6 +332,7 @@ class ManageImageClient implements ManageImage {
         return response
     }
 
+    @Override
     String findImageId(imageName, tag = "") {
         def isDigest = imageName.contains '@'
         def images = images((isDigest) ? [digests: '1'] : [:]).content

@@ -182,7 +182,7 @@ class DockerClientImpl implements DockerClient {
     cleanupImages() {
         images([filters: [dangling: ["true"]]]).content.each { image ->
             log.debug "docker rmi ${image.Id}"
-            rmi(image.Id)
+            rmi(image.Id as String)
         }
     }
 
