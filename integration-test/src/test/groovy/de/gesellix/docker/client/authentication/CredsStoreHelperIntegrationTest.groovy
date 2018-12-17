@@ -10,7 +10,7 @@ class CredsStoreHelperIntegrationTest extends Specification {
 
     def setup() {
         helper = new CredsStoreHelper()
-        println "--- ${System.properties['os.name']}"
+        println "--- ${System.properties['user.name']} on ${System.properties['os.name']}"
     }
 
     @Requires({ System.properties['user.name'] == 'gesellix' && System.properties['os.name'] == "Mac OS X" })
