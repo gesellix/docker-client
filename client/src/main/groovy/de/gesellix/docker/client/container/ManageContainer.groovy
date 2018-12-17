@@ -141,6 +141,8 @@ interface ManageContainer {
 
     EngineResponse stop(container)
 
+    EngineResponse stop(container, Integer timeout)
+
 //    top         Display the running processes of a container
 
     EngineResponse top(container)

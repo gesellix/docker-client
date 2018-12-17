@@ -54,7 +54,8 @@ class ManageContainerClientTest extends Specification {
         service.stop("a-container")
 
         then:
-        1 * httpClient.post([path: "/containers/a-container/stop"])
+        1 * httpClient.post([path : "/containers/a-container/stop",
+                             query: [t: 10]])
     }
 
     def "kill container"() {
