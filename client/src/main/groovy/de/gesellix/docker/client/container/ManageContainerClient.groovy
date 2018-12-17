@@ -214,7 +214,6 @@ class ManageContainerClient implements ManageContainer {
                                     body              : execConfig,
                                     requestContentType: "application/json"])
 
-
         if (response.status?.code == 404) {
             log.error("no such container '${containerId}'")
         }
@@ -472,9 +471,11 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    EngineResponse stop(containerId) {
+    EngineResponse stop(containerId, Integer timeoutSeconds = 10) {
         log.info "docker stop"
-        def response = client.post([path: "/containers/${containerId}/stop".toString()])
+        def query = [t: timeoutSeconds ?: 10]
+        def response = client.post([path : "/containers/${containerId}/stop".toString(),
+                                    query: query])
         return response
     }
 
