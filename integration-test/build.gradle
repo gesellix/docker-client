@@ -23,7 +23,7 @@ dependencies {
 
     testCompile 'de.gesellix:testutil:2018-11-27T22-08-49'
     testCompile 'org.spockframework:spock-core:1.2-groovy-2.5'
-    testCompile 'cglib:cglib-nodep:3.2.9'
+    testCompile 'cglib:cglib-nodep:3.2.10'
     testCompile 'commons-lang:commons-lang:2.6'
     testCompile 'joda-time:joda-time:2.10.1'
     testCompile 'ch.qos.logback:logback-classic:1.2.3'

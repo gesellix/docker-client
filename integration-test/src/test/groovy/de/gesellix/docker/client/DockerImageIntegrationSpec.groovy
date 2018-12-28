@@ -526,8 +526,12 @@ class DockerImageIntegrationSpec extends Specification {
         def addresses = listPublicIps()
 
         when:
-        // not all interfaces addresses will be valid targets, especially on a machine running a docker host
-        def imageId = tryUntilSuccessful(addresses) { address -> dockerClient.importUrl("http://${address}:$port/images/${importUrl.path}", "import-from-url", "foo") }
+        // not all interfaces addresses will be valid targets,
+        // especially on a machine running a docker host
+        def imageId = tryUntilSuccessful(addresses) { address ->
+            String url = "http://${address}:$port/images/${importUrl.path}"
+            dockerClient.importUrl(url, "import-from-url", "foo")
+        }
 
         then:
         imageId =~ "\\w+"
