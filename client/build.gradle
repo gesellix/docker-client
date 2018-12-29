@@ -6,22 +6,22 @@ buildscript {
     }
 
     dependencies {
-//        classpath 'net.saliman:gradle-cobertura-plugin:2.4.0'
-//        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.1'
+//        classpath "net.saliman:gradle-cobertura-plugin:2.4.0"
+//        classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.1"
 
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
     }
 }
 
-apply plugin: 'groovy'
+apply plugin: "groovy"
 
-apply plugin: 'jacoco'
-//apply plugin: 'net.saliman.cobertura'
-//apply plugin: 'com.github.kt3k.coveralls'
+apply plugin: "jacoco"
+//apply plugin: "net.saliman.cobertura"
+//apply plugin: "com.github.kt3k.coveralls"
 
-apply plugin: 'maven'
-apply plugin: 'maven-publish'
-apply plugin: 'com.jfrog.bintray'
+apply plugin: "maven"
+apply plugin: "maven-publish"
+apply plugin: "com.jfrog.bintray"
 
 repositories {
     mavenLocal()
@@ -30,35 +30,35 @@ repositories {
 }
 
 dependencies {
-//    compile 'de.gesellix:docker-engine:local'
-    compile 'de.gesellix:docker-engine:2018-12-28T22-23-43'
-    compile 'de.gesellix:docker-compose:2018-11-27T23-40-40'
+//    compile "de.gesellix:docker-engine:local"
+    compile "de.gesellix:docker-engine:2018-12-29T22-15-35"
+    compile "de.gesellix:docker-compose:2018-12-29T20-53-51"
 
-    compile 'org.codehaus.groovy:groovy:2.5.4'
-    compile 'org.codehaus.groovy:groovy-json:2.5.4'
+    compile "org.codehaus.groovy:groovy:2.5.4"
+    compile "org.codehaus.groovy:groovy-json:2.5.4"
 
-    compile 'org.slf4j:slf4j-api:1.7.25'
-    testCompile 'ch.qos.logback:logback-classic:1.2.3'
+    compile "org.slf4j:slf4j-api:1.7.25"
+    testCompile "ch.qos.logback:logback-classic:1.2.3"
 
-    compile 'com.squareup.okio:okio:2.1.0'
-    compile 'com.squareup.okhttp3:okhttp:3.12.1'
-    testCompile 'com.squareup.okhttp3:mockwebserver:3.12.1'
+    compile "com.squareup.okio:okio:2.1.0"
+    compile "com.squareup.okhttp3:okhttp:3.12.1"
+    testCompile "com.squareup.okhttp3:mockwebserver:3.12.1"
 
-    compile 'org.apache.commons:commons-compress:1.18'
+    compile "org.apache.commons:commons-compress:1.18"
 
-    compile 'org.bouncycastle:bcpkix-jdk15on:1.60'
+    compile "org.bouncycastle:bcpkix-jdk15on:1.60"
 
-    testCompile 'de.gesellix:testutil:2018-11-27T22-08-49'
+    testCompile "de.gesellix:testutil:2018-12-29T16-12-32"
 
-    testCompile 'org.spockframework:spock-core:1.2-groovy-2.5'
-    testCompile 'cglib:cglib-nodep:3.2.10'
+    testCompile "org.spockframework:spock-core:1.2-groovy-2.5"
+    testCompile "cglib:cglib-nodep:3.2.10"
 
-    testCompile 'commons-lang:commons-lang:2.6'
+    testCompile "org.apache.commons:commons-lang3:3.8.1"
 }
 
 task sourcesJar(type: Jar) {
     dependsOn classes
-    classifier 'sources'
+    classifier "sources"
     from sourceSets.main.allSource
 }
 
@@ -69,7 +69,7 @@ test {
 
 //cobertura {
 //    coverageSourceDirs = sourceSets.main.groovy.srcDirs
-//    coverageFormats = ['html', 'xml']
+//    coverageFormats = ["html", "xml"]
 //}
 
 jacocoTestReport.reports {
@@ -84,9 +84,9 @@ artifacts {
 install {
     repositories {
         mavenInstaller {
-            pom.groupId = 'de.gesellix'
-            pom.artifactId = 'docker-client'
-            pom.version = 'local'
+            pom.groupId = "de.gesellix"
+            pom.artifactId = "docker-client"
+            pom.version = "local"
         }
     }
 }
@@ -94,7 +94,7 @@ install {
 publishing {
     publications {
         dockerClient(MavenPublication) {
-            artifactId 'docker-client'
+            artifactId "docker-client"
             version artifactVersion
             from components.java
             artifact sourcesJar
@@ -105,17 +105,17 @@ publishing {
 bintray {
     user = System.env.BINTRAY_USER ?: project["bintray.user"]
     key = System.env.BINTRAY_API_KEY ?: project["bintray.key"]
-    publications = ['dockerClient']
+    publications = ["dockerClient"]
     pkg {
-        repo = 'docker-utils'
-        name = 'docker-client'
-        desc = 'A Docker client for the JVM written in Groovy'
-        licenses = ['Apache-2.0']
-        labels = ['docker', 'engine api', 'remote api', 'client', 'java', 'groovy']
+        repo = "docker-utils"
+        name = "docker-client"
+        desc = "A Docker client for the JVM written in Groovy"
+        licenses = ["Apache-2.0"]
+        labels = ["docker", "engine api", "remote api", "client", "java", "groovy"]
         version = [
                 name: artifactVersion
         ]
-        vcsUrl = 'https://github.com/gesellix/docker-client.git'
+        vcsUrl = "https://github.com/gesellix/docker-client.git"
     }
     dryRun = bintrayDryRun
 }

@@ -3,10 +3,11 @@ package de.gesellix.docker.client.filesocket
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.OkDockerClient
 import de.gesellix.docker.testutil.UnixSocketTestServer
+import org.apache.commons.lang3.SystemUtils
 import spock.lang.Requires
 import spock.lang.Specification
 
-@Requires({ new File("/var/run/docker.sock").exists() || org.apache.commons.lang.SystemUtils.IS_OS_LINUX || org.apache.commons.lang.SystemUtils.IS_OS_MAC })
+@Requires({ new File("/var/run/docker.sock").exists() || SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC })
 class HttpOverUnixSocketIntegrationTest extends Specification {
 
     File defaultDockerSocket = new File("/var/run/docker.sock")
@@ -18,7 +19,8 @@ class HttpOverUnixSocketIntegrationTest extends Specification {
         String unixSocket
         if (socketFile.exists() && socketFile.canRead()) {
             unixSocket = "unix://${socketFile}".toString()
-        } else {
+        }
+        else {
 //        if (true || !defaultDockerSocket.exists()) {
             runDummyDaemon = true
             socketFile = new File(new File(System.getProperty("java.io.tmpdir")), "unixsocket-dummy.sock")
