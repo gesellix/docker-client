@@ -7,7 +7,7 @@ import de.gesellix.docker.client.container.ArchiveUtil
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.OkDockerClient
 import groovy.util.logging.Slf4j
-import org.apache.commons.lang.SystemUtils
+import org.apache.commons.lang3.SystemUtils
 import spock.lang.Requires
 import spock.lang.Specification
 
@@ -51,7 +51,8 @@ class HttpOverNamedPipeIntegrationTest extends Specification {
     def actSilently(Closure action) {
         try {
             action()
-        } catch (Exception ignored) {
+        }
+        catch (Exception ignored) {
         }
     }
 

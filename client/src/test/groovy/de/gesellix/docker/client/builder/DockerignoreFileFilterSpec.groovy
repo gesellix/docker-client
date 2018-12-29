@@ -1,7 +1,7 @@
 package de.gesellix.docker.client.builder
 
 import de.gesellix.util.IOUtils
-import org.apache.commons.lang.SystemUtils
+import org.apache.commons.lang3.SystemUtils
 import spock.lang.Requires
 import spock.lang.Specification
 

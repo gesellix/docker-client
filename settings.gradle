@@ -1,4 +1,4 @@
-rootProject.name = 'docker-client'
-include 'client'
-include 'integration-test'
-include 'explore'
+rootProject.name = "docker-client"
+include "client"
+include "integration-test"
+include "explore"

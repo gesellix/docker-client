@@ -1,6 +1,6 @@
 package de.gesellix.docker.client.builder
 
-import org.apache.commons.lang.SystemUtils
+import org.apache.commons.lang3.SystemUtils
 import spock.lang.Requires
 import spock.lang.Specification
 import spock.lang.Unroll
