@@ -3,13 +3,15 @@ package de.gesellix.docker.client
 import groovy.util.logging.Slf4j
 import net.jodah.failsafe.Failsafe
 import net.jodah.failsafe.RetryPolicy
-import net.jodah.failsafe.function.Predicate
+import net.jodah.failsafe.function.CheckedSupplier
 import spock.lang.Requires
 import spock.lang.Specification
 
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.CountDownLatch
+import java.util.function.Predicate
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS
 import static java.util.concurrent.TimeUnit.SECONDS
 
 @Slf4j
@@ -468,11 +470,11 @@ class DockerSwarmIntegrationSpec extends Specification {
         performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
-    def getWithRetry(Closure callable, Predicate retryIf) {
-        RetryPolicy retryPolicy = new RetryPolicy()
-                .withDelay(100, MILLISECONDS)
+    def getWithRetry(CheckedSupplier callable, Predicate retryIf) {
+        RetryPolicy retryPolicy = new RetryPolicy<>()
+                .withDelay(Duration.of(100, ChronoUnit.MILLIS))
                 .withMaxRetries(3)
-                .retryIf(retryIf)
+                .handleIf(retryIf)
         return Failsafe.with(retryPolicy).get(callable)
     }
 
