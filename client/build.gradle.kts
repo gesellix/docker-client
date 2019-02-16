@@ -42,8 +42,8 @@ repositories {
 
 dependencies {
     //    compile("de.gesellix:docker-engine:local")
-    compile("de.gesellix:docker-engine:2018-12-30T13-44-59")
-    compile("de.gesellix:docker-compose:2018-12-29T20-53-51")
+    compile("de.gesellix:docker-engine:2019-02-16T18-15-42")
+    compile("de.gesellix:docker-compose:2019-02-16T18-25-01")
 
     compile("org.codehaus.groovy:groovy:2.5.4")
     compile("org.codehaus.groovy:groovy-json:2.5.4")
@@ -51,15 +51,15 @@ dependencies {
     compile("org.slf4j:slf4j-api:1.7.25")
     testCompile("ch.qos.logback:logback-classic:1.2.3")
 
-    compile("com.squareup.okio:okio:2.1.0")
-    compile("com.squareup.okhttp3:okhttp:3.12.1")
-    testCompile("com.squareup.okhttp3:mockwebserver:3.12.1")
+    compile("com.squareup.okio:okio:2.2.2")
+    compile("com.squareup.okhttp3:okhttp:3.13.1")
+    testCompile("com.squareup.okhttp3:mockwebserver:3.13.1")
 
     compile("org.apache.commons:commons-compress:1.18")
 
-    compile("org.bouncycastle:bcpkix-jdk15on:1.60")
+    compile("org.bouncycastle:bcpkix-jdk15on:1.61")
 
-    testCompile("de.gesellix:testutil:2018-12-29T16-12-32")
+    testCompile("de.gesellix:testutil:2019-02-16T17-54-28")
 
     testCompile("org.spockframework:spock-core:1.2-groovy-2.5")
     testCompile("cglib:cglib-nodep:3.2.10")
@@ -92,7 +92,7 @@ tasks {
 
 val sourcesJar by tasks.registering(Jar::class) {
     dependsOn("classes")
-    classifier = "sources"
+    archiveClassifier.set("sources")
     from(sourceSets.main.get().allSource)
 }
 
