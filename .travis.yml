@@ -14,7 +14,6 @@ before_install:
     - sudo apt-get install ca-certificates-java
 script:
     - "./gradlew clean build --info --stacktrace"
-#  - "./gradlew clean build cobertura coveralls --stacktrace --info"
 deploy:
     provider: script
     script: "./gradlew :client:bintrayUpload -x check --info --stacktrace"
