@@ -19,8 +19,6 @@ plugins {
 }
 
 val dependencyVersions = listOf(
-        // work around https://github.com/kohlschutter/junixsocket/issues/59
-        "com.kohlschutter.junixsocket:junixsocket-native-common:2.1.1",
         "com.squareup.okio:okio:2.2.2",
         "org.codehaus.groovy:groovy:2.5.4",
         "org.codehaus.groovy:groovy-json:2.5.4",
