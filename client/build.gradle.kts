@@ -43,7 +43,7 @@ repositories {
 dependencies {
     //    compile("de.gesellix:docker-engine:local")
     compile("de.gesellix:docker-engine:2019-02-17T22-56-10")
-    compile("de.gesellix:docker-compose:2019-02-16T18-25-01")
+    compile("de.gesellix:docker-compose:2019-03-06T08-02-56")
 
     compile("org.codehaus.groovy:groovy:2.5.4")
     compile("org.codehaus.groovy:groovy-json:2.5.4")

@@ -120,7 +120,7 @@ class DeployConfigReader {
             serviceConfig.taskTemplate = [
                     containerSpec: [
                             image          : service.image,
-                            command        : service.entrypoint,
+                            command        : service.entrypoint?.parts ?: [],
                             args           : service.command?.parts ?: [],
                             hostname       : service.hostname,
                             hosts          : extraHosts,
