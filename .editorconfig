@@ -8,3 +8,6 @@ indent_size = 4
 indent_style = space
 trim_trailing_whitespace = true
 continuation_indent_size = 8
+
+[*.yml]
+indent_size = 2

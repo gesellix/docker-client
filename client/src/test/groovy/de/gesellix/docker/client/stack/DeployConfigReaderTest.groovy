@@ -1,6 +1,7 @@
 package de.gesellix.docker.client.stack
 
 import de.gesellix.docker.client.DockerClient
+import de.gesellix.docker.client.stack.types.StackConfig
 import de.gesellix.docker.client.stack.types.StackNetwork
 import de.gesellix.docker.client.stack.types.StackSecret
 import de.gesellix.docker.compose.types.Command
@@ -15,7 +16,9 @@ import de.gesellix.docker.compose.types.PortConfig
 import de.gesellix.docker.compose.types.PortConfigs
 import de.gesellix.docker.compose.types.Reservations
 import de.gesellix.docker.compose.types.Resources
+import de.gesellix.docker.compose.types.ServiceConfig
 import de.gesellix.docker.compose.types.ServiceNetwork
+import de.gesellix.docker.compose.types.ServiceSecret
 import de.gesellix.docker.compose.types.ServiceVolume
 import de.gesellix.docker.compose.types.ServiceVolumeBind
 import de.gesellix.docker.compose.types.ServiceVolumeVolume
@@ -42,7 +45,53 @@ class DeployConfigReaderTest extends Specification {
         reader = new DeployConfigReader(Mock(DockerClient))
     }
 
-    def "converts secrets"() {
+    def "converts stack configs"() {
+        given:
+        def config1 = new de.gesellix.docker.compose.types.StackConfig()
+        def config1File = getClass().getResource('/configs/config1.txt').file
+        def config1FileDirectory = new File(config1File).parent
+        config1.file = 'config1.txt'
+
+        when:
+        def result = reader.configs(
+                "name-space",
+                ['config-1'  : config1,
+                 'ext-config': new de.gesellix.docker.compose.types.StackConfig(external: new External(external: true))],
+                config1FileDirectory
+        )
+
+        then:
+        result == [
+                'config-1': new StackConfig(
+                        data: new FileInputStream(config1File).bytes,
+                        name: 'name-space_config-1',
+                        labels: ['com.docker.stack.namespace': 'name-space'])
+        ]
+    }
+
+    def "prepares service configs"() {
+        given:
+        def serviceConfig = new ServiceConfig(
+                source: 'config-1',
+                target: 'config-target',
+                uid: '',
+                gid: '',
+                mode: 0)
+
+        when:
+        def result = reader.prepareServiceConfigs("name.space", [
+                [(serviceConfig.source): serviceConfig]
+        ])
+
+        then:
+        result == [
+                [File      : [Name: "config-target", UID: "0", GID: "0", Mode: 292],
+                 ConfigID  : "<WILL_BE_PROVIDED_DURING_DEPLOY>",
+                 ConfigName: "name.space_config-1"]
+        ]
+    }
+
+    def "converts stack secrets"() {
         given:
         def secret1 = new de.gesellix.docker.compose.types.StackSecret()
         def secret1File = getClass().getResource('/secrets/secret1.txt').file
@@ -63,6 +112,28 @@ class DeployConfigReaderTest extends Specification {
                         data: new FileInputStream(secret1File).bytes,
                         name: 'name-space_secret-1',
                         labels: ['com.docker.stack.namespace': 'name-space'])
+        ]
+    }
+
+    def "prepares service secrets"() {
+        given:
+        def serviceSecret = new ServiceSecret(
+                source: 'secret-1',
+                target: 'secret-target',
+                uid: '',
+                gid: '',
+                mode: 0)
+
+        when:
+        def result = reader.prepareServiceSecrets("name.space", [
+                [(serviceSecret.source): serviceSecret]
+        ])
+
+        then:
+        result == [
+                [File      : [Name: "secret-target", UID: "0", GID: "0", Mode: 292],
+                 SecretID  : "<WILL_BE_PROVIDED_DURING_DEPLOY>",
+                 SecretName: "name.space_secret-1"]
         ]
     }
 
