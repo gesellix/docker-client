@@ -53,24 +53,26 @@ class DockerStackComposeIntegrationSpec extends Specification {
         spec.Name == "${namespace}_service"
         spec.Networks.Aliases == [['service']]
         spec.TaskTemplate.RestartPolicy == [
-                Condition: 'on-failure',
-                Delay: 5000000000,
+                Condition  : 'on-failure',
+                Delay      : 5000000000,
                 MaxAttempts: 3,
-                Window: 120000000000
+                Window     : 120000000000
         ]
 
         containerSpec.Args == ['sh']
-        containerSpec.Env == ['SOME_VAR='+environment.SOME_VAR]
+        containerSpec.Env == ['SOME_VAR=' + environment.SOME_VAR]
         containerSpec.Image =~ "alpine:${environment.IMAGE_VERSION}(@sha256:[a-f0-9]{64})?"
         containerSpec.Labels == ['com.docker.stack.namespace': namespace]
         containerSpec.Mounts == [
                 [
-                        Type: 'volume',
-                        Source: namespace + '_shm',
-                        Target: '/dev/shm',
+                        Type         : 'volume',
+                        Source       : namespace + '_shm',
+                        Target       : '/dev/shm',
                         VolumeOptions: [Labels: ['com.docker.stack.namespace': namespace]]
                 ]
         ]
+        containerSpec.Configs.findAll { it.ConfigName == "${namespace}_my-config" }.size() == 1
+        containerSpec.Secrets.findAll { it.SecretName == "${namespace}_my-secret" }.size() == 1
 
         def networkInfo = delayAndRetrySilently { dockerClient.inspectNetwork("${namespace}_my-subnet") }
         networkInfo.status.code == 200
@@ -88,23 +90,25 @@ class DockerStackComposeIntegrationSpec extends Specification {
     def performSilently(Closure action) {
         try {
             action()
-        } catch (Exception ignored) {
+        }
+        catch (Exception ignored) {
         }
     }
 
     def delay(Integer secondsToWait = 1, Closure action) {
-        Thread.sleep(secondsToWait *1000)
+        Thread.sleep(secondsToWait * 1000)
         action()
     }
 
     def delayAndRetrySilently(Integer secondsToWait = 1, Closure action, Integer retryCount = 5) {
         Object retVal = null
-        for (_ in 1 .. retryCount) {
+        for (_ in 1..retryCount) {
             try {
-                Thread.sleep(secondsToWait *1000)
+                Thread.sleep(secondsToWait * 1000)
                 retVal = action()
                 break
-            } catch (Exception ignored) {}
+            }
+            catch (Exception ignored) {}
         }
 
         retVal
