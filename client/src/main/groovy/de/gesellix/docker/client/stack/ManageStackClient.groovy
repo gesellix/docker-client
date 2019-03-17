@@ -34,9 +34,6 @@ class ManageStackClient implements ManageStack {
     private ManageSystem manageSystem
     private ManageAuthentication manageAuthentication
 
-    // see docker/docker/cli/compose/convert/compose.go:14
-    static final String LabelNamespace = "com.docker.stack.namespace"
-
     ManageStackClient(
             EngineClient client,
             DockerResponseHandler responseHandler,
@@ -62,7 +59,7 @@ class ManageStackClient implements ManageStack {
     }
 
     @Override
-    lsStacks() {
+    Collection<Stack> lsStacks() {
         log.info "docker stack ls"
 
         Map<String, Stack> stacksByName = [:]
@@ -88,7 +85,7 @@ class ManageStackClient implements ManageStack {
     }
 
     @Override
-    stackDeploy(String namespace, DeployStackConfig config, DeployStackOptions options) {
+    void stackDeploy(String namespace, DeployStackConfig config, DeployStackOptions options) {
         log.info "docker stack deploy"
 
         checkDaemonIsSwarmManager()
@@ -114,7 +111,7 @@ class ManageStackClient implements ManageStack {
         createOrUpdateServices(namespace, config.services, options.sendRegistryAuth)
     }
 
-    def createNetworks(String namespace, Map<String, StackNetwork> networks) {
+    void createNetworks(String namespace, Map<String, StackNetwork> networks) {
         def existingNetworks = manageNetwork.networks([
                 filters: [
                         label: [("${LabelNamespace}=${namespace}" as String): true]]])
@@ -189,7 +186,7 @@ class ManageStackClient implements ManageStack {
         }
     }
 
-    def pruneServices(String namespace, Collection<String> services) {
+    void pruneServices(String namespace, Collection<String> services) {
         // Descope returns the name without the namespace prefix
         def descope = { String name ->
             return name.substring("${namespace}_".length())
@@ -205,7 +202,7 @@ class ManageStackClient implements ManageStack {
         }
     }
 
-    def createOrUpdateServices(String namespace, Map<String, StackService> services, boolean sendRegistryAuth) {
+    void createOrUpdateServices(String namespace, Map<String, StackService> services, boolean sendRegistryAuth) {
         def existingServicesByName = [:]
         def existingServices = stackServices(namespace)
         existingServices.content.each { service ->
@@ -260,14 +257,14 @@ class ManageStackClient implements ManageStack {
     // a swarm manager. This is necessary because we must create networks before we
     // create services, but the API call for creating a network does not return a
     // proper status code when it can't create a network in the "global" scope.
-    def checkDaemonIsSwarmManager() {
+    void checkDaemonIsSwarmManager() {
         if (!manageSystem.info()?.content?.Swarm?.ControlAvailable) {
             throw new IllegalStateException("This node is not a swarm manager. Use \"docker swarm init\" or \"docker swarm join\" to connect this node to swarm and try again.")
         }
     }
 
     @Override
-    stackPs(String namespace, Map filters = [:]) {
+    EngineResponse stackPs(String namespace, Map filters = [:]) {
         log.info "docker stack ps"
 
         String namespaceFilter = "${LabelNamespace}=${namespace}"
@@ -284,7 +281,7 @@ class ManageStackClient implements ManageStack {
     }
 
     @Override
-    stackRm(String namespace) {
+    void stackRm(String namespace) {
         log.info "docker stack rm"
 
         String namespaceFilter = "${LabelNamespace}=${namespace}"
@@ -309,7 +306,7 @@ class ManageStackClient implements ManageStack {
     }
 
     @Override
-    stackServices(String namespace, Map filters = [:]) {
+    EngineResponse stackServices(String namespace, Map filters = [:]) {
         log.info "docker stack services"
 
         String namespaceFilter = "${LabelNamespace}=${namespace}"

@@ -50,7 +50,7 @@ class ManageStackClientTest extends Specification {
 
     def "list stacks"() {
         when:
-        def stacks = service.lsStacks()
+        Collection<ManageStackClient.Stack> stacks = service.lsStacks()
 
         then:
         1 * manageService.services([filters: [label: [(LabelNamespace): true]]]) >> new EngineResponse(
