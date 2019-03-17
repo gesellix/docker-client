@@ -2,13 +2,16 @@ package de.gesellix.docker.client.stack
 
 interface ManageStack {
 
+    // see docker/docker/cli/compose/convert/compose.go:14
+    static final String LabelNamespace = "com.docker.stack.namespace"
+
 //    deploy      Deploy a new stack or update an existing stack
 
-    def stackDeploy(String namespace, DeployStackConfig deployConfig, DeployStackOptions options)
+    void stackDeploy(String namespace, DeployStackConfig deployConfig, DeployStackOptions options)
 
 //    ls          List stacks
 
-    def lsStacks()
+    Collection<Stack> lsStacks()
 
 //    ps          List the tasks in the stack
 
@@ -18,7 +21,7 @@ interface ManageStack {
 
 //    rm          Remove the stack
 
-    def stackRm(String namespace)
+    void stackRm(String namespace)
 
 //    services    List the services in the stack
 
