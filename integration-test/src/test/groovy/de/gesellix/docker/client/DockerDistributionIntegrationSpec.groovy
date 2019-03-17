@@ -28,6 +28,7 @@ class DockerDistributionIntegrationSpec extends Specification {
         alpineDescriptor.content.Platforms == [
                 [architecture: "amd64", os: "linux"],
                 [architecture: "arm", os: "linux", variant: "v6"],
+                [architecture: "arm", os: "linux", variant: "v7"],
                 [architecture: "arm64", os: "linux", variant: "v8"],
                 [architecture: "386", os: "linux"],
                 [architecture: "ppc64le", os: "linux"],
