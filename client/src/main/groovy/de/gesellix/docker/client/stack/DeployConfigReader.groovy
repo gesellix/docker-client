@@ -74,8 +74,8 @@ class DeployConfigReader {
         log.info("service network names: ${serviceNetworkNames}")
 
         Map<String, StackNetwork> networkConfigs
-        List<String> externals
-        (networkConfigs, externals) = networks(namespace, serviceNetworkNames, composeConfig.networks ?: [:])
+        List<String> externalNetworks
+        (networkConfigs, externalNetworks) = networks(namespace, serviceNetworkNames, composeConfig.networks ?: [:])
         def secrets = secrets(namespace, composeConfig.secrets, workingDir)
         def configs = configs(namespace, composeConfig.configs, workingDir)
         def services = services(namespace, composeConfig.services, composeConfig.networks, composeConfig.volumes)
@@ -258,16 +258,7 @@ class DeployConfigReader {
                 aliases = serviceNetwork.aliases
             }
 
-            String namespacedName = "${namespace}_${networkName}" as String
-
-            String target = namespacedName
-            if (networkConfigs?.containsKey(networkName)) {
-                def networkConfig = networkConfigs[networkName]
-                if (networkConfig?.external?.external && networkConfig?.external?.name) {
-                    target = networkConfig.external.name
-                }
-            }
-
+            String target = getTargetNetworkName(namespace, networkName, networkConfigs)
             if (isUserDefined(target, isWindows)) {
                 aliases << serviceName
             }
@@ -280,6 +271,21 @@ class DeployConfigReader {
 
         Collections.sort(serviceNetworkConfigs, new NetworkConfigByTargetComparator())
         return serviceNetworkConfigs
+    }
+
+    String getTargetNetworkName(String namespace, String networkName, Map<String, de.gesellix.docker.compose.types.StackNetwork> networkConfigs) {
+        if (networkConfigs?.containsKey(networkName)) {
+            de.gesellix.docker.compose.types.StackNetwork networkConfig = networkConfigs[networkName]
+            if (networkConfig?.external?.external) {
+                if (networkConfig?.external?.name) {
+                    return networkConfig.external.name
+                }
+                else {
+                    return networkName
+                }
+            }
+        }
+        return "${namespace}_${networkName}" as String
     }
 
     static class NetworkConfigByTargetComparator implements Comparator {
