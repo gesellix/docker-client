@@ -1,4 +1,4 @@
-version: "3.3"
+version: "3.5"
 services:
   service:
     image: alpine:${IMAGE_VERSION}
@@ -14,6 +14,10 @@ services:
         window: 120s
     environment:
       SOME_VAR: ${SOME_VAR}
+    secrets:
+      - my-secret
+    configs:
+      - my-config
     networks:
       - "my-subnet"
     volumes:
@@ -30,3 +34,11 @@ volumes:
       type: tmpfs
       device: tmpfs
       o: size=128m
+
+configs:
+  my-config:
+    file: ./myconfig.properties
+
+secrets:
+  my-secret:
+    file: ./mysecret.key

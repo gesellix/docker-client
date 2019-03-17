@@ -7,6 +7,7 @@ import de.gesellix.docker.client.network.ManageNetwork
 import de.gesellix.docker.client.node.ManageNode
 import de.gesellix.docker.client.secret.ManageSecret
 import de.gesellix.docker.client.service.ManageService
+import de.gesellix.docker.client.stack.types.StackConfig
 import de.gesellix.docker.client.stack.types.StackNetwork
 import de.gesellix.docker.client.stack.types.StackSecret
 import de.gesellix.docker.client.stack.types.StackService
@@ -152,6 +153,10 @@ class ManageStackClientTest extends Specification {
         1 * manageSecret.secrets([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
                 content: [[ID: "secret1-id"]]
         )
+        then:
+        1 * manageConfig.configs([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
+                content: [[ID: "config1-id"]]
+        )
 
         then:
         1 * manageService.rmService("service1-id")
@@ -159,6 +164,8 @@ class ManageStackClientTest extends Specification {
         1 * manageNetwork.rmNetwork("network1-id")
         then:
         1 * manageSecret.rmSecret("secret1-id")
+        then:
+        1 * manageConfig.rmConfig("config1-id")
     }
 
     def "deploy an empty stack"() {
@@ -182,9 +189,10 @@ class ManageStackClientTest extends Specification {
         String namespace = "the-stack"
         String namespaceFilter = "${LabelNamespace}=${namespace}"
         DeployStackConfig config = new DeployStackConfig()
-        config.services["service1"] = new StackService()
+        config.services["service1"] = new StackService(taskTemplate: [containerSpec: [:]])
         config.networks["network1"] = new StackNetwork(labels: [foo: 'bar'])
         config.secrets["secret1"] = new StackSecret(name: "secret-name-1", data: 'secret'.bytes)
+        config.configs["config1"] = new StackConfig(name: "config-name-1", data: 'config'.bytes)
 
         when:
         service.stackDeploy(namespace, config, new DeployStackOptions())
@@ -209,19 +217,30 @@ class ManageStackClientTest extends Specification {
         1 * manageSecret.secrets([filters: [name: ["secret-name-1"]]]) >> new EngineResponse(
                 content: []
         )
-        1 * manageSecret.createSecret("secret-name-1", 'secret'.bytes, [(LabelNamespace): namespace])
+        1 * manageSecret.createSecret("secret-name-1", 'secret'.bytes, [(LabelNamespace): namespace]) >> new EngineResponse(
+                content: []
+        )
+
+        and:
+        1 * manageConfig.configs([filters: [name: ["config-name-1"]]]) >> new EngineResponse(
+                content: []
+        )
+        1 * manageConfig.createConfig("config-name-1", 'config'.bytes, [(LabelNamespace): namespace]) >> new EngineResponse(
+                content: []
+        )
 
         and:
         1 * manageService.services([
                 filters: ['label': [(namespaceFilter): true]]]) >> new EngineResponse()
-        1 * manageService.createService([
-                'endpointSpec': [:],
-                'taskTemplate': [:],
-                'mode'        : [:],
-                'labels'      : [(LabelNamespace): namespace],
-                'updateConfig': [:],
-                'networks'    : [:],
-                'name'        : 'the-stack_service1'],
+        1 * manageService.createService(
+                [
+                        'endpointSpec': [:],
+                        'taskTemplate': [containerSpec: [:]],
+                        'mode'        : [:],
+                        'labels'      : [(LabelNamespace): namespace],
+                        'updateConfig': [:],
+                        'networks'    : [:],
+                        'name'        : 'the-stack_service1'],
                 [:])
     }
 }

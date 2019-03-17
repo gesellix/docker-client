@@ -18,7 +18,9 @@ import de.gesellix.docker.compose.types.Logging
 import de.gesellix.docker.compose.types.PortConfigs
 import de.gesellix.docker.compose.types.Resources
 import de.gesellix.docker.compose.types.RestartPolicy
+import de.gesellix.docker.compose.types.ServiceConfig
 import de.gesellix.docker.compose.types.ServiceNetwork
+import de.gesellix.docker.compose.types.ServiceSecret
 import de.gesellix.docker.compose.types.ServiceVolume
 import de.gesellix.docker.compose.types.ServiceVolumeBind
 import de.gesellix.docker.compose.types.ServiceVolumeType
@@ -52,12 +54,12 @@ class DeployConfigReader {
     }
 
     @Deprecated
-    def loadCompose(String namespace, InputStream composeFile, String workingDir) {
+    DeployStackConfig loadCompose(String namespace, InputStream composeFile, String workingDir) {
         loadCompose(namespace, composeFile, workingDir, System.getenv())
     }
 
     // TODO test me
-    def loadCompose(String namespace, InputStream composeFile, String workingDir, Map<String, String> environment) {
+    DeployStackConfig loadCompose(String namespace, InputStream composeFile, String workingDir, Map<String, String> environment) {
         ComposeConfig composeConfig = composeFileReader.load(composeFile, workingDir, environment)
         log.info("composeContent: $composeConfig}")
 
@@ -86,7 +88,7 @@ class DeployConfigReader {
         return cfg
     }
 
-    def services(
+    Map<String, StackService> services(
             String namespace,
             Map<String, de.gesellix.docker.compose.types.StackService> services,
             Map<String, de.gesellix.docker.compose.types.StackNetwork> networks,
@@ -134,7 +136,8 @@ class DeployConfigReader {
                             stopSignal     : service.stopSignal,
                             tty            : service.tty,
                             openStdin      : service.stdinOpen,
-//                            secrets        : service.secrets,
+                            configs        : prepareServiceConfigs(namespace, service.configs),
+                            secrets        : prepareServiceSecrets(namespace, service.secrets),
                     ],
                     logDriver    : logDriver(service.logging),
                     resources    : serviceResources(service.deploy?.resources),
@@ -150,6 +153,45 @@ class DeployConfigReader {
         return serviceSpec
     }
 
+    List<Map> prepareServiceConfigs(String namespace, List<Map<String, ServiceConfig>> configs) {
+        configs?.collect { item ->
+            if (item.size() > 1) {
+                throw new RuntimeException("expected a unique config entry")
+            }
+            def converted = item.entrySet().collect { entry ->
+                [
+                        File      : [Name: entry.value?.target ?: (entry.value?.source ?: entry.key),
+                                     UID : entry.value?.uid ?: "0",
+                                     GID : entry.value?.gid ?: "0",
+                                     Mode: entry.value?.mode ?: 0444],
+                        ConfigID  : "<WILL_BE_PROVIDED_DURING_DEPLOY>",
+                        ConfigName: "${namespace}_${entry.key}" as String
+                ]
+            }
+            converted.first()
+        } ?: []
+    }
+
+    List<Map> prepareServiceSecrets(String namespace, List<Map<String, ServiceSecret>> secrets) {
+        secrets?.collect { item ->
+            if (item.size() > 1) {
+                throw new RuntimeException("expected a unique secret entry")
+            }
+            def converted = item.entrySet().collect { entry ->
+                [
+                        File      : [Name: entry.value?.target ?: (entry.value?.source ?: entry.key),
+                                     UID : entry.value?.uid ?: "0",
+                                     GID : entry.value?.gid ?: "0",
+                                     Mode: entry.value?.mode ?: 0444],
+                        SecretID  : "<WILL_BE_PROVIDED_DURING_DEPLOY>",
+                        SecretName: "${namespace}_${entry.key}" as String
+                ]
+            }
+            converted.first()
+        } ?: []
+    }
+
+    // TODO include env_file (Issue https://github.com/gesellix/docker-client/issues/67)
     List<String> convertEnvironment(Environment environment) {
         environment?.entries?.collect { name, value ->
             "${name}=${value}" as String
@@ -591,7 +633,7 @@ class DeployConfigReader {
             else {
                 def createOpts = new StackNetwork()
 
-                def labels = [:]
+                Map<String, String> labels = [:]
                 labels.putAll(network.labels?.entries ?: [:])
                 labels[(ManageStackClient.LabelNamespace)] = namespace
                 createOpts.labels = labels

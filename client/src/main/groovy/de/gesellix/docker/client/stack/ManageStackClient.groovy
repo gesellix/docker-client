@@ -99,8 +99,18 @@ class ManageStackClient implements ManageStack {
         }
 
         createNetworks(namespace, config.networks)
-        createSecrets(namespace, config.secrets)
-        createConfigs(namespace, config.configs)
+        Map<String, EngineResponse> changedSecrets = createSecrets(namespace, config.secrets)
+        Map<String, EngineResponse> changedConfigs = createConfigs(namespace, config.configs)
+
+        config.services.each { service ->
+            changedSecrets.each { name, res ->
+                service.value.taskTemplate?.containerSpec?.secrets?.find { it.SecretName == name }?.SecretID = res.content.ID
+            }
+            changedConfigs.each { name, res ->
+                service.value.taskTemplate?.containerSpec?.configs?.find { it.ConfigName == name }?.ConfigID = res.content.ID
+            }
+        }
+
         createOrUpdateServices(namespace, config.services, options.sendRegistryAuth)
     }
 
@@ -125,8 +135,8 @@ class ManageStackClient implements ManageStack {
         }
     }
 
-    def createSecrets(String namespace, Map<String, StackSecret> secrets) {
-        secrets.each { name, secret ->
+    Map<String, EngineResponse> createSecrets(String namespace, Map<String, StackSecret> secrets) {
+        return secrets.collectEntries { name, secret ->
             List knownSecrets = manageSecret.secrets([filters: [name: [secret.name]]]).content
             log.debug("known: $knownSecrets")
 
@@ -135,22 +145,25 @@ class ManageStackClient implements ManageStack {
             }
             secret.labels[(LabelNamespace)] = namespace
 
+            EngineResponse response
             if (knownSecrets.empty) {
                 log.info("create secret ${secret.name}: $secret")
-                manageSecret.createSecret(secret.name, secret.data, secret.labels)
-            } else {
+                response = manageSecret.createSecret(secret.name, secret.data, secret.labels)
+            }
+            else {
                 if (knownSecrets.size() != 1) {
                     throw new IllegalStateException("ambiguous secret name '${secret.name}'")
                 }
                 def knownSecret = knownSecrets.first()
                 log.info("update secret ${secret.name}: $secret")
-                manageSecret.updateSecret(knownSecret.ID as String, knownSecret.Version.Index, toMap(secret))
+                response = manageSecret.updateSecret(knownSecret.ID as String, knownSecret.Version.Index, toMap(secret))
             }
+            return [(secret.name): response]
         }
     }
 
-    def createConfigs(String namespace, Map<String, StackConfig> configs) {
-        configs.each { name, config ->
+    Map<String, EngineResponse> createConfigs(String namespace, Map<String, StackConfig> configs) {
+        return configs.collectEntries { name, config ->
             List knownConfigs = manageConfig.configs([filters: [name: [config.name]]]).content
             log.debug("known: $knownConfigs")
 
@@ -159,17 +172,20 @@ class ManageStackClient implements ManageStack {
             }
             config.labels[(LabelNamespace)] = namespace
 
+            EngineResponse response
             if (knownConfigs.empty) {
                 log.info("create config ${config.name}: $config")
-                manageConfig.createConfig(config.name, config.data, config.labels)
-            } else {
+                response = manageConfig.createConfig(config.name, config.data, config.labels)
+            }
+            else {
                 if (knownConfigs.size() != 1) {
                     throw new IllegalStateException("ambiguous config name '${config.name}'")
                 }
                 def knownConfig = knownConfigs.first()
                 log.info("update config ${config.name}: $config")
-                manageConfig.updateConfig(knownConfig.ID as String, knownConfig.Version.Index, toMap(config))
+                response = manageConfig.updateConfig(knownConfig.ID as String, knownConfig.Version.Index, toMap(config))
             }
+            return [(config.name): response]
         }
     }
 
@@ -227,7 +243,8 @@ class ManageStackClient implements ManageStack {
                 response.content.Warnings.each { String warning ->
                     log.warn(warning)
                 }
-            } else {
+            }
+            else {
                 log.info("Creating service ${name}: ${serviceSpec}")
 
                 def createOptions = [:]
@@ -258,7 +275,8 @@ class ManageStackClient implements ManageStack {
         def actualFilters = filters ?: [:]
         if (actualFilters.label) {
             actualFilters.label[(namespaceFilter)] = true
-        } else {
+        }
+        else {
             actualFilters['label'] = [(namespaceFilter): true]
         }
         def tasks = manageTask.tasks([filters: actualFilters])
@@ -274,6 +292,7 @@ class ManageStackClient implements ManageStack {
         def services = manageService.services([filters: [label: [(namespaceFilter): true]]])
         def networks = manageNetwork.networks([filters: [label: [(namespaceFilter): true]]])
         def secrets = manageSecret.secrets([filters: [label: [(namespaceFilter): true]]])
+        def configs = manageConfig.configs([filters: [label: [(namespaceFilter): true]]])
 
         services.content.each { service ->
             manageService.rmService(service.ID)
@@ -283,6 +302,9 @@ class ManageStackClient implements ManageStack {
         }
         secrets.content.each { secret ->
             manageSecret.rmSecret(secret.ID as String)
+        }
+        configs.content.each { config ->
+            manageConfig.rmConfig(config.ID as String)
         }
     }
 
@@ -294,7 +316,8 @@ class ManageStackClient implements ManageStack {
         def actualFilters = filters ?: [:]
         if (actualFilters.label) {
             actualFilters.label[(namespaceFilter)] = true
-        } else {
+        }
+        else {
             actualFilters['label'] = [(namespaceFilter): true]
         }
         def services = manageService.services([filters: actualFilters])
@@ -335,7 +358,8 @@ class ManageStackClient implements ManageStack {
         services.content.each { service ->
             if (service.Spec.Mode.Replicated && service.Spec.Mode.Replicated.Replicas) {
                 infoByServiceId[service.ID] = new ServiceInfo(mode: 'replicated', replicas: "${running[service.ID as String] ?: 0}/${service.Spec.Mode.Replicated.Replicas}")
-            } else if (service.Spec.Mode.Global) {
+            }
+            else if (service.Spec.Mode.Global) {
                 infoByServiceId[service.ID] = new ServiceInfo(mode: 'global', replicas: "${running[service.ID as String] ?: 0}}/${tasksNoShutdown[service.ID as String]}")
             }
         }
@@ -344,6 +368,7 @@ class ManageStackClient implements ManageStack {
 
     @EqualsAndHashCode
     static class Stack {
+
         String name
         int services
 
@@ -354,6 +379,7 @@ class ManageStackClient implements ManageStack {
     }
 
     static class ServiceInfo {
+
         String mode
         String replicas
 
