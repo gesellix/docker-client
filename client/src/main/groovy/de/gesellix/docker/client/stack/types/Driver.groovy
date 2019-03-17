@@ -4,12 +4,9 @@ import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 
 @EqualsAndHashCode
-@ToString(excludes = "data")
-class StackSecret {
+@ToString
+class Driver {
 
     String name
-    byte[] data
-    Map<String, String> labels = [:]
-    Driver driver
-    Driver templating
+    Map<String, String> options
 }
