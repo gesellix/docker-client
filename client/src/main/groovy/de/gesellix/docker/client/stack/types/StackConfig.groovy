@@ -10,4 +10,6 @@ class StackConfig {
     String name
     byte[] data
     Map<String, String> labels = [:]
+    Driver driver
+    Driver templating
 }
