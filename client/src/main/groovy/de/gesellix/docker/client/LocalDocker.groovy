@@ -89,6 +89,11 @@ class LocalDocker {
         }
     }
 
+    static boolean isLinuxContainersOnWindows() {
+        String clientOS = System.getProperty("os.name")
+        return clientOS?.toLowerCase()?.contains("windows") && !isNativeWindows()
+    }
+
     static isNamedPipe() {
         def dockerHost = new DockerClientImpl().env.dockerHost
         return dockerHost.startsWith("npipe://")
