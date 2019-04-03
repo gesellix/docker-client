@@ -14,7 +14,7 @@ buildscript {
 
 plugins {
     id("com.github.ben-manes.versions") version "0.21.0"
-    id("net.ossindex.audit") version "0.4.8"
+    id("net.ossindex.audit") version "0.4.10"
     id("com.jfrog.bintray") version "1.8.4" apply false
 }
 
