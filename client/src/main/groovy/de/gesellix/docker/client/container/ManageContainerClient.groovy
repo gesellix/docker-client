@@ -124,7 +124,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    byte[] extractFile(container, String filename) {
+    byte[] extractFile(String container, String filename) {
         log.info "extract '${filename}' from '${container}'"
 
         def response = getArchive(container, filename)
@@ -132,7 +132,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    EngineResponse getArchive(container, path) {
+    EngineResponse getArchive(String container, String path) {
         log.info "docker download from ${container}|${path}"
 
         def response = client.get([path : "/containers/${container}/archive".toString(),
@@ -151,7 +151,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    EngineResponse putArchive(container, path, InputStream archive, query = [:]) {
+    EngineResponse putArchive(String container, String path, InputStream archive, Map<String, ?> query = [:]) {
         log.info "docker upload to ${container}|${path}"
 
         def finalQuery = query ?: [:]
@@ -170,7 +170,7 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    EngineResponse createContainer(containerConfig, query = [name: ""], String authBase64Encoded = "") {
+    EngineResponse createContainer(Map<String, ?> containerConfig, Map<String, ?> query = [name: ""], String authBase64Encoded = "") {
         log.info "docker create"
         def actualContainerConfig = [:] + containerConfig
 
@@ -433,7 +433,7 @@ class ManageContainerClient implements ManageContainer {
       If in detached mode or only stdin is attached:
         - Display the container’s id
 */
-        def containerConfigWithImageName = [:] + containerConfig
+        Map<String, ?> containerConfigWithImageName = [:] + containerConfig
         containerConfigWithImageName.Image = fromImage + (tag ? ":$tag" : "")
 
         def createContainerResponse = createContainer(containerConfigWithImageName, [name: name ?: ""], authBase64Encoded)
@@ -506,20 +506,19 @@ class ManageContainerClient implements ManageContainer {
     Map<String, EngineResponse> updateContainers(List<String> containers, updateConfig) {
         log.info "docker update '${containers}'"
 
-        def responses = containers.collectEntries { container ->
+        Map<String, EngineResponse> responses = containers.collectEntries { String container ->
             def response = client.post([path              : "/containers/${container}/update".toString(),
                                         body              : updateConfig,
                                         requestContentType: "application/json"])
             if (response.status?.code != 200) {
                 log.error("error updating container '${container}': {}", response.content)
             }
-            def updateResult = [:]
+            Map<String, EngineResponse> updateResult = [:]
             updateResult[container] = response
             return updateResult
         }
         return responses
     }
-
 
 // TODO
 // ContainerWait waits until the specified container is in a certain state

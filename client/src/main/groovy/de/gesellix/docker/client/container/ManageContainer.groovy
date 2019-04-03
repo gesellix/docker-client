@@ -27,21 +27,21 @@ interface ManageContainer {
 
     def getArchiveStats(container, path)
 
-    byte[] extractFile(container, String filename)
+    byte[] extractFile(String container, String filename)
 
-    EngineResponse getArchive(container, path)
+    EngineResponse getArchive(String container, String path)
 
-    EngineResponse putArchive(container, path, InputStream archive)
+    EngineResponse putArchive(String container, String path, InputStream archive)
 
-    EngineResponse putArchive(container, path, InputStream archive, query)
+    EngineResponse putArchive(String container, String path, InputStream archive, Map<String, ?> query)
 
 //    create      Create a new container
 
-    EngineResponse createContainer(containerConfig)
+    EngineResponse createContainer(Map<String, ?> containerConfig)
 
-    EngineResponse createContainer(containerConfig, query)
+    EngineResponse createContainer(Map<String, ?> containerConfig, Map<String, ?> query)
 
-    EngineResponse createContainer(containerConfig, query, String authBase64Encoded)
+    EngineResponse createContainer(Map<String, ?> containerConfig, Map<String, ?> query, String authBase64Encoded)
 
 //    diff        Inspect changes on a container's filesystem
 
