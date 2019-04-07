@@ -6,6 +6,7 @@ import de.gesellix.docker.client.stack.types.StackNetwork
 import de.gesellix.docker.client.stack.types.StackSecret
 import de.gesellix.docker.compose.types.Command
 import de.gesellix.docker.compose.types.DriverOpts
+import de.gesellix.docker.compose.types.Environment
 import de.gesellix.docker.compose.types.External
 import de.gesellix.docker.compose.types.Healthcheck
 import de.gesellix.docker.compose.types.Ipam
@@ -622,6 +623,19 @@ class DeployConfigReaderTest extends Specification {
                         target : "custom",
                         aliases: ["service"],
                 ]
+        ]
+    }
+
+    def "test ConvertEnvironment"() {
+        when:
+        def env = new Environment([key1: "value1"])
+        def resourcesPath = new File(getClass().getResource("/logback-test.xml").file).parent
+        def result = reader.convertEnvironment(resourcesPath, ["env-files/env.properties"], env)
+        then:
+        result == [
+                "MY_ENV=VALUE",
+                "MY_OTHER_ENV=ANOTHER Value",
+                "key1=value1"
         ]
     }
 }

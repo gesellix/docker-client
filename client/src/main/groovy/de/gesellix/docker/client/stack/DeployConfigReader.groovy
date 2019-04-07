@@ -1,6 +1,7 @@
 package de.gesellix.docker.client.stack
 
 import de.gesellix.docker.client.DockerClient
+import de.gesellix.docker.client.EnvFileParser
 import de.gesellix.docker.client.LocalDocker
 import de.gesellix.docker.client.stack.types.ResolutionMode
 import de.gesellix.docker.client.stack.types.RestartPolicyCondition
@@ -106,7 +107,7 @@ class DeployConfigReader {
                 stopGracePeriod = parseDuration(service.stopGracePeriod).toNanos()
             }
 
-            def env = convertEnvironment(service.environment)
+            def env = convertEnvironment(service.workingDir, service.envFile, service.environment)
             Collections.sort(env)
 
             def extraHosts = convertExtraHosts(service.extraHosts)
@@ -191,11 +192,19 @@ class DeployConfigReader {
         } ?: []
     }
 
-    // TODO include env_file (Issue https://github.com/gesellix/docker-client/issues/67)
-    List<String> convertEnvironment(Environment environment) {
-        environment?.entries?.collect { name, value ->
-            "${name}=${value}" as String
-        } ?: []
+    List<String> convertEnvironment(String workingDir, List<String> envFiles, Environment environment) {
+        List<String> entries = []
+        envFiles.each { filename ->
+            File file = new File(filename)
+            if (!file.isAbsolute()) {
+                file = new File(workingDir, filename)
+            }
+            entries.addAll(new EnvFileParser().parse(file))
+        }
+        entries.addAll(environment?.entries?.collect { name, value ->
+            return "${name}=${value}" as String
+        } ?: [])
+        return entries
     }
 
     List<String> convertExtraHosts(ExtraHosts extraHosts) {
