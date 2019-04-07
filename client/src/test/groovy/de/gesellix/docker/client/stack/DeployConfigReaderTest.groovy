@@ -23,6 +23,7 @@ import de.gesellix.docker.compose.types.ServiceVolume
 import de.gesellix.docker.compose.types.ServiceVolumeBind
 import de.gesellix.docker.compose.types.ServiceVolumeVolume
 import de.gesellix.docker.compose.types.StackVolume
+import de.gesellix.docker.engine.EngineResponse
 import spock.lang.Ignore
 import spock.lang.Specification
 
@@ -139,6 +140,7 @@ class DeployConfigReaderTest extends Specification {
 
     def "converts networks"() {
         given:
+        reader.dockerClient.version() >> new EngineResponse(content: [:])
         def normalNet = new de.gesellix.docker.compose.types.StackNetwork(
                 driver: "overlay",
                 driverOpts: new DriverOpts(["opt": "value"]),
@@ -546,7 +548,8 @@ class DeployConfigReaderTest extends Specification {
 
     def "test ConvertServiceNetworksOnlyDefault"() {
         given:
-        def networkConfigs = [:]
+        reader.dockerClient.version() >> new EngineResponse(content: [:])
+        Map<String, de.gesellix.docker.compose.types.StackNetwork> networkConfigs = [:]
         when:
         def result = reader.convertServiceNetworks(
                 null,
@@ -564,6 +567,7 @@ class DeployConfigReaderTest extends Specification {
 
     def "test ConvertServiceNetworks"() {
         given:
+        reader.dockerClient.version() >> new EngineResponse(content: [:])
         Map<String, de.gesellix.docker.compose.types.StackNetwork> networkConfigs = [
                 "front": new de.gesellix.docker.compose.types.StackNetwork(
                         external: new External(
@@ -597,6 +601,7 @@ class DeployConfigReaderTest extends Specification {
 
     def "test ConvertServiceNetworksCustomDefault"() {
         given:
+        reader.dockerClient.version() >> new EngineResponse(content: [:])
         Map<String, de.gesellix.docker.compose.types.StackNetwork> networkConfigs = [
                 "default": new de.gesellix.docker.compose.types.StackNetwork(
                         external: new External(

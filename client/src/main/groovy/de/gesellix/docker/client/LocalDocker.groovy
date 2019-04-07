@@ -77,10 +77,11 @@ class LocalDocker {
         }
     }
 
-    static boolean isNativeWindows() {
+    static boolean isNativeWindows(DockerClient client = null) {
         try {
-            def arch = new DockerClientImpl().version().content.Arch as String
-            def os = new DockerClientImpl().version().content.Os as String
+            def dockerClient = (client ?: new DockerClientImpl())
+            def arch = dockerClient.version().content.Arch as String
+            def os = dockerClient.version().content.Os as String
             return "$os/$arch".toString() == "windows/amd64"
         }
         catch (Exception e) {

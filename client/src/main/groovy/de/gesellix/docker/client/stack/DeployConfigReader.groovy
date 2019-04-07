@@ -240,7 +240,7 @@ class DeployConfigReader {
             String namespace,
             String serviceName) {
 
-        def isWindows = LocalDocker.isNativeWindows()
+        boolean isWindows = LocalDocker.isNativeWindows(dockerClient)
 
         if (serviceNetworks == null || serviceNetworks.isEmpty()) {
             serviceNetworks = ["default": null as ServiceNetwork]
@@ -682,7 +682,7 @@ class DeployConfigReader {
     }
 
     def validateExternalNetworks(List<String> externalNetworks) {
-        boolean isWindows = LocalDocker.isNativeWindows()
+        boolean isWindows = LocalDocker.isNativeWindows(dockerClient)
         externalNetworks.findAll { name ->
             // Networks that are not user defined always exist on all nodes as
             // local-scoped networks, so there's no need to inspect them.
