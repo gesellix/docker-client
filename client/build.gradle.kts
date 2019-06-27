@@ -42,8 +42,8 @@ repositories {
 
 dependencies {
     //    compile("de.gesellix:docker-engine:local")
-    compile("de.gesellix:docker-engine:2019-04-03T07-59-24")
-    compile("de.gesellix:docker-compose:2019-04-03T07-57-10")
+    compile("de.gesellix:docker-engine:2019-06-27T20-24-48")
+    compile("de.gesellix:docker-compose:2019-06-27T20-12-37")
 
     compile("org.codehaus.groovy:groovy:2.5.6")
     compile("org.codehaus.groovy:groovy-json:2.5.6")
@@ -52,19 +52,19 @@ dependencies {
     testCompile("ch.qos.logback:logback-classic:1.2.3")
 
     compile("com.squareup.okio:okio:2.2.2")
-    compile("com.squareup.okhttp3:okhttp:3.14.0")
-    testCompile("com.squareup.okhttp3:mockwebserver:3.14.0")
+    compile("com.squareup.okhttp3:okhttp:4.0.0")
+    testCompile("com.squareup.okhttp3:mockwebserver:4.0.0")
 
     compile("org.apache.commons:commons-compress:1.18")
 
-    compile("org.bouncycastle:bcpkix-jdk15on:1.61")
+    compile("org.bouncycastle:bcpkix-jdk15on:1.62")
 
-    testCompile("de.gesellix:testutil:2019-04-03T07-51-41")
+    testCompile("de.gesellix:testutil:2019-06-27T19-49-48")
 
     testCompile("org.spockframework:spock-core:1.3-groovy-2.5")
-    testCompile("cglib:cglib-nodep:3.2.10")
+    testCompile("cglib:cglib-nodep:3.2.12")
 
-    testCompile("org.apache.commons:commons-lang3:3.8.1")
+    testCompile("org.apache.commons:commons-lang3:3.9")
 }
 
 tasks {
