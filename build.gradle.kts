@@ -14,7 +14,7 @@ buildscript {
 
 plugins {
     id("com.github.ben-manes.versions") version "0.21.0"
-    id("net.ossindex.audit") version "0.4.10"
+    id("net.ossindex.audit") version "0.4.11"
     id("com.jfrog.bintray") version "1.8.4" apply false
 }
 
@@ -38,7 +38,7 @@ subprojects {
 
 tasks {
     wrapper {
-        gradleVersion = "5.3.1"
+        gradleVersion = "5.4.1"
         distributionType = Wrapper.DistributionType.ALL
     }
 }
