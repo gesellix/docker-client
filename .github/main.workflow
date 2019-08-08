@@ -4,7 +4,7 @@ workflow "ci" {
 }
 
 action "java" {
-  uses = "docker://gradle:12-jdk"
+  uses = "MrRamych/gradle-actions/openjdk-12@2.1"
   args = "clean build"
   runs = "./gradlew"
 }
