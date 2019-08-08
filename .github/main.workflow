@@ -1,10 +1,9 @@
 workflow "ci" {
   on = "push"
-  resolves = ["java"]
+  resolves = ["clean build"]
 }
 
-action "java" {
+action "clean build" {
   uses = "MrRamych/gradle-actions/openjdk-12@2.1"
   args = "clean build"
-  runs = "./gradlew"
 }
