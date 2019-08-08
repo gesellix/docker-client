@@ -1,9 +1,10 @@
 workflow "ci" {
   on = "push"
-  resolves = ["gradle"]
+  resolves = ["java"]
 }
 
-action "gradle" {
-  uses = "gradle"
+action "java" {
+  uses = "docker://gradle:12-jdk"
   args = "clean build"
+  runs = "./gradlew"
 }
