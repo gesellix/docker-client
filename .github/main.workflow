@@ -5,5 +5,5 @@ workflow "ci" {
 
 action "clean build" {
   uses = "MrRamych/gradle-actions/openjdk-12@2.1"
-  args = "clean build"
+  args = "clean build -x :integration-test:check"
 }
