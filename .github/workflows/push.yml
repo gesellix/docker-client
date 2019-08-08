@@ -1,0 +1,12 @@
+on: push
+name: ci
+jobs:
+  cleanBuild:
+    name: clean build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: clean build
+      uses: MrRamych/gradle-actions/openjdk-12@2.1
+      with:
+        args: clean build -x :integration-test:check
