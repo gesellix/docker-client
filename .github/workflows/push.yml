@@ -1,5 +1,5 @@
 on: push
-name: ci
+name: clean build
 jobs:
   cleanBuild:
     name: clean build
