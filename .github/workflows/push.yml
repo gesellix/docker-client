@@ -15,4 +15,4 @@ jobs:
         with:
           java-version: 1.8
       - name: clean build
-        run: ./gradlew clean build
+        run: ./gradlew clean build --info --stacktrace
