@@ -189,7 +189,7 @@ class DockerContainerIntegrationSpec extends Specification {
         then:
         DockerClientException ex = thrown()
         ex.cause.message == 'docker images create failed'
-        if (expectManifestNotFound()) {
+        if (expectManifestNotFound(ex.detail.content)) {
             ex.detail.content.message == "manifest for gesellix/testimage:unknown not found"
         }
         else {
@@ -197,11 +197,14 @@ class DockerContainerIntegrationSpec extends Specification {
         }
     }
 
-    def expectManifestNotFound() {
-        if ((LocalDocker.getDockerVersion().major >= 1 && LocalDocker.getDockerVersion().minor >= 13)
-                || LocalDocker.getDockerVersion().major >= 17) {
+    def expectManifestNotFound(def content) {
+        if (Map.isInstance(content)) {
             return true
         }
+//        if ((LocalDocker.getDockerVersion().major >= 1 && LocalDocker.getDockerVersion().minor >= 13)
+//                || LocalDocker.getDockerVersion().major >= 17) {
+//            return true
+//        }
         return false
     }
 
@@ -636,6 +639,7 @@ class DockerContainerIntegrationSpec extends Specification {
         given:
         def latch = new CountDownLatch(1)
         def callback = new DockerAsyncCallback() {
+
             def events = []
 
             @Override
@@ -681,6 +685,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
         def latch = new CountDownLatch(1)
         def callback = new DockerAsyncCallback() {
+
             def events = []
 
             @Override
@@ -750,6 +755,7 @@ class DockerContainerIntegrationSpec extends Specification {
         given:
         def latch = new CountDownLatch(1)
         def callback = new DockerAsyncCallback() {
+
             def stats = []
 
             @Override
@@ -786,6 +792,7 @@ class DockerContainerIntegrationSpec extends Specification {
         given:
         def latch = new CountDownLatch(1)
         def callback = new DockerAsyncCallback() {
+
             def lines = []
 
             @Override
@@ -854,6 +861,7 @@ class DockerContainerIntegrationSpec extends Specification {
         def expectedOutput = "$content\r\n->$content\r\n"
 
         def outputStream = new ByteArrayOutputStream() {
+
             @Override
             synchronized void write(byte[] b, int off, int len) {
                 log.info("write ${off}/${len} to ${b.length} bytes")
@@ -861,6 +869,7 @@ class DockerContainerIntegrationSpec extends Specification {
             }
         }
         def inputStream = new ByteArrayInputStream("$content\n".bytes) {
+
             @Override
             synchronized int read(byte[] b, int off, int len) {
                 log.info("read ${off}/${len} from ${b.length} bytes")
@@ -952,11 +961,13 @@ class DockerContainerIntegrationSpec extends Specification {
         def receiveMessage = new CountDownLatch(1)
         def receivedMessages = []
         def listener = new DefaultWebSocketListener() {
+
             @Override
             void onOpen(WebSocket webSocket, Response response) {
                 webSocketReference.set(webSocket)
                 openConnection.countDown()
                 executor.execute(new Runnable() {
+
                     @Override
                     void run() {
                         webSocket.send(ourMessage)
@@ -982,7 +993,6 @@ class DockerContainerIntegrationSpec extends Specification {
                 containerId,
                 [stream: 1, stdin: 1, stdout: 1, stderr: 1],
                 listener)
-
 
         openConnection.await(500, MILLISECONDS)
         receiveMessage.await(500, MILLISECONDS)
