@@ -1,4 +1,4 @@
-FROM microsoft/nanoserver
+FROM mcr.microsoft.com/windows/nanoserver:1903
 
-RUN powershell.exe Add-Content C:\gattaca.ps1 'Write-Host "The wind caught it."'
-CMD ["powershell", "/gattaca.ps1"]
+RUN ["cmd.exe", "/C", "echo The wind caught it. > gattaca.txt"]
+CMD ["cmd.exe", "/S", "/C", "type", "gattaca.txt"]
