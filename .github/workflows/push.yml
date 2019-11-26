@@ -5,8 +5,8 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest] #, windows-latest, macos-latest]
-        java: [8]
+        os: [ubuntu-latest, windows-latest] #, macos-latest]
+        java: [8, 11]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v1
