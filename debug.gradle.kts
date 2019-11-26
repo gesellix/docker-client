@@ -2,7 +2,7 @@ import java.io.ByteArrayOutputStream
 
 evaluationDependsOn(":client")
 
-gradle.projectsEvaluated({
+gradle.projectsEvaluated {
 
     tasks.register<JavaExec>("checkDockerClient") {
         main = "de.gesellix.docker.client.LocalDocker"
@@ -24,11 +24,9 @@ gradle.projectsEvaluated({
         )
 
         fun summary(): String {
-            var result = listOf("\nenvironment:\n")
-            result += environmentVariables.map {
+            val result = listOf("\nenvironment:\n") + environmentVariables.map {
                 "- $it: ${environment[it]}"
-            }
-            result += systemProperties.map {
+            } + systemProperties.map {
                 "- $it: ${System.getProperty(it)}"
             }
             return result.joinToString("\n")
@@ -52,4 +50,4 @@ gradle.projectsEvaluated({
                     "\nIf possible, please also share the log output above!")
         }
     }
-})
+}
