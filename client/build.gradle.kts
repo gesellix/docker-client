@@ -23,6 +23,7 @@ plugins {
     id("com.github.ben-manes.versions")
     id("net.ossindex.audit")
     id("com.jfrog.bintray")
+    id("io.freefair.github.package-registry-maven-publish")
 }
 
 //apply plugin: "jacoco"
@@ -121,7 +122,7 @@ publishing {
             artifactId = "docker-client"
             version = rootProject.extra["artifactVersion"] as String
             from(components["java"])
-            artifact(sourcesJar.get())
+//            artifact(sourcesJar.get())
         }
     }
 }
