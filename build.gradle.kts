@@ -19,12 +19,13 @@ plugins {
 }
 
 val dependencyVersions = listOf(
-        "com.squareup.okio:okio:2.2.2",
-        "org.codehaus.groovy:groovy:2.5.6",
-        "org.codehaus.groovy:groovy-json:2.5.6",
-        "org.jetbrains.kotlin:kotlin-reflect:1.3.21",
-        "org.jetbrains.kotlin:kotlin-stdlib:1.3.21",
-        "org.jetbrains.kotlin:kotlin-stdlib-common:1.3.21"
+        "com.squareup.okio:okio:2.4.1",
+        "org.codehaus.groovy:groovy:2.5.8",
+        "org.codehaus.groovy:groovy-json:2.5.8",
+        "org.jetbrains.kotlin:kotlin-reflect:1.3.60",
+        "org.jetbrains.kotlin:kotlin-stdlib:1.3.60",
+        "org.jetbrains.kotlin:kotlin-stdlib-common:1.3.60",
+        "org.slf4j:slf4j-api:1.7.29"
 )
 
 subprojects {
