@@ -16,7 +16,13 @@ class DockerignoreFileFilter {
         additionalExcludes.each {
             dockerignore += it
         }
-        dockerignore = relativize(dockerignore as Collection, base)
+        try {
+            dockerignore = relativize(dockerignore as Collection, base)
+        }
+        catch (IllegalArgumentException e) {
+            log.error("base: ${base.absolutePath}, dockerignore: ${dockerignore}", e)
+            throw e
+        }
         log.debug "base: ${base.absolutePath}"
         log.debug "dockerignore: ${dockerignore}"
         globsMatcher = new GlobsMatcher(base, dockerignore)
@@ -37,7 +43,15 @@ class DockerignoreFileFilter {
     }
 
     String relativize(File base, File absolute) {
-        return base.absoluteFile.toPath().relativize(absolute.absoluteFile.toPath()).toString()
+        def basePath = base.absoluteFile.toPath()
+        def otherPath = absolute.absoluteFile.toPath()
+        if (basePath.root != otherPath.root) {
+            // Can occur on Windows, when
+            // - java temp directory is under C:/
+            // - project directory is under D:/
+            return otherPath.toString()
+        }
+        return basePath.relativize(otherPath).toString()
     }
 
     def collectFiles(File base) {
