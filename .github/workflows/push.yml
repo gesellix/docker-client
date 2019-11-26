@@ -1,18 +1,19 @@
+---
 name: CI
-
 on: [push]
-
 jobs:
-  cleanBuild:
-    name: clean build
-    runs-on: ubuntu-latest
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        java: [8, 11, 13]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v1
-        with:
-          fetch-depth: 1
-      - name: Set up JDK 1.8
+      - name: Set up JDK
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
-      - name: clean build
-        run: ./gradlew clean build --info --stacktrace
+          java-version: ${{ matrix.java }}
+      - name: Check
+        run: ./gradlew check --info --stacktrace
+        timeout-minutes: 10
