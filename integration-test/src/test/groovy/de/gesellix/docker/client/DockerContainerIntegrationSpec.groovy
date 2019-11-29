@@ -88,20 +88,20 @@ class DockerContainerIntegrationSpec extends Specification {
         given:
         def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
         def imageName = "inspect_container"
-        def containerConfig = ["Cmd"       : ["true"],
+        def containerConfig = ["Cmd"       : isNativeWindows ? ["cmd", "exit"] : ["true"],
                                "Image"     : "inspect_container",
                                "HostConfig": ["PublishAllPorts": true]]
         dockerClient.tag(imageId, imageName)
-        def containerId = dockerClient.createContainer(containerConfig).content.Id
+        String containerId = dockerClient.createContainer(containerConfig).content.Id
         dockerClient.startContainer(containerId)
 
         when:
         def containerInspection = dockerClient.inspectContainer(containerId).content
 
         then:
-        containerInspection.HostnamePath =~ "\\w*/var/lib/docker/containers/${containerId}/hostname".toString()
+        containerInspection.HostnamePath =~ isNativeWindows ? "" : "\\w*/var/lib/docker/containers/${containerId}/hostname".toString()
         and:
-        containerInspection.Config.Cmd == ["true"]
+        containerInspection.Config.Cmd == containerConfig.Cmd
         and:
         containerInspection.Config.Image == "inspect_container"
         and:
@@ -120,7 +120,7 @@ class DockerContainerIntegrationSpec extends Specification {
         given:
         def cmd = ["/bin/sh", "-c", "echo 'hallo' > /change.txt"]
         if (isNativeWindows) {
-            cmd = ["powershell", '$hell = \"hallo\"; $hell | Out-File /change.txt']
+            cmd = ["cmd.exe", "/C", "echo The wind caught it. > /change.txt"]
         }
         def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
         def containerConfig = ["Cmd"  : cmd,
@@ -132,9 +132,9 @@ class DockerContainerIntegrationSpec extends Specification {
         def changes = dockerClient.diff(containerId).content
 
         then:
-        changes == [
-                [Kind: 1, Path: "/change.txt"]
-        ]
+        changes.find {
+            it.Path.endsWith("/change.txt")
+        }.Kind != null
 
         cleanup:
         dockerClient.wait(containerId)
@@ -211,7 +211,7 @@ class DockerContainerIntegrationSpec extends Specification {
     def "start container"() {
         given:
         def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
-        def containerConfig = ["Cmd"  : isNativeWindows ? ["powershell", "exit"] : ["true"],
+        def containerConfig = ["Cmd"  : isNativeWindows ? ["cmd", "exit"] : ["true"],
                                "Image": imageId]
         def containerId = dockerClient.createContainer(containerConfig).content.Id
 
@@ -229,15 +229,17 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "update container"() {
         given:
-        def cmds = ["sh", "-c", "ping 127.0.0.1"]
+        def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
         def name = "update-container"
         def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, name)
 
         when:
-        def updateConfig = [
-                "Memory"    : 314572800,
-                "MemorySwap": 514288000]
+        def updateConfig = isNativeWindows
+                ? ["RestartPolicy":
+                           ["Name": "unless-stopped"]]
+                : ["Memory"    : 314572800,
+                   "MemorySwap": 514288000]
         def updateResult = dockerClient.updateContainer(containerStatus.container.content.Id, updateConfig)
 
         then:
@@ -251,7 +253,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "run container with existing base image"() {
         given:
-        def cmds = ["sh", "-c", "ping 127.0.0.1"]
+        def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
 
         when:
@@ -268,7 +270,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "run container with PortBindings"() {
         given:
-        def cmds = ["sh", "-c", "ping 127.0.0.1"]
+        def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd"       : cmds,
                                ExposedPorts: ["4711/tcp": [:]],
                                "HostConfig": ["PortBindings": [
@@ -299,7 +301,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "run container with name"() {
         given:
-        def cmds = ["sh", "-c", "ping 127.0.0.1"]
+        def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
         def name = "example-name"
 
@@ -321,7 +323,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "restart container"() {
         given:
-        def cmds = ["sh", "-c", "ping 127.0.0.1"]
+        def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
         def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag)
 
@@ -339,7 +341,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "stop container"() {
         given:
-        def cmds = ["sh", "-c", "ping 127.0.0.1"]
+        def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
         def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag)
 
@@ -356,7 +358,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "kill container"() {
         given:
-        def cmds = ["sh", "-c", "ping 127.0.0.1"]
+        def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
         def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag)
 
@@ -373,7 +375,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "wait container"() {
         given:
-        def cmds = ["sh", "-c", "ping 127.0.0.1"]
+        def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
         def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag)
         dockerClient.stop(containerStatus.container.content.Id)
@@ -384,7 +386,10 @@ class DockerContainerIntegrationSpec extends Specification {
         then:
         result.status.code == 200
         and:
-        result.content.StatusCode == 137
+        // 3221225786 == 0xC000013A == STATUS_CONTROL_C_EXIT
+        // About the 3221225786 status code: https://stackoverflow.com/a/25444766/372019
+        // See "2.3.1 NTSTATUS Values": https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
+        result.content.StatusCode == isNativeWindows ? 3221225786 : 137
 
         cleanup:
         dockerClient.rm(containerStatus.container.content.Id)
@@ -392,7 +397,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "pause container"() {
         given:
-        def cmds = ["sh", "-c", "ping 127.0.0.1"]
+        def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
         def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag)
 
@@ -411,7 +416,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "unpause container"() {
         given:
-        def cmds = ["sh", "-c", "ping 127.0.0.1"]
+        def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
         def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag)
         dockerClient.pause(containerStatus.container.content.Id)
@@ -452,7 +457,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "commit container"() {
         given:
-        def cmds = ["sh", "-c", "ping 127.0.0.1"]
+        def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
         def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag)
 
@@ -476,7 +481,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "exec create"() {
         given:
-        def cmds = ["sh", "-c", "ping 127.0.0.1"]
+        def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
         def name = "create-exec"
         def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, name)
@@ -498,7 +503,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "exec start"() {
         given:
-        def cmds = ["sh", "-c", "ping 127.0.0.1"]
+        def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
         def name = "start-exec"
         def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, name)
@@ -532,7 +537,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "exec (interactive)"() {
         given:
-        def cmds = ["sh", "-c", "ping 127.0.0.1"]
+        def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
         def name = "attach-exec"
         def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, name)
@@ -656,7 +661,7 @@ class DockerContainerIntegrationSpec extends Specification {
         def response = dockerClient.events(callback)
 
         when:
-        def containerId = dockerClient.createContainer([Cmd: "-"]).content.Id
+        String containerId = dockerClient.createContainer([Cmd: "-"]).content.Id
         latch.await(5, SECONDS)
 
         then:
@@ -730,9 +735,10 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "top"() {
         given:
-        def containerConfig = ["Cmd": ["sh", "-c", "ping 127.0.0.1"]]
+        def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
+        def containerConfig = ["Cmd": cmds]
         def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, "top-example")
-        def containerId = containerStatus.container.content.Id
+        String containerId = containerStatus.container.content.Id
 
         when:
         def top = dockerClient.top(containerId).content
