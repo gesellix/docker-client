@@ -44,11 +44,14 @@ class DockerContainerIntegrationSpec extends Specification {
         ping.content == "OK"
     }
 
+    // WCOW does not support exporting containers
+    // See https://github.com/moby/moby/issues/33581
+    @Requires({ !LocalDocker.isNativeWindows() })
     def "export from container"() {
         given:
         def archive = getClass().getResourceAsStream('importUrl/import-from-url.tar')
         def imageId = dockerClient.importStream(archive)
-        def container = dockerClient.createContainer([Image: imageId, Cmd: ["-"]]).content.Id
+        String container = dockerClient.createContainer([Image: imageId, Cmd: ["-"]]).content.Id
 
         when:
         def response = dockerClient.export(container)
@@ -628,7 +631,7 @@ class DockerContainerIntegrationSpec extends Specification {
         def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
         def containerConfig = ["Cmd"  : ["true"],
                                "Image": imageId]
-        def containerId = dockerClient.createContainer(containerConfig).content.Id
+        String containerId = dockerClient.createContainer(containerConfig).content.Id
 
         when:
         def renameContainerResult = dockerClient.rename(containerId, "a_wonderful_new_name")
@@ -661,7 +664,7 @@ class DockerContainerIntegrationSpec extends Specification {
         def response = dockerClient.events(callback)
 
         when:
-        String containerId = dockerClient.createContainer([Cmd: "-"]).content.Id
+        String containerId = dockerClient.createContainer([Cmd: "-"], [name: "event-test-async"]).content.Id
         latch.await(5, SECONDS)
 
         then:
@@ -708,9 +711,9 @@ class DockerContainerIntegrationSpec extends Specification {
             }
         }
 
-        def container1 = dockerClient.createContainer([Cmd: "-"], [name: "c1"]).content.Id
+        String container1 = dockerClient.createContainer([Cmd: "-"], [name: "c1"]).content.Id
         log.debug "container1: ${container1}"
-        def container2 = dockerClient.createContainer([Cmd: "-"], [name: "c2"]).content.Id
+        String container2 = dockerClient.createContainer([Cmd: "-"], [name: "c2"]).content.Id
         log.debug "container2: ${container2}"
 
         Thread.sleep(1000)
