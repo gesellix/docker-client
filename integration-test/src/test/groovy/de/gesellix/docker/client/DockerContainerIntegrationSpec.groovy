@@ -612,12 +612,20 @@ class DockerContainerIntegrationSpec extends Specification {
         given:
         def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
         def imageName = "copy_container"
-        def containerConfig = ["Cmd": ["sh", "-c", "echo -n -e 'to be or\nnot to be' > /file1.txt"]]
+        def containerConfig = ["Cmd": isNativeWindows ? ["cmd", "/C", "echo to be or\nnot to be > /file1.txt"] : ["sh", "-c", "echo -n -e 'to be or\nnot to be' > /file1.txt"]]
         dockerClient.tag(imageId, imageName)
         def containerInfo = dockerClient.run(imageName, containerConfig)
-        def containerId = containerInfo.container.content.Id
+        String containerId = containerInfo.container.content.Id
 
         when:
+        def isolation = dockerClient.inspectContainer(containerId).content.HostConfig?.Isolation
+        isolation = isolation ?: dockerClient.info().content.Isolation
+        if (isolation == "hyperv") {
+            // filesystem operations against a running Hyper-V container are not supported
+            // see https://github.com/moby/moby/pull/31864
+            dockerClient.stop(containerId)
+            dockerClient.wait(containerId)
+        }
         def tarContent = dockerClient.getArchive(containerId, "/file1.txt").stream
 
         then:
