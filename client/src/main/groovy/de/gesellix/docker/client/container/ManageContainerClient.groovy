@@ -401,17 +401,17 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    EngineResponse restart(containerId) {
+    EngineResponse restart(String containerIdOrName) {
         log.info "docker restart"
-        def response = client.post([path : "/containers/${containerId}/restart".toString(),
+        def response = client.post([path : "/containers/${containerIdOrName}/restart".toString(),
                                     query: [t: 5]])
         return response
     }
 
     @Override
-    EngineResponse rm(containerId, query = [:]) {
+    EngineResponse rm(String containerIdOrName, query = [:]) {
         log.info "docker rm"
-        def response = client.delete([path : "/containers/${containerId}".toString(),
+        def response = client.delete([path : "/containers/${containerIdOrName}".toString(),
                                       query: query])
         return response
     }
@@ -471,20 +471,20 @@ class ManageContainerClient implements ManageContainer {
     }
 
     @Override
-    EngineResponse stop(containerId, Integer timeoutSeconds = 10) {
+    EngineResponse stop(String containerIdOrName, Integer timeoutSeconds = 10) {
         log.info "docker stop"
         def query = [t: timeoutSeconds ?: 10]
-        def response = client.post([path : "/containers/${containerId}/stop".toString(),
+        def response = client.post([path : "/containers/${containerIdOrName}/stop".toString(),
                                     query: query])
         return response
     }
 
     @Override
-    EngineResponse top(container, ps_args = null) {
+    EngineResponse top(String containerIdOrName, ps_args = null) {
         log.info "docker top"
 
         def query = ps_args ? [ps_args: ps_args] : [:]
-        def response = client.get([path : "/containers/${container}/top",
+        def response = client.get([path : "/containers/${containerIdOrName}/top",
                                    query: query])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker top failed"))
         return response
@@ -538,9 +538,9 @@ class ManageContainerClient implements ManageContainer {
 // "next-exit" condition before issuing a ContainerStart request.
 
     @Override
-    EngineResponse wait(containerId) {
+    EngineResponse wait(String containerIdOrName) {
         log.info "docker wait"
-        def response = client.post([path: "/containers/${containerId}/wait".toString()])
+        def response = client.post([path: "/containers/${containerIdOrName}/wait".toString()])
         return response
     }
 }

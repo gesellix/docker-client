@@ -109,13 +109,13 @@ interface ManageContainer {
 
 //    restart     Restart one or more containers
 
-    EngineResponse restart(container)
+    EngineResponse restart(String containerIdOrName)
 
 //    rm          Remove one or more containers
 
-    EngineResponse rm(container)
+    EngineResponse rm(String containerIdOrName)
 
-    EngineResponse rm(container, query)
+    EngineResponse rm(String containerIdOrName, query)
 
 //    run         Run a command in a new container
 
@@ -139,15 +139,15 @@ interface ManageContainer {
 
 //    stop        Stop one or more running containers
 
-    EngineResponse stop(container)
+    EngineResponse stop(String containerIdOrName)
 
-    EngineResponse stop(container, Integer timeout)
+    EngineResponse stop(String containerIdOrName, Integer timeout)
 
 //    top         Display the running processes of a container
 
-    EngineResponse top(container)
+    EngineResponse top(String containerIdOrName)
 
-    EngineResponse top(container, ps_args)
+    EngineResponse top(String containerIdOrName, ps_args)
 
 //    unpause     Unpause all processes within one or more containers
 
@@ -161,5 +161,5 @@ interface ManageContainer {
 
 //    wait        Block until one or more containers stop, then print their exit codes
 
-    EngineResponse wait(container)
+    EngineResponse wait(String containerIdOrName)
 }
