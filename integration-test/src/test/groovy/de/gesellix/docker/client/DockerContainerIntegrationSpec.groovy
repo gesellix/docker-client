@@ -463,9 +463,16 @@ class DockerContainerIntegrationSpec extends Specification {
         def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
         def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag)
+        String containerId = containerStatus.container.content.Id
 
         when:
-        def result = dockerClient.commit(containerStatus.container.content.Id, [
+        if (isNativeWindows) {
+            // windows does not support commit of a running container
+            // see https://github.com/moby/moby/pull/15568
+            dockerClient.stop(containerId)
+            dockerClient.wait(containerId)
+        }
+        def result = dockerClient.commit(containerId, [
                 repo   : 'committed-repo',
                 tag    : 'the-tag',
                 comment: 'commit container test',
@@ -476,9 +483,9 @@ class DockerContainerIntegrationSpec extends Specification {
         result.status.code == 201
 
         cleanup:
-        dockerClient.stop(containerStatus.container.content.Id)
-        dockerClient.wait(containerStatus.container.content.Id)
-        dockerClient.rm(containerStatus.container.content.Id)
+        dockerClient.stop(containerId)
+        dockerClient.wait(containerId)
+        dockerClient.rm(containerId)
         dockerClient.rmi('committed-repo:the-tag')
     }
 
