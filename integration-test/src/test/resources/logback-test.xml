@@ -1,0 +1,17 @@
+<configuration>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="de.gesellix.docker.client" level="TRACE"/>
+    <!--<logger name="de.gesellix.docker.engine" level="TRACE"/>-->
+    <!--<logger name="de.gesellix.docker.json" level="TRACE"/>-->
+    <!--<logger name="de.gesellix.docker.rawstream" level="TRACE"/>-->
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>
