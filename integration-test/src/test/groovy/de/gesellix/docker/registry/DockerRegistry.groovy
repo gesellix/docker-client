@@ -6,18 +6,18 @@ import de.gesellix.docker.client.LocalDocker
 class DockerRegistry {
 
     DockerClient dockerClient
-    def registryId
+    String registryId
 
     DockerRegistry(DockerClient dockerClient) {
         this.dockerClient = dockerClient
     }
 
     def getImageName(){
-        LocalDocker.isNativeWindows() ? "sixeyed/registry" : "registry"
+        LocalDocker.isNativeWindows() ? "gesellix/registry" : "registry"
     }
 
     def getImageTag(){
-        LocalDocker.isNativeWindows() ? "nanoserver" : "2"
+        LocalDocker.isNativeWindows() ? "2.7.1-windows" : "2.7.1"
     }
 
     def run() {
