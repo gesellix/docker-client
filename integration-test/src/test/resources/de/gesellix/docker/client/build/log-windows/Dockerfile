@@ -1,4 +1,4 @@
-FROM microsoft/nanoserver
+FROM mcr.microsoft.com/windows/nanoserver:1809
 
 RUN echo 'step 1'
 RUN echo 'step 2'
