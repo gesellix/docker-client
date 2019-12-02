@@ -406,6 +406,7 @@ class DockerContainerIntegrationSpec extends Specification {
         dockerClient.rm(containerId)
     }
 
+    @Requires({ LocalDocker.isPausable() })
     def "pause container"() {
         given:
         def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
@@ -426,6 +427,7 @@ class DockerContainerIntegrationSpec extends Specification {
         dockerClient.rm(containerId)
     }
 
+    @Requires({ LocalDocker.isPausable() })
     def "unpause container"() {
         given:
         def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
@@ -629,7 +631,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
         when:
         def isolation = dockerClient.inspectContainer(containerId).content.HostConfig?.Isolation
-        isolation = isolation ?: dockerClient.info().content.Isolation
+        isolation = isolation ?: LocalDocker.getDaemonIsolation()
         if (isolation == "hyperv") {
             // filesystem operations against a running Hyper-V container are not supported
             // see https://github.com/moby/moby/pull/31864
