@@ -90,9 +90,40 @@ class LocalDocker {
         }
     }
 
+    static boolean isPausable(DockerClient client = null) {
+        def dockerClient = (client ?: new DockerClientImpl())
+        def daemonPlatform = getDaemonPlatform(dockerClient)
+        def daemonIsolation = getDaemonIsolation(dockerClient)
+        return daemonPlatform != "windows" || daemonIsolation != "process"
+    }
+
     static boolean isLinuxContainersOnWindows() {
         String clientOS = System.getProperty("os.name")
         return clientOS?.toLowerCase()?.contains("windows") && !isNativeWindows()
+    }
+
+    static String getDaemonPlatform(DockerClient client = null) {
+        try {
+            def dockerClient = (client ?: new DockerClientImpl())
+            def osType = dockerClient.info().content.OSType as String
+            return osType
+        }
+        catch (Exception e) {
+            log.info("Docker not available", e)
+            throw new RuntimeException(e)
+        }
+    }
+
+    static String getDaemonIsolation(DockerClient client = null) {
+        try {
+            def dockerClient = (client ?: new DockerClientImpl())
+            def isolation = dockerClient.info().content.Isolation as String
+            return isolation
+        }
+        catch (Exception e) {
+            log.info("Docker not available", e)
+            throw new RuntimeException(e)
+        }
     }
 
     static isNamedPipe() {
