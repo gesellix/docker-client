@@ -215,7 +215,7 @@ class DockerImageIntegrationSpec extends Specification {
 
         def toBeMatched = []
         if (isNativeWindows) {
-            toBeMatched << new EventMatch(pattern: "Step 1(/2)? : FROM microsoft/nanoserver\n?")
+            toBeMatched << new EventMatch(pattern: "Step 1(/2)? : FROM mcr.microsoft.com/windows/nanoserver:1809\n?")
         }
         else {
             toBeMatched << new EventMatch(pattern: "Step 1(/2)? : FROM alpine:edge\n?")
