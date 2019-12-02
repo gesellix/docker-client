@@ -1,4 +1,4 @@
-FROM microsoft/nanoserver
+FROM mcr.microsoft.com/windows/nanoserver:1809
 
 ARG the_arg=default
 RUN echo 'custom ${the_arg}'

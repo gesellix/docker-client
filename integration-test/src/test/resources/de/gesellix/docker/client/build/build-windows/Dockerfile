@@ -1,2 +1,2 @@
-FROM microsoft/nanoserver
-ADD payload.txt /payload.txt
+FROM mcr.microsoft.com/windows/nanoserver:1809
+COPY payload.txt /payload.txt
