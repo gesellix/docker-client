@@ -19,7 +19,7 @@ class ManageSwarmClient implements ManageSwarm {
     }
 
     @Override
-    def newSwarmConfig() {
+    Map newSwarmConfig() {
         return [
                 "ListenAddr"     : "0.0.0.0:2377",
                 "ForceNewCluster": false
@@ -44,7 +44,7 @@ class ManageSwarmClient implements ManageSwarm {
     }
 
     @Override
-    initSwarm(config) {
+    initSwarm(Map config) {
         log.info "docker swarm init"
 
         /*
@@ -103,7 +103,7 @@ class ManageSwarmClient implements ManageSwarm {
     }
 
     @Override
-    joinSwarm(config) {
+    joinSwarm(Map config) {
         log.info "docker swarm join"
         config = config ?: [:]
         def response = client.post([path              : "/swarm/join",
@@ -114,7 +114,7 @@ class ManageSwarmClient implements ManageSwarm {
     }
 
     @Override
-    leaveSwarm(query = [:]) {
+    leaveSwarm(Map query = [:]) {
         log.info "docker swarm leave"
         def actualQuery = query ?: [:]
         def response = client.post([path : "/swarm/leave",
@@ -124,7 +124,7 @@ class ManageSwarmClient implements ManageSwarm {
     }
 
     @Override
-    updateSwarm(query, config) {
+    updateSwarm(Map query, Map config) {
         log.info "docker swarm update"
         def actualQuery = query ?: [:]
         config = config ?: [:]
@@ -204,7 +204,7 @@ class ManageSwarmClient implements ManageSwarm {
     }
 
     @Override
-    unlockSwarm(unlockKey) {
+    unlockSwarm(String unlockKey) {
         log.info "docker swarm unlock"
         def response = client.post([path              : "/swarm/unlock",
                                     body              : [UnlockKey: unlockKey],
@@ -214,7 +214,7 @@ class ManageSwarmClient implements ManageSwarm {
     }
 
     @Override
-    inspectSwarm(query = [:]) {
+    inspectSwarm(Map query = [:]) {
         log.info "docker swarm inspect"
         def actualQuery = query ?: [:]
         queryUtil.jsonEncodeFilters(actualQuery)

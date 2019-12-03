@@ -3,9 +3,9 @@ package de.gesellix.docker.client.filesocket
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.DockerClientImpl
 import de.gesellix.docker.client.LocalDocker
-import de.gesellix.docker.client.container.ArchiveUtil
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.OkDockerClient
+import de.gesellix.docker.testutil.NpipeExecutable
 import groovy.util.logging.Slf4j
 import org.apache.commons.lang3.SystemUtils
 import spock.lang.Requires
@@ -23,7 +23,7 @@ class HttpOverNamedPipeIntegrationTest extends Specification {
     def "http over named pipe"() {
         given:
         DockerClient docker = new DockerClientImpl()
-        def npipeExe = createNpipeExe(docker)
+        def npipeExe = new NpipeExecutable().createNpipeExe(docker)
 
         def pipePath = "//./pipe/echo_pipe"
 
@@ -71,15 +71,5 @@ class HttpOverNamedPipeIntegrationTest extends Specification {
             fail("couldn't create a named pipe [${process.exitValue()}]")
         }
         return process
-    }
-
-    def createNpipeExe(DockerClientImpl docker) {
-        def repository = LocalDocker.isNativeWindows() ? "gesellix/npipe:windows" : "gesellix/npipe"
-        docker.createContainer([Image: repository], [name: "npipe"])
-        def archive = docker.getArchive("npipe", "/npipe.exe").stream as InputStream
-
-        def npipeExe = new File("npipe.exe")
-        new ArchiveUtil().copySingleTarEntry(archive, "/npipe.exe", new FileOutputStream(npipeExe))
-        return npipeExe
     }
 }

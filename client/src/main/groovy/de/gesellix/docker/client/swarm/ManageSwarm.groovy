@@ -2,23 +2,23 @@ package de.gesellix.docker.client.swarm
 
 interface ManageSwarm {
 
-    def newSwarmConfig()
+    Map newSwarmConfig()
 
 //    init        Initialize a swarm
 
     def initSwarm()
 
-    def initSwarm(config)
+    def initSwarm(Map config)
 
 //    join        Join a swarm as a node and/or manager
 
-    def joinSwarm(config)
+    def joinSwarm(Map config)
 
 //    join-token  Manage join tokens
 
     def inspectSwarm()
 
-    def inspectSwarm(query)
+    def inspectSwarm(Map query)
 
     def getSwarmWorkerToken()
 
@@ -32,11 +32,11 @@ interface ManageSwarm {
 
     def leaveSwarm()
 
-    def leaveSwarm(query)
+    def leaveSwarm(Map query)
 
 //    unlock      Unlock swarm
 
-    def unlockSwarm(unlockKey)
+    def unlockSwarm(String unlockKey)
 
 //    unlock-key  Manage the unlock key
 
@@ -46,6 +46,5 @@ interface ManageSwarm {
 
 //    update      Update the swarm
 
-    def updateSwarm(query, config)
-
+    def updateSwarm(Map query, Map config)
 }
