@@ -1,5 +1,6 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.testutil.NetworkInterfaces
 import groovy.util.logging.Slf4j
 import net.jodah.failsafe.Failsafe
 import net.jodah.failsafe.RetryPolicy
@@ -20,9 +21,12 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     static DockerClient dockerClient
 
+    static String swarmAdvertiseAddr
+
     def setupSpec() {
         dockerClient = new DockerClientImpl()
 //        dockerClient.config.apiVersion = "v1.24"
+        swarmAdvertiseAddr = new NetworkInterfaces().getFirstInet4Address()
         performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
@@ -46,7 +50,9 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "list nodes"() {
         given:
-        def nodeId = dockerClient.initSwarm().content
+        def swarmConfig = dockerClient.newSwarmConfig()
+        swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
+        def nodeId = dockerClient.initSwarm(swarmConfig).content
 
         when:
         def nodes = dockerClient.nodes().content
@@ -62,7 +68,9 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "inspect node"() {
         given:
-        def nodeId = dockerClient.initSwarm().content
+        def swarmConfig = dockerClient.newSwarmConfig()
+        swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
+        def nodeId = dockerClient.initSwarm(swarmConfig).content
 
         when:
         def node = dockerClient.inspectNode(nodeId).content
@@ -77,7 +85,9 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "update node"() {
         given:
-        def nodeId = dockerClient.initSwarm().content
+        def swarmConfig = dockerClient.newSwarmConfig()
+        swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
+        def nodeId = dockerClient.initSwarm(swarmConfig).content
         def nodeInfo = dockerClient.inspectNode(nodeId).content
         def oldSpec = nodeInfo.Spec
 
@@ -108,7 +118,9 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "rm node"() {
         given:
-        def nodeId = dockerClient.initSwarm().content
+        def swarmConfig = dockerClient.newSwarmConfig()
+        swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
+        def nodeId = dockerClient.initSwarm(swarmConfig).content
 
         when:
         dockerClient.rmNode(nodeId)
@@ -124,7 +136,9 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "inspect swarm"() {
         given:
-        def nodeId = dockerClient.initSwarm().content
+        def swarmConfig = dockerClient.newSwarmConfig()
+        swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
+        def nodeId = dockerClient.initSwarm(swarmConfig).content
 
         when:
         def response = dockerClient.inspectSwarm()
@@ -141,6 +155,7 @@ class DockerSwarmIntegrationSpec extends Specification {
     def "init swarm"() {
         given:
         def config = dockerClient.newSwarmConfig()
+        config.AdvertiseAddr = swarmAdvertiseAddr
 
         when:
         def response = dockerClient.initSwarm(config)
@@ -155,6 +170,7 @@ class DockerSwarmIntegrationSpec extends Specification {
     def "join swarm"() {
         given:
         def managerConfig = dockerClient.newSwarmConfig()
+        managerConfig.AdvertiseAddr = swarmAdvertiseAddr
         dockerClient.initSwarm(managerConfig)
         def nodeConfig = [
                 "ListenAddr": "0.0.0.0:4711",
@@ -178,7 +194,9 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "leave swarm"() {
         given:
-        dockerClient.initSwarm()
+        def swarmConfig = dockerClient.newSwarmConfig()
+        swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
+        dockerClient.initSwarm(swarmConfig)
 
         when:
         dockerClient.leaveSwarm([force: false])
@@ -194,9 +212,11 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "update swarm"() {
         given:
-        dockerClient.initSwarm()
+        def swarmConfig = dockerClient.newSwarmConfig()
+        swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
+        dockerClient.initSwarm(swarmConfig)
         def swarmInfo = dockerClient.inspectSwarm().content
-        def spec = swarmInfo.Spec
+        Map spec = swarmInfo.Spec
         spec.Annotations = [
                 Name: "test update"
         ]
@@ -216,9 +236,10 @@ class DockerSwarmIntegrationSpec extends Specification {
     }
 
     def "rotate swarm worker token"() {
-
         given:
-        dockerClient.initSwarm()
+        def swarmConfig = dockerClient.newSwarmConfig()
+        swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
+        dockerClient.initSwarm(swarmConfig)
         def previousToken = dockerClient.getSwarmWorkerToken()
 
         when:
@@ -236,7 +257,9 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "rotate swarm manager token"() {
         given:
-        dockerClient.initSwarm()
+        def swarmConfig = dockerClient.newSwarmConfig()
+        swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
+        dockerClient.initSwarm(swarmConfig)
         def previousToken = dockerClient.getSwarmManagerToken()
 
         when:
@@ -254,7 +277,9 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "services"() {
         given:
-        dockerClient.initSwarm()
+        def swarmConfig = dockerClient.newSwarmConfig()
+        swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
+        dockerClient.initSwarm(swarmConfig)
 
         when:
         def response = dockerClient.services()
@@ -269,7 +294,9 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "create service"() {
         given:
-        dockerClient.initSwarm()
+        def swarmConfig = dockerClient.newSwarmConfig()
+        swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
+        dockerClient.initSwarm(swarmConfig)
         def serviceConfig = [
                 "Name"        : "redis",
                 "TaskTemplate": [
@@ -313,7 +340,9 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "rm service"() {
         given:
-        dockerClient.initSwarm()
+        def swarmConfig = dockerClient.newSwarmConfig()
+        swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
+        dockerClient.initSwarm(swarmConfig)
         def serviceConfig = [
                 "Name"        : "redis",
                 "TaskTemplate": [
@@ -341,7 +370,9 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "inspect service"() {
         given:
-        dockerClient.initSwarm()
+        def swarmConfig = dockerClient.newSwarmConfig()
+        swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
+        dockerClient.initSwarm(swarmConfig)
         def serviceConfig = [
                 "Name"        : "redis",
                 "TaskTemplate": [
@@ -371,7 +402,9 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "update service"() {
         given:
-        dockerClient.initSwarm()
+        def swarmConfig = dockerClient.newSwarmConfig()
+        swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
+        dockerClient.initSwarm(swarmConfig)
         def serviceConfig = [
                 "TaskTemplate": [
                         "ContainerSpec": [
@@ -403,7 +436,9 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "tasks"() {
         given:
-        dockerClient.initSwarm()
+        def swarmConfig = dockerClient.newSwarmConfig()
+        swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
+        dockerClient.initSwarm(swarmConfig)
         def serviceConfig = [
                 "Name"        : "redis",
                 "TaskTemplate": [
@@ -437,7 +472,9 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     def "inspect task"() {
         given:
-        dockerClient.initSwarm()
+        def swarmConfig = dockerClient.newSwarmConfig()
+        swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
+        dockerClient.initSwarm(swarmConfig)
         def serviceConfig = [
                 "Name"        : "redis",
                 "TaskTemplate": [

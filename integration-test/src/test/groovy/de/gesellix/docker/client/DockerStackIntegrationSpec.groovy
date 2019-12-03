@@ -4,6 +4,7 @@ import de.gesellix.docker.client.stack.DeployStackConfig
 import de.gesellix.docker.client.stack.DeployStackOptions
 import de.gesellix.docker.client.stack.ManageStackClient
 import de.gesellix.docker.client.stack.types.StackService
+import de.gesellix.docker.testutil.NetworkInterfaces
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
 import spock.lang.Specification
@@ -14,9 +15,12 @@ class DockerStackIntegrationSpec extends Specification {
 
     static DockerClient dockerClient
 
+    static String swarmAdvertiseAddr
+
     def setupSpec() {
         dockerClient = new DockerClientImpl()
 //        dockerClient.config.apiVersion = "v1.24"
+        swarmAdvertiseAddr = new NetworkInterfaces().getFirstInet4Address()
         performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
@@ -229,6 +233,7 @@ class DockerStackIntegrationSpec extends Specification {
 
     def newSwarmConfig() {
         return [
+                "AdvertiseAddr"  : swarmAdvertiseAddr,
                 "ListenAddr"     : "0.0.0.0:4554",
                 "ForceNewCluster": false,
                 "Spec"           : [
@@ -249,7 +254,8 @@ class DockerStackIntegrationSpec extends Specification {
     def performSilently(Closure action) {
         try {
             action()
-        } catch (Exception ignored) {
+        }
+        catch (Exception ignored) {
         }
     }
 }

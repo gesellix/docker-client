@@ -2,6 +2,7 @@ package de.gesellix.docker.client
 
 import de.gesellix.docker.client.stack.DeployConfigReader
 import de.gesellix.docker.client.stack.DeployStackOptions
+import de.gesellix.docker.testutil.NetworkInterfaces
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
 import spock.lang.Specification
@@ -15,10 +16,12 @@ class DockerStackComposeIntegrationSpec extends Specification {
 
     static DockerClient dockerClient
     static Path composeFilePath
+    static String swarmAdvertiseAddr
 
     def setupSpec() {
         dockerClient = new DockerClientImpl()
         composeFilePath = Paths.get(getClass().getResource('compose/docker-stack.yml').toURI())
+        swarmAdvertiseAddr = new NetworkInterfaces().getFirstInet4Address()
         performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
@@ -28,7 +31,9 @@ class DockerStackComposeIntegrationSpec extends Specification {
 
     def "deploy a new stack with compose file"() {
         given:
-        dockerClient.initSwarm()
+        def swarmConfig = dockerClient.newSwarmConfig()
+        swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
+        dockerClient.initSwarm(swarmConfig)
 
         def composeStream = composeFilePath.toFile().newInputStream()
         def environment = [IMAGE_VERSION: '3.4', SOME_VAR: 'some-value']

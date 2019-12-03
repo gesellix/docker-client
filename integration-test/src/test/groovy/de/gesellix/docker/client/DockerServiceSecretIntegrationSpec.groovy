@@ -1,5 +1,6 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.testutil.NetworkInterfaces
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
 import spock.lang.Specification
@@ -10,8 +11,11 @@ class DockerServiceSecretIntegrationSpec extends Specification {
 
     static DockerClient dockerClient
 
+    static String swarmAdvertiseAddr
+
     def setupSpec() {
         dockerClient = new DockerClientImpl()
+        swarmAdvertiseAddr = new NetworkInterfaces().getFirstInet4Address()
         performSilently { dockerClient.leaveSwarm([force: true]) }
     }
 
@@ -35,7 +39,9 @@ class DockerServiceSecretIntegrationSpec extends Specification {
 
     def "create, list, and remove a secret"() {
         given:
-        dockerClient.initSwarm()
+        def swarmConfig = dockerClient.newSwarmConfig()
+        swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
+        dockerClient.initSwarm(swarmConfig)
 
         when:
         dockerClient.createSecret("test-secret", "some-secret-stuff".bytes)
