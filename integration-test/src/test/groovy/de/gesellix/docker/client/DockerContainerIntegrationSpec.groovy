@@ -130,6 +130,7 @@ class DockerContainerIntegrationSpec extends Specification {
                                "Image": imageId]
         String containerId = dockerClient.run(imageId, containerConfig).container.content.Id
         dockerClient.stop(containerId)
+        dockerClient.wait(containerId)
 
         when:
         def changes = dockerClient.diff(containerId).content
@@ -140,7 +141,6 @@ class DockerContainerIntegrationSpec extends Specification {
         }.Kind != null
 
         cleanup:
-        dockerClient.wait(containerId)
         dockerClient.rm(containerId)
     }
 
