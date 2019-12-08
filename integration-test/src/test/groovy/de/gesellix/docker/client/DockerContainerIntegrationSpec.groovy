@@ -4,6 +4,7 @@ import de.gesellix.docker.client.container.ArchiveUtil
 import de.gesellix.docker.engine.AttachConfig
 import de.gesellix.docker.websocket.DefaultWebSocketListener
 import de.gesellix.util.IOUtils
+import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import okhttp3.Response
@@ -559,26 +560,33 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "exec (interactive)"() {
         given:
-        def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
-        def containerConfig = ["Cmd": cmds]
+        def containerCmd = isNativeWindows
+                ? ["cmd", "/C", "ping -t 127.0.0.1"]
+                : ["sh", "-c", "ping 127.0.0.1"]
+        def containerConfig = ["Cmd": containerCmd]
         def name = "attach-exec"
         def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, name)
-        def containerId = containerStatus.container.content.Id
+        String containerId = containerStatus.container.content.Id
+        log.info("container: ${JsonOutput.toJson(dockerClient.inspectContainer(containerId).content)}")
 
         def logFileName = "/log.txt"
+        def execCmd = isNativeWindows
+                ? ["cmd", "/V:ON", "/C", "set /p line= & echo #!line!# > ${logFileName}"]
+                : ["/bin/sh", "-c", "read line && echo \"#\$line#\" > ${logFileName}"]
+
         def execCreateConfig = [
                 "AttachStdin" : true,
                 "AttachStdout": true,
                 "AttachStderr": true,
                 "Tty"         : true,
-                "Cmd"         : ["/bin/sh", "-c", "read line && echo \"->\$line<-\" > ${logFileName}"]
+                "Cmd"         : execCmd
         ]
 
         def execCreateResult = dockerClient.createExec(containerId, execCreateConfig).content
         def execId = execCreateResult.Id
 
         def input = "exec ${UUID.randomUUID()}"
-        def expectedOutput = "->$input<-"
+        def expectedOutput = "#$input#"
         def outputStream = new ByteArrayOutputStream()
 
         def onSinkClosed = new CountDownLatch(1)
@@ -590,11 +598,11 @@ class DockerContainerIntegrationSpec extends Specification {
         attachConfig.onFailure = { Exception e ->
             log.error("exec failed", e)
         }
-        attachConfig.onResponse = {
-            log.trace("onResponse")
+        attachConfig.onResponse = { Response response ->
+            log.trace("onResponse (${response})")
         }
         attachConfig.onSinkClosed = { Response response ->
-            log.trace("onSinkClosed")
+            log.trace("onSinkClosed (${response})")
             onSinkClosed.countDown()
         }
         attachConfig.onSourceConsumed = {
@@ -609,6 +617,15 @@ class DockerContainerIntegrationSpec extends Specification {
         dockerClient.startExec(execId, execStartConfig, attachConfig)
         onSinkClosed.await(5, SECONDS)
         onSourceConsumed.await(5, SECONDS)
+
+        def isolation = dockerClient.inspectContainer(containerId).content.HostConfig?.Isolation
+        isolation = isolation ?: LocalDocker.getDaemonIsolation()
+        if (isolation == "hyperv") {
+            // filesystem operations against a running Hyper-V container are not supported
+            // see https://github.com/moby/moby/pull/31864
+            dockerClient.stop(containerId)
+            dockerClient.wait(containerId)
+        }
 
         then:
         def logContent = new String(dockerClient.extractFile(name, logFileName))
