@@ -132,14 +132,19 @@ class DockerContainerIntegrationSpec extends Specification {
         String containerId = dockerClient.run(imageId, containerConfig).container.content.Id
         dockerClient.stop(containerId)
         dockerClient.wait(containerId)
+        Thread.sleep(1000)
 
         when:
         def changes = dockerClient.diff(containerId).content
 
         then:
-        changes.find {
+        def aChange = changes.find {
             it.Path.endsWith("/change.txt")
-        }.Kind != null
+        }
+        log.info("change: ${aChange}")
+        aChange != null
+        and:
+        aChange?.Kind != null
 
         cleanup:
         dockerClient.rm(containerId)
@@ -782,7 +787,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def "top"() {
         given:
-        def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
+        def cmds = isNativeWindows ? ["cmd", "/C", "ping -t 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
         def containerConfig = ["Cmd": cmds]
         def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, "top-example")
         String containerId = containerStatus.container.content.Id
@@ -791,12 +796,17 @@ class DockerContainerIntegrationSpec extends Specification {
         def top = dockerClient.top(containerId).content
 
         then:
-        def reducedTitleSet = LocalDocker.getDockerVersion().major >= 1 && LocalDocker.getDockerVersion().minor >= 13
-        top.Titles == reducedTitleSet ? ["PID", "USER", "TIME", "COMMAND"] : ["UID", "PID", "PPID", "C", "STIME", "TTY", "TIME", "CMD"]
+        if (isNativeWindows) {
+            top.Titles == ["Name", "PID", "CPU", "Private Working Set"]
+        }
+        else {
+            def reducedTitleSet = LocalDocker.getDockerVersion().major >= 1 && LocalDocker.getDockerVersion().minor >= 13
+            top.Titles == (reducedTitleSet ? ["PID", "USER", "TIME", "COMMAND"] : ["UID", "PID", "PPID", "C", "STIME", "TTY", "TIME", "CMD"])
+        }
         and:
         def lastEntry = top.Processes.last()
-        def lastColumn = lastEntry.last()
-        lastColumn == "ping 127.0.0.1"
+        def entryAsString = lastEntry.join(" ")
+        entryAsString.contains(isNativeWindows ? "cmd.exe" : "ping 127.0.0.1")
 
         cleanup:
         dockerClient.stop(containerId)
