@@ -832,9 +832,9 @@ class DockerContainerIntegrationSpec extends Specification {
             onFinish() {
             }
         }
-        def containerConfig = ["Cmd": ["sh", "-c", "ping 127.0.0.1"]]
+        def containerConfig = ["Cmd": isNativeWindows ? ["cmd", "/C", "ping -t 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]]
         def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, "stats-example")
-        def containerId = containerStatus.container.content.Id
+        String containerId = containerStatus.container.content.Id
 
         when:
         def response = dockerClient.stats(containerId, callback)
@@ -861,15 +861,17 @@ class DockerContainerIntegrationSpec extends Specification {
             @Override
             onEvent(Object line) {
                 log.info("[logs] $line")
-                lines << line
-                latch.countDown()
+                if (line && lines.empty) {
+                    lines << line
+                    latch.countDown()
+                }
             }
 
             @Override
             onFinish() {
             }
         }
-        def containerConfig = ["Cmd": ["sh", "-c", "ping 127.0.0.1"]]
+        def containerConfig = ["Cmd": isNativeWindows ? ["cmd", "/C", "ping -t 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]]
         def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, "logs-example")
         String containerId = containerStatus.container.content.Id
 
@@ -878,8 +880,8 @@ class DockerContainerIntegrationSpec extends Specification {
         latch.await(5, SECONDS)
 
         then:
-        callback.lines.size() == 1
-        callback.lines.first().startsWith("64 bytes from 127.0.0.1")
+        !callback.lines.empty
+        callback.lines.first().contains(isNativeWindows ? "Pinging 127.0.0.1" : "64 bytes from 127.0.0.1")
 
         cleanup:
         response.taskFuture.cancel(true)
