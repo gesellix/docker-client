@@ -340,6 +340,7 @@ class DockerImageIntegrationSpec extends Specification {
 //    }
 
     static class EventMatch {
+
         String pattern
 
         static Closure PATTERN_MATCH = { String msg, String pattern -> msg =~ pattern }
@@ -495,11 +496,14 @@ class DockerImageIntegrationSpec extends Specification {
     }
 
     def "pull image by digest"() {
+        given:
+        def digest = isNativeWindows ? "gesellix/testimage@sha256:afee42c0e4653763a5ee2d386afbd8f34ae80ba7644d31830e7aff826ebb1be0" : "gesellix/testimage@sha256:583ada96d700552c6c00d56aa581848264db1a8e2032d67bbaa761ff2d73ec2d"
+
         when:
-        def imageId = dockerClient.pull("nginx@sha256:b555f8c64ab4e85405e0d8b03f759b73ce88deb802892a3b155ef55e3e832806")
+        def imageId = dockerClient.pull(digest)
 
         then:
-        imageId == "sha256:3c69047c6034e48a93cc1c4a769a680045104ef6d51306720409029d6e1fa364"
+        imageId == (isNativeWindows ? "sha256:5880c6a3a386d67cd02b0ee4684709f9c966225270e97e0396157894ae74dbe6" : "sha256:0ce18ad10d281bef97fe2333a9bdcc2dbf84b5302f66d796fed73aac675320db")
     }
 
     def "pull image from private registry"() {
@@ -729,12 +733,12 @@ class DockerImageIntegrationSpec extends Specification {
         NetworkInterface.getNetworkInterfaces()
                 .findAll { !it.loopback }
                 .each { NetworkInterface iface ->
-            iface.inetAddresses.findAll {
-                it.hostAddress.matches(matchIpv4)
-            }.each {
-                addresses.add(it.hostAddress)
-            }
-        }
+                    iface.inetAddresses.findAll {
+                        it.hostAddress.matches(matchIpv4)
+                    }.each {
+                        addresses.add(it.hostAddress)
+                    }
+                }
         addresses
     }
 
