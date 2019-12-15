@@ -1,7 +1,11 @@
 package de.gesellix.docker.client
 
+import com.squareup.moshi.JsonReader
 import de.gesellix.docker.engine.EngineResponse
 import groovy.util.logging.Slf4j
+import okio.BufferedSource
+import okio.Okio
+import okio.Source
 
 @Slf4j
 class DockerAsyncConsumer implements Runnable {
@@ -16,15 +20,15 @@ class DockerAsyncConsumer implements Runnable {
 
     @Override
     void run() {
-        def reader = new BufferedReader(new InputStreamReader(response.stream as InputStream))
         try {
-            String line
-            while ((line = readLineWhenNotInterrupted(reader)) != null) {
-                log.trace("event: $line")
-                callback.onEvent(line)
+            Reader reader = createReader(response)
+            while (reader.hasNext()) {
+                def chunk = reader.readNext()
+                log.trace("event: $chunk")
+                callback.onEvent(chunk)
             }
         }
-        catch (InterruptedException e) {
+        catch (InterruptedException | InterruptedIOException e) {
             log.debug("consumer interrupted", e)
             Thread.currentThread().interrupt()
         }
@@ -37,10 +41,59 @@ class DockerAsyncConsumer implements Runnable {
         }
     }
 
-    private String readLineWhenNotInterrupted(Reader reader) {
-        if (Thread.currentThread().isInterrupted()) {
-            return null
+    private Reader createReader(EngineResponse response) {
+        Source source = Okio.source(response.stream as InputStream)
+        if (response.contentType == "application/json"
+                && response.headers?.get("transfer-encoding") == "chunked") {
+            return new JsonChunksReader(Okio.source(response.stream as InputStream))
         }
-        return reader.readLine()
+        else {
+            return new LineReader(source)
+        }
+    }
+
+    static interface Reader {
+
+        Object readNext()
+
+        boolean hasNext()
+    }
+
+    static class LineReader implements Reader {
+
+        private BufferedSource buffer
+
+        LineReader(Source source) {
+            this.buffer = Okio.buffer(source)
+        }
+
+        Object readNext() {
+            return buffer.readUtf8Line()
+        }
+
+        boolean hasNext() {
+            !Thread.currentThread().isInterrupted() && !buffer.exhausted()
+        }
+    }
+
+    static class JsonChunksReader implements Reader {
+
+        JsonReader reader
+
+        JsonChunksReader(Source source) {
+            reader = JsonReader.of(Okio.buffer(source))
+
+            // for transfer-encoding: chunked
+            reader.setLenient(true)
+        }
+
+        Object readNext() {
+//            return JsonOutput.toJson(reader.readJsonValue())
+            return reader.readJsonValue()
+        }
+
+        boolean hasNext() {
+            return !Thread.currentThread().isInterrupted() && reader.hasNext()
+        }
     }
 }

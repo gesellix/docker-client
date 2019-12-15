@@ -54,8 +54,12 @@ class ManageImageClient implements ManageImage {
             @Override
             onEvent(Object event) {
                 log.info "$event"
-                def parsedEvent = new JsonSlurper().parseText(event as String)
-                chunks << parsedEvent
+                if (event instanceof String) {
+                    chunks << new JsonSlurper().parseText(event as String)
+                }
+                else {
+                    chunks << event
+                }
             }
 
             @Override

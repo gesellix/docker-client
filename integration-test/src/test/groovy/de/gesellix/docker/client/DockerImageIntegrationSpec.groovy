@@ -154,8 +154,12 @@ class DockerImageIntegrationSpec extends Specification {
 
                                     @Override
                                     onEvent(Object event) {
-                                        def parsedEvent = new JsonSlurper().parseText(event as String)
-                                        events << parsedEvent
+                                        if (event instanceof String) {
+                                            events << new JsonSlurper().parseText(event as String)
+                                        }
+                                        else {
+                                            events << event
+                                        }
                                     }
 
                                     @Override
@@ -239,8 +243,12 @@ class DockerImageIntegrationSpec extends Specification {
 
                                     @Override
                                     onEvent(Object event) {
-                                        def parsedEvent = new JsonSlurper().parseText(event as String)
-                                        events << parsedEvent
+                                        if (event instanceof String) {
+                                            events << new JsonSlurper().parseText(event as String)
+                                        }
+                                        else {
+                                            events << event
+                                        }
                                     }
 
                                     @Override
