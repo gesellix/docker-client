@@ -518,7 +518,7 @@ class DockerImageIntegrationSpec extends Specification {
         imageId == CONSTANTS.imageDigest
 
         cleanup:
-        dockerClient.rmi("${registry.url()}/${CONSTANTS.imageRepo}")
+        dockerClient.rmi("${registry.url()}/${CONSTANTS.imageRepo}:${CONSTANTS.imageTag}")
     }
 
     def "import image from url"() {
