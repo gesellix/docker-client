@@ -48,6 +48,8 @@ dependencies {
     compile("org.codehaus.groovy:groovy:2.5.8")
     compile("org.codehaus.groovy:groovy-json:2.5.8")
 
+    compile("com.squareup.moshi:moshi:1.9.2")
+
     compile("org.slf4j:slf4j-api:1.7.29")
     testCompile("ch.qos.logback:logback-classic:1.2.3")
 
