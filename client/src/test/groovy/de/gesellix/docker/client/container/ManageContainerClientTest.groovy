@@ -6,6 +6,7 @@ import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.image.ManageImage
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.docker.rawstream.RawInputStream
 import de.gesellix.testutil.MemoryAppender
 import groovy.json.JsonBuilder
 import spock.lang.Ignore
@@ -197,10 +198,9 @@ class ManageContainerClientTest extends Specification {
         service.startExec("an-exec", execStartConfig)
 
         then:
-        1 * httpClient.get([path: "/exec/an-exec/json"]) >> [
-                status : [success: true],
-                content: [ProcessConfig: [tty: true]]
-        ]
+        1 * httpClient.get([path: "/exec/an-exec/json"]) >> new EngineResponse(
+                status: [success: true],
+                content: [ProcessConfig: [tty: true]])
         and:
         1 * responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
             assert arguments[1]?.message == "docker inspect exec failed"
@@ -211,8 +211,9 @@ class ManageContainerClientTest extends Specification {
                              body              : execStartConfig,
                              requestContentType: "application/json",
                              attach            : null,
-                             multiplexStreams  : false]) >> [status: [:],
-                                                             stream: [:]]
+                             multiplexStreams  : false]) >> new EngineResponse(
+                status: [:],
+                stream: new RawInputStream())
         and:
         1 * responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
             assert arguments[1]?.message == "docker exec start failed"
@@ -443,8 +444,9 @@ class ManageContainerClientTest extends Specification {
 
     def "attach"() {
         given:
-        httpClient.get([path: "/containers/a-container/json"]) >> [status : [success: true],
-                                                                   content: [Config: [Tty: false]]]
+        httpClient.get([path: "/containers/a-container/json"]) >> new EngineResponse(
+                status: [success: true],
+                content: [Config: [Tty: false]])
 
         when:
         service.attach("a-container", [stream: true])
@@ -453,7 +455,8 @@ class ManageContainerClientTest extends Specification {
         1 * httpClient.post([path            : "/containers/a-container/attach",
                              query           : [stream: true],
                              attach          : null,
-                             multiplexStreams: true]) >> [stream: [:]]
+                             multiplexStreams: true]) >> new EngineResponse(
+                stream: new RawInputStream())
     }
 
     // TODO
