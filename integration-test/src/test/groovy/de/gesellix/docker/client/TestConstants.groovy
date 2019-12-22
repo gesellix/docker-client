@@ -6,6 +6,7 @@ class TestConstants {
     final String imageTag
     final String imageName
     final String imageDigest
+    final int imageCreated
 
     final Map<String, Closure<Boolean>> versionDetails = [:]
 
@@ -16,10 +17,12 @@ class TestConstants {
             imageRepo = "gesellix/testimage"
             imageTag = "os-windows"
             imageDigest = "sha256:5880c6a3a386d67cd02b0ee4684709f9c966225270e97e0396157894ae74dbe6"
+            imageCreated = 1575214105
         } else {
             imageRepo = "gesellix/testimage"
             imageTag = "os-linux"
             imageDigest = "sha256:0ce18ad10d281bef97fe2333a9bdcc2dbf84b5302f66d796fed73aac675320db"
+            imageCreated = 1483093519
         }
         imageName = "$imageRepo:$imageTag"
 

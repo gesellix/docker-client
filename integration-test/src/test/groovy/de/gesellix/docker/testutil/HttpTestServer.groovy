@@ -23,18 +23,19 @@ class HttpTestServer {
         this.sslContext = sslContext
     }
 
-    def start() {
+    InetSocketAddress start() {
         return start('/test/', new ReverseHandler())
     }
 
-    def start(String context, HttpHandler handler) {
+    InetSocketAddress start(String context, HttpHandler handler) {
         InetSocketAddress address = new InetSocketAddress(0)
 
         if (sslContext) {
             // using the VM param `-Djavax.net.debug=all` helps debugging SSL issues
             httpServer = HttpsServer.create(address, address.port)
             httpServer.setHttpsConfigurator(new DefaultHttpsConfigurator(sslContext))
-        } else {
+        }
+        else {
             httpServer = HttpServer.create(address, address.port)
         }
 
