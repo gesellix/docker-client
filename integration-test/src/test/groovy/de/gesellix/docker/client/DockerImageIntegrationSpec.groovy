@@ -5,6 +5,7 @@ import de.gesellix.docker.client.image.BuildConfig
 import de.gesellix.docker.client.image.BuildResult
 import de.gesellix.docker.registry.DockerRegistry
 import de.gesellix.docker.testutil.HttpTestServer
+import de.gesellix.docker.testutil.NetworkInterfaces
 import de.gesellix.testutil.ResourceReader
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
@@ -535,12 +536,12 @@ class DockerImageIntegrationSpec extends Specification {
         def server = new HttpTestServer()
         def serverAddress = server.start('/images/', new HttpTestServer.FileServer(importUrl))
         def port = serverAddress.port
-        def addresses = listPublicIps()
+        def addresses = new NetworkInterfaces().getInet4Addresses()
 
         when:
         // not all interfaces addresses will be valid targets,
         // especially on a machine running a docker host
-        def imageId = tryUntilSuccessful(addresses) { address ->
+        String imageId = tryUntilSuccessful(addresses) { address ->
             String url = "http://${address}:$port/images/${importUrl.path}"
             dockerClient.importUrl(url, "import-from-url", "foo")
         }
@@ -610,7 +611,7 @@ class DockerImageIntegrationSpec extends Specification {
         def imageById = images.find {
             it.Id == CONSTANTS.imageDigest
         }
-        imageById.Created == 1483093519
+        imageById.Created == CONSTANTS.imageCreated
         imageById.ParentId == ""
         imageById.RepoTags.contains CONSTANTS.imageName
     }
@@ -717,14 +718,14 @@ class DockerImageIntegrationSpec extends Specification {
         def searchResult = dockerClient.search("testimage")
 
         then:
-        searchResult.content.contains([
-                description : "A Testimage used for Docker Client integration tests.\n",
-                is_automated: true,
-                is_official : false,
-//                is_trusted  : true,
-                name        : CONSTANTS.imageRepo,
-                star_count  : 0
-        ])
+        ((List) searchResult.content).find {
+            it.description == "A Testimage used for Docker Client integration tests.\n" &&
+            it.is_automated == true &&
+            it.is_official == false &&
+//            it.is_trusted == true &&
+            it.name == CONSTANTS.imageRepo &&
+            it.star_count == 0
+        }
     }
 
     InputStream newBuildContext(File baseDirectory) {
@@ -732,22 +733,6 @@ class DockerImageIntegrationSpec extends Specification {
         buildContext.deleteOnExit()
         BuildContextBuilder.archiveTarFilesRecursively(baseDirectory, buildContext)
         return new FileInputStream(buildContext)
-    }
-
-    def matchIpv4 = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\$"
-
-    def listPublicIps() {
-        def addresses = []
-        NetworkInterface.getNetworkInterfaces()
-                .findAll { !it.loopback }
-                .each { NetworkInterface iface ->
-                    iface.inetAddresses.findAll {
-                        it.hostAddress.matches(matchIpv4)
-                    }.each {
-                        addresses.add(it.hostAddress)
-                    }
-                }
-        addresses
     }
 
     def tryUntilSuccessful(List<String> listOfClosureArgsToTry, Closure oneArgClosure) {

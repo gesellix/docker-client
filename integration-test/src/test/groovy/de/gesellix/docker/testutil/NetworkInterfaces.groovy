@@ -8,11 +8,15 @@ class NetworkInterfaces {
     }
 
     String getFirstInet4Address() {
-        def interfaces = Collections.list(NetworkInterface.getNetworkInterfaces())
-        return interfaces.collect { getInet4Addresses(it) }.flatten().grep().first()
+        return getInet4Addresses().first()
     }
 
-    static def getInet4Addresses(NetworkInterface netint) throws SocketException {
+    List<String> getInet4Addresses() {
+        def interfaces = Collections.list(NetworkInterface.getNetworkInterfaces())
+        return interfaces.collect { getInet4Addresses(it) }.flatten().grep()
+    }
+
+    static List<String> getInet4Addresses(NetworkInterface netint) throws SocketException {
         def addresses = Collections.list(netint.getInetAddresses())
         return addresses.findAll {
             it instanceof Inet4Address && !it.isLoopbackAddress()
