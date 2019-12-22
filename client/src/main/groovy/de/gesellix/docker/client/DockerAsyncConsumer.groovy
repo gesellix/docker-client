@@ -1,9 +1,10 @@
 package de.gesellix.docker.client
 
-import com.squareup.moshi.JsonReader
 import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.docker.response.JsonChunksReader
+import de.gesellix.docker.response.LineReader
+import de.gesellix.docker.response.Reader
 import groovy.util.logging.Slf4j
-import okio.BufferedSource
 import okio.Okio
 import okio.Source
 
@@ -49,51 +50,6 @@ class DockerAsyncConsumer implements Runnable {
         }
         else {
             return new LineReader(source)
-        }
-    }
-
-    static interface Reader {
-
-        Object readNext()
-
-        boolean hasNext()
-    }
-
-    static class LineReader implements Reader {
-
-        private BufferedSource buffer
-
-        LineReader(Source source) {
-            this.buffer = Okio.buffer(source)
-        }
-
-        Object readNext() {
-            return buffer.readUtf8Line()
-        }
-
-        boolean hasNext() {
-            !Thread.currentThread().isInterrupted() && !buffer.exhausted()
-        }
-    }
-
-    static class JsonChunksReader implements Reader {
-
-        JsonReader reader
-
-        JsonChunksReader(Source source) {
-            reader = JsonReader.of(Okio.buffer(source))
-
-            // for transfer-encoding: chunked
-            reader.setLenient(true)
-        }
-
-        Object readNext() {
-//            return JsonOutput.toJson(reader.readJsonValue())
-            return reader.readJsonValue()
-        }
-
-        boolean hasNext() {
-            return !Thread.currentThread().isInterrupted() && reader.hasNext()
         }
     }
 }

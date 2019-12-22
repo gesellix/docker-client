@@ -377,6 +377,7 @@ class ManageContainerClient implements ManageContainer {
     EngineResponse pause(containerId) {
         log.info "docker pause"
         def response = client.post([path: "/containers/${containerId}/pause".toString()])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker pause failed"))
         return response
     }
 
@@ -494,6 +495,7 @@ class ManageContainerClient implements ManageContainer {
     EngineResponse unpause(containerId) {
         log.info "docker unpause"
         def response = client.post([path: "/containers/${containerId}/unpause".toString()])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker unpause failed"))
         return response
     }
 
