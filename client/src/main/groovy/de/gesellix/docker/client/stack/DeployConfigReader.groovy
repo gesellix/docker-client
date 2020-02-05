@@ -42,6 +42,7 @@ import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.Resta
 import static de.gesellix.docker.compose.types.ServiceVolumeType.TypeVolume
 import static java.lang.Double.parseDouble
 import static java.lang.Integer.parseInt
+import static java.lang.Long.parseLong
 
 @Slf4j
 class DeployConfigReader {
@@ -490,7 +491,7 @@ class DeployConfigReader {
                     resourceRequirements['limits'].nanoCPUs = parseDouble(resources.limits.nanoCpus) * nanoMultiplier
                 }
             }
-            resourceRequirements['limits'].memoryBytes = parseInt(resources.limits.memory)
+            resourceRequirements['limits'].memoryBytes = parseLong(resources.limits.memory)
         }
         if (resources?.reservations) {
             resourceRequirements['reservations'] = [:]
@@ -503,7 +504,7 @@ class DeployConfigReader {
                     resourceRequirements['reservations'].nanoCPUs = parseDouble(resources.reservations.nanoCpus) * nanoMultiplier
                 }
             }
-            resourceRequirements['reservations'].memoryBytes = parseInt(resources.reservations.memory)
+            resourceRequirements['reservations'].memoryBytes = parseLong(resources.reservations.memory)
         }
         return resourceRequirements
     }
