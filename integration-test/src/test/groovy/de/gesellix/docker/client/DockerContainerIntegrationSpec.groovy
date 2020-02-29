@@ -12,10 +12,10 @@ import okhttp3.WebSocket
 import okio.ByteString
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
-import org.joda.time.DateTime
 import spock.lang.Requires
 import spock.lang.Specification
 
+import java.time.Instant
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
@@ -737,11 +737,11 @@ class DockerContainerIntegrationSpec extends Specification {
         // docker-machine ssh default 'sudo ntpclient -s -h pool.ntp.org'
 
         given:
-        def dockerSystemTime = DateTime.parse(dockerClient.info().content.SystemTime as String)
-        long dockerEpoch = dockerSystemTime.millis / 1000
+        def dockerSystemTime = Instant.parse(dockerClient.info().content.SystemTime as String)
+        long dockerEpoch = (long) (dockerSystemTime.toEpochMilli() / 1000)
 
-        def localSystemTime = DateTime.now()
-        long localEpoch = localSystemTime.millis / 1000
+        def localSystemTime = Instant.now()
+        long localEpoch = (long) (localSystemTime.toEpochMilli() / 1000)
 
         long timeOffset = localEpoch - dockerEpoch
 
@@ -775,7 +775,7 @@ class DockerContainerIntegrationSpec extends Specification {
         log.debug "container2: ${container2}"
 
         Thread.sleep(1000)
-        long epochBeforeRm = (DateTime.now().millis / 1000) + timeOffset - 1000
+        long epochBeforeRm = (long) ((Instant.now().toEpochMilli() / 1000) + timeOffset - 1000)
         dockerClient.rm(container1)
 
         when:

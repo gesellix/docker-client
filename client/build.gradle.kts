@@ -34,30 +34,30 @@ repositories {
 }
 
 dependencies {
-    api("de.gesellix:docker-engine:2019-12-22T20-12-17")
-    api("de.gesellix:docker-compose:2019-12-18T15-25-08")
+    api("de.gesellix:docker-engine:2020-02-29T18-33-12")
+    api("de.gesellix:docker-compose:2020-02-29T17-58-25")
 
-    implementation("org.codehaus.groovy:groovy:2.5.8")
-    implementation("org.codehaus.groovy:groovy-json:2.5.8")
+    implementation("org.codehaus.groovy:groovy:2.5.9")
+    implementation("org.codehaus.groovy:groovy-json:2.5.9")
 
     implementation("com.squareup.moshi:moshi:1.9.2")
     implementation("com.google.re2j:re2j:1.3")
 
-    implementation("org.slf4j:slf4j-api:1.7.29")
+    implementation("org.slf4j:slf4j-api:1.7.30")
     testImplementation("ch.qos.logback:logback-classic:1.2.3")
 
-    api("com.squareup.okhttp3:okhttp:4.2.2")
-    implementation("com.squareup.okio:okio:2.4.1")
-    testImplementation("com.squareup.okhttp3:mockwebserver:4.2.2")
+    implementation("com.squareup.okio:okio:2.4.3")
+    api("com.squareup.okhttp3:okhttp:4.4.0")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.4.0")
 
-    implementation("org.apache.commons:commons-compress:1.19")
+    implementation("org.apache.commons:commons-compress:1.20")
 
     implementation("org.bouncycastle:bcpkix-jdk15on:1.64")
 
-    testImplementation("de.gesellix:testutil:2019-12-21T20-15-14")
+    testImplementation("de.gesellix:testutil:2020-02-29T17-37-38")
 
     testImplementation("org.spockframework:spock-core:1.3-groovy-2.5")
-    testImplementation("cglib:cglib-nodep:3.3.0")
+    testRuntimeOnly("cglib:cglib-nodep:3.3.0")
 
     testImplementation("org.apache.commons:commons-lang3:3.9")
 }
