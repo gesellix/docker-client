@@ -10,7 +10,7 @@ jobs:
         java: [8, 11, 13]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
@@ -37,5 +37,5 @@ jobs:
         run: ./gradlew checkDockerClient --info --stacktrace
         timeout-minutes: 10
       - name: Check
-        run: ./gradlew check --info --stacktrace
+        run: ./gradlew clean build --info --stacktrace
         timeout-minutes: 10

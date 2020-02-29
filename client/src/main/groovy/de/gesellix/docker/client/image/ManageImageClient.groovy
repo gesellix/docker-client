@@ -342,16 +342,16 @@ class ManageImageClient implements ManageImage {
         def images = images((isDigest) ? [digests: '1'] : [:]).content
 //        println new JsonBuilder(images).toString()
         def imageIdsByRepoDigest = images.collectEntries { image ->
-            image.RepoDigests?.collectEntries { repoDigest ->
+            image.RepoDigests?.collectEntries { String repoDigest ->
                 def idByDigest = [:]
-                idByDigest[repoDigest] = image.Id
+                idByDigest[repoDigest] = (String) image.Id
                 idByDigest
             } ?: [:]
         }
         def imageIdsByName = images.collectEntries { image ->
-            image.RepoTags?.collectEntries { repoTag ->
+            image.RepoTags?.collectEntries { String repoTag ->
                 def idByName = [:]
-                idByName[repoTag] = image.Id
+                idByName[repoTag] = (String) image.Id
                 idByName
             } ?: [:]
         }
