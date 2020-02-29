@@ -7,11 +7,6 @@ buildscript {
         jcenter()
         mavenCentral()
     }
-
-//    dependencies {
-//        classpath "net.saliman:gradle-cobertura-plugin:2.4.0"
-//        classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.1"
-//    }
 }
 
 project.extra.set("bintrayDryRun", false)
@@ -26,10 +21,6 @@ plugins {
     id("com.jfrog.bintray")
     id("io.freefair.github.package-registry-maven-publish")
 }
-
-//apply plugin: "jacoco"
-//apply plugin: "net.saliman.cobertura"
-//apply plugin: "com.github.kt3k.coveralls"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -84,16 +75,6 @@ tasks {
     }
 }
 
-//cobertura {
-//    coverageSourceDirs = sourceSets.main.groovy.srcDirs
-//    coverageFormats = ["html", "xml"]
-//}
-
-//jacocoTestReport.reports {
-//    xml.enabled = true
-//    html.enabled = true
-//}
-
 val sourcesJar by tasks.registering(Jar::class) {
     dependsOn("classes")
     archiveClassifier.set("sources")
@@ -125,7 +106,15 @@ publishing {
             artifactId = "docker-client"
             version = rootProject.extra["artifactVersion"] as String
             from(components["java"])
-//            artifact(sourcesJar.get())
+            artifact(sourcesJar.get())
+            versionMapping {
+                usage("java-api") {
+                    fromResolutionOf("runtimeClasspath")
+                }
+                usage("java-runtime") {
+                    fromResolutionResult()
+                }
+            }
         }
     }
 }

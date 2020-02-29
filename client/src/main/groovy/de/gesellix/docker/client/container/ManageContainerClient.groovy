@@ -194,7 +194,9 @@ class ManageContainerClient implements ManageContainer {
                                         requestContentType: "application/json"])
                 responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker create failed after retry"))
             }
-            responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker create failed"))
+            else {
+                responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker create failed"))
+            }
         }
         return response
     }
