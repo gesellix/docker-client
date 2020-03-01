@@ -16,6 +16,7 @@ import spock.lang.Requires
 import spock.lang.Specification
 
 import java.time.Instant
+import java.time.ZonedDateTime
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
@@ -737,7 +738,7 @@ class DockerContainerIntegrationSpec extends Specification {
         // docker-machine ssh default 'sudo ntpclient -s -h pool.ntp.org'
 
         given:
-        def dockerSystemTime = Instant.parse(dockerClient.info().content.SystemTime as String)
+        def dockerSystemTime = ZonedDateTime.parse(dockerClient.info().content.SystemTime as String).toInstant()
         long dockerEpoch = (long) (dockerSystemTime.toEpochMilli() / 1000)
 
         def localSystemTime = Instant.now()

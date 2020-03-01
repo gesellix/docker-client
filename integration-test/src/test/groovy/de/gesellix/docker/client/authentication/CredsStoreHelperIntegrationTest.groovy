@@ -58,7 +58,7 @@ class CredsStoreHelperIntegrationTest extends Specification {
     @Requires({ System.properties['user.name'] == 'gesellix' })
     def "handles errors more or less gracefully"() {
         when:
-        def result = helper.getAuthentication("osxkeychain", "foo")
+        def result = helper.getAuthentication(System.properties['os.name'] == "Linux" ? "secretservice" : "osxkeychain", "foo")
         then:
         result.auth == null
         and:
