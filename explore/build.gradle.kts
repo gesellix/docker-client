@@ -18,6 +18,21 @@ repositories {
 }
 
 dependencies {
+    constraints {
+        implementation("org.slf4j:slf4j-api") {
+            version {
+                strictly("1.7.30")
+            }
+        }
+        listOf("org.codehaus.groovy:groovy",
+                "org.codehaus.groovy:groovy-json").onEach {
+            implementation(it) {
+                version {
+                    strictly("2.5.9")
+                }
+            }
+        }
+    }
     implementation(project(":client"))
     implementation("org.codehaus.groovy:groovy:2.5.9")
     testImplementation("org.apache.commons:commons-compress:1.20")

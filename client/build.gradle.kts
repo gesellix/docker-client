@@ -34,6 +34,35 @@ repositories {
 }
 
 dependencies {
+    constraints {
+        implementation("com.squareup.okio:okio") {
+            version {
+                strictly("2.5.0")
+            }
+        }
+        implementation("org.slf4j:slf4j-api") {
+            version {
+                strictly("1.7.30")
+            }
+        }
+        listOf("org.codehaus.groovy:groovy",
+                "org.codehaus.groovy:groovy-json").onEach {
+            implementation(it) {
+                version {
+                    strictly("2.5.9")
+                }
+            }
+        }
+        listOf("org.jetbrains.kotlin:kotlin-reflect",
+                "org.jetbrains.kotlin:kotlin-stdlib",
+                "org.jetbrains.kotlin:kotlin-stdlib-common").onEach {
+            implementation(it) {
+                version {
+                    strictly("1.3.71")
+                }
+            }
+        }
+    }
     api("de.gesellix:docker-engine:2020-03-29T12-41-39")
     api("de.gesellix:docker-compose:2020-03-29T12-08-37")
 

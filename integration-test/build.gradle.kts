@@ -18,6 +18,21 @@ repositories {
 }
 
 dependencies {
+    constraints {
+        implementation("org.slf4j:slf4j-api") {
+            version {
+                strictly("1.7.30")
+            }
+        }
+        listOf("org.codehaus.groovy:groovy",
+                "org.codehaus.groovy:groovy-json").onEach {
+            implementation(it) {
+                version {
+                    strictly("2.5.9")
+                }
+            }
+        }
+    }
     implementation(project(":client"))
     testImplementation("com.kohlschutter.junixsocket:junixsocket-core:2.3.2")
     testImplementation("com.kohlschutter.junixsocket:junixsocket-common:2.3.2")
