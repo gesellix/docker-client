@@ -3,8 +3,10 @@ package de.gesellix.docker.client.stack
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.EnvFileParser
 import de.gesellix.docker.client.LocalDocker
+import de.gesellix.docker.client.stack.types.PlacementPreferences
 import de.gesellix.docker.client.stack.types.ResolutionMode
 import de.gesellix.docker.client.stack.types.RestartPolicyCondition
+import de.gesellix.docker.client.stack.types.Spread
 import de.gesellix.docker.client.stack.types.StackConfig
 import de.gesellix.docker.client.stack.types.StackNetwork
 import de.gesellix.docker.client.stack.types.StackSecret
@@ -146,9 +148,10 @@ class DeployConfigReader {
                     restartPolicy: restartPolicy(service.restart, service.deploy?.restartPolicy),
                     placement    : [
                             constraints: service.deploy?.placement?.constraints,
+                            preferences: placementPreferences(service.deploy?.placement?.preferences),
+                            maxReplicas: service.deploy?.maxReplicasPerNode
                     ],
             ]
-
             serviceSpec[name] = serviceConfig
         }
         log.info("services $serviceSpec")
@@ -760,5 +763,15 @@ class DeployConfigReader {
         }
         log.info("config ${configSpec.keySet()}")
         return configSpec
+    }
+
+    List<PlacementPreferences> placementPreferences(List<de.gesellix.docker.compose.types.PlacementPreferences> preferences) {
+        log.info("placementPreferences: ${preferences}")
+        if (preferences == null) {
+            return null
+        }
+        def spread = new Spread(spreadDescriptor: preferences[0].spread)
+        log.info( "spread: ${spread}" )
+        return [new PlacementPreferences( spread: spread )]
     }
 }
