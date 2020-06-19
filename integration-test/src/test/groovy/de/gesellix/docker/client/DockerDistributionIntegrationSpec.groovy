@@ -53,6 +53,7 @@ class DockerDistributionIntegrationSpec extends Specification {
                 [architecture: "arm", os: "linux", variant: "v7"],
                 [architecture: "arm64", os: "linux", variant: "v8"],
                 [architecture: "386", os: "linux"],
+                [architecture: "mips64le", os: "linux"],
                 [architecture: "ppc64le", os: "linux"],
                 [architecture: "s390x", os: "linux"]
         ]
