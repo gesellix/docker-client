@@ -771,7 +771,7 @@ class DeployConfigReader {
             return null
         }
         def spread = new Spread(spreadDescriptor: preferences[0].spread)
-        log.info( "spread: ${spread}" )
-        return [new PlacementPreferences( spread: spread )]
+        log.info("spread: ${spread}")
+        return [new PlacementPreferences(spread: spread)]
     }
 }
