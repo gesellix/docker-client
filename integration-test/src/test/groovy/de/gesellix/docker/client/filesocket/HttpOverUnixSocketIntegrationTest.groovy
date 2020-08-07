@@ -3,6 +3,7 @@ package de.gesellix.docker.client.filesocket
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.OkDockerClient
 import de.gesellix.docker.testutil.UnixSocketTestServer
+import okio.Okio
 import org.apache.commons.lang3.SystemUtils
 import spock.lang.Requires
 import spock.lang.Specification
@@ -54,9 +55,10 @@ class HttpOverUnixSocketIntegrationTest extends Specification {
 
         when:
         def ping = httpClient.get([path: "/_ping"])
+        def content = ping.content ?: Okio.buffer(Okio.source(ping.stream)).readUtf8()
 
         then:
-        ping.content == "OK"
+        content == "OK"
 
         cleanup:
         testserver?.stop()

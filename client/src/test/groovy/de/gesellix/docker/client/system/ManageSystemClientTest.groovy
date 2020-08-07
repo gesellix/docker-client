@@ -31,7 +31,7 @@ class ManageSystemClientTest extends Specification {
         service.ping()
 
         then:
-        1 * httpClient.get([path: "/_ping", timeout: 2000])
+        1 * httpClient.get([path: "/_ping", timeout: 2000]) >> new EngineResponse()
     }
 
     def "version"() {
