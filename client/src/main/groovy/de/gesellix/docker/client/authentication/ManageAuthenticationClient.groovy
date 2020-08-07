@@ -1,5 +1,7 @@
 package de.gesellix.docker.client.authentication
 
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.distribution.ReferenceParser
 import de.gesellix.docker.client.registry.RegistryElection
@@ -8,7 +10,6 @@ import de.gesellix.docker.engine.DockerEnv
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.util.QueryUtil
-import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 
@@ -21,6 +22,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
     private RegistryElection registryElection
     private QueryUtil queryUtil
     private CredsStoreHelper credsStoreHelper
+    private JsonAdapter<AuthConfig> authConfigJsonAdapter
 
     ManageAuthenticationClient(DockerEnv env,
                                EngineClient client,
@@ -32,15 +34,17 @@ class ManageAuthenticationClient implements ManageAuthentication {
         this.registryElection = new RegistryElection(manageSystem, this)
         this.queryUtil = new QueryUtil()
         this.credsStoreHelper = new CredsStoreHelper()
+        def moshi = new Moshi.Builder().build()
+        authConfigJsonAdapter = moshi.adapter(AuthConfig)
     }
 
     @Override
-    Map readDefaultAuthConfig() {
+    AuthConfig readDefaultAuthConfig() {
         return readAuthConfig(null, env.getDockerConfigFile())
     }
 
     @Override
-    Map readAuthConfig(String hostname, File dockerCfg) {
+    AuthConfig readAuthConfig(String hostname, File dockerCfg) {
         log.debug "read authConfig"
 
         if (!dockerCfg) {
@@ -48,7 +52,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
         }
         if (!dockerCfg?.exists()) {
             log.info "docker config '${dockerCfg}' doesn't exist"
-            return [:]
+            return new AuthConfig()
         }
         log.debug "reading auth info from ${dockerCfg}"
         def parsedDockerCfg = new JsonSlurper().parse(dockerCfg)
@@ -65,17 +69,17 @@ class ManageAuthenticationClient implements ManageAuthentication {
             authConfig = parsedDockerCfg
         }
 
-        def authDetails = ["username"     : "UNKNOWN-USERNAME",
-                           "password"     : "UNKNOWN-PASSWORD",
-                           "email"        : "UNKNOWN-EMAIL",
-                           "serveraddress": hostname]
+        def authDetails = new AuthConfig(username: "UNKNOWN-USERNAME",
+                                         password: "UNKNOWN-PASSWORD",
+                                         email: "UNKNOWN-EMAIL",
+                                         serveraddress: hostname)
 
         if (!authConfig[hostname]) {
             if (parsedDockerCfg['credsStore']) {
                 def creds = credsStoreHelper.getAuthentication(parsedDockerCfg['credsStore'] as String, hostname)
                 if (creds.error) {
                     log.info("Error reading credentials from 'credsStore=${parsedDockerCfg['credsStore']}' for authentication at ${hostname}: ${creds.error}")
-                    return [:]
+                    return new AuthConfig()
                 }
                 else if (creds.auth) {
                     log.info("Got credentials from 'credsStore=${parsedDockerCfg['credsStore']}'")
@@ -85,11 +89,11 @@ class ManageAuthenticationClient implements ManageAuthentication {
                 }
                 else {
                     log.warn("Using 'credsStore=${parsedDockerCfg['credsStore']}' for authentication at ${hostname} is currently not supported")
-                    return [:]
+                    return new AuthConfig()
                 }
             }
             else {
-                return [:]
+                return new AuthConfig()
             }
         }
         else {
@@ -104,13 +108,14 @@ class ManageAuthenticationClient implements ManageAuthentication {
     }
 
     @Override
-    String encodeAuthConfig(authConfig) {
+    String encodeAuthConfig(AuthConfig authConfig) {
         log.debug "encode authConfig for ${authConfig.username}@${authConfig.serveraddress}"
-        return new JsonBuilder(authConfig).toString().bytes.encodeBase64().toString()
+        String json = authConfigJsonAdapter.toJson(authConfig)
+        return json.bytes.encodeBase64().toString()
     }
 
     @Override
-    EngineResponse auth(authDetails) {
+    EngineResponse auth(Map authDetails) {
         log.info "docker login"
         def response = client.post([path              : "/auth",
                                     body              : authDetails,

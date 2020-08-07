@@ -1,5 +1,6 @@
 package de.gesellix.docker.client.authentication
 
+import com.squareup.moshi.Moshi
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.system.ManageSystem
@@ -14,6 +15,8 @@ class ManageAuthenticationClientTest extends Specification {
     DockerEnv env
     EngineClient client
     ManageAuthenticationClient service
+
+    Moshi moshi = new Moshi.Builder().build()
 
     def setup() {
         env = Mock(DockerEnv)
@@ -36,7 +39,7 @@ class ManageAuthenticationClientTest extends Specification {
         def authResult = service.encodeAuthConfig(authPlain)
 
         then:
-        authResult == 'eyJ1c2VybmFtZSI6Imdlc2VsbGl4IiwicGFzc3dvcmQiOiIteWV0LWFub3RoZXItcGFzc3dvcmQtIiwiZW1haWwiOiJ0b2JpYXNAZ2VzZWxsaXguZGUiLCJzZXJ2ZXJhZGRyZXNzIjoiaHR0cHM6Ly9pbmRleC5kb2NrZXIuaW8vdjEvIn0='
+        moshi.adapter(AuthConfig).fromJson(new String(authResult.decodeBase64())) == new AuthConfig(username: "gesellix", password: "-yet-another-password-", email: "tobias@gesellix.de", serveraddress: "https://index.docker.io/v1/")
     }
 
     def "read and encode authConfig (new format)"() {
@@ -50,7 +53,7 @@ class ManageAuthenticationClientTest extends Specification {
         def authResult = service.encodeAuthConfig(authPlain)
 
         then:
-        authResult == 'eyJ1c2VybmFtZSI6Imdlc2VsbGl4IiwicGFzc3dvcmQiOiIteWV0LWFub3RoZXItcGFzc3dvcmQtIiwiZW1haWwiOiJ0b2JpYXNAZ2VzZWxsaXguZGUiLCJzZXJ2ZXJhZGRyZXNzIjoiaHR0cHM6Ly9pbmRleC5kb2NrZXIuaW8vdjEvIn0='
+        moshi.adapter(AuthConfig).fromJson(new String(authResult.decodeBase64())) == new AuthConfig(username: "gesellix", password: "-yet-another-password-", email: "tobias@gesellix.de", serveraddress: "https://index.docker.io/v1/")
     }
 
     def "login"() {
@@ -108,7 +111,7 @@ class ManageAuthenticationClientTest extends Specification {
         def authDetails = service.readAuthConfig(null, nonExistingFile)
 
         then:
-        authDetails == [:]
+        authDetails == new AuthConfig()
     }
 
     def "read auth config for unknown registry hostname"() {
@@ -119,7 +122,7 @@ class ManageAuthenticationClientTest extends Specification {
         def authDetails = service.readAuthConfig("unkown.example.com", dockerCfg)
 
         then:
-        authDetails == [:]
+        authDetails == new AuthConfig()
     }
 
     @Requires({ System.properties['user.name'] == 'gesellix' })
@@ -135,10 +138,10 @@ class ManageAuthenticationClientTest extends Specification {
 
         then:
         1 * service.readAuthConfig(null, expectedConfigFile)
-        result == ["username"     : "gesellix",
-                   "password"     : "-yet-another-password-",
-                   "email"        : null,
-                   "serveraddress": "https://index.docker.io/v1/"]
+        result == new AuthConfig(username: "gesellix",
+                                 password: "-yet-another-password-",
+                                 email: null,
+                                 serveraddress: "https://index.docker.io/v1/")
 
         cleanup:
         if (oldDockerConfig) {
@@ -158,10 +161,10 @@ class ManageAuthenticationClientTest extends Specification {
 
         then:
         1 * service.readAuthConfig(null, expectedConfigFile)
-        result == ["username"     : "gesellix",
-                   "password"     : "-yet-another-password-",
-                   "email"        : "tobias@gesellix.de",
-                   "serveraddress": "https://index.docker.io/v1/"]
+        result == new AuthConfig(username: "gesellix",
+                                 password: "-yet-another-password-",
+                                 email: "tobias@gesellix.de",
+                                 serveraddress: "https://index.docker.io/v1/")
 
         cleanup:
         if (oldDockerConfig) {
@@ -179,10 +182,10 @@ class ManageAuthenticationClientTest extends Specification {
         def result = service.readAuthConfig(null, expectedConfigFile)
 
         then:
-        result == ["username"     : "gesellix",
-                   "password"     : "-yet-another-password-",
-                   "email"        : "tobias@gesellix.de",
-                   "serveraddress": "https://index.docker.io/v1/"]
+        result == new AuthConfig(username: "gesellix",
+                                 password: "-yet-another-password-",
+                                 email: "tobias@gesellix.de",
+                                 serveraddress: "https://index.docker.io/v1/")
 
         cleanup:
         if (oldDockerConfig) {
