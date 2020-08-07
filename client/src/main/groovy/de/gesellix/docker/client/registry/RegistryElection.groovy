@@ -1,5 +1,6 @@
 package de.gesellix.docker.client.registry
 
+import de.gesellix.docker.client.authentication.AuthConfig
 import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.engine.DockerEnv
@@ -19,7 +20,7 @@ class RegistryElection {
     // ResolveAuthConfig is like registry.ResolveAuthConfig, but if using the
     // default index, it uses the default index name for the daemon's platform,
     // not the client's platform.
-    Map resolveAuthConfig(String indexName, boolean officialIndex) {//types.AuthConfig {
+    AuthConfig resolveAuthConfig(String indexName, boolean officialIndex) {
         String configKey = indexName
         if (officialIndex) {
             configKey = electAuthServer()

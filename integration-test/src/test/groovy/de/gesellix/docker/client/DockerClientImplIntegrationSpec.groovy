@@ -111,10 +111,12 @@ class DockerClientImplIntegrationSpec extends Specification {
         given:
 //        def authDetails = dockerClient.readAuthConfig(null, null)
         def authDetails = dockerClient.readDefaultAuthConfig()
-        def authPlain = authDetails
+        def authPlain = [username     : authDetails.username,
+                         password     : authDetails.password,
+                         serveraddress: authDetails.serveraddress]
 
         when:
-        def authResult
+        def authResult = null
         if (authDetails.username == null) {
             log.warn("no username configured to auth")
         }
@@ -123,7 +125,9 @@ class DockerClientImplIntegrationSpec extends Specification {
         }
 
         then:
-        authDetails.username == null || authResult.status.code == 200
+        authDetails.username == null || authResult?.status?.code == 200
+//        authResult.content.IdentityToken == ""
+//        authResult.content.Status == "Login Succeeded"
     }
 
     def "allows configuration via setter"() {

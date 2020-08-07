@@ -1,5 +1,6 @@
 package de.gesellix.docker.client.registry
 
+import de.gesellix.docker.client.authentication.AuthConfig
 import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.engine.EngineResponse
@@ -17,7 +18,7 @@ class RegistryElectionTest extends Specification {
 
     def "leaves non-official index name unchanged"() {
         given:
-        def expectedConfig = [key: "value"]
+        def expectedConfig = new AuthConfig(username: "foo-bar")
 
         when:
         def actualConfig = election.resolveAuthConfig("private.registry", false)
@@ -29,7 +30,7 @@ class RegistryElectionTest extends Specification {
 
     def "elects v1 server url if system info fails"() {
         given:
-        def expectedConfig = [key: "value"]
+        def expectedConfig = new AuthConfig(username: "bar-baz")
 
         when:
         def actualConfig = election.resolveAuthConfig("official.registry", true)
@@ -42,7 +43,7 @@ class RegistryElectionTest extends Specification {
 
     def "elects v1 server url if system info doesn't provide an `IndexServerAddress`"() {
         given:
-        def expectedConfig = [key: "value"]
+        def expectedConfig = new AuthConfig(username: "foo-baz")
 
         when:
         def actualConfig = election.resolveAuthConfig("official.registry", true)
@@ -55,7 +56,7 @@ class RegistryElectionTest extends Specification {
 
     def "elects the platform's IndexServerAddress"() {
         given:
-        def expectedConfig = [key: "value"]
+        def expectedConfig = new AuthConfig(username: "baz-foo")
 
         when:
         def actualConfig = election.resolveAuthConfig("official.registry", true)
