@@ -7,6 +7,7 @@ import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
+import okio.Okio
 
 import static java.util.concurrent.Executors.newSingleThreadExecutor
 
@@ -51,6 +52,13 @@ class ManageSystemClient implements ManageSystem {
     EngineResponse ping() {
         log.info "docker ping"
         def response = client.get([path: "/_ping", timeout: 2000])
+
+        // Recently (no idea since when), the engine responds with a chunked transfer-encoding on this endpoint,
+        // which we don't fully consume by default. In case of /_ping we try to keep the old behaviour
+        // for consumers of our .ping() method, though.
+        if (!response.content && response.stream) {
+            response.content = Okio.buffer(Okio.source(client.get([path: "/_ping"]).stream)).readUtf8()
+        }
         return response
     }
 
