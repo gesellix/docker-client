@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     implementation(project(":client"))
-    implementation("org.codehaus.groovy:groovy:2.5.9")
+    implementation("org.codehaus.groovy:groovy:2.5.13")
     testImplementation("org.apache.commons:commons-compress:1.20")
 
     implementation("org.slf4j:slf4j-api:1.7.30")
