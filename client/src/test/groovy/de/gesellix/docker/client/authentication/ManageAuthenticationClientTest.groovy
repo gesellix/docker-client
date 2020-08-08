@@ -10,6 +10,8 @@ import de.gesellix.testutil.ResourceReader
 import spock.lang.Requires
 import spock.lang.Specification
 
+import static de.gesellix.docker.client.authentication.AuthConfig.EMPTY_AUTH_CONFIG
+
 class ManageAuthenticationClientTest extends Specification {
 
     DockerEnv env
@@ -122,7 +124,7 @@ class ManageAuthenticationClientTest extends Specification {
         def authDetails = service.readAuthConfig("unkown.example.com", dockerCfg)
 
         then:
-        authDetails == new AuthConfig()
+        authDetails == EMPTY_AUTH_CONFIG
     }
 
     @Requires({ System.properties['user.name'] == 'gesellix' })
@@ -186,6 +188,31 @@ class ManageAuthenticationClientTest extends Specification {
                                  password: "-yet-another-password-",
                                  email: "tobias@gesellix.de",
                                  serveraddress: "https://index.docker.io/v1/")
+
+        cleanup:
+        if (oldDockerConfig) {
+            System.setProperty("docker.config", oldDockerConfig)
+        }
+    }
+
+    @Requires({ System.properties['user.name'] == 'gesellix' })
+    def "read all auth configs"() {
+        given:
+        def oldDockerConfig = System.clearProperty("docker.config")
+        def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg-with-credsStore', DockerClient)
+        env.indexUrl_v1 >> 'https://index.docker.io/v1/'
+
+        when:
+        Map<String, AuthConfig> result = service.getAllAuthConfigs(expectedConfigFile)
+
+        then:
+        result.size() == 1
+        result["https://index.docker.io/v1/"] == new AuthConfig(
+                username: "gesellix",
+                password: "-yet-another-password-",
+                email: null, // TODO email is deprecated - but do we need it nevertheless?
+                serveraddress: "https://index.docker.io/v1/"
+        )
 
         cleanup:
         if (oldDockerConfig) {

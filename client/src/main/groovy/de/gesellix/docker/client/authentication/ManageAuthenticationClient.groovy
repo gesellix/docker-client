@@ -9,9 +9,10 @@ import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.engine.DockerEnv
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
-import de.gesellix.util.QueryUtil
-import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
+import okio.Okio
+
+import static de.gesellix.docker.client.authentication.AuthConfig.EMPTY_AUTH_CONFIG
 
 @Slf4j
 class ManageAuthenticationClient implements ManageAuthentication {
@@ -20,9 +21,9 @@ class ManageAuthenticationClient implements ManageAuthentication {
     private EngineClient client
     private DockerResponseHandler responseHandler
     private RegistryElection registryElection
-    private QueryUtil queryUtil
-    private CredsStoreHelper credsStoreHelper
     private JsonAdapter<AuthConfig> authConfigJsonAdapter
+
+    private Moshi moshi = new Moshi.Builder().build()
 
     ManageAuthenticationClient(DockerEnv env,
                                EngineClient client,
@@ -32,10 +33,18 @@ class ManageAuthenticationClient implements ManageAuthentication {
         this.client = client
         this.responseHandler = responseHandler
         this.registryElection = new RegistryElection(manageSystem, this)
-        this.queryUtil = new QueryUtil()
-        this.credsStoreHelper = new CredsStoreHelper()
-        def moshi = new Moshi.Builder().build()
         authConfigJsonAdapter = moshi.adapter(AuthConfig)
+    }
+
+    @Override
+    Map<String, AuthConfig> getAllAuthConfigs(File dockerCfg) {
+        def parsedDockerCfg = readDockerConfigFile(dockerCfg)
+        if (!parsedDockerCfg) {
+            return [:]
+        }
+
+        CredsStore credsStore = getCredentialsStore(parsedDockerCfg)
+        return credsStore.getAuthConfigs()
     }
 
     @Override
@@ -51,26 +60,33 @@ class ManageAuthenticationClient implements ManageAuthentication {
             hostname = env.indexUrl_v1
         }
 
-        if (!dockerCfg) {
-            dockerCfg = env.getDockerConfigFile()
+        def parsedDockerCfg = readDockerConfigFile(dockerCfg)
+        if (!parsedDockerCfg) {
+            return EMPTY_AUTH_CONFIG
         }
-        if (!dockerCfg?.exists()) {
-            log.info "docker config '${dockerCfg}' doesn't exist"
-            return new AuthConfig()
-        }
-        log.debug "reading auth info from ${dockerCfg}"
-        def parsedDockerCfg = new JsonSlurper().parse(dockerCfg)
 
         CredsStore credsStore = getCredentialsStore(parsedDockerCfg, hostname)
         return credsStore.getAuthConfig(hostname)
     }
 
-    CredsStore getCredentialsStore(Map parsedDockerCfg, String hostname) {
+    Map readDockerConfigFile(File dockerCfg) {
+        if (!dockerCfg) {
+            dockerCfg = env.getDockerConfigFile()
+        }
+        if (!dockerCfg?.exists()) {
+            log.info "docker config '${dockerCfg}' doesn't exist"
+            return [:]
+        }
+        log.debug "reading auth info from ${dockerCfg}"
+        return moshi.adapter(Map).fromJson(Okio.buffer(Okio.source(dockerCfg)))
+    }
+
+    CredsStore getCredentialsStore(Map parsedDockerCfg, String hostname = "") {
         if (parsedDockerCfg['credHelpers'] && hostname && parsedDockerCfg['credHelpers'][hostname]) {
-            return new NativeStore(credsStoreHelper, parsedDockerCfg['credHelpers'][hostname] as String)
+            return new NativeStore(parsedDockerCfg['credHelpers'][hostname] as String)
         }
         if (parsedDockerCfg['credsStore']) {
-            return new NativeStore(credsStoreHelper, parsedDockerCfg['credsStore'] as String)
+            return new NativeStore(parsedDockerCfg['credsStore'] as String)
         }
         return new FileStore(parsedDockerCfg)
     }

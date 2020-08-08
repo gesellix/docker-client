@@ -5,6 +5,8 @@ import groovy.transform.EqualsAndHashCode
 @EqualsAndHashCode
 class AuthConfig {
 
+    public final static EMPTY_AUTH_CONFIG = new AuthConfig()
+
     String username
     String password
     String auth
