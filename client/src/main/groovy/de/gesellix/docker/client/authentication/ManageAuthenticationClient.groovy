@@ -47,6 +47,10 @@ class ManageAuthenticationClient implements ManageAuthentication {
     AuthConfig readAuthConfig(String hostname, File dockerCfg) {
         log.debug "read authConfig"
 
+        if (!hostname) {
+            hostname = env.indexUrl_v1
+        }
+
         if (!dockerCfg) {
             dockerCfg = env.getDockerConfigFile()
         }
@@ -57,54 +61,18 @@ class ManageAuthenticationClient implements ManageAuthentication {
         log.debug "reading auth info from ${dockerCfg}"
         def parsedDockerCfg = new JsonSlurper().parse(dockerCfg)
 
-        if (!hostname) {
-            hostname = env.indexUrl_v1
-        }
+        CredsStore credsStore = getCredentialsStore(parsedDockerCfg, hostname)
+        return credsStore.getAuthConfig(hostname)
+    }
 
-        def authConfig
-        if (parsedDockerCfg['auths']) {
-            authConfig = parsedDockerCfg.auths
+    CredsStore getCredentialsStore(Map parsedDockerCfg, String hostname) {
+        if (parsedDockerCfg['credHelpers'] && hostname && parsedDockerCfg['credHelpers'][hostname]) {
+            return new NativeStore(credsStoreHelper, parsedDockerCfg['credHelpers'][hostname] as String)
         }
-        else {
-            authConfig = parsedDockerCfg
+        if (parsedDockerCfg['credsStore']) {
+            return new NativeStore(credsStoreHelper, parsedDockerCfg['credsStore'] as String)
         }
-
-        def authDetails = new AuthConfig(username: "UNKNOWN-USERNAME",
-                                         password: "UNKNOWN-PASSWORD",
-                                         email: "UNKNOWN-EMAIL",
-                                         serveraddress: hostname)
-
-        if (!authConfig[hostname]) {
-            if (parsedDockerCfg['credsStore']) {
-                def creds = credsStoreHelper.getAuthentication(parsedDockerCfg['credsStore'] as String, hostname)
-                if (creds.error) {
-                    log.info("Error reading credentials from 'credsStore=${parsedDockerCfg['credsStore']}' for authentication at ${hostname}: ${creds.error}")
-                    return new AuthConfig()
-                }
-                else if (creds.auth) {
-                    log.info("Got credentials from 'credsStore=${parsedDockerCfg['credsStore']}'")
-                    authDetails.username = creds.auth.Username
-                    authDetails.password = creds.auth.Secret
-                    authDetails.email = null
-                }
-                else {
-                    log.warn("Using 'credsStore=${parsedDockerCfg['credsStore']}' for authentication at ${hostname} is currently not supported")
-                    return new AuthConfig()
-                }
-            }
-            else {
-                return new AuthConfig()
-            }
-        }
-        else {
-            def auth = authConfig[hostname].auth as String
-            def (username, password) = new String(auth.decodeBase64()).split(":")
-            authDetails.username = username
-            authDetails.password = password
-            authDetails.email = authConfig[hostname].email
-        }
-
-        return authDetails
+        return new FileStore(parsedDockerCfg)
     }
 
     @Override
