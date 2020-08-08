@@ -1,7 +1,6 @@
 package de.gesellix.docker.client.authentication
 
-import groovy.json.JsonException
-import groovy.json.JsonSlurper
+import com.squareup.moshi.Moshi
 import groovy.util.logging.Slf4j
 
 import java.util.concurrent.TimeUnit
@@ -9,50 +8,47 @@ import java.util.concurrent.TimeUnit
 @Slf4j
 class CredsStoreHelper {
 
-    Map getAuthentication(String credsStore, String hostname = "https://index.docker.io/v1/") {
+    private Moshi moshi = new Moshi.Builder().build()
 
-        def dockerCredentialResult = [:]
+    CredsStoreHelperResult getAuthentication(String credsStore, String hostname = "https://index.docker.io/v1/") {
+        def result = execCredsHelper(credsStore, "get", hostname)
+        return toCredsStoreHelperResult(result, credsStore)
+    }
 
-        def result = readFromCredsStore(credsStore, hostname)
+    CredsStoreHelperResult getAllAuthentications(String credsStore) {
+        def result = execCredsHelper(credsStore, "list", "unused")
+        return toCredsStoreHelperResult(result, credsStore)
+    }
 
+    CredsStoreHelperResult toCredsStoreHelperResult(Result result, String credsStore) {
         if (!result.success) {
-            dockerCredentialResult['auth'] = null
-            dockerCredentialResult['error'] = result.message
-            return dockerCredentialResult
+            return new CredsStoreHelperResult(error: result.message)
         }
 
         try {
-            def auth = new JsonSlurper().parseText(result.message)
-            dockerCredentialResult['auth'] = auth
-            if (!dockerCredentialResult['auth']['ServerURL']) {
-                dockerCredentialResult['auth']['ServerURL'] = hostname
-            }
+            return new CredsStoreHelperResult(data: moshi.adapter(Map).fromJson(result.message))
         }
-        catch (JsonException exc) {
-            log.error("cannot parse docker-credential-${credsStore} result for ${System.properties['user.name']}@${hostname}", exc)
-            dockerCredentialResult['auth'] = null
-            dockerCredentialResult['error'] = exc.message
+        catch (IOException exc) {
+            log.error("cannot parse docker-credential-${credsStore} result", exc)
+            return new CredsStoreHelperResult(error: exc.message)
         }
         catch (Exception exc) {
             log.error("error trying to get credentials from docker-credential-${credsStore}", exc)
-            dockerCredentialResult['auth'] = null
-            dockerCredentialResult['error'] = exc.message
+            return new CredsStoreHelperResult(error: exc.message)
         }
-
-        return dockerCredentialResult
     }
 
-    CredsStoreResult readFromCredsStore(String credsStore, String hostname) {
+    private Result execCredsHelper(String credsStore, String command, String input) {
         def process
         try {
-            process = new ProcessBuilder("docker-credential-${credsStore}", "get")
+            process = new ProcessBuilder("docker-credential-${credsStore}", command)
                     .redirectErrorStream(true)
                     .redirectOutput(ProcessBuilder.Redirect.PIPE)
                     .start()
         }
         catch (Exception exc) {
-            log.error("error trying to execute docker-credential-${credsStore}", exc)
-            return new CredsStoreResult(
+            log.error("error trying to execute docker-credential-${credsStore} ${command}", exc)
+            return new Result(
                     success: false,
                     message: exc.message
             )
@@ -60,22 +56,22 @@ class CredsStoreHelper {
 
         def buffer = new BufferedReader(new InputStreamReader(process.inputStream))
 
-        process.outputStream.write(hostname?.bytes)
+        process.outputStream.write(input?.bytes)
         process.outputStream.flush()
         process.outputStream.close()
 
         process.waitFor(10, TimeUnit.SECONDS)
 
         if (process.exitValue() != 0) {
-            log.error("docker-credential-${credsStore} failed")
+            log.error("docker-credential-${credsStore} ${command} failed")
         }
-        return new CredsStoreResult(
+        return new Result(
                 success: process.exitValue() == 0,
                 message: buffer.readLines().join('')
         )
     }
 
-    static class CredsStoreResult {
+    static class Result {
 
         boolean success
         String message

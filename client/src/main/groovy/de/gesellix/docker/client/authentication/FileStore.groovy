@@ -1,35 +1,34 @@
 package de.gesellix.docker.client.authentication
 
+import static de.gesellix.docker.client.authentication.AuthConfig.EMPTY_AUTH_CONFIG
+
 class FileStore implements CredsStore {
 
-    private Map config
+    private Map<String, Map> config
 
-    FileStore(Map config) {
+    private transient Map<String, AuthConfig> allAuthConfigs
+
+    FileStore(Map<String, Map> config) {
         this.config = config['auths'] ? config.auths as Map : config
     }
 
     @Override
     AuthConfig getAuthConfig(String registry) {
-        if (config[registry]) {
-            def auth = config[registry].auth as String
-            def (username, password) = new String(auth.decodeBase64()).split(":")
-
-            def authDetails = new AuthConfig()
-            authDetails.serveraddress = registry
-            authDetails.username = username
-            authDetails.password = password
-            authDetails.email = config[registry].email
-            return authDetails
-        }
-        else {
-            return new AuthConfig()
-        }
+        return getAuthConfigs()[registry] ?: EMPTY_AUTH_CONFIG
     }
 
     @Override
     Map<String, AuthConfig> getAuthConfigs() {
-        // TODO convert each value to AuthConfig
-//        return config
-        return [:]
+        if (!allAuthConfigs) {
+            allAuthConfigs = config.collectEntries { String registry, Map value ->
+                def (username, password) = new String(value.auth.decodeBase64()).split(":")
+                return [(registry): new AuthConfig(
+                        serveraddress: registry,
+                        username: username,
+                        password: password,
+                        email: value.email)]
+            }
+        }
+        return allAuthConfigs
     }
 }
