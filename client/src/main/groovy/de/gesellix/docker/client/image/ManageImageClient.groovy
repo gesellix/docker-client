@@ -5,6 +5,7 @@ import de.gesellix.docker.client.DockerAsyncConsumer
 import de.gesellix.docker.client.DockerClientException
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.Timeout
+import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.client.repository.RepositoryTagParser
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
@@ -23,10 +24,12 @@ class ManageImageClient implements ManageImage {
     private DockerResponseHandler responseHandler
     private RepositoryTagParser repositoryTagParser
     private QueryUtil queryUtil
+    private ManageAuthentication manageAuthentication
 
-    ManageImageClient(EngineClient client, DockerResponseHandler responseHandler) {
+    ManageImageClient(EngineClient client, DockerResponseHandler responseHandler, ManageAuthentication manageAuthentication) {
         this.client = client
         this.responseHandler = responseHandler
+        this.manageAuthentication = manageAuthentication
         this.repositoryTagParser = new RepositoryTagParser()
         this.queryUtil = new QueryUtil()
     }
@@ -136,6 +139,9 @@ class ManageImageClient implements ManageImage {
                        async             : callback ? true : false]
         if (actualBuildOptions.EncodedRegistryConfig) {
             request.headers = ["X-Registry-Config": actualBuildOptions.EncodedRegistryConfig as String]
+        }
+        else {
+            request.headers = ["X-Registry-Config": manageAuthentication.encodeAuthConfigs(manageAuthentication.getAllAuthConfigs())]
         }
         def response = client.post(request)
 
