@@ -1,6 +1,5 @@
 package de.gesellix.docker.client.authentication
 
-import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.distribution.ReferenceParser
@@ -21,7 +20,6 @@ class ManageAuthenticationClient implements ManageAuthentication {
     private EngineClient client
     private DockerResponseHandler responseHandler
     private RegistryElection registryElection
-    private JsonAdapter<AuthConfig> authConfigJsonAdapter
 
     private Moshi moshi = new Moshi.Builder().build()
 
@@ -33,11 +31,10 @@ class ManageAuthenticationClient implements ManageAuthentication {
         this.client = client
         this.responseHandler = responseHandler
         this.registryElection = new RegistryElection(manageSystem, this)
-        authConfigJsonAdapter = moshi.adapter(AuthConfig)
     }
 
     @Override
-    Map<String, AuthConfig> getAllAuthConfigs(File dockerCfg) {
+    Map<String, AuthConfig> getAllAuthConfigs(File dockerCfg = null) {
         def parsedDockerCfg = readDockerConfigFile(dockerCfg)
         if (!parsedDockerCfg) {
             return [:]
@@ -94,7 +91,14 @@ class ManageAuthenticationClient implements ManageAuthentication {
     @Override
     String encodeAuthConfig(AuthConfig authConfig) {
         log.debug "encode authConfig for ${authConfig.username}@${authConfig.serveraddress}"
-        String json = authConfigJsonAdapter.toJson(authConfig)
+        String json = moshi.adapter(AuthConfig).toJson(authConfig)
+        return json.bytes.encodeBase64().toString()
+    }
+
+    @Override
+    String encodeAuthConfigs(Map<String, AuthConfig> authConfigs) {
+        log.debug "encode authConfigs for ${authConfigs.keySet()}"
+        String json = moshi.adapter(Map).toJson(authConfigs)
         return json.bytes.encodeBase64().toString()
     }
 

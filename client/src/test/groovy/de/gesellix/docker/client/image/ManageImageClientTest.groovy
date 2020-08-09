@@ -1,6 +1,8 @@
 package de.gesellix.docker.client.image
 
 import de.gesellix.docker.client.DockerResponseHandler
+import de.gesellix.docker.client.authentication.AuthConfig
+import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponseStatus
 import groovy.json.JsonBuilder
@@ -11,23 +13,29 @@ class ManageImageClientTest extends Specification {
     ManageImageClient service
     EngineClient httpClient = Mock(EngineClient)
     DockerResponseHandler responseHandler = Mock(DockerResponseHandler)
+    ManageAuthentication manageAuthentication = Mock(ManageAuthentication)
 
     def setup() {
         service = Spy(ManageImageClient, constructorArgs: [
                 httpClient,
-                responseHandler])
+                responseHandler,
+                manageAuthentication])
     }
 
     def "build with defaults"() {
         def buildContext = new ByteArrayInputStream([42] as byte[])
+        def authConfigs = ["for-test": new AuthConfig(username: "foo")]
 
         when:
         def imageId = service.build(buildContext).imageId
 
         then:
+        1 * manageAuthentication.getAllAuthConfigs() >> authConfigs
+        1 * manageAuthentication.encodeAuthConfigs(authConfigs) >> "base-64-encoded"
         1 * httpClient.post([path              : "/build",
                              query             : ["rm": true],
                              body              : buildContext,
+                             headers           : ["X-Registry-Config": "base-64-encoded"],
                              requestContentType: "application/octet-stream",
                              async             : false]) >> [content: [[stream: "Successfully built foo"],
                                                                        [aux: [ID: "sha256:23455"]]]]
@@ -42,13 +50,17 @@ class ManageImageClientTest extends Specification {
     def "build with query (legacy)"() {
         def buildContext = new ByteArrayInputStream([42] as byte[])
         def query = ["rm": false]
+        def authConfigs = ["for-test": new AuthConfig(username: "foo")]
 
         when:
         def imageId = service.build(buildContext, query)
 
         then:
+        1 * manageAuthentication.getAllAuthConfigs() >> authConfigs
+        1 * manageAuthentication.encodeAuthConfigs(authConfigs) >> "base-64-encoded"
         1 * httpClient.post([path              : "/build",
                              query             : ["rm": false],
+                             headers           : ["X-Registry-Config": "base-64-encoded"],
                              body              : buildContext,
                              requestContentType: "application/octet-stream",
                              async             : false]) >> [content: [[stream: "Successfully built bar"],
@@ -64,13 +76,15 @@ class ManageImageClientTest extends Specification {
     def "build with query"() {
         def buildContext = new ByteArrayInputStream([42] as byte[])
         def query = ["rm": false]
+        def buildOptions = [EncodedRegistryConfig: "."]
 
         when:
-        def imageId = service.build(buildContext, new BuildConfig(query: query)).imageId
+        def imageId = service.build(buildContext, new BuildConfig(query: query, options: buildOptions)).imageId
 
         then:
         1 * httpClient.post([path              : "/build",
                              query             : ["rm": false],
+                             headers           : ["X-Registry-Config": "."],
                              body              : buildContext,
                              requestContentType: "application/octet-stream",
                              async             : false]) >> [content: [[stream: "Successfully built bar"],
@@ -83,7 +97,7 @@ class ManageImageClientTest extends Specification {
         imageId == "sha256:23455"
     }
 
-    def "build with auth"() {
+    def "build with custom auth"() {
         def buildContext = new ByteArrayInputStream([42] as byte[])
         def query = ["rm": false]
         def buildOptions = [EncodedRegistryConfig: "NDI="]
@@ -108,14 +122,19 @@ class ManageImageClientTest extends Specification {
     }
 
     def "build with highly similar log messages"() {
+        given:
         def buildContext = new ByteArrayInputStream([42] as byte[])
+        def authConfigs = ["for-test": new AuthConfig(username: "foo")]
 
         when:
         def imageId = service.build(buildContext).imageId
 
         then:
+        1 * manageAuthentication.getAllAuthConfigs() >> authConfigs
+        1 * manageAuthentication.encodeAuthConfigs(authConfigs) >> "base-64-encoded"
         1 * httpClient.post([path              : "/build",
                              query             : ["rm": true],
+                             headers           : ["X-Registry-Config": "base-64-encoded"],
                              body              : buildContext,
                              requestContentType: "application/octet-stream",
                              async             : false]) >> [content: [

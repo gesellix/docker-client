@@ -1,6 +1,7 @@
 package de.gesellix.docker.client.authentication
 
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.system.ManageSystem
@@ -9,6 +10,8 @@ import de.gesellix.docker.engine.EngineClient
 import de.gesellix.testutil.ResourceReader
 import spock.lang.Requires
 import spock.lang.Specification
+
+import java.lang.reflect.Type
 
 import static de.gesellix.docker.client.authentication.AuthConfig.EMPTY_AUTH_CONFIG
 
@@ -30,32 +33,94 @@ class ManageAuthenticationClientTest extends Specification {
                 Mock(ManageSystem)])
     }
 
-    def "read and encode authConfig (old format)"() {
+    def "read authConfig (new format)"() {
         given:
+        def oldDockerConfig = System.clearProperty("docker.config")
+        def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/config.json', DockerClient)
         env.indexUrl_v1 >> 'https://index.docker.io/v1/'
-        def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg', DockerClient)
-        def authDetails = service.readAuthConfig(null, dockerCfg)
-        def authPlain = authDetails
 
         when:
-        def authResult = service.encodeAuthConfig(authPlain)
+        def result = service.readAuthConfig(null, expectedConfigFile)
 
         then:
-        moshi.adapter(AuthConfig).fromJson(new String(authResult.decodeBase64())) == new AuthConfig(username: "gesellix", password: "-yet-another-password-", email: "tobias@gesellix.de", serveraddress: "https://index.docker.io/v1/")
+        result == new AuthConfig(username: "gesellix",
+                                 password: "-yet-another-password-",
+                                 email: "tobias@gesellix.de",
+                                 serveraddress: "https://index.docker.io/v1/")
+
+        cleanup:
+        if (oldDockerConfig) {
+            System.setProperty("docker.config", oldDockerConfig)
+        }
     }
 
-    def "read and encode authConfig (new format)"() {
+    def "read authConfig (legacy format)"() {
         given:
+        def oldDockerConfig = System.clearProperty("docker.config")
+        def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg', DockerClient)
         env.indexUrl_v1 >> 'https://index.docker.io/v1/'
-        def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/config.json', DockerClient)
-        def authDetails = service.readAuthConfig(null, dockerCfg)
-        def authPlain = authDetails
 
         when:
-        def authResult = service.encodeAuthConfig(authPlain)
+        def result = service.readAuthConfig(null, expectedConfigFile)
 
         then:
-        moshi.adapter(AuthConfig).fromJson(new String(authResult.decodeBase64())) == new AuthConfig(username: "gesellix", password: "-yet-another-password-", email: "tobias@gesellix.de", serveraddress: "https://index.docker.io/v1/")
+        result == new AuthConfig(username: "gesellix",
+                                 password: "-yet-another-password-",
+                                 email: "tobias@gesellix.de",
+                                 serveraddress: "https://index.docker.io/v1/")
+
+        cleanup:
+        if (oldDockerConfig) {
+            System.setProperty("docker.config", oldDockerConfig)
+        }
+    }
+
+    @Requires({ System.properties['user.name'] == 'gesellix' })
+    def "read all auth configs"() {
+        given:
+        def oldDockerConfig = System.clearProperty("docker.config")
+        def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg-with-credsStore', DockerClient)
+        env.indexUrl_v1 >> 'https://index.docker.io/v1/'
+
+        when:
+        Map<String, AuthConfig> result = service.getAllAuthConfigs(expectedConfigFile)
+
+        then:
+        result.size() == 1
+        result["https://index.docker.io/v1/"] == new AuthConfig(
+                username: "gesellix",
+                password: "-yet-another-password-",
+                email: null, // TODO email is deprecated - but do we need it nevertheless?
+                serveraddress: "https://index.docker.io/v1/"
+        )
+
+        cleanup:
+        if (oldDockerConfig) {
+            System.setProperty("docker.config", oldDockerConfig)
+        }
+    }
+
+    def "encode a single authConfig"() {
+        given:
+        def expectedAuthConfig = new AuthConfig(username: "gesellix", password: "-yet-another-password-", email: "tobias@gesellix.de", serveraddress: "https://index.docker.io/v1/")
+
+        when:
+        def authResult = service.encodeAuthConfig(expectedAuthConfig)
+
+        then:
+        moshi.adapter(AuthConfig).fromJson(new String(authResult.decodeBase64())) == expectedAuthConfig
+    }
+
+    def "encode a Map of authConfigs"() {
+        given:
+        def expectedAuthConfigs = ["for-test": new AuthConfig(username: "user", password: "secret")]
+
+        when:
+        def authResult = service.encodeAuthConfigs(expectedAuthConfigs)
+
+        then:
+        Type type = Types.newParameterizedType(Map, String, AuthConfig)
+        moshi.adapter(type).fromJson(new String(authResult.decodeBase64())) == expectedAuthConfigs
     }
 
     def "login"() {
@@ -151,7 +216,7 @@ class ManageAuthenticationClientTest extends Specification {
         }
     }
 
-    def "read default docker config file"() {
+    def "read default authConfig"() {
         given:
         def oldDockerConfig = System.clearProperty("docker.config")
         def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/config.json', DockerClient)
@@ -167,52 +232,6 @@ class ManageAuthenticationClientTest extends Specification {
                                  password: "-yet-another-password-",
                                  email: "tobias@gesellix.de",
                                  serveraddress: "https://index.docker.io/v1/")
-
-        cleanup:
-        if (oldDockerConfig) {
-            System.setProperty("docker.config", oldDockerConfig)
-        }
-    }
-
-    def "read legacy docker config file"() {
-        given:
-        def oldDockerConfig = System.clearProperty("docker.config")
-        def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg', DockerClient)
-        env.indexUrl_v1 >> 'https://index.docker.io/v1/'
-
-        when:
-        def result = service.readAuthConfig(null, expectedConfigFile)
-
-        then:
-        result == new AuthConfig(username: "gesellix",
-                                 password: "-yet-another-password-",
-                                 email: "tobias@gesellix.de",
-                                 serveraddress: "https://index.docker.io/v1/")
-
-        cleanup:
-        if (oldDockerConfig) {
-            System.setProperty("docker.config", oldDockerConfig)
-        }
-    }
-
-    @Requires({ System.properties['user.name'] == 'gesellix' })
-    def "read all auth configs"() {
-        given:
-        def oldDockerConfig = System.clearProperty("docker.config")
-        def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg-with-credsStore', DockerClient)
-        env.indexUrl_v1 >> 'https://index.docker.io/v1/'
-
-        when:
-        Map<String, AuthConfig> result = service.getAllAuthConfigs(expectedConfigFile)
-
-        then:
-        result.size() == 1
-        result["https://index.docker.io/v1/"] == new AuthConfig(
-                username: "gesellix",
-                password: "-yet-another-password-",
-                email: null, // TODO email is deprecated - but do we need it nevertheless?
-                serveraddress: "https://index.docker.io/v1/"
-        )
 
         cleanup:
         if (oldDockerConfig) {
