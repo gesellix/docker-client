@@ -4,6 +4,7 @@ import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.tasks.ManageTask
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.util.IOUtils
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 
@@ -65,6 +66,7 @@ class ManageNodeClient implements ManageNode {
                                     body              : config,
                                     requestContentType: "application/json"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker node update failed"))
+        IOUtils.closeQuietly(response.stream)
         return response
     }
 

@@ -4,6 +4,7 @@ import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.authentication.AuthConfig
 import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.docker.engine.EngineResponseStatus
 import groovy.json.JsonBuilder
 import spock.lang.Specification
@@ -156,7 +157,7 @@ class ManageImageClientTest extends Specification {
         then:
         1 * httpClient.post([path : "/images/an-image/tag",
                              query: [repo: "registry:port/username/image-name",
-                                     tag : "a-tag"]])
+                                     tag : "a-tag"]]) >> new EngineResponse()
     }
 
     def "push with defaults"() {
@@ -186,7 +187,7 @@ class ManageImageClientTest extends Specification {
         then:
         1 * httpClient.post([path : "/images/an-image/tag",
                              query: [repo: "registry:port/an-image",
-                                     tag : ""]])
+                                     tag : ""]]) >> new EngineResponse()
         then:
         1 * httpClient.post([path   : "/images/registry:port/an-image/push",
                              query  : [tag: ""],

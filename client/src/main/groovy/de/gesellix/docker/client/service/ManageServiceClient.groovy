@@ -5,6 +5,7 @@ import de.gesellix.docker.client.node.NodeUtil
 import de.gesellix.docker.client.tasks.ManageTask
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.util.IOUtils
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 
@@ -62,6 +63,7 @@ class ManageServiceClient implements ManageService {
         log.info "docker service rm"
         def response = client.delete([path: "/services/$name"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service rm failed"))
+        IOUtils.closeQuietly(response.stream)
         return response
     }
 

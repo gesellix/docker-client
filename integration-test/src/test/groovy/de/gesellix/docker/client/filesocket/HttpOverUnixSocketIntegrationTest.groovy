@@ -3,6 +3,7 @@ package de.gesellix.docker.client.filesocket
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.OkDockerClient
 import de.gesellix.docker.testutil.UnixSocketTestServer
+import de.gesellix.util.IOUtils
 import okio.Okio
 import org.apache.commons.lang3.SystemUtils
 import spock.lang.Requires
@@ -62,5 +63,6 @@ class HttpOverUnixSocketIntegrationTest extends Specification {
 
         cleanup:
         testserver?.stop()
+        IOUtils.closeQuietly(ping.stream)
     }
 }

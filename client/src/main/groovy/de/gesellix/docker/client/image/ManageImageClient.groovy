@@ -9,6 +9,7 @@ import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.client.repository.RepositoryTagParser
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.util.IOUtils
 import de.gesellix.util.QueryUtil
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
@@ -339,6 +340,8 @@ class ManageImageClient implements ManageImage {
         def response = client.post([path : "/images/${imageId}/tag".toString(),
                                     query: [repo: repoAndTag.repo,
                                             tag : repoAndTag.tag]])
+        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker tag failed"))
+        IOUtils.closeQuietly(response.stream)
         return response
     }
 

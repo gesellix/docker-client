@@ -39,6 +39,7 @@ class DockerAsyncConsumer implements Runnable {
         }
         finally {
             callback?.onFinish()
+            response.stream?.close()
         }
     }
 
