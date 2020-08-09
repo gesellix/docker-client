@@ -13,6 +13,7 @@ class NpipeExecutable {
 
         def npipeExe = new File("npipe.exe")
         new ArchiveUtil().copySingleTarEntry(archive, "/npipe.exe", new FileOutputStream(npipeExe))
+        archive.close()
         return npipeExe
     }
 }

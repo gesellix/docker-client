@@ -5,6 +5,7 @@ import de.gesellix.docker.client.DockerAsyncConsumer
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.util.IOUtils
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 import okio.Okio
@@ -57,7 +58,8 @@ class ManageSystemClient implements ManageSystem {
         // which we don't fully consume by default. In case of /_ping we try to keep the old behaviour
         // for consumers of our .ping() method, though.
         if (!response.content && response.stream) {
-            response.content = Okio.buffer(Okio.source(client.get([path: "/_ping"]).stream)).readUtf8()
+            response.content = Okio.buffer(Okio.source(response.stream)).readUtf8()
+            IOUtils.closeQuietly(response.stream)
         }
         return response
     }

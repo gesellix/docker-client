@@ -64,6 +64,7 @@ class DockerContainerIntegrationSpec extends Specification {
         cleanup:
         dockerClient.rm(container)
         dockerClient.rmi(imageId)
+        IOUtils.closeQuietly(response.stream)
     }
 
     def "list containers"() {
@@ -553,15 +554,16 @@ class DockerContainerIntegrationSpec extends Specification {
         def execStartConfig = [
                 "Detach": false,
                 "Tty"   : false]
-        def execStream = dockerClient.startExec(execId, execStartConfig)
+        def response = dockerClient.startExec(execId, execStartConfig)
 
         then:
-        execStream != null
+        response.stream != null
 
         cleanup:
         dockerClient.stop(name)
         dockerClient.wait(name)
         dockerClient.rm(name)
+        IOUtils.closeQuietly(response.stream)
     }
 
     def "exec (interactive)"() {

@@ -2,6 +2,7 @@ package de.gesellix.docker.client.swarm
 
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.engine.EngineClient
+import de.gesellix.util.IOUtils
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 
@@ -110,6 +111,7 @@ class ManageSwarmClient implements ManageSwarm {
                                     body              : config,
                                     requestContentType: "application/json"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm join failed"))
+        IOUtils.closeQuietly(response.stream)
         return response
     }
 
@@ -120,6 +122,7 @@ class ManageSwarmClient implements ManageSwarm {
         def response = client.post([path : "/swarm/leave",
                                     query: actualQuery])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm leave failed"))
+        IOUtils.closeQuietly(response.stream)
         return response
     }
 
@@ -133,6 +136,7 @@ class ManageSwarmClient implements ManageSwarm {
                                     body              : config,
                                     requestContentType: "application/json"])
         responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm update failed"))
+        IOUtils.closeQuietly(response.stream)
         return response
     }
 
