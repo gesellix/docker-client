@@ -9,7 +9,7 @@ class EnvFileParser {
                 if (line.contains('=')) {
                     env << line.replaceAll("^\\s*", "")
                 } else {
-                    env << ("${line.trim()}=${System.env[line.trim()]}" as String)
+                    env << ("${line.trim()}=${System.getenv(line.trim())}" as String)
                 }
             }
             return null

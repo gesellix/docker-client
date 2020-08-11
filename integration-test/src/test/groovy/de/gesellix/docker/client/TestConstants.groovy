@@ -27,7 +27,7 @@ class TestConstants {
         imageName = "$imageRepo:$imageTag"
 
         // TODO consider checking the Docker api version instead of "TRAVIS"
-        if (System.env.TRAVIS) {
+        if (System.getenv("TRAVIS")) {
             versionDetails = [
                     ApiVersion   : { it == "1.32" },
                     Arch         : { it == "amd64" },

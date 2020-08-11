@@ -8,7 +8,7 @@ import spock.lang.Specification
 class OkDockerClientExplorationTest extends Specification {
 
     def "local test"() {
-        def defaultDockerHost = System.env.DOCKER_HOST
+        def defaultDockerHost = System.getenv("DOCKER_HOST")
 //        defaultDockerHost = "unix:///var/run/docker.sock"
 //        defaultDockerHost = "http://192.168.99.100:2376"
 //        System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")

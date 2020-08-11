@@ -30,7 +30,7 @@ Consider the client as a thin wrapper to perform HTTP requests, minimizing the n
 The client also includes [Docker Compose version 3](https://docs.docker.com/compose/compose-file/) support
  as part of the `docker stack --compose ...` command.
  See the [docker stack deploy docs](https://docs.docker.com/engine/reference/commandline/stack_deploy/) for details.
- Please note that you'll need at least Java 8 when using that feature. 
+ Please note that you'll need at least Java 8 when using that feature.
 
 ## Plain Usage
 
@@ -71,7 +71,7 @@ Please note that the raw responses (including headers) from the Docker daemon ar
 A basic example connecting to a Docker daemon running in a VM (boot2docker/machine) looks like this:
 
     System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
-    def dockerClient = new DockerClientImpl(System.env.DOCKER_HOST)
+    def dockerClient = new DockerClientImpl(System.getenv("DOCKER_HOST"))
     def info = dockerClient.info().content
 
 ### Example 2: `docker run`
@@ -79,7 +79,7 @@ A basic example connecting to a Docker daemon running in a VM (boot2docker/machi
 Running a container being available on the host via HTTP port 4712 can be achieved like this:
 
     System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
-    def dockerClient = new DockerClientImpl(System.env.DOCKER_HOST)
+    def dockerClient = new DockerClientImpl(System.getenv("DOCKER_HOST"))
     def image = "busybox"
     def tag = "latest"
     def cmds = ["sh", "-c", "ping 127.0.0.1"]
@@ -110,7 +110,7 @@ Running a container being available on the host via HTTP port 4712 can be achiev
     // you might implement it as a fifo instead of the List shown above
 
 ### Example 4: `docker stack deploy --compose-file docker-stack.yml example`
-    
+
     def dockerClient = new DockerClientImpl()
     dockerClient.initSwarm()
 

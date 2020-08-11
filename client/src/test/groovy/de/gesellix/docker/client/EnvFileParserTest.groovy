@@ -43,7 +43,7 @@ class EnvFileParserTest extends Specification {
     def "allows pass-through of environment variables"() {
         given:
         // this needs to set up in the current environment (see build.gradle)
-        assert System.env["A_KNOWN_VARIABLE"] == "my value"
+        assert System.getenv("A_KNOWN_VARIABLE") == "my value"
         when:
         def env = new EnvFileParser().parse(new ResourceReader().getClasspathResourceAsFile('/env-files/env-pass-through.properties', DockerClient))
         then:

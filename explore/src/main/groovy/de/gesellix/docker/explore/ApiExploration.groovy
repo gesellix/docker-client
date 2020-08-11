@@ -9,7 +9,7 @@ import java.nio.file.Paths
 class ApiExploration {
 
     static void main(String[] args) {
-//    def dockerClient = new DockerClientImpl(dockerHost: System.env.DOCKER_HOST)
+//    def dockerClient = new DockerClientImpl(dockerHost: System.getenv("DOCKER_HOST"))
 //    System.setProperty("docker.cert.path", "/Users/gesellix/.boot2docker/certs/boot2docker-vm")
 //    def dockerClient = new DockerClientImpl(dockerHost: "https://192.168.59.103:2376")
 //        System.setProperty("docker.cert.path", "/Users/gesellix/.docker/machine/machines/default")
