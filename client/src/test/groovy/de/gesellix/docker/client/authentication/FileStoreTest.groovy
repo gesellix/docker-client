@@ -30,6 +30,22 @@ class FileStoreTest extends Specification {
         EMPTY_AUTH_CONFIG == credsStore.getAuthConfig("missing.host.name")
     }
 
+    def "getAuthConfig returns empty AuthConfig for empty entry"() {
+        given:
+        FileStore credsStore = new FileStore([auths: ["host.name": [:]]])
+
+        expect:
+        EMPTY_AUTH_CONFIG == credsStore.getAuthConfig("host.name")
+    }
+
+    def "getAuthConfig returns empty AuthConfig for empty auth"() {
+        given:
+        FileStore credsStore = new FileStore([auths: ["host.name": [auth: null, email: "tobias@gesellix.de"]]])
+
+        expect:
+        EMPTY_AUTH_CONFIG == credsStore.getAuthConfig("host.name")
+    }
+
     def "getAuthConfigs all known AuthConfigs"() {
         given:
         FileStore credsStore = new FileStore([auths: [
