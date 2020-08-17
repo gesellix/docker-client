@@ -20,7 +20,7 @@ class FileStore implements CredsStore {
     @Override
     Map<String, AuthConfig> getAuthConfigs() {
         if (!allAuthConfigs) {
-            allAuthConfigs = config.collectEntries { String registry, Map value ->
+            allAuthConfigs = config.findAll { it.value?.auth }.collectEntries { String registry, Map value ->
                 def (username, password) = new String(value.auth.decodeBase64()).split(":")
                 return [(registry): new AuthConfig(
                         serveraddress: registry,
