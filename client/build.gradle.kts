@@ -41,13 +41,16 @@ dependencies {
                 prefer("1.7.30")
             }
         }
-        listOf("com.squareup.okhttp3:mockwebserver",
-                "com.squareup.okhttp3:okhttp").onEach {
-            implementation(it) {
-                version {
-                    strictly("[4,5)")
-                    prefer("4.9.0")
-                }
+        implementation("com.squareup.okhttp3:mockwebserver") {
+            version {
+                strictly("[4,5)")
+                prefer("4.9.0")
+            }
+        }
+        api("com.squareup.okhttp3:okhttp") {
+            version {
+                strictly("[4,5)")
+                prefer("4.9.0")
             }
         }
         implementation("com.squareup.okio:okio") {
@@ -82,19 +85,19 @@ dependencies {
     api("de.gesellix:docker-engine:2020-10-03T11-21-27")
     api("de.gesellix:docker-compose:2020-10-03T10-26-14")
 
-    implementation("org.codehaus.groovy:groovy")
-    implementation("org.codehaus.groovy:groovy-json")
+    implementation("org.codehaus.groovy:groovy:[2.5,)")
+    implementation("org.codehaus.groovy:groovy-json:[2.5,)")
 
-    api("com.squareup.moshi:moshi:1.10.0")
+    api("com.squareup.moshi:moshi:[1.9,2)")
     implementation("com.google.re2j:re2j:1.4")
 
-    implementation("org.slf4j:slf4j-api")
+    implementation("org.slf4j:slf4j-api:[1.7,)")
     //implementation("org.slf4j:jul-to-slf4j:1.7.30")
     testImplementation("ch.qos.logback:logback-classic:1.2.3")
 
-    implementation("com.squareup.okio:okio")
-    api("com.squareup.okhttp3:okhttp")
-    testImplementation("com.squareup.okhttp3:mockwebserver")
+    implementation("com.squareup.okio:okio:[2,)")
+    api("com.squareup.okhttp3:okhttp:[4,5)")
+    testImplementation("com.squareup.okhttp3:mockwebserver:[4,5)")
 
     implementation("org.apache.commons:commons-compress:1.20")
 
