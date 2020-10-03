@@ -22,22 +22,11 @@ dependencies {
         implementation("org.slf4j:slf4j-api") {
             version {
                 strictly("[1.7,1.8)")
-                prefer("1.7.30")
-            }
-        }
-        listOf("com.squareup.okhttp3:mockwebserver",
-                "com.squareup.okhttp3:okhttp").onEach {
-            implementation(it) {
-                version {
-                    strictly("[4,5)")
-                    prefer("4.9.0")
-                }
             }
         }
         implementation("com.squareup.okio:okio") {
             version {
                 strictly("[2.5,3)")
-                prefer("2.8.0")
             }
         }
         listOf("org.jetbrains.kotlin:kotlin-reflect",
@@ -57,7 +46,6 @@ dependencies {
             implementation(it) {
                 version {
                     strictly("[2.5,3)")
-                    prefer("2.5.13")
                 }
             }
         }
