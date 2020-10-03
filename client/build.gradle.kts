@@ -34,27 +34,73 @@ repositories {
 }
 
 dependencies {
-    api("de.gesellix:docker-engine:2020-08-11T17-07-28")
-    api("de.gesellix:docker-compose:2020-08-08T11-21-02")
+    constraints {
+        implementation("org.slf4j:slf4j-api") {
+            version {
+                strictly("[1.7,1.8)")
+                prefer("1.7.30")
+            }
+        }
+        listOf("com.squareup.okhttp3:mockwebserver",
+                "com.squareup.okhttp3:okhttp").onEach {
+            implementation(it) {
+                version {
+                    strictly("[4,5)")
+                    prefer("4.9.0")
+                }
+            }
+        }
+        implementation("com.squareup.okio:okio") {
+            version {
+                strictly("[2.5,3)")
+                prefer("2.8.0")
+            }
+        }
+        listOf("org.jetbrains.kotlin:kotlin-reflect",
+                "org.jetbrains.kotlin:kotlin-stdlib",
+                "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
+                "org.jetbrains.kotlin:kotlin-stdlib-common",
+                "org.jetbrains.kotlin:kotlin-test").onEach {
+            implementation(it) {
+                version {
+                    strictly("[1.3,1.5)")
+                    prefer("1.3.72")
+                }
+            }
+        }
+        listOf("org.codehaus.groovy:groovy",
+                "org.codehaus.groovy:groovy-json").onEach {
+            implementation(it) {
+                version {
+                    strictly("[2.5,3)")
+                    prefer("2.5.13")
+                }
+            }
+        }
+    }
 
-    implementation("org.codehaus.groovy:groovy:2.5.13")
-    implementation("org.codehaus.groovy:groovy-json:2.5.13")
+    api("de.gesellix:docker-engine:2020-10-03T11-21-27")
+    api("de.gesellix:docker-compose:2020-10-03T10-26-14")
 
-    implementation("com.squareup.moshi:moshi:1.9.3")
+    implementation("org.codehaus.groovy:groovy")
+    implementation("org.codehaus.groovy:groovy-json")
+
+    api("com.squareup.moshi:moshi:1.10.0")
     implementation("com.google.re2j:re2j:1.4")
 
-    implementation("org.slf4j:slf4j-api:1.7.30")
+    implementation("org.slf4j:slf4j-api")
+    //implementation("org.slf4j:jul-to-slf4j:1.7.30")
     testImplementation("ch.qos.logback:logback-classic:1.2.3")
 
-    implementation("com.squareup.okio:okio:2.7.0")
-    api("com.squareup.okhttp3:okhttp:4.8.1")
-    testImplementation("com.squareup.okhttp3:mockwebserver:4.8.1")
+    implementation("com.squareup.okio:okio")
+    api("com.squareup.okhttp3:okhttp")
+    testImplementation("com.squareup.okhttp3:mockwebserver")
 
     implementation("org.apache.commons:commons-compress:1.20")
 
     implementation("org.bouncycastle:bcpkix-jdk15on:1.66")
 
-    testImplementation("de.gesellix:testutil:2020-08-08T11-02-07")
+    testImplementation("de.gesellix:testutil:[2020-10-03T10-08-28,)")
 
     testImplementation("org.spockframework:spock-core:1.3-groovy-2.5")
     testRuntimeOnly("cglib:cglib-nodep:3.3.0")
@@ -107,14 +153,6 @@ publishing {
             version = rootProject.extra["artifactVersion"] as String
             from(components["java"])
             artifact(sourcesJar.get())
-            versionMapping {
-                usage("java-api") {
-                    fromResolutionOf("runtimeClasspath")
-                }
-                usage("java-runtime") {
-                    fromResolutionResult()
-                }
-            }
         }
     }
 }
