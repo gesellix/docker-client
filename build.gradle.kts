@@ -1,10 +1,3 @@
-buildscript {
-  repositories {
-    gradlePluginPortal()
-    mavenCentral()
-  }
-}
-
 plugins {
   id("maven-publish")
   id("com.github.ben-manes.versions") version "0.36.0"
@@ -29,7 +22,7 @@ val dependencyVersions = listOf(
   "org.squareup.okio:okio:2.9.0"
 )
 
-val dependencyGroupVersions = mapOf<String, String>()
+val dependencyVersionsByGroup = mapOf<String, String>()
 
 allprojects {
   configurations.all {
@@ -37,7 +30,7 @@ allprojects {
       failOnVersionConflict()
       force(dependencyVersions)
       eachDependency {
-        val forcedVersion = dependencyGroupVersions[requested.group]
+        val forcedVersion = dependencyVersionsByGroup[requested.group]
         if (forcedVersion != null) {
           useVersion(forcedVersion)
         }
@@ -46,14 +39,14 @@ allprojects {
   }
 }
 
-fun findProperty(s: String) = project.findProperty(s) as String?
-
 tasks {
   wrapper {
     gradleVersion = "6.8.2"
     distributionType = Wrapper.DistributionType.ALL
   }
 }
+
+fun findProperty(s: String) = project.findProperty(s) as String?
 
 val isSnapshot = project.version == "unspecified"
 nexusPublishing {

@@ -147,7 +147,7 @@ publishing {
   publications {
     register(publicationName, MavenPublication::class) {
       pom {
-        name.set("docker-engine")
+        name.set("docker-client")
         description.set("A Docker client for the JVM written in Groovy")
         url.set("https://github.com/gesellix/docker-client")
         licenses {

@@ -154,6 +154,8 @@ There are multiple GitHub Action Workflows for the different steps in the packag
 
 ## License
 
+MIT License
+
 Copyright 2015-2021 [Tobias Gesellchen](https://www.gesellix.net/) ([@gesellix](https://twitter.com/gesellix))
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
