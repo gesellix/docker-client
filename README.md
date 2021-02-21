@@ -2,9 +2,9 @@
 
 A Docker HTTP client for the Java VM written in Groovy
 
-[![Engine API v1.31 Coverage Status (104/122 endpoints)](http://progressed.io/bar/85?title=api%20coverage%20(v1.31))](https://github.com/gesellix/docker-client/blob/master/supported-api.md)
-[![Build Status](https://travis-ci.org/gesellix/docker-client.svg)](https://travis-ci.org/gesellix/docker-client)
-[![Latest version](https://api.bintray.com/packages/gesellix/docker-utils/docker-client/images/download.svg) ](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion)
+[Engine API v1.31 Coverage: 104/122 endpoints](https://github.com/gesellix/docker-client/blob/master/supported-api.md)
+[![Publish](https://github.com/gesellix/docker-client/actions/workflows/cd.yml/badge.svg)](https://github.com/gesellix/docker-client/actions/workflows/cd.yml)
+[Latest version](https://search.maven.org/artifact/de.gesellix/docker-client)
 
 <a href='https://ko-fi.com/A0443PQL' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://az743702.vo.msecnd.net/cdn/kofi4.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
@@ -34,16 +34,16 @@ The client also includes [Docker Compose version 3](https://docs.docker.com/comp
 
 ## Plain Usage
 
-For use in Gradle, add the Bintray repository first:
+For use in Gradle, ensure that you declared Maven Central as repository:
 
     repositories {
-      jcenter()
+      mavenCentral()
     }
 
-Then, you need to add the dependency, but please ensure to use the [latest version](https://bintray.com/gesellix/docker-utils/docker-client/_latestVersion):
+Then, you need to add the dependency, but please ensure to use the [latest version](https://search.maven.org/search?q=a:docker-client):
 
     dependencies {
-      compile 'de.gesellix:docker-client:2018-01-26T21-28-05'
+      implementation("de.gesellix:docker-client:2021-02-20T21-57-11")
     }
 
 The tests in `DockerClientImplSpec` and `DockerClientImplIntegrationSpec` should give you an idea how to use the docker-client.
