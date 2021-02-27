@@ -2,8 +2,9 @@
 
 A Docker HTTP client for the Java VM written in Groovy
 
-[Engine API v1.31 Coverage: 104/122 endpoints](https://github.com/gesellix/docker-client/blob/master/supported-api.md)
 [![Publish](https://github.com/gesellix/docker-client/actions/workflows/cd.yml/badge.svg)](https://github.com/gesellix/docker-client/actions/workflows/cd.yml)
+
+[Engine API v1.31 Coverage: 104/122 endpoints](https://github.com/gesellix/docker-client/blob/master/supported-api.md)
 [Latest version](https://search.maven.org/artifact/de.gesellix/docker-client)
 
 <a href='https://ko-fi.com/A0443PQL' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://az743702.vo.msecnd.net/cdn/kofi4.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
@@ -40,7 +41,7 @@ For use in Gradle, ensure that you declared Maven Central as repository:
       mavenCentral()
     }
 
-Then, you need to add the dependency, but please ensure to use the [latest version](https://search.maven.org/search?q=a:docker-client):
+Then, you need to add the dependency, but please ensure to use the [latest version](https://search.maven.org/artifact/de.gesellix/docker-client):
 
     dependencies {
       implementation("de.gesellix:docker-client:2021-02-20T21-57-11")
