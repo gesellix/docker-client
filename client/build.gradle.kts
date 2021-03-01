@@ -61,14 +61,14 @@ dependencies {
     ).onEach {
       implementation(it) {
         version {
-          strictly("[2.5,3)")
+          strictly("[2.5,)")
           prefer("2.5.13")
         }
       }
     }
   }
 
-  api("de.gesellix:docker-engine:2021-02-20T00-49-21")
+  api("de.gesellix:docker-engine:2021-03-01T18-15-39")
   api("de.gesellix:docker-compose:2021-02-19T23-58-16")
 
   implementation("org.codehaus.groovy:groovy:[2.5,)")
