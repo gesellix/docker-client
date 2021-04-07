@@ -94,7 +94,7 @@ dependencies {
   testImplementation("org.spockframework:spock-core:1.3-groovy-2.5")
   testRuntimeOnly("cglib:cglib-nodep:3.3.0")
 
-  testImplementation("org.apache.commons:commons-lang3:3.11")
+  testImplementation("org.apache.commons:commons-lang3:3.12.0")
 }
 
 java {
