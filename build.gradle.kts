@@ -15,7 +15,7 @@ val dependencyVersions = listOf(
   "org.codehaus.groovy:groovy-sql:2.5.13",
   "org.codehaus.groovy:groovy-templates:2.5.13",
   "org.codehaus.groovy:groovy-test:2.5.13",
-  "org.codehaus.groovy:groovy-xml:2.5.13",
+  "org.codehaus.groovy:groovy-xml:3.0.7",
   "org.squareup.moshi:moshi:1.11.0",
   "org.squareup.moshi:moshi-kotlin:1.11.0",
   "org.squareup.okhttp3:okhttp:4.9.0",
