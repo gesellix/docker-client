@@ -8,62 +8,62 @@ import spock.lang.Specification
 
 class RegistryElectionTest extends Specification {
 
-    RegistryElection election
-    ManageSystem system = Mock(ManageSystem)
-    ManageAuthentication authentication = Mock(ManageAuthentication)
+  RegistryElection election
+  ManageSystem system = Mock(ManageSystem)
+  ManageAuthentication authentication = Mock(ManageAuthentication)
 
-    def setup() {
-        election = new RegistryElection(system, authentication)
-    }
+  def setup() {
+    election = new RegistryElection(system, authentication)
+  }
 
-    def "leaves non-official index name unchanged"() {
-        given:
-        def expectedConfig = new AuthConfig(username: "foo-bar")
+  def "leaves non-official index name unchanged"() {
+    given:
+    def expectedConfig = new AuthConfig(username: "foo-bar")
 
-        when:
-        def actualConfig = election.resolveAuthConfig("private.registry", false)
+    when:
+    def actualConfig = election.resolveAuthConfig("private.registry", false)
 
-        then:
-        1 * authentication.readAuthConfig("private.registry", null) >> expectedConfig
-        actualConfig == expectedConfig
-    }
+    then:
+    1 * authentication.readAuthConfig("private.registry", null) >> expectedConfig
+    actualConfig == expectedConfig
+  }
 
-    def "elects v1 server url if system info fails"() {
-        given:
-        def expectedConfig = new AuthConfig(username: "bar-baz")
+  def "elects v1 server url if system info fails"() {
+    given:
+    def expectedConfig = new AuthConfig(username: "bar-baz")
 
-        when:
-        def actualConfig = election.resolveAuthConfig("official.registry", true)
+    when:
+    def actualConfig = election.resolveAuthConfig("official.registry", true)
 
-        then:
-        1 * system.info() >> { throw new RuntimeException("for-test") }
-        1 * authentication.readAuthConfig("https://index.docker.io/v1/", null) >> expectedConfig
-        actualConfig == expectedConfig
-    }
+    then:
+    1 * system.info() >> { throw new RuntimeException("for-test") }
+    1 * authentication.readAuthConfig("https://index.docker.io/v1/", null) >> expectedConfig
+    actualConfig == expectedConfig
+  }
 
-    def "elects v1 server url if system info doesn't provide an `IndexServerAddress`"() {
-        given:
-        def expectedConfig = new AuthConfig(username: "foo-baz")
+  def "elects v1 server url if system info doesn't provide an `IndexServerAddress`"() {
+    given:
+    def expectedConfig = new AuthConfig(username: "foo-baz")
 
-        when:
-        def actualConfig = election.resolveAuthConfig("official.registry", true)
+    when:
+    def actualConfig = election.resolveAuthConfig("official.registry", true)
 
-        then:
-        1 * system.info() >> new EngineResponse(content: [IndexServerAddress: ""])
-        1 * authentication.readAuthConfig("https://index.docker.io/v1/", null) >> expectedConfig
-        actualConfig == expectedConfig
-    }
+    then:
+    1 * system.info() >> new EngineResponse(content: [IndexServerAddress: ""])
+    1 * authentication.readAuthConfig("https://index.docker.io/v1/", null) >> expectedConfig
+    actualConfig == expectedConfig
+  }
 
-    def "elects the platform's IndexServerAddress"() {
-        given:
-        def expectedConfig = new AuthConfig(username: "baz-foo")
+  def "elects the platform's IndexServerAddress"() {
+    given:
+    def expectedConfig = new AuthConfig(username: "baz-foo")
 
-        when:
-        def actualConfig = election.resolveAuthConfig("official.registry", true)
+    when:
+    def actualConfig = election.resolveAuthConfig("official.registry", true)
 
-        then:
-        1 * system.info() >> new EngineResponse(content: [IndexServerAddress: "platform.registry"])
-        1 * authentication.readAuthConfig("platform.registry", null) >> expectedConfig
-        actualConfig == expectedConfig
-    }
+    then:
+    1 * system.info() >> new EngineResponse(content: [IndexServerAddress: "platform.registry"])
+    1 * authentication.readAuthConfig("platform.registry", null) >> expectedConfig
+    actualConfig == expectedConfig
+  }
 }

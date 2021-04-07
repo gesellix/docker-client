@@ -8,14 +8,14 @@ import java.nio.file.Paths
 
 class ApiExploration {
 
-    static void main(String[] args) {
+  static void main(String[] args) {
 //    def dockerClient = new DockerClientImpl(dockerHost: System.getenv("DOCKER_HOST"))
 //    System.setProperty("docker.cert.path", "/Users/gesellix/.boot2docker/certs/boot2docker-vm")
 //    def dockerClient = new DockerClientImpl(dockerHost: "https://192.168.59.103:2376")
 //        System.setProperty("docker.cert.path", "/Users/gesellix/.docker/machine/machines/default")
 //        def dockerClient = new DockerClientImpl("https://192.168.99.100:2376")
 //        def dockerClient = new DockerClientImpl("unix:///var/run/docker.sock")
-        def dockerClient = new DockerClientImpl()
+    def dockerClient = new DockerClientImpl()
 
 //        println dockerClient.ping().content
 //        println dockerClient.info().content
@@ -106,7 +106,7 @@ class ApiExploration {
 //        println dockerClient.secrets().content
 //        println dockerClient.rmSecret("5qyxxlxqbq6s5004io33miih6").content
 
-        try {
+    try {
 //            dockerClient.initSwarm()
 //            def serviceConfig = newServiceConfig()
 //            dockerClient.createService(serviceConfig)
@@ -122,15 +122,15 @@ class ApiExploration {
 
 //            println dockerClient.stackRm("example")
 
-            def namespace = "example"
-            def composeStack = ApiExploration.class.getResourceAsStream('docker-stack.yml')
-            String workingDir = Paths.get(ApiExploration.class.getResource('docker-stack.yml').toURI()).parent
-            def deployConfig = new DeployConfigReader(dockerClient).loadCompose(namespace, composeStack, workingDir)
-            dockerClient.stackDeploy(namespace, deployConfig, new DeployStackOptions())
-        }
-        finally {
+      def namespace = "example"
+      def composeStack = ApiExploration.class.getResourceAsStream('docker-stack.yml')
+      String workingDir = Paths.get(ApiExploration.class.getResource('docker-stack.yml').toURI()).parent
+      def deployConfig = new DeployConfigReader(dockerClient).loadCompose(namespace, composeStack, workingDir)
+      dockerClient.stackDeploy(namespace, deployConfig, new DeployStackOptions())
+    }
+    finally {
 //            dockerClient.leaveSwarm([force: true])
-        }
+    }
 
 //        def okDockerClient = new OkDockerClient()
 //        def configs = okDockerClient.get([path: "/configs"])
@@ -152,35 +152,35 @@ class ApiExploration {
 //        def base =new File("/Users/gesellix/dev/pku/vorgangsmanagement/ep-vm-frontend-webapp/static")
 //        def filtered = new DockerignoreFileFilter(base, []).collectFiles(base)
 //        println "filtered: ${filtered.size()}"
-    }
+  }
 
-    static Map newServiceConfig() {
-        [
-                "Name"        : "redis",
-                "TaskTemplate": [
-                        "ContainerSpec": [
-                                "Image": "redis"
-                        ],
-                        "Resources"    : [
-                                "Limits"      : [:],
-                                "Reservations": [:]
-                        ],
-                        "RestartPolicy": [:],
-                        "Placement"    : [:]
-                ],
-                "Mode"        : [
-                        "Replicated": [
-                                "Instances": 1
-                        ]
-                ],
-                "UpdateConfig": [
-                        "Parallelism": 1
-                ],
-                "EndpointSpec": [
-                        "ExposedPorts": [
-                                ["Protocol": "tcp", "Port": 6379]
-                        ]
-                ]
+  static Map newServiceConfig() {
+    [
+        "Name"        : "redis",
+        "TaskTemplate": [
+            "ContainerSpec": [
+                "Image": "redis"
+            ],
+            "Resources"    : [
+                "Limits"      : [:],
+                "Reservations": [:]
+            ],
+            "RestartPolicy": [:],
+            "Placement"    : [:]
+        ],
+        "Mode"        : [
+            "Replicated": [
+                "Instances": 1
+            ]
+        ],
+        "UpdateConfig": [
+            "Parallelism": 1
+        ],
+        "EndpointSpec": [
+            "ExposedPorts": [
+                ["Protocol": "tcp", "Port": 6379]
+            ]
         ]
-    }
+    ]
+  }
 }

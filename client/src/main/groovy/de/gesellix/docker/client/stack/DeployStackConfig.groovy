@@ -8,9 +8,9 @@ import de.gesellix.docker.client.stack.types.StackVolume
 
 class DeployStackConfig {
 
-    Map<String, StackService> services = [:]
-    Map<String, StackNetwork> networks = [:]
-    Map<String, StackVolume> volumes = [:]
-    Map<String, StackSecret> secrets = [:]
-    Map<String, StackConfig> configs = [:]
+  Map<String, StackService> services = [:]
+  Map<String, StackNetwork> networks = [:]
+  Map<String, StackVolume> volumes = [:]
+  Map<String, StackSecret> secrets = [:]
+  Map<String, StackConfig> configs = [:]
 }

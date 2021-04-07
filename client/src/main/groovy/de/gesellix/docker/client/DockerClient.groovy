@@ -18,63 +18,63 @@ import de.gesellix.docker.client.tasks.ManageTask
 import de.gesellix.docker.client.volume.ManageVolume
 
 interface DockerClient
-        extends ManageAuthentication,
-                ManageCheckpoint,
-                ManageContainer,
-                ManageImage,
-                ManageDistribution,
-                ManageNetwork,
-                ManageNode,
-                ManagePlugin,
-                ManageSecret,
-                ManageConfig,
-                ManageService,
-                ManageStack,
-                ManageSwarm,
-                ManageSystem,
-                ManageTask,
-                ManageVolume {
+    extends ManageAuthentication,
+            ManageCheckpoint,
+            ManageContainer,
+            ManageImage,
+            ManageDistribution,
+            ManageNetwork,
+            ManageNode,
+            ManagePlugin,
+            ManageSecret,
+            ManageConfig,
+            ManageService,
+            ManageStack,
+            ManageSwarm,
+            ManageSystem,
+            ManageTask,
+            ManageVolume {
 
-    /**
-     * @deprecated Please use the prune* commands.
-     * @see ManageContainer#pruneContainers(java.lang.Object)
-     * @see ManageImage#pruneImages(java.lang.Object)
-     * @see ManageVolume#pruneVolumes(java.lang.Object)
-     */
-    @Deprecated
-    def cleanupStorage(Closure shouldKeepContainer)
+  /**
+   * @deprecated Please use the prune* commands.
+   * @see ManageContainer#pruneContainers(java.lang.Object)
+   * @see ManageImage#pruneImages(java.lang.Object)
+   * @see ManageVolume#pruneVolumes(java.lang.Object)
+   */
+  @Deprecated
+  def cleanupStorage(Closure shouldKeepContainer)
 
-    /**
-     * @deprecated Please use the prune* commands.
-     * @see ManageContainer#pruneContainers(java.lang.Object)
-     * @see ManageImage#pruneImages(java.lang.Object)
-     * @see ManageVolume#pruneVolumes(java.lang.Object)
-     */
-    @Deprecated
-    def cleanupStorage(Closure shouldKeepContainer, Closure shouldKeepVolume)
+  /**
+   * @deprecated Please use the prune* commands.
+   * @see ManageContainer#pruneContainers(java.lang.Object)
+   * @see ManageImage#pruneImages(java.lang.Object)
+   * @see ManageVolume#pruneVolumes(java.lang.Object)
+   */
+  @Deprecated
+  def cleanupStorage(Closure shouldKeepContainer, Closure shouldKeepVolume)
 
-    /**
-     * @deprecated Please use the prune* commands.
-     * @see ManageImage#pruneImages(java.lang.Object)
-     */
-    @Deprecated
-    def cleanupImages()
+  /**
+   * @deprecated Please use the prune* commands.
+   * @see ManageImage#pruneImages(java.lang.Object)
+   */
+  @Deprecated
+  def cleanupImages()
 
-    /**
-     * @deprecated Please use the prune* commands.
-     * @see ManageContainer#pruneContainers(java.lang.Object)
-     */
-    @Deprecated
-    def cleanupContainers(Closure shouldKeepContainer)
+  /**
+   * @deprecated Please use the prune* commands.
+   * @see ManageContainer#pruneContainers(java.lang.Object)
+   */
+  @Deprecated
+  def cleanupContainers(Closure shouldKeepContainer)
 
-    /**
-     * @deprecated Please use the prune* commands.
-     * @see ManageVolume#pruneVolumes(java.lang.Object)
-     */
-    @Deprecated
-    def cleanupVolumes(Closure shouldKeepVolume)
+  /**
+   * @deprecated Please use the prune* commands.
+   * @see ManageVolume#pruneVolumes(java.lang.Object)
+   */
+  @Deprecated
+  def cleanupVolumes(Closure shouldKeepVolume)
 
-    def search(term)
+  def search(term)
 
-    def getSwarmMangerAddress()
+  def getSwarmMangerAddress()
 }

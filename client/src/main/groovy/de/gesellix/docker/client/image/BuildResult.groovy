@@ -4,8 +4,8 @@ import de.gesellix.docker.engine.EngineResponse
 
 class BuildResult {
 
-    String imageId
-    List<Object> log
+  String imageId
+  List<Object> log
 
-    EngineResponse response
+  EngineResponse response
 }

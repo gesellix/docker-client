@@ -21,226 +21,226 @@ import static de.gesellix.docker.client.stack.ManageStackClient.LabelNamespace
 
 class ManageStackClientTest extends Specification {
 
-    EngineClient httpClient = Mock(EngineClient)
-    DockerResponseHandler responseHandler = Mock(DockerResponseHandler)
-    ManageService manageService = Mock(ManageService)
-    ManageTask manageTask = Mock(ManageTask)
-    ManageNode manageNode = Mock(ManageNode)
-    ManageNetwork manageNetwork = Mock(ManageNetwork)
-    ManageSecret manageSecret = Mock(ManageSecret)
-    ManageConfig manageConfig = Mock(ManageConfig)
-    ManageSystem manageSystem = Mock(ManageSystem)
-    ManageAuthentication manageAuthentication = Mock(ManageAuthentication)
+  EngineClient httpClient = Mock(EngineClient)
+  DockerResponseHandler responseHandler = Mock(DockerResponseHandler)
+  ManageService manageService = Mock(ManageService)
+  ManageTask manageTask = Mock(ManageTask)
+  ManageNode manageNode = Mock(ManageNode)
+  ManageNetwork manageNetwork = Mock(ManageNetwork)
+  ManageSecret manageSecret = Mock(ManageSecret)
+  ManageConfig manageConfig = Mock(ManageConfig)
+  ManageSystem manageSystem = Mock(ManageSystem)
+  ManageAuthentication manageAuthentication = Mock(ManageAuthentication)
 
-    ManageStackClient service
+  ManageStackClient service
 
-    def setup() {
-        service = new ManageStackClient(
-                httpClient,
-                responseHandler,
-                manageService,
-                manageTask,
-                manageNode,
-                manageNetwork,
-                manageSecret,
-                manageConfig,
-                manageSystem,
-                manageAuthentication)
-    }
+  def setup() {
+    service = new ManageStackClient(
+        httpClient,
+        responseHandler,
+        manageService,
+        manageTask,
+        manageNode,
+        manageNetwork,
+        manageSecret,
+        manageConfig,
+        manageSystem,
+        manageAuthentication)
+  }
 
-    def "list stacks"() {
-        when:
-        Collection<ManageStackClient.Stack> stacks = service.lsStacks()
+  def "list stacks"() {
+    when:
+    Collection<ManageStackClient.Stack> stacks = service.lsStacks()
 
-        then:
-        1 * manageService.services([filters: [label: [(LabelNamespace): true]]]) >> new EngineResponse(
-                content: [
-                        [Spec: [Labels: [(LabelNamespace): "service1"]]],
-                        [Spec: [Labels: [(LabelNamespace): "service2"]]],
-                        [Spec: [Labels: [(LabelNamespace): "service1"]]]
-                ]
-        )
-        and:
-        stacks as List == [
-                new ManageStackClient.Stack(name: "service1", services: 2),
-                new ManageStackClient.Stack(name: "service2", services: 1)
+    then:
+    1 * manageService.services([filters: [label: [(LabelNamespace): true]]]) >> new EngineResponse(
+        content: [
+            [Spec: [Labels: [(LabelNamespace): "service1"]]],
+            [Spec: [Labels: [(LabelNamespace): "service2"]]],
+            [Spec: [Labels: [(LabelNamespace): "service1"]]]
         ]
-    }
+    )
+    and:
+    stacks as List == [
+        new ManageStackClient.Stack(name: "service1", services: 2),
+        new ManageStackClient.Stack(name: "service2", services: 1)
+    ]
+  }
 
-    def "list tasks in stack"() {
-        given:
-        String namespace = "the-stack"
-        String namespaceFilter = "${LabelNamespace}=${namespace}"
-        def expectedResponse = new EngineResponse()
+  def "list tasks in stack"() {
+    given:
+    String namespace = "the-stack"
+    String namespaceFilter = "${LabelNamespace}=${namespace}"
+    def expectedResponse = new EngineResponse()
 
-        when:
-        def tasks = service.stackPs(namespace)
+    when:
+    def tasks = service.stackPs(namespace)
 
-        then:
-        1 * manageTask.tasks([filters: [label: [(namespaceFilter): true]]]) >> expectedResponse
-        and:
-        tasks == expectedResponse
-    }
+    then:
+    1 * manageTask.tasks([filters: [label: [(namespaceFilter): true]]]) >> expectedResponse
+    and:
+    tasks == expectedResponse
+  }
 
-    def "list filtered tasks in stack"() {
-        given:
-        String namespace = "the-stack"
-        String namespaceFilter = "${LabelNamespace}=${namespace}"
-        def expectedResponse = new EngineResponse()
+  def "list filtered tasks in stack"() {
+    given:
+    String namespace = "the-stack"
+    String namespaceFilter = "${LabelNamespace}=${namespace}"
+    def expectedResponse = new EngineResponse()
 
-        when:
-        def tasks = service.stackPs(namespace, [label: [foo: true]])
+    when:
+    def tasks = service.stackPs(namespace, [label: [foo: true]])
 
-        then:
-        1 * manageTask.tasks([filters: [
-                label: [
-                        foo              : true,
-                        (namespaceFilter): true]]]) >> expectedResponse
-        and:
-        tasks == expectedResponse
-    }
+    then:
+    1 * manageTask.tasks([filters: [
+        label: [
+            foo              : true,
+            (namespaceFilter): true]]]) >> expectedResponse
+    and:
+    tasks == expectedResponse
+  }
 
-    def "list services in stack"() {
-        given:
-        String namespace = "the-stack"
-        String namespaceFilter = "${LabelNamespace}=${namespace}"
-        def expectedResponse = new EngineResponse()
+  def "list services in stack"() {
+    given:
+    String namespace = "the-stack"
+    String namespaceFilter = "${LabelNamespace}=${namespace}"
+    def expectedResponse = new EngineResponse()
 
-        when:
-        def services = service.stackServices(namespace)
+    when:
+    def services = service.stackServices(namespace)
 
-        then:
-        1 * manageService.services([filters: [label: [(namespaceFilter): true]]]) >> expectedResponse
-        and:
-        services == expectedResponse
-    }
+    then:
+    1 * manageService.services([filters: [label: [(namespaceFilter): true]]]) >> expectedResponse
+    and:
+    services == expectedResponse
+  }
 
-    def "list filtered services in stack"() {
-        given:
-        String namespace = "the-stack"
-        String namespaceFilter = "${LabelNamespace}=${namespace}"
-        def expectedResponse = new EngineResponse()
+  def "list filtered services in stack"() {
+    given:
+    String namespace = "the-stack"
+    String namespaceFilter = "${LabelNamespace}=${namespace}"
+    def expectedResponse = new EngineResponse()
 
-        when:
-        def services = service.stackServices(namespace, [label: [bar: true]])
+    when:
+    def services = service.stackServices(namespace, [label: [bar: true]])
 
-        then:
-        1 * manageService.services([filters: [
-                label: [
-                        bar              : true,
-                        (namespaceFilter): true]]]) >> expectedResponse
-        and:
-        services == expectedResponse
-    }
+    then:
+    1 * manageService.services([filters: [
+        label: [
+            bar              : true,
+            (namespaceFilter): true]]]) >> expectedResponse
+    and:
+    services == expectedResponse
+  }
 
-    def "remove a stack"() {
-        given:
-        String namespace = "the-stack"
-        String namespaceFilter = "${LabelNamespace}=${namespace}"
+  def "remove a stack"() {
+    given:
+    String namespace = "the-stack"
+    String namespaceFilter = "${LabelNamespace}=${namespace}"
 
-        when:
-        service.stackRm(namespace)
+    when:
+    service.stackRm(namespace)
 
-        then:
-        1 * manageService.services([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
-                content: [[ID: "service1-id"]]
-        )
-        then:
-        1 * manageNetwork.networks([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
-                content: [[Id: "network1-id"]]
-        )
-        then:
-        1 * manageSecret.secrets([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
-                content: [[ID: "secret1-id"]]
-        )
-        then:
-        1 * manageConfig.configs([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
-                content: [[ID: "config1-id"]]
-        )
+    then:
+    1 * manageService.services([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
+        content: [[ID: "service1-id"]]
+    )
+    then:
+    1 * manageNetwork.networks([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
+        content: [[Id: "network1-id"]]
+    )
+    then:
+    1 * manageSecret.secrets([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
+        content: [[ID: "secret1-id"]]
+    )
+    then:
+    1 * manageConfig.configs([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
+        content: [[ID: "config1-id"]]
+    )
 
-        then:
-        1 * manageService.rmService("service1-id")
-        then:
-        1 * manageNetwork.rmNetwork("network1-id")
-        then:
-        1 * manageSecret.rmSecret("secret1-id")
-        then:
-        1 * manageConfig.rmConfig("config1-id")
-    }
+    then:
+    1 * manageService.rmService("service1-id")
+    then:
+    1 * manageNetwork.rmNetwork("network1-id")
+    then:
+    1 * manageSecret.rmSecret("secret1-id")
+    then:
+    1 * manageConfig.rmConfig("config1-id")
+  }
 
-    def "deploy an empty stack"() {
-        given:
-        String namespace = "the-stack"
-        String namespaceFilter = "${LabelNamespace}=${namespace}"
+  def "deploy an empty stack"() {
+    given:
+    String namespace = "the-stack"
+    String namespaceFilter = "${LabelNamespace}=${namespace}"
 
-        when:
-        service.stackDeploy(namespace, new DeployStackConfig(), new DeployStackOptions())
+    when:
+    service.stackDeploy(namespace, new DeployStackConfig(), new DeployStackOptions())
 
-        then:
-        manageSystem.info() >> new EngineResponse(content: [Swarm: [ControlAvailable: true]])
-        1 * manageNetwork.networks([
-                filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse()
-        1 * manageService.services([
-                filters: ['label': [(namespaceFilter): true]]]) >> new EngineResponse()
-    }
+    then:
+    manageSystem.info() >> new EngineResponse(content: [Swarm: [ControlAvailable: true]])
+    1 * manageNetwork.networks([
+        filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse()
+    1 * manageService.services([
+        filters: ['label': [(namespaceFilter): true]]]) >> new EngineResponse()
+  }
 
-    def "deploy a stack"() {
-        given:
-        String namespace = "the-stack"
-        String namespaceFilter = "${LabelNamespace}=${namespace}"
-        DeployStackConfig config = new DeployStackConfig()
-        config.services["service1"] = new StackService(taskTemplate: [containerSpec: [:]])
-        config.networks["network1"] = new StackNetwork(labels: [foo: 'bar'])
-        config.secrets["secret1"] = new StackSecret(name: "secret-name-1", data: 'secret'.bytes)
-        config.configs["config1"] = new StackConfig(name: "config-name-1", data: 'config'.bytes)
+  def "deploy a stack"() {
+    given:
+    String namespace = "the-stack"
+    String namespaceFilter = "${LabelNamespace}=${namespace}"
+    DeployStackConfig config = new DeployStackConfig()
+    config.services["service1"] = new StackService(taskTemplate: [containerSpec: [:]])
+    config.networks["network1"] = new StackNetwork(labels: [foo: 'bar'])
+    config.secrets["secret1"] = new StackSecret(name: "secret-name-1", data: 'secret'.bytes)
+    config.configs["config1"] = new StackConfig(name: "config-name-1", data: 'config'.bytes)
 
-        when:
-        service.stackDeploy(namespace, config, new DeployStackOptions())
+    when:
+    service.stackDeploy(namespace, config, new DeployStackOptions())
 
-        then:
-        manageSystem.info() >> new EngineResponse(content: [Swarm: [ControlAvailable: true]])
+    then:
+    manageSystem.info() >> new EngineResponse(content: [Swarm: [ControlAvailable: true]])
 
-        and:
-        1 * manageNetwork.networks([
-                filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse()
-        1 * manageNetwork.createNetwork("the-stack_network1", [
-                'ipam'      : [:],
-                'driverOpts': [:],
-                'labels'    : [
-                        'foo'           : 'bar',
-                        (LabelNamespace): namespace],
-                'driver'    : null,
-                'internal'  : false,
-                'attachable': false])
+    and:
+    1 * manageNetwork.networks([
+        filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse()
+    1 * manageNetwork.createNetwork("the-stack_network1", [
+        'ipam'      : [:],
+        'driverOpts': [:],
+        'labels'    : [
+            'foo'           : 'bar',
+            (LabelNamespace): namespace],
+        'driver'    : null,
+        'internal'  : false,
+        'attachable': false])
 
-        and:
-        1 * manageSecret.secrets([filters: [name: ["secret-name-1"]]]) >> new EngineResponse(
-                content: []
-        )
-        1 * manageSecret.createSecret("secret-name-1", 'secret'.bytes, [(LabelNamespace): namespace]) >> new EngineResponse(
-                content: []
-        )
+    and:
+    1 * manageSecret.secrets([filters: [name: ["secret-name-1"]]]) >> new EngineResponse(
+        content: []
+    )
+    1 * manageSecret.createSecret("secret-name-1", 'secret'.bytes, [(LabelNamespace): namespace]) >> new EngineResponse(
+        content: []
+    )
 
-        and:
-        1 * manageConfig.configs([filters: [name: ["config-name-1"]]]) >> new EngineResponse(
-                content: []
-        )
-        1 * manageConfig.createConfig("config-name-1", 'config'.bytes, [(LabelNamespace): namespace]) >> new EngineResponse(
-                content: []
-        )
+    and:
+    1 * manageConfig.configs([filters: [name: ["config-name-1"]]]) >> new EngineResponse(
+        content: []
+    )
+    1 * manageConfig.createConfig("config-name-1", 'config'.bytes, [(LabelNamespace): namespace]) >> new EngineResponse(
+        content: []
+    )
 
-        and:
-        1 * manageService.services([
-                filters: ['label': [(namespaceFilter): true]]]) >> new EngineResponse()
-        1 * manageService.createService(
-                [
-                        'endpointSpec': [:],
-                        'taskTemplate': [containerSpec: [:]],
-                        'mode'        : [:],
-                        'labels'      : [(LabelNamespace): namespace],
-                        'updateConfig': [:],
-                        'networks'    : [:],
-                        'name'        : 'the-stack_service1'],
-                [:])
-    }
+    and:
+    1 * manageService.services([
+        filters: ['label': [(namespaceFilter): true]]]) >> new EngineResponse()
+    1 * manageService.createService(
+        [
+            'endpointSpec': [:],
+            'taskTemplate': [containerSpec: [:]],
+            'mode'        : [:],
+            'labels'      : [(LabelNamespace): namespace],
+            'updateConfig': [:],
+            'networks'    : [:],
+            'name'        : 'the-stack_service1'],
+        [:])
+  }
 }

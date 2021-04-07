@@ -19,5 +19,4 @@ interface ManagePlugin {
 //    TODO rm          Remove one or more plugins
 
 //    TODO set         Change settings for a plugin
-
 }

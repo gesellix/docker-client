@@ -6,32 +6,33 @@ import groovy.json.JsonBuilder
 import spock.lang.Specification
 
 class ManageTaskClientTest extends Specification {
-    EngineClient httpClient = Mock(EngineClient)
-    ManageTaskClient service
 
-    def setup() {
-        service = new ManageTaskClient(httpClient, Mock(DockerResponseHandler))
-    }
+  EngineClient httpClient = Mock(EngineClient)
+  ManageTaskClient service
 
-    def "list tasks with query"() {
-        given:
-        def filters = [name: ["service-name"]]
-        def expectedFilterValue = new JsonBuilder(filters).toString()
-        def query = [filters: filters]
+  def setup() {
+    service = new ManageTaskClient(httpClient, Mock(DockerResponseHandler))
+  }
 
-        when:
-        service.tasks(query)
+  def "list tasks with query"() {
+    given:
+    def filters = [name: ["service-name"]]
+    def expectedFilterValue = new JsonBuilder(filters).toString()
+    def query = [filters: filters]
 
-        then:
-        1 * httpClient.get([path : "/tasks",
-                            query: [filters: expectedFilterValue]]) >> [status: [success: true]]
-    }
+    when:
+    service.tasks(query)
 
-    def "inspect task"() {
-        when:
-        service.inspectTask("task-id")
+    then:
+    1 * httpClient.get([path : "/tasks",
+                        query: [filters: expectedFilterValue]]) >> [status: [success: true]]
+  }
 
-        then:
-        1 * httpClient.get([path: "/tasks/task-id"]) >> [status: [success: true]]
-    }
+  def "inspect task"() {
+    when:
+    service.inspectTask("task-id")
+
+    then:
+    1 * httpClient.get([path: "/tasks/task-id"]) >> [status: [success: true]]
+  }
 }

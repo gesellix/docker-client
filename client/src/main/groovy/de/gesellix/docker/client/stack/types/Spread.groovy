@@ -4,5 +4,6 @@ import groovy.transform.ToString
 
 @ToString
 class Spread {
-    String spreadDescriptor
+
+  String spreadDescriptor
 }

@@ -2,7 +2,7 @@ package de.gesellix.docker.client
 
 interface DockerAsyncCallback {
 
-    def onEvent(event)
+  def onEvent(def event)
 
-    def onFinish()
+  def onFinish()
 }

@@ -7,9 +7,9 @@ import groovy.transform.ToString
 @ToString(excludes = "data")
 class StackConfig {
 
-    String name
-    byte[] data
-    Map<String, String> labels = [:]
-    Driver driver
-    Driver templating
+  String name
+  byte[] data
+  Map<String, String> labels = [:]
+  Driver driver
+  Driver templating
 }

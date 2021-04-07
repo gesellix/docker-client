@@ -7,6 +7,6 @@ import groovy.transform.ToString
 @ToString
 class Driver {
 
-    String name
-    Map<String, String> options
+  String name
+  Map<String, String> options
 }

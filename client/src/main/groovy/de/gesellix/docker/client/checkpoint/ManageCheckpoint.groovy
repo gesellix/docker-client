@@ -7,5 +7,4 @@ interface ManageCheckpoint {
 //    TODO ls          List checkpoints for a container
 
 //    TODO rm          Remove a checkpoint
-
 }

@@ -4,9 +4,9 @@ import de.gesellix.docker.engine.EngineResponse
 
 interface ManageTask {
 
-    EngineResponse tasks()
+  EngineResponse tasks()
 
-    EngineResponse tasks(query)
+  EngineResponse tasks(query)
 
-    def inspectTask(name)
+  def inspectTask(name)
 }

@@ -5,6 +5,6 @@ import groovy.transform.EqualsAndHashCode
 @EqualsAndHashCode
 class CredsStoreHelperResult {
 
-    String error
-    Map<String, Object> data
+  String error
+  Map<String, Object> data
 }
