@@ -23,7 +23,7 @@ dependencies {
     implementation("com.squareup.okio:okio") {
       version {
         strictly("[2.5,3)")
-        prefer("2.8.0")
+        prefer("2.10.0")
       }
     }
     listOf(

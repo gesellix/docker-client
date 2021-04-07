@@ -15,11 +15,7 @@ val dependencyVersions = listOf(
   "org.codehaus.groovy:groovy-sql:2.5.13",
   "org.codehaus.groovy:groovy-templates:2.5.13",
   "org.codehaus.groovy:groovy-test:2.5.13",
-  "org.codehaus.groovy:groovy-xml:2.5.13",
-  "org.squareup.moshi:moshi:1.11.0",
-  "org.squareup.moshi:moshi-kotlin:1.11.0",
-  "org.squareup.okhttp3:okhttp:4.9.0",
-  "org.squareup.okio:okio:2.9.0"
+  "org.codehaus.groovy:groovy-xml:2.5.13"
 )
 
 val dependencyVersionsByGroup = mapOf<String, String>()
