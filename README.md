@@ -1,13 +1,10 @@
 [![Build Status](https://img.shields.io/github/workflow/status/gesellix/docker-client/Publish?style=for-the-badge)](https://github.com/gesellix/docker-client/actions)
 [![Maven Central](https://img.shields.io/maven-central/v/de.gesellix/docker-client.svg?style=for-the-badge&maxAge=86400)](https://search.maven.org/search?q=g:de.gesellix%20AND%20a:docker-client)
+[![API Coverage](https://img.shields.io/static/v1?label=API%20Coverage%20(v1.31)&message=104%2F122%20endpoints&color=blue&style=for-the-badge)](https://github.com/gesellix/docker-client/blob/master/supported-api.md)
 
 # Docker Client
 
 A Docker HTTP client for the Java VM written in Groovy
-
-[Engine API v1.31 Coverage: 104/122 endpoints](https://github.com/gesellix/docker-client/blob/master/supported-api.md)
-
-<a href='https://ko-fi.com/A0443PQL' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://az743702.vo.msecnd.net/cdn/kofi4.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
 This client library aims at supporting all existing [Docker api endpoints](https://docs.docker.com/engine/api/),
  which effectively allows to use it in place of the official Docker client binary.
@@ -141,6 +138,8 @@ The developer api is quite rough, but that's where you can certainly help: I'll 
  should help _**you**_ to get it working without digging too deep into the source code.
  So, all I need is an indication about how you'd like that convenience layer to look like.
  Feel free to create an issue where we can discuss how your use case could be implemented!
+
+<a href='https://ko-fi.com/A0443PQL' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://az743702.vo.msecnd.net/cdn/kofi4.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
 ## Publishing/Release Workflow
 
