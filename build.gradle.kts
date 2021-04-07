@@ -8,7 +8,7 @@ plugins {
 
 val dependencyVersions = listOf(
   "junit:junit:4.13",
-  "org.codehaus.groovy:groovy:2.5.13",
+  "org.codehaus.groovy:groovy:3.0.7",
   "org.codehaus.groovy:groovy-json:2.5.13",
   "org.codehaus.groovy:groovy-macro:2.5.13",
   "org.codehaus.groovy:groovy-nio:2.5.13",
