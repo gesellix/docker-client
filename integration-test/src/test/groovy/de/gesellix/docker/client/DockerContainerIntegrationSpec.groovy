@@ -2,6 +2,7 @@ package de.gesellix.docker.client
 
 import de.gesellix.docker.client.container.ArchiveUtil
 import de.gesellix.docker.engine.AttachConfig
+import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.docker.websocket.DefaultWebSocketListener
 import de.gesellix.util.IOUtils
 import groovy.json.JsonOutput
@@ -120,6 +121,15 @@ class DockerContainerIntegrationSpec extends Specification {
         dockerClient.wait(containerId)
         dockerClient.rm(containerId)
         dockerClient.rmi(imageName)
+    }
+
+    def "inspect missing container"() {
+        when:
+        dockerClient.inspectContainer("random-${UUID.randomUUID()}").content
+
+        then:
+        def exception = thrown(DockerClientException)
+        ((EngineResponse) exception.detail).status.code == 404
     }
 
     def "diff"() {
