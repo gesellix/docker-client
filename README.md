@@ -1,11 +1,11 @@
+[![Build Status](https://img.shields.io/github/workflow/status/gesellix/docker-client/Publish?style=for-the-badge)](https://github.com/gesellix/docker-client/actions)
+[![Maven Central](https://img.shields.io/maven-central/v/de.gesellix/docker-client.svg?style=for-the-badge&maxAge=86400)](https://search.maven.org/search?q=g:de.gesellix%20AND%20a:docker-client)
+
 # Docker Client
 
 A Docker HTTP client for the Java VM written in Groovy
 
-[![Publish](https://github.com/gesellix/docker-client/actions/workflows/cd.yml/badge.svg)](https://github.com/gesellix/docker-client/actions/workflows/cd.yml)
-
 [Engine API v1.31 Coverage: 104/122 endpoints](https://github.com/gesellix/docker-client/blob/master/supported-api.md)
-[Latest version](https://search.maven.org/artifact/de.gesellix/docker-client)
 
 <a href='https://ko-fi.com/A0443PQL' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://az743702.vo.msecnd.net/cdn/kofi4.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
@@ -142,16 +142,9 @@ The developer api is quite rough, but that's where you can certainly help: I'll 
  So, all I need is an indication about how you'd like that convenience layer to look like.
  Feel free to create an issue where we can discuss how your use case could be implemented!
 
-## Release Workflow
+## Publishing/Release Workflow
 
-There are multiple GitHub Action Workflows for the different steps in the package's lifecycle:
-
-- CI: Builds and checks incoming changes on a pull request
-    - triggered on every push to a non-default branch
-- CD: Publishes the Gradle artifacts to GitHub Package Registry
-    - triggered only on pushes to the default branch
-- Release: Publishes Gradle artifacts to Sonatype and releases them to Maven Central
-    - triggered on a published GitHub release using the underlying tag as artifact version, e.g. via `git tag -m "$MESSAGE" v$(date +"%Y-%m-%dT%H-%M-%S")`
+See RELEASE.md
 
 ## License
 
