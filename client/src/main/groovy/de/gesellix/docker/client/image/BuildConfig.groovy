@@ -11,9 +11,9 @@ import static de.gesellix.docker.client.Timeout.TEN_MINUTES
 @ToString
 class BuildConfig {
 
-    Map<String, Object> query = ["rm": true]
-    Map<String, Object> options = [:]
+  Map<String, Object> query = ["rm": true]
+  Map<String, Object> options = [:]
 
-    DockerAsyncCallback callback
-    Timeout timeout = TEN_MINUTES
+  DockerAsyncCallback callback
+  Timeout timeout = TEN_MINUTES
 }

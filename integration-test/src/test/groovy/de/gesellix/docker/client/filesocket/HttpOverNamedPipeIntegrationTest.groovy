@@ -20,56 +20,56 @@ import static org.spockframework.util.Assert.fail
 @Requires({ SystemUtils.IS_OS_WINDOWS && LocalDocker.available() })
 class HttpOverNamedPipeIntegrationTest extends Specification {
 
-    def "http over named pipe"() {
-        given:
-        DockerClient docker = new DockerClientImpl()
-        def npipeExe = new NpipeExecutable().createNpipeExe(docker)
+  def "http over named pipe"() {
+    given:
+    DockerClient docker = new DockerClientImpl()
+    def npipeExe = new NpipeExecutable().createNpipeExe(docker)
 
-        def pipePath = "//./pipe/echo_pipe"
+    def pipePath = "//./pipe/echo_pipe"
 
-        def npipeLatch = new CountDownLatch(1)
-        def process = runNpipe(npipeExe, pipePath, npipeLatch)
-        npipeLatch.await(5, SECONDS)
+    def npipeLatch = new CountDownLatch(1)
+    def process = runNpipe(npipeExe, pipePath, npipeLatch)
+    npipeLatch.await(5, SECONDS)
 
-        EngineClient httpClient = new OkDockerClient("npipe://${pipePath}")
+    EngineClient httpClient = new OkDockerClient("npipe://${pipePath}")
 
-        when:
-        def response = httpClient.post([path              : "/foo",
-                                        requestContentType: "text/plain",
-                                        body              : new ByteArrayInputStream("hello world".bytes)])
+    when:
+    def response = httpClient.post([path              : "/foo",
+                                    requestContentType: "text/plain",
+                                    body              : new ByteArrayInputStream("hello world".bytes)])
 
-        then:
-        response.status.code == 200
-        response.content == "[echo] hello world"
+    then:
+    response.status.code == 200
+    response.content == "[echo] hello world"
 
-        cleanup:
-        actSilently { httpClient?.post([path: "/exit"]) }
-        actSilently { process.waitFor(5, SECONDS) }
-        actSilently { docker.rm("npipe") }
+    cleanup:
+    actSilently { httpClient?.post([path: "/exit"]) }
+    actSilently { process.waitFor(5, SECONDS) }
+    actSilently { docker.rm("npipe") }
+  }
+
+  def actSilently(Closure action) {
+    try {
+      action()
+    }
+    catch (Exception ignored) {
+    }
+  }
+
+  def runNpipe(File npipeExe, String pipePath, CountDownLatch npipeLatch) {
+    def logProcessStartup = { String line ->
+      log.info(line)
+      if (line.contains(pipePath)) {
+        npipeLatch.countDown()
+      }
     }
 
-    def actSilently(Closure action) {
-        try {
-            action()
-        }
-        catch (Exception ignored) {
-        }
+    def process = "cmd /c \"${npipeExe.absolutePath} ${pipePath}\"".execute()
+    Thread.start { process.in.eachLine logProcessStartup }
+    Thread.start { process.err.eachLine logProcessStartup }
+    if (!process.alive) {
+      fail("couldn't create a named pipe [${process.exitValue()}]")
     }
-
-    def runNpipe(File npipeExe, String pipePath, CountDownLatch npipeLatch) {
-        def logProcessStartup = { String line ->
-            log.info(line)
-            if (line.contains(pipePath)) {
-                npipeLatch.countDown()
-            }
-        }
-
-        def process = "cmd /c \"${npipeExe.absolutePath} ${pipePath}\"".execute()
-        Thread.start { process.in.eachLine logProcessStartup }
-        Thread.start { process.err.eachLine logProcessStartup }
-        if (!process.alive) {
-            fail("couldn't create a named pipe [${process.exitValue()}]")
-        }
-        return process
-    }
+    return process
+  }
 }

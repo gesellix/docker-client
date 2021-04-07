@@ -5,11 +5,11 @@ import groovy.transform.ToString
 @ToString
 class StackService {
 
-    String name
-    def labels = [:]
-    def endpointSpec = [:]
-    def mode = [:]
-    def taskTemplate = [:]
-    def updateConfig = [:]
-    def networks = [:]
+  String name
+  def labels = [:]
+  def endpointSpec = [:]
+  def mode = [:]
+  def taskTemplate = [:]
+  def updateConfig = [:]
+  def networks = [:]
 }

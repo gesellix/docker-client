@@ -4,5 +4,6 @@ import groovy.transform.ToString
 
 @ToString
 class PlacementPreferences {
-    Spread spread
+
+  Spread spread
 }

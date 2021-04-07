@@ -8,48 +8,48 @@ import spock.lang.Specification
 @Requires({ LocalDocker.available() })
 class DockerVolumeIntegrationSpec extends Specification {
 
-    static DockerClient dockerClient
+  static DockerClient dockerClient
 
-    def setupSpec() {
-        dockerClient = new DockerClientImpl()
-    }
+  def setupSpec() {
+    dockerClient = new DockerClientImpl()
+  }
 
-    def ping() {
-        when:
-        def ping = dockerClient.ping()
+  def ping() {
+    when:
+    def ping = dockerClient.ping()
 
-        then:
-        ping.status.code == 200
-        ping.content == "OK"
-    }
+    then:
+    ping.status.code == 200
+    ping.content == "OK"
+  }
 
-    def "list volumes"() {
-        when:
-        def volumes = dockerClient.volumes().content
+  def "list volumes"() {
+    when:
+    def volumes = dockerClient.volumes().content
 
-        then:
-        volumes.Volumes instanceof List
-    }
+    then:
+    volumes.Volumes instanceof List
+  }
 
-    def "create volume"() {
-        given:
-        def volumeConfig = [Name      : "my-volume",
-                            Driver    : "local",
-                            DriverOpts: [:]]
+  def "create volume"() {
+    given:
+    def volumeConfig = [Name      : "my-volume",
+                        Driver    : "local",
+                        DriverOpts: [:]]
 
-        when:
-        def volume = dockerClient.createVolume(volumeConfig).content
+    when:
+    def volume = dockerClient.createVolume(volumeConfig).content
 
-        then:
-        volume.Name == "my-volume"
-        and:
-        volume.Driver == "local"
-        and:
-        volume.Mountpoint
-        and:
-        volume.Scope == "local"
+    then:
+    volume.Name == "my-volume"
+    and:
+    volume.Driver == "local"
+    and:
+    volume.Mountpoint
+    and:
+    volume.Scope == "local"
 
-        cleanup:
-        dockerClient.rmVolume("my-volume")
-    }
+    cleanup:
+    dockerClient.rmVolume("my-volume")
+  }
 }

@@ -6,27 +6,27 @@ interface ManageVolume {
 
 //    create      Create a volume
 
-    EngineResponse createVolume()
+  EngineResponse createVolume()
 
-    EngineResponse createVolume(config)
+  EngineResponse createVolume(config)
 
 //    inspect     Display detailed information on one or more volumes
 
-    EngineResponse inspectVolume(name)
+  EngineResponse inspectVolume(name)
 
 //    ls          List volumes
 
-    EngineResponse volumes()
+  EngineResponse volumes()
 
-    EngineResponse volumes(query)
+  EngineResponse volumes(query)
 
 //    prune       Remove all unused volumes
 
-    EngineResponse pruneVolumes()
+  EngineResponse pruneVolumes()
 
-    EngineResponse pruneVolumes(query)
+  EngineResponse pruneVolumes(query)
 
 //    rm          Remove one or more volumes
 
-    EngineResponse rmVolume(name)
+  EngineResponse rmVolume(name)
 }

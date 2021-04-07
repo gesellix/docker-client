@@ -6,10 +6,11 @@ import groovy.transform.ToString
 @EqualsAndHashCode
 @ToString
 class StackNetwork {
-    Map<String, String> labels = [:]
-    String driver
-    Map<String, String> driverOpts = [:]
-    boolean internal
-    boolean attachable
-    Map<String, Object> ipam = [:]
+
+  Map<String, String> labels = [:]
+  String driver
+  Map<String, String> driverOpts = [:]
+  boolean internal
+  boolean attachable
+  Map<String, Object> ipam = [:]
 }

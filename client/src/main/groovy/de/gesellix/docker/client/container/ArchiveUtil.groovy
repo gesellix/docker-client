@@ -9,49 +9,51 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 @Slf4j
 class ArchiveUtil {
 
-    byte[] extractSingleTarEntry(InputStream tarContent, String filename) {
-        def stream = new TarArchiveInputStream(new BufferedInputStream(tarContent))
+  byte[] extractSingleTarEntry(InputStream tarContent, String filename) {
+    def stream = new TarArchiveInputStream(new BufferedInputStream(tarContent))
 
-        TarArchiveEntry entry = stream.nextTarEntry
-        log.debug("entry size: ${entry.size}")
+    TarArchiveEntry entry = stream.nextTarEntry
+    log.debug("entry size: ${entry.size}")
 
-        def entryName = entry.name
-        if (!filename.endsWith(entryName)) {
-            log.warn("entry name '${entryName}' doesn't match expected filename '${filename}'")
-        } else {
-            log.debug("entry name: ${entryName}")
-        }
-
-        byte[] content = new byte[(int) entry.size]
-        log.debug("going to read ${content.length} bytes")
-
-        stream.read(content, 0, content.length)
-        IOUtils.closeQuietly(stream)
-
-        return content
+    def entryName = entry.name
+    if (!filename.endsWith(entryName)) {
+      log.warn("entry name '${entryName}' doesn't match expected filename '${filename}'")
+    }
+    else {
+      log.debug("entry name: ${entryName}")
     }
 
-    int copySingleTarEntry(InputStream tarContent, String filename, OutputStream target) {
-        def stream = new TarArchiveInputStream(new BufferedInputStream(tarContent))
+    byte[] content = new byte[(int) entry.size]
+    log.debug("going to read ${content.length} bytes")
 
-        TarArchiveEntry entry = stream.nextTarEntry
-        log.debug("entry size: ${entry.size}")
+    stream.read(content, 0, content.length)
+    IOUtils.closeQuietly(stream)
 
-        def entryName = entry.name
-        if (!filename.endsWith(entryName)) {
-            log.warn("entry name '${entryName}' doesn't match expected filename '${filename}'")
-        } else {
-            log.debug("entry name: ${entryName}")
-        }
+    return content
+  }
 
-        byte[] content = new byte[(int) entry.size]
-        log.debug("going to read ${content.length} bytes")
+  int copySingleTarEntry(InputStream tarContent, String filename, OutputStream target) {
+    def stream = new TarArchiveInputStream(new BufferedInputStream(tarContent))
 
-        def source = Okio.source(stream)
-        def sink = Okio.sink(target)
-        IOUtils.copy(source, sink)
-        sink.flush()
-        sink.close()
-        return entry.size
+    TarArchiveEntry entry = stream.nextTarEntry
+    log.debug("entry size: ${entry.size}")
+
+    def entryName = entry.name
+    if (!filename.endsWith(entryName)) {
+      log.warn("entry name '${entryName}' doesn't match expected filename '${filename}'")
     }
+    else {
+      log.debug("entry name: ${entryName}")
+    }
+
+    byte[] content = new byte[(int) entry.size]
+    log.debug("going to read ${content.length} bytes")
+
+    def source = Okio.source(stream)
+    def sink = Okio.sink(target)
+    IOUtils.copy(source, sink)
+    sink.flush()
+    sink.close()
+    return entry.size
+  }
 }

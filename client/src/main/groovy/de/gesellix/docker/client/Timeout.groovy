@@ -6,18 +6,18 @@ import static java.util.concurrent.TimeUnit.MINUTES
 
 class Timeout {
 
-    long timeout
-    TimeUnit unit
+  long timeout
+  TimeUnit unit
 
-    final static Timeout TEN_MINUTES = new Timeout(10, MINUTES)
+  final static Timeout TEN_MINUTES = new Timeout(10, MINUTES)
 
-    Timeout(long timeout, TimeUnit unit) {
-        this.timeout = timeout
-        this.unit = unit
-    }
+  Timeout(long timeout, TimeUnit unit) {
+    this.timeout = timeout
+    this.unit = unit
+  }
 
-    @Override
-    String toString() {
-        return "$timeout $unit"
-    }
+  @Override
+  String toString() {
+    return "$timeout $unit"
+  }
 }

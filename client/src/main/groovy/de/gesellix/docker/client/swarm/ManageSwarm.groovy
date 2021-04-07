@@ -2,49 +2,49 @@ package de.gesellix.docker.client.swarm
 
 interface ManageSwarm {
 
-    Map newSwarmConfig()
+  Map newSwarmConfig()
 
 //    init        Initialize a swarm
 
-    def initSwarm()
+  def initSwarm()
 
-    def initSwarm(Map config)
+  def initSwarm(Map config)
 
 //    join        Join a swarm as a node and/or manager
 
-    def joinSwarm(Map config)
+  def joinSwarm(Map config)
 
 //    join-token  Manage join tokens
 
-    def inspectSwarm()
+  def inspectSwarm()
 
-    def inspectSwarm(Map query)
+  def inspectSwarm(Map query)
 
-    def getSwarmWorkerToken()
+  def getSwarmWorkerToken()
 
-    def rotateSwarmWorkerToken()
+  def rotateSwarmWorkerToken()
 
-    def getSwarmManagerToken()
+  def getSwarmManagerToken()
 
-    def rotateSwarmManagerToken()
+  def rotateSwarmManagerToken()
 
 //    leave       Leave the swarm
 
-    def leaveSwarm()
+  def leaveSwarm()
 
-    def leaveSwarm(Map query)
+  def leaveSwarm(Map query)
 
 //    unlock      Unlock swarm
 
-    def unlockSwarm(String unlockKey)
+  def unlockSwarm(String unlockKey)
 
 //    unlock-key  Manage the unlock key
 
-    def getSwarmManagerUnlockKey()
+  def getSwarmManagerUnlockKey()
 
-    def rotateSwarmManagerUnlockKey()
+  def rotateSwarmManagerUnlockKey()
 
 //    update      Update the swarm
 
-    def updateSwarm(Map query, Map config)
+  def updateSwarm(Map query, Map config)
 }

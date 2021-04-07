@@ -11,445 +11,445 @@ import spock.lang.Specification
 
 class ManageImageClientTest extends Specification {
 
-    ManageImageClient service
-    EngineClient httpClient = Mock(EngineClient)
-    DockerResponseHandler responseHandler = Mock(DockerResponseHandler)
-    ManageAuthentication manageAuthentication = Mock(ManageAuthentication)
+  ManageImageClient service
+  EngineClient httpClient = Mock(EngineClient)
+  DockerResponseHandler responseHandler = Mock(DockerResponseHandler)
+  ManageAuthentication manageAuthentication = Mock(ManageAuthentication)
 
-    def setup() {
-        service = Spy(ManageImageClient, constructorArgs: [
-                httpClient,
-                responseHandler,
-                manageAuthentication])
+  def setup() {
+    service = Spy(ManageImageClient, constructorArgs: [
+        httpClient,
+        responseHandler,
+        manageAuthentication])
+  }
+
+  def "build with defaults"() {
+    def buildContext = new ByteArrayInputStream([42] as byte[])
+    def authConfigs = ["for-test": new AuthConfig(username: "foo")]
+
+    when:
+    def imageId = service.build(buildContext).imageId
+
+    then:
+    1 * manageAuthentication.getAllAuthConfigs() >> authConfigs
+    1 * manageAuthentication.encodeAuthConfigs(authConfigs) >> "base-64-encoded"
+    1 * httpClient.post([path              : "/build",
+                         query             : ["rm": true],
+                         body              : buildContext,
+                         headers           : ["X-Registry-Config": "base-64-encoded"],
+                         requestContentType: "application/octet-stream",
+                         async             : false]) >> [content: [[stream: "Successfully built foo"],
+                                                                   [aux: [ID: "sha256:23455"]]]]
+    and:
+    responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[1]?.message == "docker build failed"
     }
+    and:
+    imageId == "sha256:23455"
+  }
 
-    def "build with defaults"() {
-        def buildContext = new ByteArrayInputStream([42] as byte[])
-        def authConfigs = ["for-test": new AuthConfig(username: "foo")]
+  def "build with query (legacy)"() {
+    def buildContext = new ByteArrayInputStream([42] as byte[])
+    def query = ["rm": false]
+    def authConfigs = ["for-test": new AuthConfig(username: "foo")]
 
-        when:
-        def imageId = service.build(buildContext).imageId
+    when:
+    def imageId = service.build(buildContext, query)
 
-        then:
-        1 * manageAuthentication.getAllAuthConfigs() >> authConfigs
-        1 * manageAuthentication.encodeAuthConfigs(authConfigs) >> "base-64-encoded"
-        1 * httpClient.post([path              : "/build",
-                             query             : ["rm": true],
-                             body              : buildContext,
-                             headers           : ["X-Registry-Config": "base-64-encoded"],
-                             requestContentType: "application/octet-stream",
-                             async             : false]) >> [content: [[stream: "Successfully built foo"],
-                                                                       [aux: [ID: "sha256:23455"]]]]
-        and:
-        responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-            assert arguments[1]?.message == "docker build failed"
-        }
-        and:
-        imageId == "sha256:23455"
+    then:
+    1 * manageAuthentication.getAllAuthConfigs() >> authConfigs
+    1 * manageAuthentication.encodeAuthConfigs(authConfigs) >> "base-64-encoded"
+    1 * httpClient.post([path              : "/build",
+                         query             : ["rm": false],
+                         headers           : ["X-Registry-Config": "base-64-encoded"],
+                         body              : buildContext,
+                         requestContentType: "application/octet-stream",
+                         async             : false]) >> [content: [[stream: "Successfully built bar"],
+                                                                   [aux: [ID: "sha256:23455"]]]]
+    and:
+    responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[1]?.message == "docker build failed"
     }
+    and:
+    imageId == "sha256:23455"
+  }
 
-    def "build with query (legacy)"() {
-        def buildContext = new ByteArrayInputStream([42] as byte[])
-        def query = ["rm": false]
-        def authConfigs = ["for-test": new AuthConfig(username: "foo")]
+  def "build with query"() {
+    def buildContext = new ByteArrayInputStream([42] as byte[])
+    def query = ["rm": false]
+    def buildOptions = [EncodedRegistryConfig: "."]
 
-        when:
-        def imageId = service.build(buildContext, query)
+    when:
+    def imageId = service.build(buildContext, new BuildConfig(query: query, options: buildOptions)).imageId
 
-        then:
-        1 * manageAuthentication.getAllAuthConfigs() >> authConfigs
-        1 * manageAuthentication.encodeAuthConfigs(authConfigs) >> "base-64-encoded"
-        1 * httpClient.post([path              : "/build",
-                             query             : ["rm": false],
-                             headers           : ["X-Registry-Config": "base-64-encoded"],
-                             body              : buildContext,
-                             requestContentType: "application/octet-stream",
-                             async             : false]) >> [content: [[stream: "Successfully built bar"],
-                                                                       [aux: [ID: "sha256:23455"]]]]
-        and:
-        responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-            assert arguments[1]?.message == "docker build failed"
-        }
-        and:
-        imageId == "sha256:23455"
+    then:
+    1 * httpClient.post([path              : "/build",
+                         query             : ["rm": false],
+                         headers           : ["X-Registry-Config": "."],
+                         body              : buildContext,
+                         requestContentType: "application/octet-stream",
+                         async             : false]) >> [content: [[stream: "Successfully built bar"],
+                                                                   [aux: [ID: "sha256:23455"]]]]
+    and:
+    responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[1]?.message == "docker build failed"
     }
+    and:
+    imageId == "sha256:23455"
+  }
 
-    def "build with query"() {
-        def buildContext = new ByteArrayInputStream([42] as byte[])
-        def query = ["rm": false]
-        def buildOptions = [EncodedRegistryConfig: "."]
+  def "build with custom auth"() {
+    def buildContext = new ByteArrayInputStream([42] as byte[])
+    def query = ["rm": false]
+    def buildOptions = [EncodedRegistryConfig: "NDI="]
 
-        when:
-        def imageId = service.build(buildContext, new BuildConfig(query: query, options: buildOptions)).imageId
+    when:
+    def imageId = service.build(buildContext, new BuildConfig(query: query, options: buildOptions)).imageId
 
-        then:
-        1 * httpClient.post([path              : "/build",
-                             query             : ["rm": false],
-                             headers           : ["X-Registry-Config": "."],
-                             body              : buildContext,
-                             requestContentType: "application/octet-stream",
-                             async             : false]) >> [content: [[stream: "Successfully built bar"],
-                                                                       [aux: [ID: "sha256:23455"]]]]
-        and:
-        responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-            assert arguments[1]?.message == "docker build failed"
-        }
-        and:
-        imageId == "sha256:23455"
+    then:
+    1 * httpClient.post([path              : "/build",
+                         query             : ["rm": false],
+                         body              : buildContext,
+                         headers           : ["X-Registry-Config": "NDI="],
+                         requestContentType: "application/octet-stream",
+                         async             : false]) >> [content: [[stream: "Successfully built bar"],
+                                                                   [aux: [ID: "sha256:23455"]]]]
+    and:
+    responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[1]?.message == "docker build failed"
     }
+    and:
+    imageId == "sha256:23455"
+  }
 
-    def "build with custom auth"() {
-        def buildContext = new ByteArrayInputStream([42] as byte[])
-        def query = ["rm": false]
-        def buildOptions = [EncodedRegistryConfig: "NDI="]
+  def "build with highly similar log messages"() {
+    given:
+    def buildContext = new ByteArrayInputStream([42] as byte[])
+    def authConfigs = ["for-test": new AuthConfig(username: "foo")]
 
-        when:
-        def imageId = service.build(buildContext, new BuildConfig(query: query, options: buildOptions)).imageId
+    when:
+    def imageId = service.build(buildContext).imageId
 
-        then:
-        1 * httpClient.post([path              : "/build",
-                             query             : ["rm": false],
-                             body              : buildContext,
-                             headers           : ["X-Registry-Config": "NDI="],
-                             requestContentType: "application/octet-stream",
-                             async             : false]) >> [content: [[stream: "Successfully built bar"],
-                                                                       [aux: [ID: "sha256:23455"]]]]
-        and:
-        responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-            assert arguments[1]?.message == "docker build failed"
-        }
-        and:
-        imageId == "sha256:23455"
+    then:
+    1 * manageAuthentication.getAllAuthConfigs() >> authConfigs
+    1 * manageAuthentication.encodeAuthConfigs(authConfigs) >> "base-64-encoded"
+    1 * httpClient.post([path              : "/build",
+                         query             : ["rm": true],
+                         headers           : ["X-Registry-Config": "base-64-encoded"],
+                         body              : buildContext,
+                         requestContentType: "application/octet-stream",
+                         async             : false]) >> [content: [
+        ["stream": "Successfully built arrow tornado\n"],
+        ["stream": "Successfully built 5d45b2048a3e\n"]
+    ]]
+    and:
+    responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[1]?.message == "docker build failed"
     }
+    and:
+    imageId == "5d45b2048a3e"
+  }
 
-    def "build with highly similar log messages"() {
-        given:
-        def buildContext = new ByteArrayInputStream([42] as byte[])
-        def authConfigs = ["for-test": new AuthConfig(username: "foo")]
+  def "tag with defaults"() {
+    when:
+    service.tag("an-image", "registry:port/username/image-name:a-tag")
 
-        when:
-        def imageId = service.build(buildContext).imageId
+    then:
+    1 * httpClient.post([path : "/images/an-image/tag",
+                         query: [repo: "registry:port/username/image-name",
+                                 tag : "a-tag"]]) >> new EngineResponse()
+  }
 
-        then:
-        1 * manageAuthentication.getAllAuthConfigs() >> authConfigs
-        1 * manageAuthentication.encodeAuthConfigs(authConfigs) >> "base-64-encoded"
-        1 * httpClient.post([path              : "/build",
-                             query             : ["rm": true],
-                             headers           : ["X-Registry-Config": "base-64-encoded"],
-                             body              : buildContext,
-                             requestContentType: "application/octet-stream",
-                             async             : false]) >> [content: [
-                ["stream": "Successfully built arrow tornado\n"],
-                ["stream": "Successfully built 5d45b2048a3e\n"]
-        ]]
-        and:
-        responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-            assert arguments[1]?.message == "docker build failed"
-        }
-        and:
-        imageId == "5d45b2048a3e"
+  def "push with defaults"() {
+    when:
+    service.push("an-image")
+
+    then:
+    1 * httpClient.post([path   : "/images/an-image/push",
+                         query  : [tag: ""],
+                         headers: ["X-Registry-Auth": "."]]) >> [status: [success: true]]
+  }
+
+  def "push with auth"() {
+    when:
+    service.push("an-image:a-tag", "some-base64-encoded-auth")
+
+    then:
+    1 * httpClient.post([path   : "/images/an-image/push",
+                         query  : [tag: "a-tag"],
+                         headers: ["X-Registry-Auth": "some-base64-encoded-auth"]]) >> [status: [success: true]]
+  }
+
+  def "push with registry"() {
+    when:
+    service.push("an-image", ".", "registry:port")
+
+    then:
+    1 * httpClient.post([path : "/images/an-image/tag",
+                         query: [repo: "registry:port/an-image",
+                                 tag : ""]]) >> new EngineResponse()
+    then:
+    1 * httpClient.post([path   : "/images/registry:port/an-image/push",
+                         query  : [tag: ""],
+                         headers: ["X-Registry-Auth": "."]]) >> [status: [success: true]]
+  }
+
+  def "pull with defaults"() {
+    given:
+    service.images([:]) >> [content: [:]]
+
+    when:
+    service.pull("an-image")
+
+    then:
+    1 * httpClient.post([path   : "/images/create",
+                         query  : [fromImage: "an-image",
+                                   tag      : ""],
+                         headers: ["X-Registry-Auth": "."]]) >> [content: [[id: "image-id"]]]
+    and:
+    1 * responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[1]?.message == "docker images create failed"
     }
+  }
 
-    def "tag with defaults"() {
-        when:
-        service.tag("an-image", "registry:port/username/image-name:a-tag")
+  def "pull with tag"() {
+    given:
+    service.images([:]) >> [content: [:]]
 
-        then:
-        1 * httpClient.post([path : "/images/an-image/tag",
-                             query: [repo: "registry:port/username/image-name",
-                                     tag : "a-tag"]]) >> new EngineResponse()
+    when:
+    service.pull("an-image", "a-tag")
+
+    then:
+    1 * httpClient.post([path   : "/images/create",
+                         query  : [fromImage: "an-image",
+                                   tag      : "a-tag"],
+                         headers: ["X-Registry-Auth": "."]]) >> [content: [[id: "image-id"]]]
+    and:
+    1 * responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[1]?.message == "docker images create failed"
     }
+  }
 
-    def "push with defaults"() {
-        when:
-        service.push("an-image")
+  def "pull with registry"() {
+    given:
+    service.images([:]) >> [content: [:]]
 
-        then:
-        1 * httpClient.post([path   : "/images/an-image/push",
-                             query  : [tag: ""],
-                             headers: ["X-Registry-Auth": "."]]) >> [status: [success: true]]
+    when:
+    service.pull("an-image", "", ".", "registry:port")
+
+    then:
+    1 * httpClient.post([path   : "/images/create",
+                         query  : [fromImage: "registry:port/an-image",
+                                   tag      : ""],
+                         headers: ["X-Registry-Auth": "."]]) >> [content: [[id: "image-id"]]]
+    and:
+    1 * responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[1]?.message == "docker images create failed"
     }
+  }
 
-    def "push with auth"() {
-        when:
-        service.push("an-image:a-tag", "some-base64-encoded-auth")
+  def "pull with auth"() {
+    given:
+    service.images([:]) >> [content: [:]]
 
-        then:
-        1 * httpClient.post([path   : "/images/an-image/push",
-                             query  : [tag: "a-tag"],
-                             headers: ["X-Registry-Auth": "some-base64-encoded-auth"]]) >> [status: [success: true]]
+    when:
+    service.pull("an-image", "", "some-base64-encoded-auth", "registry:port")
+
+    then:
+    1 * httpClient.post([path   : "/images/create",
+                         query  : [fromImage: "registry:port/an-image",
+                                   tag      : ""],
+                         headers: ["X-Registry-Auth": "some-base64-encoded-auth"]]) >> [content: [[id: "image-id"]]]
+    and:
+    1 * responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[1]?.message == "docker images create failed"
     }
+  }
 
-    def "push with registry"() {
-        when:
-        service.push("an-image", ".", "registry:port")
+  def "import from url"() {
+    given:
+    def importUrl = getClass().getResource('importUrl/import-from-url.tar')
 
-        then:
-        1 * httpClient.post([path : "/images/an-image/tag",
-                             query: [repo: "registry:port/an-image",
-                                     tag : ""]]) >> new EngineResponse()
-        then:
-        1 * httpClient.post([path   : "/images/registry:port/an-image/push",
-                             query  : [tag: ""],
-                             headers: ["X-Registry-Auth": "."]]) >> [status: [success: true]]
+    when:
+    def imageId = service.importUrl(importUrl.toString(), "imported-from-url", "foo")
+
+    then:
+    1 * httpClient.post([path : "/images/create",
+                         query: [fromSrc: importUrl.toString(),
+                                 repo   : "imported-from-url",
+                                 tag    : "foo"]]) >> [content: [[status: "image-id"]]]
+    and:
+    responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[1]?.message == "docker import from url failed"
     }
+    and:
+    imageId == "image-id"
+  }
 
-    def "pull with defaults"() {
-        given:
-        service.images([:]) >> [content: [:]]
+  def "import from stream"() {
+    given:
+    def archive = getClass().getResourceAsStream('importUrl/import-from-url.tar')
 
-        when:
-        service.pull("an-image")
+    when:
+    def imageId = service.importStream(archive, "imported-from-url", "foo")
 
-        then:
-        1 * httpClient.post([path   : "/images/create",
-                             query  : [fromImage: "an-image",
-                                       tag      : ""],
-                             headers: ["X-Registry-Auth": "."]]) >> [content: [[id: "image-id"]]]
-        and:
-        1 * responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-            assert arguments[1]?.message == "docker images create failed"
-        }
+    then:
+    1 * httpClient.post([path              : "/images/create",
+                         body              : archive,
+                         requestContentType: "application/x-tar",
+                         query             : [fromSrc: '-',
+                                              repo   : "imported-from-url",
+                                              tag    : "foo"]]) >> [content: [status: "image-id"]]
+    and:
+    responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[1]?.message == "docker import from stream failed"
     }
+    and:
+    imageId == "image-id"
+  }
 
-    def "pull with tag"() {
-        given:
-        service.images([:]) >> [content: [:]]
+  def "save one repository"() {
+    given:
+    def tarStream = new ByteArrayInputStream("tar".bytes)
 
-        when:
-        service.pull("an-image", "a-tag")
+    when:
+    def response = service.save("image:tag")
 
-        then:
-        1 * httpClient.post([path   : "/images/create",
-                             query  : [fromImage: "an-image",
-                                       tag      : "a-tag"],
-                             headers: ["X-Registry-Auth": "."]]) >> [content: [[id: "image-id"]]]
-        and:
-        1 * responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-            assert arguments[1]?.message == "docker images create failed"
-        }
+    then:
+    1 * httpClient.get([path: "/images/image:tag/get"]) >> [status: [success: true],
+                                                            stream: tarStream]
+    and:
+    responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[1]?.message == "docker save failed"
     }
+    and:
+    response.stream == tarStream
+  }
 
-    def "pull with registry"() {
-        given:
-        service.images([:]) >> [content: [:]]
+  def "save multiple repositories"() {
+    given:
+    def tarStream = new ByteArrayInputStream("tar".bytes)
 
-        when:
-        service.pull("an-image", "", ".", "registry:port")
+    when:
+    def response = service.save("image:tag1", "an-id")
 
-        then:
-        1 * httpClient.post([path   : "/images/create",
-                             query  : [fromImage: "registry:port/an-image",
-                                       tag      : ""],
-                             headers: ["X-Registry-Auth": "."]]) >> [content: [[id: "image-id"]]]
-        and:
-        1 * responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-            assert arguments[1]?.message == "docker images create failed"
-        }
+    then:
+    1 * httpClient.get([path : "/images/get",
+                        query: [names: ["image:tag1", "an-id"]]]) >> [status: [success: true],
+                                                                      stream: tarStream]
+    and:
+    responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[1]?.message == "docker save failed"
     }
+    and:
+    response.stream == tarStream
+  }
 
-    def "pull with auth"() {
-        given:
-        service.images([:]) >> [content: [:]]
+  def "load"() {
+    given:
+    def archive = getClass().getResourceAsStream('importUrl/import-from-url.tar')
 
-        when:
-        service.pull("an-image", "", "some-base64-encoded-auth", "registry:port")
+    when:
+    def response = service.load(archive)
 
-        then:
-        1 * httpClient.post([path   : "/images/create",
-                             query  : [fromImage: "registry:port/an-image",
-                                       tag      : ""],
-                             headers: ["X-Registry-Auth": "some-base64-encoded-auth"]]) >> [content: [[id: "image-id"]]]
-        and:
-        1 * responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-            assert arguments[1]?.message == "docker images create failed"
-        }
+    then:
+    1 * httpClient.post([path              : "/images/load",
+                         body              : archive,
+                         requestContentType: "application/x-tar"]) >> [status: [success: true]]
+    and:
+    responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
+      assert arguments[1]?.message == "docker load failed"
     }
+    and:
+    response.status == new EngineResponseStatus(success: true)
+  }
 
-    def "import from url"() {
-        given:
-        def importUrl = getClass().getResource('importUrl/import-from-url.tar')
+  def "inspect image"() {
+    when:
+    service.inspectImage("an-image")
 
-        when:
-        def imageId = service.importUrl(importUrl.toString(), "imported-from-url", "foo")
+    then:
+    1 * httpClient.get([path: "/images/an-image/json"]) >> [status : [success: true],
+                                                            content: [:]]
+  }
 
-        then:
-        1 * httpClient.post([path : "/images/create",
-                             query: [fromSrc: importUrl.toString(),
-                                     repo   : "imported-from-url",
-                                     tag    : "foo"]]) >> [content: [[status: "image-id"]]]
-        and:
-        responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-            assert arguments[1]?.message == "docker import from url failed"
-        }
-        and:
-        imageId == "image-id"
-    }
+  def "history"() {
+    when:
+    service.history("an-image")
 
-    def "import from stream"() {
-        given:
-        def archive = getClass().getResourceAsStream('importUrl/import-from-url.tar')
+    then:
+    1 * httpClient.get([path: "/images/an-image/history"])
+  }
 
-        when:
-        def imageId = service.importStream(archive, "imported-from-url", "foo")
+  def "images with defaults"() {
+    when:
+    service.images()
 
-        then:
-        1 * httpClient.post([path              : "/images/create",
-                             body              : archive,
-                             requestContentType: "application/x-tar",
-                             query             : [fromSrc: '-',
-                                                  repo   : "imported-from-url",
-                                                  tag    : "foo"]]) >> [content: [status: "image-id"]]
-        and:
-        responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-            assert arguments[1]?.message == "docker import from stream failed"
-        }
-        and:
-        imageId == "image-id"
-    }
+    then:
+    1 * httpClient.get([path : "/images/json",
+                        query: [all: false]]) >> [status: [success: true]]
+  }
 
-    def "save one repository"() {
-        given:
-        def tarStream = new ByteArrayInputStream("tar".bytes)
+  def "images with query"() {
+    given:
+    def filters = [dangling: ["true"]]
+    def expectedFilterValue = new JsonBuilder(filters).toString()
+    def query = [all    : true,
+                 filters: filters]
 
-        when:
-        def response = service.save("image:tag")
+    when:
+    service.images(query)
 
-        then:
-        1 * httpClient.get([path: "/images/image:tag/get"]) >> [status: [success: true],
-                                                                stream: tarStream]
-        and:
-        responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-            assert arguments[1]?.message == "docker save failed"
-        }
-        and:
-        response.stream == tarStream
-    }
+    then:
+    1 * httpClient.get([path : "/images/json",
+                        query: [all    : true,
+                                filters: expectedFilterValue]]) >> [status: [success: true]]
+  }
 
-    def "save multiple repositories"() {
-        given:
-        def tarStream = new ByteArrayInputStream("tar".bytes)
+  def "findImageId by image name"() {
+    given:
+    service.images([:]) >> [content: [[RepoTags: ['anImage:latest'],
+                                       Id      : 'the-id']]]
 
-        when:
-        def response = service.save("image:tag1", "an-id")
+    expect:
+    service.findImageId('anImage') == 'the-id'
+  }
 
-        then:
-        1 * httpClient.get([path : "/images/get",
-                            query: [names: ["image:tag1", "an-id"]]]) >> [status: [success: true],
-                                                                          stream: tarStream]
-        and:
-        responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-            assert arguments[1]?.message == "docker save failed"
-        }
-        and:
-        response.stream == tarStream
-    }
+  def "findImageId with missing image"() {
+    given:
+    service.images([:]) >> [content: []]
 
-    def "load"() {
-        given:
-        def archive = getClass().getResourceAsStream('importUrl/import-from-url.tar')
+    expect:
+    service.findImageId('anImage') == 'anImage:latest'
+  }
 
-        when:
-        def response = service.load(archive)
+  def "findImageId by digest"() {
+    given:
+    service.images(_) >> [content: [[RepoDigests: ['anImage@sha256:4711'],
+                                     Id         : 'the-id']]]
 
-        then:
-        1 * httpClient.post([path              : "/images/load",
-                             body              : archive,
-                             requestContentType: "application/x-tar"]) >> [status: [success: true]]
-        and:
-        responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-            assert arguments[1]?.message == "docker load failed"
-        }
-        and:
-        response.status == new EngineResponseStatus(success: true)
-    }
+    expect:
+    service.findImageId('anImage@sha256:4711') == 'the-id'
+  }
 
-    def "inspect image"() {
-        when:
-        service.inspectImage("an-image")
+  def "rmi image"() {
+    when:
+    service.rmi("an-image")
 
-        then:
-        1 * httpClient.get([path: "/images/an-image/json"]) >> [status : [success: true],
-                                                                content: [:]]
-    }
+    then:
+    1 * httpClient.delete([path: "/images/an-image"])
+  }
 
-    def "history"() {
-        when:
-        service.history("an-image")
+  def "pruneImages removes unused images"() {
+    given:
+    def filters = [dangling: true]
+    def expectedFilterValue = new JsonBuilder(filters).toString()
 
-        then:
-        1 * httpClient.get([path: "/images/an-image/history"])
-    }
+    when:
+    service.pruneImages([filters: filters])
 
-    def "images with defaults"() {
-        when:
-        service.images()
-
-        then:
-        1 * httpClient.get([path : "/images/json",
-                            query: [all: false]]) >> [status: [success: true]]
-    }
-
-    def "images with query"() {
-        given:
-        def filters = [dangling: ["true"]]
-        def expectedFilterValue = new JsonBuilder(filters).toString()
-        def query = [all    : true,
-                     filters: filters]
-
-        when:
-        service.images(query)
-
-        then:
-        1 * httpClient.get([path : "/images/json",
-                            query: [all    : true,
-                                    filters: expectedFilterValue]]) >> [status: [success: true]]
-    }
-
-    def "findImageId by image name"() {
-        given:
-        service.images([:]) >> [content: [[RepoTags: ['anImage:latest'],
-                                           Id      : 'the-id']]]
-
-        expect:
-        service.findImageId('anImage') == 'the-id'
-    }
-
-    def "findImageId with missing image"() {
-        given:
-        service.images([:]) >> [content: []]
-
-        expect:
-        service.findImageId('anImage') == 'anImage:latest'
-    }
-
-    def "findImageId by digest"() {
-        given:
-        service.images(_) >> [content: [[RepoDigests: ['anImage@sha256:4711'],
-                                         Id         : 'the-id']]]
-
-        expect:
-        service.findImageId('anImage@sha256:4711') == 'the-id'
-    }
-
-    def "rmi image"() {
-        when:
-        service.rmi("an-image")
-
-        then:
-        1 * httpClient.delete([path: "/images/an-image"])
-    }
-
-    def "pruneImages removes unused images"() {
-        given:
-        def filters = [dangling: true]
-        def expectedFilterValue = new JsonBuilder(filters).toString()
-
-        when:
-        service.pruneImages([filters: filters])
-
-        then:
-        1 * httpClient.post([path : "/images/prune",
-                             query: [filters: expectedFilterValue]]) >> [status: [success: true]]
-    }
+    then:
+    1 * httpClient.post([path : "/images/prune",
+                         query: [filters: expectedFilterValue]]) >> [status: [success: true]]
+  }
 }
