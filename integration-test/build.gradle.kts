@@ -27,7 +27,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[4,4.10)")
-          prefer("4.9.0")
+          prefer("4.9.1")
         }
       }
     }
@@ -74,7 +74,7 @@ dependencies {
   testImplementation("de.gesellix:testutil:[2020-10-03T10-08-28,)")
   testImplementation("org.spockframework:spock-core:1.3-groovy-2.5")
   testRuntimeOnly("cglib:cglib-nodep:3.3.0")
-  testImplementation("org.apache.commons:commons-lang3:3.11")
+  testImplementation("org.apache.commons:commons-lang3:3.12.0")
   testRuntimeOnly("ch.qos.logback:logback-classic:1.2.3")
 }
 tasks.check.get().shouldRunAfter(project(":client").tasks.check)
