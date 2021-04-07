@@ -75,7 +75,7 @@ dependencies {
   implementation("org.codehaus.groovy:groovy-json:[2.5,)")
 
   api("com.squareup.moshi:moshi:[1.9,2)")
-  implementation("com.google.re2j:re2j:1.4")
+  implementation("com.google.re2j:re2j:1.6")
 
   implementation("org.slf4j:slf4j-api:[1.7,)")
   //implementation("org.slf4j:jul-to-slf4j:1.7.30")
