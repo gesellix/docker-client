@@ -589,8 +589,8 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def logFileName = "/log.txt"
     def execCmd = isNativeWindows
-        ? ["cmd", "/V:ON", "/C", "set /p line= & echo #!line!# > ${logFileName}"]
-        : ["/bin/sh", "-c", "read line && echo \"#\$line#\" > ${logFileName}"]
+        ? ["cmd", "/V:ON", "/C", "set /p line= & echo #!line!# > ${logFileName}".toString()]
+        : ["/bin/sh", "-c", "read line && echo \"#\$line#\" > ${logFileName}".toString()]
 
     def execCreateConfig = [
         "AttachStdin" : true,
@@ -933,7 +933,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     then:
     // Something like `*PING 127.0.0.1 (127.0.0.1): 56 data bytes` should appear on StdOut.
-    notThrown()
+    notThrown(Throwable)
 
     cleanup:
     dockerClient.rm(containerId)

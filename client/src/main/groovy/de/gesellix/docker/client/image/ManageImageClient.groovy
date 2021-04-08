@@ -172,7 +172,7 @@ class ManageImageClient implements ManageImage {
   @Override
   EngineResponse history(imageId) {
     log.info "docker history"
-    def response = client.get([path: "/images/${imageId}/history"])
+    def response = client.get([path: "/images/${imageId}/history".toString()])
     return response
   }
 
@@ -209,7 +209,7 @@ class ManageImageClient implements ManageImage {
   @Override
   EngineResponse inspectImage(imageId) {
     log.info "docker inspect image"
-    def response = client.get([path: "/images/${imageId}/json"])
+    def response = client.get([path: "/images/${imageId}/json".toString()])
     return response
   }
 

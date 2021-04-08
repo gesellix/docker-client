@@ -61,7 +61,7 @@ class ManageServiceClient implements ManageService {
   @Override
   rmService(name) {
     log.info "docker service rm"
-    def response = client.delete([path: "/services/$name"])
+    def response = client.delete([path: "/services/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service rm failed"))
     IOUtils.closeQuietly(response.stream)
     return response
@@ -70,7 +70,7 @@ class ManageServiceClient implements ManageService {
   @Override
   EngineResponse inspectService(name) {
     log.info "docker service inspect"
-    def response = client.get([path: "/services/$name"])
+    def response = client.get([path: "/services/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service inspect failed"))
     return response
   }
@@ -78,7 +78,7 @@ class ManageServiceClient implements ManageService {
 //    @Override
 //    logsOfService(service) {
 //        log.info "docker service logs"
-//        def response = client.get([path : "/services/$service/logs",
+//        def response = client.get([path : "/services/$service/logs".toString(),
 //                                            query: [tail: "all"]])
 //        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service logs failed"))
 //        return response
@@ -94,7 +94,7 @@ class ManageServiceClient implements ManageService {
     if (updateOptions.EncodedRegistryAuth) {
       headers["X-Registry-Auth"] = updateOptions.EncodedRegistryAuth as String
     }
-    def response = client.post([path              : "/services/$name/update",
+    def response = client.post([path              : "/services/$name/update".toString(),
                                 query             : actualQuery,
                                 headers           : headers,
                                 body              : config,

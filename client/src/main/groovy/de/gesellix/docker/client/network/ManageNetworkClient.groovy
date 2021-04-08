@@ -33,7 +33,7 @@ class ManageNetworkClient implements ManageNetwork {
   @Override
   EngineResponse inspectNetwork(name) {
     log.info "docker network inspect"
-    def response = client.get([path: "/networks/$name"])
+    def response = client.get([path: "/networks/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network inspect failed"))
     return response
   }
@@ -55,7 +55,7 @@ class ManageNetworkClient implements ManageNetwork {
   @Override
   EngineResponse connectNetwork(network, container) {
     log.info "docker network connect"
-    def response = client.post([path              : "/networks/$network/connect",
+    def response = client.post([path              : "/networks/$network/connect".toString(),
                                 body              : [container: container],
                                 requestContentType: "application/json"])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network connect failed"))
@@ -65,7 +65,7 @@ class ManageNetworkClient implements ManageNetwork {
   @Override
   EngineResponse disconnectNetwork(network, container) {
     log.info "docker network disconnect"
-    def response = client.post([path              : "/networks/$network/disconnect",
+    def response = client.post([path              : "/networks/$network/disconnect".toString(),
                                 body              : [container: container],
                                 requestContentType: "application/json"])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network disconnect failed"))
@@ -75,7 +75,7 @@ class ManageNetworkClient implements ManageNetwork {
   @Override
   EngineResponse rmNetwork(name) {
     log.info "docker network rm"
-    def response = client.delete([path: "/networks/$name"])
+    def response = client.delete([path: "/networks/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network rm failed"))
     return response
   }

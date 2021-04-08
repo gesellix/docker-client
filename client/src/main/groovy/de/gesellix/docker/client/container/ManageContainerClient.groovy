@@ -204,7 +204,7 @@ class ManageContainerClient implements ManageContainer {
   @Override
   EngineResponse diff(containerId) {
     log.info "docker diff"
-    def response = client.get([path: "/containers/${containerId}/changes"])
+    def response = client.get([path: "/containers/${containerId}/changes".toString()])
     return response
   }
 
@@ -301,7 +301,7 @@ class ManageContainerClient implements ManageContainer {
   EngineResponse export(container) {
     log.info "docker export $container"
 
-    def response = client.get([path: "/containers/$container/export"])
+    def response = client.get([path: "/containers/$container/export".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker export failed"))
 
     return response
@@ -310,7 +310,7 @@ class ManageContainerClient implements ManageContainer {
   @Override
   EngineResponse inspectContainer(containerId) {
     log.info "docker inspect container"
-    def response = client.get([path: "/containers/${containerId}/json"])
+    def response = client.get([path: "/containers/${containerId}/json".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker inspect failed"))
     return response
   }
@@ -345,7 +345,7 @@ class ManageContainerClient implements ManageContainer {
     // the stream is the raw data from the process PTY and client’s stdin.
     // When the TTY is disabled, then the stream is multiplexed to separate stdout and stderr.
     def multiplexStreams = !inspectContainer(container).content.Config.Tty
-    def response = client.get([path : "/containers/${container}/logs",
+    def response = client.get([path : "/containers/${container}/logs".toString(),
                                query: actualQuery,
                                async: async])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker logs failed"))
@@ -461,7 +461,7 @@ class ManageContainerClient implements ManageContainer {
     log.info "docker stats"
 
     def async = callback ? true : false
-    def response = client.get([path : "/containers/${container}/stats",
+    def response = client.get([path : "/containers/${container}/stats".toString(),
                                query: [stream: async],
                                async: async])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker stats failed"))
@@ -487,7 +487,7 @@ class ManageContainerClient implements ManageContainer {
     log.info "docker top"
 
     def query = ps_args ? [ps_args: ps_args] : [:]
-    def response = client.get([path : "/containers/${containerIdOrName}/top",
+    def response = client.get([path : "/containers/${containerIdOrName}/top".toString(),
                                query: query])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker top failed"))
     return response

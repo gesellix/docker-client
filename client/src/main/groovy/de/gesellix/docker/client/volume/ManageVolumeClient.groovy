@@ -33,7 +33,7 @@ class ManageVolumeClient implements ManageVolume {
   @Override
   EngineResponse inspectVolume(name) {
     log.info "docker volume inspect"
-    def response = client.get([path: "/volumes/$name"])
+    def response = client.get([path: "/volumes/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume inspect failed"))
     return response
   }
@@ -51,7 +51,7 @@ class ManageVolumeClient implements ManageVolume {
   @Override
   EngineResponse rmVolume(name) {
     log.info "docker volume rm"
-    def response = client.delete([path: "/volumes/$name"])
+    def response = client.delete([path: "/volumes/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume rm failed"))
     return response
   }

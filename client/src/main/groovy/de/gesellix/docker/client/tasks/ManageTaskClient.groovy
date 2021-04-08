@@ -33,7 +33,7 @@ class ManageTaskClient implements ManageTask {
   @Override
   inspectTask(name) {
     log.info "docker task inspect"
-    def response = client.get([path: "/tasks/$name"])
+    def response = client.get([path: "/tasks/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker task inspect failed"))
     return response
   }
