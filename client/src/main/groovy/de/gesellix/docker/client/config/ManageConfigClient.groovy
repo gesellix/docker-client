@@ -36,7 +36,7 @@ class ManageConfigClient implements ManageConfig {
   @Override
   EngineResponse inspectConfig(String configId) {
     log.info "docker config inspect"
-    def response = client.get([path: "/configs/${configId}"])
+    def response = client.get([path: "/configs/${configId}".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker config inspect failed"))
     return response
   }
@@ -55,7 +55,7 @@ class ManageConfigClient implements ManageConfig {
   @Override
   EngineResponse rmConfig(String configId) {
     log.info "docker config rm"
-    def response = client.delete([path: "/configs/${configId}"])
+    def response = client.delete([path: "/configs/${configId}".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker config rm failed"))
     return response
   }
@@ -63,7 +63,7 @@ class ManageConfigClient implements ManageConfig {
   @Override
   EngineResponse updateConfig(String configId, version, configSpec) {
     log.info "docker config update"
-    def response = client.post([path              : "/configs/${configId}/update",
+    def response = client.post([path              : "/configs/${configId}/update".toString(),
                                 query             : [version: version],
                                 body              : configSpec,
                                 requestContentType: "application/json"])

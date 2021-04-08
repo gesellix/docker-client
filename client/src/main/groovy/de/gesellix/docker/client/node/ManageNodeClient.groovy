@@ -43,7 +43,7 @@ class ManageNodeClient implements ManageNode {
   @Override
   inspectNode(name) {
     log.info "docker node inspect"
-    def response = client.get([path: "/nodes/$name"])
+    def response = client.get([path: "/nodes/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker node inspect failed"))
     return response
   }
@@ -51,7 +51,7 @@ class ManageNodeClient implements ManageNode {
   @Override
   rmNode(name) {
     log.info "docker node rm"
-    def response = client.delete([path: "/nodes/$name"])
+    def response = client.delete([path: "/nodes/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker node rm failed"))
     return response
   }
@@ -61,7 +61,7 @@ class ManageNodeClient implements ManageNode {
     log.info "docker node update"
     def actualQuery = query ?: [:]
     config = config ?: [:]
-    def response = client.post([path              : "/nodes/$name/update",
+    def response = client.post([path              : "/nodes/$name/update".toString(),
                                 query             : actualQuery,
                                 body              : config,
                                 requestContentType: "application/json"])

@@ -36,7 +36,7 @@ class ManageSecretClient implements ManageSecret {
   @Override
   EngineResponse inspectSecret(String secretId) {
     log.info "docker secret inspect"
-    def response = client.get([path: "/secrets/${secretId}"])
+    def response = client.get([path: "/secrets/${secretId}".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker secret inspect failed"))
     return response
   }
@@ -55,7 +55,7 @@ class ManageSecretClient implements ManageSecret {
   @Override
   EngineResponse rmSecret(String secretId) {
     log.info "docker secret rm"
-    def response = client.delete([path: "/secrets/${secretId}"])
+    def response = client.delete([path: "/secrets/${secretId}".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker secret rm failed"))
     return response
   }
@@ -63,7 +63,7 @@ class ManageSecretClient implements ManageSecret {
   @Override
   EngineResponse updateSecret(String secretId, version, secretSpec) {
     log.info "docker secret update"
-    def response = client.post([path              : "/secrets/${secretId}/update",
+    def response = client.post([path              : "/secrets/${secretId}/update".toString(),
                                 query             : [version: version],
                                 body              : secretSpec,
                                 requestContentType: "application/json"])

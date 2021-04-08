@@ -19,7 +19,7 @@ class ManageDistributionService implements ManageDistribution {
   @Override
   EngineResponse descriptor(String image) {
     log.info "docker distribution descriptor"
-    def response = client.get([path: "/distribution/${image}/json"])
+    def response = client.get([path: "/distribution/${image}/json".toString()])
     return response
   }
 }
