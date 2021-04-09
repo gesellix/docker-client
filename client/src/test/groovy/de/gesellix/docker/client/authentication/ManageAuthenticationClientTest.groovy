@@ -79,7 +79,8 @@ class ManageAuthenticationClientTest extends Specification {
   def "read all auth configs"() {
     given:
     def oldDockerConfig = System.clearProperty("docker.config")
-    def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg-with-credsStore', DockerClient)
+    def configFile = "/auth/dockercfg-with-credsStore-${System.properties['os.name'].toString().toLowerCase().capitalize().replaceAll("\\s", "_")}"
+    def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile(configFile, DockerClient)
     env.indexUrl_v1 >> 'https://index.docker.io/v1/'
 
     when:
@@ -194,7 +195,8 @@ class ManageAuthenticationClientTest extends Specification {
   def "read default docker config file using credsStore"() {
     given:
     def oldDockerConfig = System.clearProperty("docker.config")
-    def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg-with-credsStore', DockerClient)
+    def configFile = "/auth/dockercfg-with-credsStore-${System.properties['os.name'].toString().toLowerCase().capitalize().replaceAll("\\s", "_")}"
+    def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile(configFile, DockerClient)
     env.indexUrl_v1 >> 'https://index.docker.io/v1/'
     env.getDockerConfigFile() >> expectedConfigFile
 
