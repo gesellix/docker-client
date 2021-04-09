@@ -87,12 +87,10 @@ class ManageAuthenticationClientTest extends Specification {
 
     then:
     result.size() == 1
-    result["https://index.docker.io/v1/"] == new AuthConfig(
-        username: "gesellix",
-        password: "-yet-another-password-",
-        email: null, // TODO email is deprecated - but do we need it nevertheless?
-        serveraddress: "https://index.docker.io/v1/"
-    )
+    AuthConfig authConfig = result["https://index.docker.io/v1/"]
+    authConfig.serveraddress == "https://index.docker.io/v1/"
+    authConfig.username == "gesellix"
+    authConfig.password =~ ".+"
 
     cleanup:
     if (oldDockerConfig) {
@@ -201,14 +199,13 @@ class ManageAuthenticationClientTest extends Specification {
     env.getDockerConfigFile() >> expectedConfigFile
 
     when:
-    def result = service.readDefaultAuthConfig()
+    def authConfig = service.readDefaultAuthConfig()
 
     then:
     1 * service.readAuthConfig(null, expectedConfigFile)
-    result == new AuthConfig(username: "gesellix",
-                             password: "-yet-another-password-",
-                             email: null,
-                             serveraddress: "https://index.docker.io/v1/")
+    authConfig.serveraddress == "https://index.docker.io/v1/"
+    authConfig.username == "gesellix"
+    authConfig.password =~ ".+"
 
     cleanup:
     if (oldDockerConfig) {
