@@ -74,8 +74,8 @@ class DockerClientImplIntegrationSpec extends Specification {
     info.DriverStatus.findAll {
       it.first() in expectedDriverStatusProperties
     }.size() == expectedDriverStatusProperties.size()
-    info.HttpProxy == "" || info.HttpProxy == "docker.for.mac.http.internal:3128" || info.HttpProxy == "gateway.docker.internal:3128"
-    info.HttpsProxy == "" || info.HttpsProxy == "docker.for.mac.http.internal:3129" || info.HttpsProxy == "gateway.docker.internal:3129"
+    info.HttpProxy in ["", "http.docker.internal:3128", "docker.for.mac.http.internal:3128", "gateway.docker.internal:3128"]
+    info.HttpsProxy in ["", "http.docker.internal:3128", "docker.for.mac.http.internal:3129", "gateway.docker.internal:3129"]
     info.ID =~ "\\w[\\w-]+"
     info.Images > 0
     info.IndexServerAddress == "https://index.docker.io/v1/"
