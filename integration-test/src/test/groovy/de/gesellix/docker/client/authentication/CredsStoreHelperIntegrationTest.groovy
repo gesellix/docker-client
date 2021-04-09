@@ -85,8 +85,9 @@ class CredsStoreHelperIntegrationTest extends Specification {
     def result = helper.getAuthentication("secretservice")
     then:
     result == new CredsStoreHelperResult(
+        error: null,
         data: [
-            ServerURL: new DockerEnv().indexUrl_v1,
+            ServerURL: "",
             Username : "gesellix",
             Secret   : "-yet-another-password-"
         ]

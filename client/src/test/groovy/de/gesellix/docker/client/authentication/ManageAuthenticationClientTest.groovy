@@ -186,7 +186,7 @@ class ManageAuthenticationClientTest extends Specification {
     def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/config.json', DockerClient)
 
     when:
-    def authDetails = service.readAuthConfig("unkown.example.com", dockerCfg)
+    def authDetails = service.readAuthConfig("unknown.example.com", dockerCfg)
 
     then:
     authDetails == EMPTY_AUTH_CONFIG
