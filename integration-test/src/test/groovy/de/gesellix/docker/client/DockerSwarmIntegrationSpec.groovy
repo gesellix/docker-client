@@ -1,6 +1,6 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.testutil.NetworkInterfaces
+import de.gesellix.docker.testutil.SwarmUtil
 import groovy.util.logging.Slf4j
 import net.jodah.failsafe.Failsafe
 import net.jodah.failsafe.RetryPolicy
@@ -26,7 +26,7 @@ class DockerSwarmIntegrationSpec extends Specification {
   def setupSpec() {
     dockerClient = new DockerClientImpl()
 //        dockerClient.config.apiVersion = "v1.24"
-    swarmAdvertiseAddr = new NetworkInterfaces().getFirstInet4Address()
+    swarmAdvertiseAddr = new SwarmUtil().getAdvertiseAddr()
     performSilently { dockerClient.leaveSwarm([force: true]) }
   }
 

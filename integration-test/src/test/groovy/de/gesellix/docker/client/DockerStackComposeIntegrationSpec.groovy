@@ -2,7 +2,7 @@ package de.gesellix.docker.client
 
 import de.gesellix.docker.client.stack.DeployConfigReader
 import de.gesellix.docker.client.stack.DeployStackOptions
-import de.gesellix.docker.testutil.NetworkInterfaces
+import de.gesellix.docker.testutil.SwarmUtil
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
 import spock.lang.Specification
@@ -21,7 +21,7 @@ class DockerStackComposeIntegrationSpec extends Specification {
   def setupSpec() {
     dockerClient = new DockerClientImpl()
     composeFilePath = Paths.get(getClass().getResource('compose/docker-stack.yml').toURI())
-    swarmAdvertiseAddr = new NetworkInterfaces().getFirstInet4Address()
+    swarmAdvertiseAddr = new SwarmUtil().getAdvertiseAddr()
     performSilently { dockerClient.leaveSwarm([force: true]) }
   }
 
