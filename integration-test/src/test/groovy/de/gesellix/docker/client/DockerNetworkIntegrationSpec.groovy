@@ -1,6 +1,6 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.testutil.NetworkInterfaces
+import de.gesellix.docker.testutil.SwarmUtil
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
 import spock.lang.Specification
@@ -52,8 +52,8 @@ class DockerNetworkIntegrationSpec extends Specification {
     performSilently { dockerClient.leaveSwarm([force: true]) }
     !dockerClient.networks().content.find { it.Name == "test-net" }
     dockerClient.initSwarm([
-        "AdvertiseAddr"  : new NetworkInterfaces().getFirstInet4Address(),
-        "ListenAddr"     : "0.0.0.0:4500",
+        "AdvertiseAddr"  : new SwarmUtil().getAdvertiseAddr(),
+        "ListenAddr"     : "0.0.0.0",
         "ForceNewCluster": false
     ])
 
