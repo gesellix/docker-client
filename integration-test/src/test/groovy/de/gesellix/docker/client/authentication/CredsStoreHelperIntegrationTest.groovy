@@ -82,16 +82,12 @@ class CredsStoreHelperIntegrationTest extends Specification {
   @Requires({ System.properties['user.name'] == 'gesellix' && System.properties['os.name'] == "Linux" })
   def "can get auth from secretservice on Linux"() {
     when:
-    def result = helper.getAuthentication("secretservice")
+    CredsStoreHelperResult result = helper.getAuthentication("secretservice")
     then:
-    result == new CredsStoreHelperResult(
-        error: null,
-        data: [
-            ServerURL: "",
-            Username : "gesellix",
-            Secret   : "-yet-another-password-"
-        ]
-    )
+    result.error == null
+    result.data.ServerURL == ""
+    result.data.Username == "gesellix"
+    result.data.Secret =~ ".+"
   }
 
   @Requires({ System.properties['user.name'] == 'gesellix' && System.properties['os.name'] == "Linux" })
