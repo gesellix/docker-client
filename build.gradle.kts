@@ -14,7 +14,7 @@ val dependencyVersions = listOf(
   "org.codehaus.groovy:groovy-nio:2.5.13",
   "org.codehaus.groovy:groovy-sql:2.5.13",
   "org.codehaus.groovy:groovy-templates:2.5.13",
-  "org.codehaus.groovy:groovy-test:2.5.13",
+  "org.codehaus.groovy:groovy-test:3.0.8",
   "org.codehaus.groovy:groovy-xml:2.5.13"
 )
 
