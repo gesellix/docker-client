@@ -8,5 +8,5 @@ interface ManageTask {
 
   EngineResponse tasks(query)
 
-  def inspectTask(name)
+  EngineResponse inspectTask(name)
 }
