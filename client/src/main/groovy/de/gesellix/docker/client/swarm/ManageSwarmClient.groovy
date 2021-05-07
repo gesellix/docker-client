@@ -2,6 +2,7 @@ package de.gesellix.docker.client.swarm
 
 import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.util.IOUtils
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
@@ -40,12 +41,12 @@ class ManageSwarmClient implements ManageSwarm {
   }
 
   @Override
-  initSwarm() {
+  EngineResponse initSwarm() {
     initSwarm(newSwarmConfig())
   }
 
   @Override
-  initSwarm(Map config) {
+  EngineResponse initSwarm(Map config) {
     log.info "docker swarm init"
 
     /*
@@ -104,51 +105,51 @@ return nil
   }
 
   @Override
-  joinSwarm(Map config) {
+  EngineResponse joinSwarm(Map config) {
     log.info "docker swarm join"
     config = config ?: [:]
-    def response = client.post([path              : "/swarm/join",
-                                body              : config,
-                                requestContentType: "application/json"])
+    EngineResponse response = client.post([path              : "/swarm/join",
+                                           body              : config,
+                                           requestContentType: "application/json"])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm join failed"))
     IOUtils.closeQuietly(response.stream)
     return response
   }
 
   @Override
-  leaveSwarm(Map query = [:]) {
+  EngineResponse leaveSwarm(Map query = [:]) {
     log.info "docker swarm leave"
     def actualQuery = query ?: [:]
-    def response = client.post([path : "/swarm/leave",
-                                query: actualQuery])
+    EngineResponse response = client.post([path : "/swarm/leave",
+                                           query: actualQuery])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm leave failed"))
     IOUtils.closeQuietly(response.stream)
     return response
   }
 
   @Override
-  updateSwarm(Map query, Map config) {
+  EngineResponse updateSwarm(Map query, Map config) {
     log.info "docker swarm update"
     def actualQuery = query ?: [:]
     config = config ?: [:]
-    def response = client.post([path              : "/swarm/update",
-                                query             : actualQuery,
-                                body              : config,
-                                requestContentType: "application/json"])
+    EngineResponse response = client.post([path              : "/swarm/update",
+                                           query             : actualQuery,
+                                           body              : config,
+                                           requestContentType: "application/json"])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm update failed"))
     IOUtils.closeQuietly(response.stream)
     return response
   }
 
   @Override
-  getSwarmWorkerToken() {
+  String getSwarmWorkerToken() {
     log.info "docker swarm join-token worker"
     def swarm = inspectSwarm().content
     return swarm.JoinTokens.Worker
   }
 
   @Override
-  rotateSwarmWorkerToken() {
+  String rotateSwarmWorkerToken() {
     log.info "docker swarm join-token rotate worker token"
 
     def swarm = inspectSwarm().content
@@ -163,14 +164,14 @@ return nil
   }
 
   @Override
-  getSwarmManagerToken() {
+  String getSwarmManagerToken() {
     log.info "docker swarm join-token manager"
     def swarm = inspectSwarm().content
     return swarm.JoinTokens.Manager
   }
 
   @Override
-  rotateSwarmManagerToken() {
+  String rotateSwarmManagerToken() {
     log.info "docker swarm join-token rotate manager token"
 
     def swarm = inspectSwarm().content
@@ -185,7 +186,7 @@ return nil
   }
 
   @Override
-  getSwarmManagerUnlockKey() {
+  String getSwarmManagerUnlockKey() {
     log.info "docker swarm manager unlock key"
     def response = client.get([path: "/swarm/unlockkey"])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("get swarm manager unlock key failed"))
@@ -193,7 +194,7 @@ return nil
   }
 
   @Override
-  rotateSwarmManagerUnlockKey() {
+  String rotateSwarmManagerUnlockKey() {
     log.info "docker swarm join-token rotate manager unlock key"
 
     def swarm = inspectSwarm().content
@@ -208,22 +209,22 @@ return nil
   }
 
   @Override
-  unlockSwarm(String unlockKey) {
+  EngineResponse unlockSwarm(String unlockKey) {
     log.info "docker swarm unlock"
-    def response = client.post([path              : "/swarm/unlock",
-                                body              : [UnlockKey: unlockKey],
-                                requestContentType: "application/json"])
+    EngineResponse response = client.post([path              : "/swarm/unlock",
+                                           body              : [UnlockKey: unlockKey],
+                                           requestContentType: "application/json"])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("unlock swarm failed"))
     return response
   }
 
   @Override
-  inspectSwarm(Map query = [:]) {
+  EngineResponse inspectSwarm(Map query = [:]) {
     log.info "docker swarm inspect"
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
-    def response = client.get([path : "/swarm",
-                               query: actualQuery])
+    EngineResponse response = client.get([path : "/swarm",
+                                          query: actualQuery])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm inspect failed"))
     return response
   }

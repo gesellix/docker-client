@@ -24,17 +24,17 @@ interface ManageService {
 
 //    ps          List the tasks of a service
 
-  def tasksOfService(service)
+  EngineResponse tasksOfService(service)
 
-  def tasksOfService(service, query)
+  EngineResponse tasksOfService(service, query)
 
 //    rm          Remove one or more services
 
-  def rmService(name)
+  EngineResponse rmService(name)
 
 //    scale       Scale one or multiple replicated services
 
-  def scaleService(name, int replicas)
+  EngineResponse scaleService(name, int replicas)
 
 //    update      Update a service
 

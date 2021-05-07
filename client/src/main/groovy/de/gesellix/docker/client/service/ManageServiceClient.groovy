@@ -59,9 +59,9 @@ class ManageServiceClient implements ManageService {
   }
 
   @Override
-  rmService(name) {
+  EngineResponse rmService(name) {
     log.info "docker service rm"
-    def response = client.delete([path: "/services/$name".toString()])
+    EngineResponse response = client.delete([path: "/services/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service rm failed"))
     IOUtils.closeQuietly(response.stream)
     return response
@@ -104,7 +104,7 @@ class ManageServiceClient implements ManageService {
   }
 
   @Override
-  scaleService(name, int replicas) {
+  EngineResponse scaleService(name, int replicas) {
     log.info "docker service scale"
     def service = inspectService(name).content
     def mode = service.Spec.Mode
@@ -116,7 +116,7 @@ class ManageServiceClient implements ManageService {
   }
 
   @Override
-  tasksOfService(service, query = [:]) {
+  EngineResponse tasksOfService(service, query = [:]) {
     log.info "docker service ps"
     def actualQuery = query ?: [:]
     if (!actualQuery.containsKey('filters')) {

@@ -20,9 +20,9 @@ interface ManageContainer {
 
 //    commit      Create a new image from a container's changes
 
-  EngineResponse commit(container, query)
+  EngineResponse commit(String container, Map query)
 
-  EngineResponse commit(container, query, config)
+  EngineResponse commit(String container, Map query, Map config)
 
 //    cp          Copy files/folders between a container and the local filesystem
 
@@ -90,7 +90,7 @@ interface ManageContainer {
 
   EngineResponse ps()
 
-  EngineResponse ps(query)
+  EngineResponse ps(Map<String, ?> query)
 
 //    pause       Pause all processes within one or more containers
 

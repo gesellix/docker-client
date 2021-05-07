@@ -83,7 +83,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse commit(container, query, config = [:]) {
+  EngineResponse commit(String container, Map query, Map config = [:]) {
     log.info "docker commit"
 
     def finalQuery = query ?: [:]
@@ -363,10 +363,10 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse ps(query = [:]) {
+  EngineResponse ps(Map<String, ?> query = [:]) {
     log.info "docker ps"
-    def actualQuery = query ?: [:]
-    def defaults = [all: true, size: false]
+    Map actualQuery = query ?: [:]
+    Map defaults = [all: true, size: false]
     queryUtil.applyDefaults(actualQuery, defaults)
     queryUtil.jsonEncodeFilters(actualQuery)
     def response = client.get([path : "/containers/json",
