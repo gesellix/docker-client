@@ -1,4 +1,4 @@
-package de.gesellix.docker.engine.client.infrastructure;
+package de.gesellix.docker.engine.api;
 
 import java.nio.charset.StandardCharsets;
 
@@ -46,6 +46,8 @@ public class Frame {
    */
   public enum StreamType {
 
+    // special case for `container.tty == false`
+    RAW((byte) -1),
     STDIN((byte) 0),
     STDOUT((byte) 1),
     STDERR((byte) 2),
