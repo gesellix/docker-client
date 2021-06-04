@@ -62,7 +62,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[2.5,)")
-          prefer("2.5.13")
+          prefer("2.5.14")
         }
       }
     }
@@ -91,7 +91,7 @@ dependencies {
 
   testImplementation("de.gesellix:testutil:[2020-10-03T10-08-28,)")
 
-  testImplementation("org.spockframework:spock-core:1.3-groovy-2.5")
+  testImplementation("org.spockframework:spock-core:2.0-groovy-2.5")
   testRuntimeOnly("cglib:cglib-nodep:3.3.0")
 
   testImplementation("org.apache.commons:commons-lang3:3.12.0")
@@ -104,7 +104,7 @@ java {
 
 tasks {
   withType(Test::class.java) {
-    useJUnit()
+    useJUnitPlatform()
 
     // minimal way of providing a special environment variable for the EnvFileParserTest
     environment("A_KNOWN_VARIABLE", "my value")
