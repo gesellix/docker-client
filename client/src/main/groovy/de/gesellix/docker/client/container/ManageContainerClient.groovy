@@ -510,8 +510,9 @@ class ManageContainerClient implements ManageContainer {
   Map<String, EngineResponse> updateContainers(List<String> containers, updateConfig) {
     log.info "docker update '${containers}'"
 
+    EngineClient dockerClient = client
     Map<String, EngineResponse> responses = containers.collectEntries { String container ->
-      def response = client.post([path              : "/containers/${container}/update".toString(),
+      def response = dockerClient.post([path              : "/containers/${container}/update".toString(),
                                   body              : updateConfig,
                                   requestContentType: "application/json"])
       if (response.status?.code != 200) {

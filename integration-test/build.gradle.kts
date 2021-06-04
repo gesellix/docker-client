@@ -62,6 +62,7 @@ dependencies {
     }
   }
   implementation(project(":client"))
+  testImplementation("org.codehaus.groovy:groovy-json:[2.5,)")
   testImplementation("com.kohlschutter.junixsocket:junixsocket-core:[2.3,)")
   testImplementation("com.kohlschutter.junixsocket:junixsocket-common:[2.3,)")
 
@@ -72,9 +73,14 @@ dependencies {
   runtimeOnly("ch.qos.logback:logback-classic:1.2.3")
 
   testImplementation("de.gesellix:testutil:[2020-10-03T10-08-28,)")
-  testImplementation("org.spockframework:spock-core:1.3-groovy-2.5")
+  testImplementation("org.spockframework:spock-core:2.0-groovy-2.5")
   testRuntimeOnly("cglib:cglib-nodep:3.3.0")
   testImplementation("org.apache.commons:commons-lang3:3.12.0")
   testRuntimeOnly("ch.qos.logback:logback-classic:1.2.3")
 }
+
+tasks.withType(Test::class) {
+  useJUnitPlatform()
+}
+
 tasks.check.get().shouldRunAfter(project(":client").tasks.check)

@@ -7,15 +7,15 @@ plugins {
 }
 
 val dependencyVersions = listOf(
-  "junit:junit:4.13.2",
-  "org.codehaus.groovy:groovy:2.5.13",
-  "org.codehaus.groovy:groovy-json:2.5.13",
-  "org.codehaus.groovy:groovy-macro:2.5.13",
-  "org.codehaus.groovy:groovy-nio:2.5.13",
-  "org.codehaus.groovy:groovy-sql:2.5.13",
-  "org.codehaus.groovy:groovy-templates:2.5.13",
-  "org.codehaus.groovy:groovy-test:2.5.13",
-  "org.codehaus.groovy:groovy-xml:2.5.13"
+  "org.codehaus.groovy:groovy:2.5.14",
+  "org.codehaus.groovy:groovy-json:2.5.14",
+  "org.codehaus.groovy:groovy-macro:2.5.14",
+  "org.codehaus.groovy:groovy-nio:2.5.14",
+  "org.codehaus.groovy:groovy-sql:2.5.14",
+  "org.codehaus.groovy:groovy-templates:2.5.14",
+  "org.codehaus.groovy:groovy-test:2.5.14",
+  "org.codehaus.groovy:groovy-xml:2.5.14",
+  "org.jetbrains:annotations:20.1.0"
 )
 
 val dependencyVersionsByGroup = mapOf<String, String>()
