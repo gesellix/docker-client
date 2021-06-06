@@ -1009,7 +1009,7 @@ class DockerContainerIntegrationSpec extends Specification {
     dockerClient.rm(containerId)
   }
 
-  @Requires({ LocalDocker.isTcpSocket() || LocalDocker.isUnixSocket() })
+  @Requires({ (LocalDocker.isTcpSocket() || LocalDocker.isUnixSocket()) && !['Mac OS X'].contains(System.properties['os.name']) })
   "attach (websocket)"() {
     given:
     def tcpClient = dockerClient
