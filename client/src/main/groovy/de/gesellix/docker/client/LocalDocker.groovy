@@ -12,7 +12,7 @@ class LocalDocker {
     log.debug available() ? "connection success" : "failed to connect"
   }
 
-  static available() {
+  static boolean available() {
     try {
       return new DockerClientImpl().ping().status.code == 200
     }
@@ -22,7 +22,7 @@ class LocalDocker {
     }
   }
 
-  static supportsSwarmMode() {
+  static boolean supportsSwarmMode() {
     try {
       def version = getDockerVersion()
       return (version.major >= 1 && version.minor >= 12) || version.major >= 17
@@ -33,7 +33,7 @@ class LocalDocker {
     }
   }
 
-  static supportsSecrets() {
+  static boolean supportsSecrets() {
     try {
       def version = getDockerVersion()
       return (version.major >= 1 && version.minor >= 13) || version.major >= 17
@@ -44,7 +44,7 @@ class LocalDocker {
     }
   }
 
-  static supportsConfigs() {
+  static boolean supportsConfigs() {
     try {
       def version = getDockerVersion()
       return version.major >= 17 && version.minor >= 6
@@ -55,7 +55,7 @@ class LocalDocker {
     }
   }
 
-  static supportsStack() {
+  static boolean supportsStack() {
     try {
       def version = getDockerVersion()
       return (version.major >= 1 && version.minor >= 13) || version.major >= 17
@@ -126,17 +126,17 @@ class LocalDocker {
     }
   }
 
-  static isNamedPipe() {
+  static boolean isNamedPipe() {
     def dockerHost = new DockerClientImpl().env.dockerHost
     return dockerHost.startsWith("npipe://")
   }
 
-  static isUnixSocket() {
+  static boolean isUnixSocket() {
     def dockerHost = new DockerClientImpl().env.dockerHost
     return dockerHost.startsWith("unix://")
   }
 
-  static isTcpSocket() {
+  static boolean isTcpSocket() {
     def dockerHost = new DockerClientImpl().env.dockerHost
     return dockerHost.startsWith("tcp://") || dockerHost.startsWith("http://") || dockerHost.startsWith("https://")
   }
