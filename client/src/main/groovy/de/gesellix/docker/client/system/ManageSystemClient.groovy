@@ -26,7 +26,7 @@ class ManageSystemClient implements ManageSystem {
   }
 
   @Override
-  systemDf(query = [:]) {
+  EngineResponse systemDf(Map query = [:]) {
     log.info "docker system df"
     def actualQuery = query ?: [:]
     def response = client.get([path : "/system/df",
@@ -35,7 +35,7 @@ class ManageSystemClient implements ManageSystem {
   }
 
   @Override
-  events(DockerAsyncCallback callback, Map query = [:]) {
+  EngineResponse events(DockerAsyncCallback callback, Map query = [:]) {
     log.info "docker events"
 
     queryUtil.jsonEncodeFilters(query)

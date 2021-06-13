@@ -4,26 +4,26 @@ import groovy.json.JsonBuilder
 
 class QueryUtil {
 
-  def applyDefaults(Map query, defaults) {
-    defaults.each { k, v ->
+  void applyDefaults(Map<String, ?> query, Map<String, ?> defaults) {
+    defaults.each { String k, Object v ->
       if (!query.containsKey(k)) {
-        query[k] = v
+        query.put(k, v)
       }
     }
   }
 
-  def jsonEncodeFilters(Map query) {
+  void jsonEncodeFilters(Map<String, ?> query) {
     jsonEncodeQueryParameter(query, "filters")
   }
 
-  def jsonEncodeBuildargs(Map query) {
+  void jsonEncodeBuildargs(Map<String, ?> query) {
     jsonEncodeQueryParameter(query, "buildargs")
   }
 
-  def jsonEncodeQueryParameter(Map query, String parameterName) {
-    query.each { k, v ->
+  void jsonEncodeQueryParameter(Map<String, ?> query, String parameterName) {
+    query.each { String k, Object v ->
       if (k == parameterName) {
-        query[k] = new JsonBuilder(v).toString()
+        query.put(k, new JsonBuilder(v).toString())
       }
     }
   }

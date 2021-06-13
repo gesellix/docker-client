@@ -7,15 +7,15 @@ interface ManageSystem {
 
 //    df          Show docker disk usage
 
-  def systemDf()
+  EngineResponse systemDf()
 
-  def systemDf(query)
+  EngineResponse systemDf(Map query)
 
 //    events      Get real time events from the server
 
-  def events(DockerAsyncCallback callback)
+  EngineResponse events(DockerAsyncCallback callback)
 
-  def events(DockerAsyncCallback callback, Map query)
+  EngineResponse events(DockerAsyncCallback callback, Map query)
 
   EngineResponse ping()
 

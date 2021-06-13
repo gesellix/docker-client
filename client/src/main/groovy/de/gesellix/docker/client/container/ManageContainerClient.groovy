@@ -52,7 +52,7 @@ class ManageContainerClient implements ManageContainer {
                                 multiplexStreams: multiplexStreams])
 
     if (!callback) {
-      response.stream.multiplexStreams = !container.content.Config.Tty
+      response.stream.multiplexStreams = multiplexStreams
     }
     return response
   }
