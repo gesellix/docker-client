@@ -24,7 +24,7 @@ class DockerAsyncConsumer implements Runnable {
     try {
       Reader reader = createReader(response)
       while (reader.hasNext()) {
-        def chunk = reader.readNext()
+        def chunk = reader.readNext(Object)
         log.trace("event: $chunk")
         callback.onEvent(chunk)
       }
