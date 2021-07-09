@@ -22,8 +22,8 @@ class TestConstants {
     else {
       imageRepo = "gesellix/testimage"
       imageTag = "os-linux"
-      imageDigest = "sha256:0ce18ad10d281bef97fe2333a9bdcc2dbf84b5302f66d796fed73aac675320db"
-      imageCreated = 1483093519
+      imageDigest = "sha256:da16ff11360dedb8bbb3f2a89da87527fb5e7d956e9efcb032df123caf2d5c9f"
+      imageCreated = 1625401515
     }
     imageName = "$imageRepo:$imageTag"
 

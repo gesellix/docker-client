@@ -596,6 +596,7 @@ class DockerImageIntegrationSpec extends Specification {
     history.collect { it.Id } == [
         CONSTANTS.imageDigest,
         "<missing>",
+        "<missing>",
         "<missing>"
     ]
   }
