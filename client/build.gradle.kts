@@ -68,7 +68,7 @@ dependencies {
     }
   }
 
-  api("de.gesellix:docker-engine:2021-07-11T14-32-56")
+  api("de.gesellix:docker-engine:2021-07-18T17-57-05")
   api("de.gesellix:docker-compose:2021-06-06T19-36-20")
 
   implementation("org.codehaus.groovy:groovy:[2.5,)")
