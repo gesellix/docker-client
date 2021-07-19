@@ -67,7 +67,7 @@ dependencies {
   testImplementation("com.kohlschutter.junixsocket:junixsocket-common:[2.3,)")
 
   testImplementation("net.jodah:failsafe:2.4.1")
-  testImplementation("org.apache.commons:commons-compress:1.20")
+  testImplementation("org.apache.commons:commons-compress:1.21")
 
   testImplementation("org.slf4j:slf4j-api")
   runtimeOnly("ch.qos.logback:logback-classic:1.2.3")
