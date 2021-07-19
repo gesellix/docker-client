@@ -54,7 +54,7 @@ dependencies {
   }
   implementation(project(":client"))
   implementation("org.codehaus.groovy:groovy")
-  testImplementation("org.apache.commons:commons-compress:1.20")
+  testImplementation("org.apache.commons:commons-compress:1.21")
 
   implementation("org.slf4j:slf4j-api")
   runtimeOnly("ch.qos.logback:logback-classic:1.2.3")
