@@ -593,12 +593,9 @@ class DockerImageIntegrationSpec extends Specification {
     def history = dockerClient.history(imageId).content
 
     then:
-    history.collect { it.Id } == [
-        CONSTANTS.imageDigest,
-        "<missing>",
-        "<missing>",
-        "<missing>"
-    ]
+    List<String> imageIds = history.collect { it.Id }
+    imageIds.first() == CONSTANTS.imageDigest
+    imageIds.last() == "<missing>"
   }
 
   def "list images"() {

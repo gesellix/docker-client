@@ -16,8 +16,8 @@ class TestConstants {
     if (LocalDocker.isNativeWindows()) {
       imageRepo = "gesellix/testimage"
       imageTag = "os-windows"
-      imageDigest = "sha256:5880c6a3a386d67cd02b0ee4684709f9c966225270e97e0396157894ae74dbe6"
-      imageCreated = 1575214105
+      imageDigest = "sha256:21ef7773618aed0ad91c8171698f8ad75ae5927fb8e68b444e9c716cb6450447"
+      imageCreated = 1625426527
     }
     else {
       imageRepo = "gesellix/testimage"
