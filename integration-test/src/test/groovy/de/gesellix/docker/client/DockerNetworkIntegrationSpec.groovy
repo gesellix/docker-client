@@ -29,7 +29,7 @@ class DockerNetworkIntegrationSpec extends Specification {
     def networks = dockerClient.networks().content
 
     then:
-    networks.find { it.Name == "bridge" }
+    networks.find { it.Name == "none" }
   }
 
   def "create default network"() {
