@@ -614,7 +614,7 @@ class DockerImageIntegrationSpec extends Specification {
     }
     imageById.Created == CONSTANTS.imageCreated
     imageById.ParentId == ""
-    imageById.RepoTags.contains CONSTANTS.imageName
+    (imageById.RepoTags == null || imageById.RepoTags.contains(CONSTANTS.imageName))
   }
 
   def "list images with intermediate layers"() {
