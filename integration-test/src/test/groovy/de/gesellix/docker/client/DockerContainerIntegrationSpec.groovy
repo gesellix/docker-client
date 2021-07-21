@@ -807,6 +807,7 @@ class DockerContainerIntegrationSpec extends Specification {
     dockerClient.rm(container2)
   }
 
+  // the api reference v1.41 says: "On Unix systems, this is done by running the ps command. This endpoint is not supported on Windows."
   def "top"() {
     given:
     def cmds = isNativeWindows ? ["cmd", "/C", "ping -t 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]

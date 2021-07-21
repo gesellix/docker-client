@@ -1,6 +1,6 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.client.builder.BuildContextBuilder
+import de.gesellix.docker.builder.BuildContextBuilder
 import de.gesellix.docker.client.image.BuildConfig
 import de.gesellix.docker.client.image.BuildResult
 import de.gesellix.docker.registry.DockerRegistry

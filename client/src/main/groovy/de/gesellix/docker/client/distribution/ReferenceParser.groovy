@@ -1,5 +1,6 @@
 package de.gesellix.docker.client.distribution
 
+import com.google.re2j.Matcher
 import com.google.re2j.Pattern
 import groovy.util.logging.Slf4j
 
@@ -70,13 +71,13 @@ class ReferenceParser {
       throw new IllegalArgumentException("repository name must not be more than ${NameTotalLengthMax} characters")
     }
 
-    def repo = [
+    Map repo = [
         domain: "",
         path  : ""
     ]
     log.debug "anchoredNameRegexp: ${anchoredNameRegexp}"
-    def anchoredNamePattern = Pattern.compile(anchoredNameRegexp)
-    def anchoredNameMatcher = anchoredNamePattern.matcher(referenceMatcher.group(1))
+    Pattern anchoredNamePattern = Pattern.compile(anchoredNameRegexp)
+    Matcher anchoredNameMatcher = anchoredNamePattern.matcher(referenceMatcher.group(1))
 
     log.debug "anchoredNameMatcher.matches(${referenceMatcher.group(1)}): ${anchoredNameMatcher.matches()}"
     log.debug "anchoredNameMatcher.groupCount(): ${anchoredNameMatcher.groupCount()}"
@@ -92,7 +93,7 @@ class ReferenceParser {
       repo.path = anchoredNameMatcher.group(1)
     }
 
-    def ref = [
+    Map ref = [
         repo  : repo,
         tag   : referenceMatcher.group(2),
         digest: ""
@@ -149,15 +150,15 @@ class ReferenceParser {
   String DigestRegexp2 = "[a-zA-Z0-9-_+.]+:[a-fA-F0-9]+"
   String DigestRegexpAnchored = "^${DigestRegexp2}\$"
 
-  def ValidateDigest(String s) {
-    def i = s.indexOf(':')
+  void ValidateDigest(String s) {
+    int i = s.indexOf(':')
 
     // validate i then run through regexp
     if (i < 0 || i + 1 == s.length() || !s.matches(DigestRegexpAnchored)) {
       throw new IllegalArgumentException("invalid checksum digest format")
     }
 
-    def algorithm = s.substring(0, i).toUpperCase()
+    String algorithm = s.substring(0, i).toUpperCase()
     if (!knownAlgorithms.contains(algorithm)) {
       throw new IllegalArgumentException("unsupported digest algorithm")
     }
@@ -168,13 +169,13 @@ class ReferenceParser {
     }
   }
 
-  def knownAlgorithms = [
+  List<String> knownAlgorithms = [
       'SHA256',
       'SHA384',
       'SHA512'
   ]
 
-  def algorithmDigestSizes = [
+  Map<String, Integer> algorithmDigestSizes = [
       'SHA256': 32,
       'SHA384': 48,
       'SHA512': 64

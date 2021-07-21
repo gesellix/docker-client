@@ -35,7 +35,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
 
   @Override
   Map<String, AuthConfig> getAllAuthConfigs(File dockerCfg = null) {
-    def parsedDockerCfg = readDockerConfigFile(dockerCfg)
+    Map parsedDockerCfg = readDockerConfigFile(dockerCfg)
     if (!parsedDockerCfg) {
       return [:]
     }
@@ -57,7 +57,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
       hostname = env.indexUrl_v1
     }
 
-    def parsedDockerCfg = readDockerConfigFile(dockerCfg)
+    Map parsedDockerCfg = readDockerConfigFile(dockerCfg)
     if (!parsedDockerCfg) {
       return EMPTY_AUTH_CONFIG
     }
@@ -105,9 +105,9 @@ class ManageAuthenticationClient implements ManageAuthentication {
   @Override
   EngineResponse auth(Map authDetails) {
     log.info "docker login"
-    def response = client.post([path              : "/auth",
-                                body              : authDetails,
-                                requestContentType: "application/json"])
+    EngineResponse response = client.post([path              : "/auth",
+                                           body              : authDetails,
+                                           requestContentType: "application/json"])
     if (response == null || response.status == null || !response.status.success) {
       log.info "login failed for ${authDetails.username}@${authDetails.serveraddress}"
     }
@@ -116,7 +116,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
 
   @Override
   String retrieveEncodedAuthTokenForImage(String image) {
-    def authConfig = resolveAuthConfigForImage(image)
+    AuthConfig authConfig = resolveAuthConfigForImage(image)
     return encodeAuthConfig(authConfig)
   }
 
