@@ -12,15 +12,15 @@ class DockerRegistry {
     this.dockerClient = dockerClient
   }
 
-  def getImageName() {
+  String getImageName() {
     LocalDocker.isNativeWindows() ? "gesellix/registry" : "registry"
   }
 
-  def getImageTag() {
+  String getImageTag() {
     LocalDocker.isNativeWindows() ? "2.7.1-windows" : "2.7.1"
   }
 
-  def run() {
+  void run() {
     def registryStatus = dockerClient.run(
         getImageName(),
         ["ExposedPorts": ["5000/tcp": [:]],
@@ -29,7 +29,7 @@ class DockerRegistry {
     registryId = registryStatus.container.content.Id
   }
 
-  def address() {
+  String address() {
 //        String dockerHost = dockerClient.config.dockerHost
 //        return dockerHost.replaceAll("^(tcp|http|https)://", "").replaceAll(":\\d+\$", "")
 
@@ -41,17 +41,17 @@ class DockerRegistry {
     return "localhost"
   }
 
-  def port() {
+  int port() {
     def registryContainer = dockerClient.inspectContainer(registryId).content
     def portBinding = registryContainer.NetworkSettings.Ports["5000/tcp"]
     return portBinding[0].HostPort as Integer
   }
 
-  def url() {
+  String url() {
     return "${address()}:${port()}"
   }
 
-  def rm() {
+  void rm() {
     dockerClient.stop(registryId)
     dockerClient.wait(registryId)
     dockerClient.rm(registryId)
