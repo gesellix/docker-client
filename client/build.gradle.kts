@@ -79,7 +79,7 @@ dependencies {
 
   implementation("org.slf4j:slf4j-api:[1.7,)")
   //implementation("org.slf4j:jul-to-slf4j:1.7.30")
-  testImplementation("ch.qos.logback:logback-classic:1.2.3")
+  testImplementation("ch.qos.logback:logback-classic:1.2.4-groovyless")
 
   implementation("com.squareup.okio:okio:[2,)")
   api("com.squareup.okhttp3:okhttp:[4,5)")
