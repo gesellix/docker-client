@@ -25,16 +25,7 @@ class DockerDistributionIntegrationSpec extends Specification {
     alpineDescriptor.content.Descriptor.mediaType == "application/vnd.docker.distribution.manifest.list.v2+json"
     alpineDescriptor.content.Descriptor.digest =~ "sha256:[a-f0-9]{64}"
     alpineDescriptor.content.Descriptor.size =~ "\\d{3,4}"
-    alpineDescriptor.content.Platforms == [
-        [architecture: "amd64", os: "linux"],
-        [architecture: "arm", os: "linux", variant: "v6"],
-        [architecture: "arm", os: "linux", variant: "v7"],
-        [architecture: "arm64", os: "linux", variant: "v8"],
-        [architecture: "386", os: "linux"],
-        [architecture: "ppc64le", os: "linux"],
-        [architecture: "s390x", os: "linux"],
-
-    ]
+    alpineDescriptor.content.Platforms.find { it.architecture == "amd64" && it.os == "linux" }
   }
 
   @Requires({ LocalDocker.dockerVersion >= DockerVersion.parseDockerVersion("17.06") })
@@ -47,15 +38,6 @@ class DockerDistributionIntegrationSpec extends Specification {
     debianDescriptor.content.Descriptor.mediaType == "application/vnd.docker.distribution.manifest.list.v2+json"
     debianDescriptor.content.Descriptor.digest =~ "sha256:[a-f0-9]{64}"
     debianDescriptor.content.Descriptor.size =~ "\\d{3,4}"
-    debianDescriptor.content.Platforms == [
-        [architecture: "amd64", os: "linux"],
-        [architecture: "arm", os: "linux", variant: "v5"],
-        [architecture: "arm", os: "linux", variant: "v7"],
-        [architecture: "arm64", os: "linux", variant: "v8"],
-        [architecture: "386", os: "linux"],
-        [architecture: "mips64le", os: "linux"],
-        [architecture: "ppc64le", os: "linux"],
-        [architecture: "s390x", os: "linux"]
-    ]
+    debianDescriptor.content.Platforms.find { it.architecture == "amd64" && it.os == "linux" }
   }
 }
