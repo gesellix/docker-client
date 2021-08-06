@@ -20,7 +20,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api") {
       version {
         strictly("[1.7,1.8)")
-        prefer("1.7.30")
+        prefer("1.7.32")
       }
     }
     implementation("com.squareup.okhttp3:mockwebserver") {
@@ -89,7 +89,7 @@ dependencies {
 
   implementation("org.bouncycastle:bcpkix-jdk15on:1.69")
 
-  testImplementation("de.gesellix:testutil:[2020-10-03T10-08-28,)")
+  testImplementation("de.gesellix:testutil:[2021-08-05T22-09-32,)")
 
   testImplementation("org.spockframework:spock-core:2.0-groovy-2.5")
   testRuntimeOnly("cglib:cglib-nodep:3.3.0")
