@@ -1,7 +1,6 @@
 package de.gesellix.docker.client.authentication
 
 import com.squareup.moshi.Moshi
-import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.distribution.ReferenceParser
 import de.gesellix.docker.client.registry.RegistryElection
 import de.gesellix.docker.client.system.ManageSystem
@@ -18,18 +17,15 @@ class ManageAuthenticationClient implements ManageAuthentication {
 
   private DockerEnv env
   private EngineClient client
-  private DockerResponseHandler responseHandler
   private RegistryElection registryElection
 
   private Moshi moshi = new Moshi.Builder().build()
 
   ManageAuthenticationClient(DockerEnv env,
                              EngineClient client,
-                             DockerResponseHandler responseHandler,
                              ManageSystem manageSystem) {
     this.env = env
     this.client = client
-    this.responseHandler = responseHandler
     this.registryElection = new RegistryElection(manageSystem, this)
   }
 

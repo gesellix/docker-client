@@ -3,7 +3,6 @@ package de.gesellix.docker.client.authentication
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import de.gesellix.docker.client.DockerClient
-import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.engine.DockerEnv
 import de.gesellix.docker.engine.EngineClient
@@ -29,7 +28,6 @@ class ManageAuthenticationClientTest extends Specification {
     service = Spy(ManageAuthenticationClient, constructorArgs: [
         env,
         client,
-        Mock(DockerResponseHandler),
         Mock(ManageSystem)])
   }
 
