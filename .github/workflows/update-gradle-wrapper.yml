@@ -1,7 +1,7 @@
 name: Update Gradle Wrapper
 
 on:
-  workflow_dispatch:  
+  workflow_dispatch:
   schedule:
     # "weekly" https://crontab.guru/every-week
     - cron: "0 0 * * 0"
