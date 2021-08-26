@@ -547,7 +547,8 @@ class DockerImageIntegrationSpec extends Specification {
     }
 
     then:
-    imageId =~ "\\w+"
+    imageId?.matches(/[\w:]+/)
+//    imageId =~ "\\w+"
 
     cleanup:
     server.stop()
