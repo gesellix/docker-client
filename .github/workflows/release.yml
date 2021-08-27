@@ -9,21 +9,22 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v2.3.0
         with:
           distribution: 'zulu'
           java-version: 8
+          cache: 'gradle'
       - name: Set artifact version
         run: |
           echo "RELEASE_VERSION=$(echo '${{ github.event.release.tag_name }}' | sed -e s/^v//)" >> $GITHUB_ENV
       - name: build publish
         run: ./gradlew clean build publish closeAndReleaseStagingRepository -x :integration-test:check --no-daemon --info --stacktrace -Pversion="${{ env.RELEASE_VERSION }}"
-        timeout-minutes: 10
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_SIGNING_KEY }}
@@ -31,4 +32,10 @@ jobs:
           SONATYPE_STAGING_PROFILE_ID: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+      - name: Publish Test Report
+        if: ${{ always() }}
+        uses: scacap/action-surefire-report@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: '**/build/test-results/test/TEST-*.xml'
 ...
