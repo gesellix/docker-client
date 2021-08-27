@@ -24,7 +24,7 @@ jobs:
         run: |
           echo "RELEASE_VERSION=$(echo '${{ github.event.release.tag_name }}' | sed -e s/^v//)" >> $GITHUB_ENV
       - name: build publish
-        run: ./gradlew clean build publish closeAndReleaseStagingRepository -x :integration-test:check --no-daemon --info --stacktrace -Pversion="${{ env.RELEASE_VERSION }}"
+        run: ./gradlew clean build publish closeAndReleaseStagingRepository -x :integration-test:check --info --stacktrace -Pversion="${{ env.RELEASE_VERSION }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_SIGNING_KEY }}

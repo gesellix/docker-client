@@ -33,7 +33,7 @@ jobs:
       - name: Debug
         run: ./gradlew checkDockerClient --info --stacktrace
       - name: clean build
-        run: ./gradlew clean build --no-daemon --info --stacktrace
+        run: ./gradlew clean build --info --stacktrace
       - name: Publish Test Report
         if: ${{ always() }}
         uses: scacap/action-surefire-report@v1
