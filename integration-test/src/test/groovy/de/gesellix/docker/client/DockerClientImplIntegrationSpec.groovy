@@ -77,7 +77,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     info.HttpProxy in ["", "http.docker.internal:3128", "docker.for.mac.http.internal:3128", "gateway.docker.internal:3128"]
     info.HttpsProxy in ["", "http.docker.internal:3128", "docker.for.mac.http.internal:3129", "gateway.docker.internal:3129"]
     info.ID =~ "\\w[\\w-]+"
-    info.Images > 0
+    info.Images >= 0
     info.IndexServerAddress == "https://index.docker.io/v1/"
     info.IPv4Forwarding == true
     info.Labels == null || info.Labels == []

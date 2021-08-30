@@ -203,10 +203,11 @@ class DockerClientImpl implements DockerClient {
   }
 
   @Override
-  search(term) {
+  search(String term, int limit = 25) {
     log.info "docker search"
     def response = httpClient.get([path : "/images/search".toString(),
-                                   query: [term: term]])
+                                   query: [term : term,
+                                           limit: limit]])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker search failed"))
     return response
   }

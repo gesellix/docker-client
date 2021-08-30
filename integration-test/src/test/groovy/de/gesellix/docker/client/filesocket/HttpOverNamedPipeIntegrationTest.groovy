@@ -34,9 +34,10 @@ class HttpOverNamedPipeIntegrationTest extends Specification {
     EngineClient httpClient = new OkDockerClient("npipe://${pipePath}")
 
     when:
-    def response = httpClient.post([path              : "/foo",
-                                    requestContentType: "text/plain",
-                                    body              : new ByteArrayInputStream("hello world".bytes)])
+    def response = httpClient.post([
+        path              : "/foo",
+        requestContentType: "text/plain",
+        body              : new ByteArrayInputStream("hello world".bytes)])
 
     then:
     response.status.code == 200

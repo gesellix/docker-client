@@ -10,13 +10,13 @@ interface ManageContainer {
 
 //    attach      Attach to a running container
 
-  EngineResponse attach(container, query)
+  EngineResponse attach(String container, query)
 
-  EngineResponse attach(container, query, AttachConfig callback)
+  EngineResponse attach(String container, query, AttachConfig callback)
 
-  EngineResponse resizeTTY(container, height, width)
+  EngineResponse resizeTTY(String container, height, width)
 
-  WebSocket attachWebsocket(container, query, WebSocketListener listener)
+  WebSocket attachWebsocket(String container, query, WebSocketListener listener)
 
 //    commit      Create a new image from a container's changes
 
@@ -26,7 +26,7 @@ interface ManageContainer {
 
 //    cp          Copy files/folders between a container and the local filesystem
 
-  def getArchiveStats(container, path)
+  def getArchiveStats(String container, path)
 
   byte[] extractFile(String container, String filename)
 
@@ -46,45 +46,45 @@ interface ManageContainer {
 
 //    diff        Inspect changes on a container's filesystem
 
-  EngineResponse diff(container)
+  EngineResponse diff(String container)
 
 //    exec        Run a command in a running container
 
-  EngineResponse createExec(container, Map execConfig)
+  EngineResponse createExec(String container, Map execConfig)
 
-  EngineResponse startExec(execId, Map execConfig)
+  EngineResponse startExec(String execId, Map execConfig)
 
-  EngineResponse startExec(execId, Map execConfig, AttachConfig attachConfig)
+  EngineResponse startExec(String execId, Map execConfig, AttachConfig attachConfig)
 
-  EngineResponse inspectExec(execId)
+  EngineResponse inspectExec(String execId)
 
-  EngineResponse exec(container, command)
+  EngineResponse exec(String container, command)
 
-  EngineResponse exec(container, command, Map execConfig)
+  EngineResponse exec(String container, command, Map execConfig)
 
-  EngineResponse resizeExec(exec, height, width)
+  EngineResponse resizeExec(String exec, height, width)
 
 //    export      Export a container's filesystem as a tar archive
 
-  EngineResponse export(container)
+  EngineResponse export(String container)
 
 //    inspect     Display detailed information on one or more containers
 
-  EngineResponse inspectContainer(container)
+  EngineResponse inspectContainer(String container)
 
 //    kill        Kill one or more running containers
 
-  EngineResponse kill(container)
+  EngineResponse kill(String container)
 
 //    logs        Fetch the logs of a container
 
-  EngineResponse logs(container)
+  EngineResponse logs(String container)
 
-  EngineResponse logs(container, DockerAsyncCallback callback)
+  EngineResponse logs(String container, DockerAsyncCallback callback)
 
-  EngineResponse logs(container, query)
+  EngineResponse logs(String container, query)
 
-  EngineResponse logs(container, query, DockerAsyncCallback callback)
+  EngineResponse logs(String container, query, DockerAsyncCallback callback)
 
 //    ls          List containers
 
@@ -94,7 +94,7 @@ interface ManageContainer {
 
 //    pause       Pause all processes within one or more containers
 
-  EngineResponse pause(container)
+  EngineResponse pause(String container)
 
 //    port        List port mappings or a specific mapping for the container
 
@@ -130,13 +130,13 @@ interface ManageContainer {
 
 //    start       Start one or more stopped containers
 
-  EngineResponse startContainer(container)
+  EngineResponse startContainer(String container)
 
 //    stats       Display a live stream of container(s) resource usage statistics
 
-  EngineResponse stats(container)
+  EngineResponse stats(String container)
 
-  EngineResponse stats(container, DockerAsyncCallback callback)
+  EngineResponse stats(String container, DockerAsyncCallback callback)
 
 //    stop        Stop one or more running containers
 
@@ -152,7 +152,7 @@ interface ManageContainer {
 
 //    unpause     Unpause all processes within one or more containers
 
-  EngineResponse unpause(container)
+  EngineResponse unpause(String container)
 
 //    update      Update configuration of one or more containers
 

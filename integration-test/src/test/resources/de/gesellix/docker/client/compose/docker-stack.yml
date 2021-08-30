@@ -1,8 +1,8 @@
 version: "3.5"
 services:
   service:
-    image: alpine:${IMAGE_VERSION}
-    command: sh
+    image: gesellix/echo-server:${IMAGE_VERSION}
+    command: "-"
     deploy:
       endpoint_mode: vip
       mode: replicated
@@ -22,14 +22,14 @@ services:
       - "my-subnet"
     volumes:
       - type: volume
-        source: shm
-        target: /dev/shm
+        source: example
+        target: ${VOLUME_TARGET}
 
 networks:
   my-subnet:
 
 volumes:
-  shm:
+  example:
     driver_opts:
       type: tmpfs
       device: tmpfs

@@ -36,9 +36,12 @@ class DockerStackComposeIntegrationSpec extends Specification {
     dockerClient.initSwarm(swarmConfig)
 
     def composeStream = composeFilePath.toFile().newInputStream()
-    def environment = [IMAGE_VERSION: '3.4', SOME_VAR: 'some-value']
+    def environment = [
+        IMAGE_VERSION: TestConstants.CONSTANTS.imageTag,
+        VOLUME_TARGET: TestConstants.CONSTANTS.volumeTarget,
+        SOME_VAR     : 'some-value']
     def namespace = "new-stack"
-    def options = new DeployStackOptions()
+    def options = new DeployStackOptions(sendRegistryAuth: true)
     def workingDir = composeFilePath.parent.toString()
     def config = new DeployConfigReader(dockerClient).loadCompose(namespace, composeStream, workingDir, environment)
 
@@ -64,15 +67,15 @@ class DockerStackComposeIntegrationSpec extends Specification {
         Window     : 120000000000
     ]
 
-    containerSpec.Args == ['sh']
+    containerSpec.Args == ['-']
     containerSpec.Env == ['SOME_VAR=' + environment.SOME_VAR]
-    containerSpec.Image =~ "alpine:${environment.IMAGE_VERSION}(@sha256:[a-f0-9]{64})?"
+    containerSpec.Image =~ "gesellix/echo-server:${environment.IMAGE_VERSION}(@sha256:[a-f0-9]{64})?"
     containerSpec.Labels == ['com.docker.stack.namespace': namespace]
     containerSpec.Mounts == [
         [
             Type         : 'volume',
-            Source       : namespace + '_shm',
-            Target       : '/dev/shm',
+            Source       : "${namespace}_example" as String,
+            Target       : TestConstants.CONSTANTS.volumeTarget,
             VolumeOptions: [Labels: ['com.docker.stack.namespace': namespace]]
         ]
     ]
@@ -82,13 +85,14 @@ class DockerStackComposeIntegrationSpec extends Specification {
     def networkInfo = delayAndRetrySilently { dockerClient.inspectNetwork("${namespace}_my-subnet") }
     networkInfo.status.code == 200
 
-    def volumeInfo = delayAndRetrySilently { dockerClient.inspectVolume("${namespace}_shm") }
+    def volumeInfo = delayAndRetrySilently { dockerClient.inspectVolume("${namespace}_example") }
+    println "volumes: ${dockerClient.volumes().content}"
     volumeInfo.status.code == 200
 
     cleanup:
     composeStream.close()
     performSilently { dockerClient.stackRm(namespace) }
-    delayAndRetrySilently { dockerClient.rmVolume("${namespace}_shm") }
+    delayAndRetrySilently { dockerClient.rmVolume("${namespace}_example") }
     performSilently { dockerClient.leaveSwarm([force: true]) }
   }
 
