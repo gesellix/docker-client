@@ -17,11 +17,15 @@ class DockerStackIntegrationSpec extends Specification {
 
   static String swarmAdvertiseAddr
 
+  static String testImage = "gesellix/echo-server:${TestConstants.CONSTANTS.imageTag}"
+
   def setupSpec() {
     dockerClient = new DockerClientImpl()
 //        dockerClient.config.apiVersion = "v1.24"
     swarmAdvertiseAddr = new SwarmUtil().getAdvertiseAddr()
     performSilently { dockerClient.leaveSwarm([force: true]) }
+    dockerClient.pull(testImage)
+    println "images: ${dockerClient.images().content}"
   }
 
   def cleanup() {
@@ -50,16 +54,12 @@ class DockerStackIntegrationSpec extends Specification {
     def config = new DeployStackConfig()
     config.services = ["service1": new StackService().with {
       networks = []
-      taskTemplate = [
-          containerSpec: [
-              image: "redis:3-alpine",
-          ],
-      ]
+      taskTemplate = [containerSpec: [image: testImage]]
       it
     }]
 
     when:
-    dockerClient.stackDeploy(namespace, config, new DeployStackOptions())
+    dockerClient.stackDeploy(namespace, config, new DeployStackOptions(sendRegistryAuth: true))
 
     then:
     Thread.sleep(1000)
@@ -80,20 +80,16 @@ class DockerStackIntegrationSpec extends Specification {
     config.services = ["service2": new StackService().with {
       networks = []
       mode = [replicated: [replicas: 1]]
-      taskTemplate = [
-          containerSpec: [
-              image: "redis:3-alpine",
-          ],
-      ]
+      taskTemplate = [containerSpec: [image: testImage]]
       it
     }]
-    dockerClient.stackDeploy(namespace, config, new DeployStackOptions())
+    dockerClient.stackDeploy(namespace, config, new DeployStackOptions(sendRegistryAuth: true))
     Thread.sleep(1000)
     def originalTasks = dockerClient.stackPs(namespace).content
 
     when:
     config.services["service2"].mode = [replicated: [replicas: 2]]
-    dockerClient.stackDeploy(namespace, config, new DeployStackOptions())
+    dockerClient.stackDeploy(namespace, config, new DeployStackOptions(sendRegistryAuth: true))
 
     then:
     Thread.sleep(1000)
@@ -119,16 +115,12 @@ class DockerStackIntegrationSpec extends Specification {
     def config = new DeployStackConfig()
     config.services = ["service1": new StackService().with {
       networks = []
-      taskTemplate = [
-          containerSpec: [
-              image: "redis:3-alpine",
-          ],
-      ]
+      taskTemplate = [containerSpec: [image: testImage]]
       it
     }]
 
     when:
-    dockerClient.stackDeploy(namespace, config, new DeployStackOptions())
+    dockerClient.stackDeploy(namespace, config, new DeployStackOptions(sendRegistryAuth: true))
 
     then:
     dockerClient.lsStacks().find { ManageStackClient.Stack stack ->
@@ -148,16 +140,12 @@ class DockerStackIntegrationSpec extends Specification {
     def config = new DeployStackConfig()
     config.services = ["service1": new StackService().with {
       networks = []
-      taskTemplate = [
-          containerSpec: [
-              image: "redis:3-alpine",
-          ],
-      ]
+      taskTemplate = [containerSpec: [image: testImage]]
       it
     }]
 
     when:
-    dockerClient.stackDeploy(namespace, config, new DeployStackOptions())
+    dockerClient.stackDeploy(namespace, config, new DeployStackOptions(sendRegistryAuth: true))
 
     then:
     Thread.sleep(1000)
@@ -177,16 +165,12 @@ class DockerStackIntegrationSpec extends Specification {
     def config = new DeployStackConfig()
     config.services = ["service1": new StackService().with {
       networks = []
-      taskTemplate = [
-          containerSpec: [
-              image: "redis:3-alpine",
-          ],
-      ]
+      taskTemplate = [containerSpec: [image: testImage]]
       it
     }]
 
     when:
-    dockerClient.stackDeploy(namespace, config, new DeployStackOptions())
+    dockerClient.stackDeploy(namespace, config, new DeployStackOptions(sendRegistryAuth: true))
 
     then:
     Thread.sleep(1000)
@@ -206,14 +190,10 @@ class DockerStackIntegrationSpec extends Specification {
     def config = new DeployStackConfig()
     config.services = ["service1": new StackService().with {
       networks = []
-      taskTemplate = [
-          containerSpec: [
-              image: "redis:3-alpine",
-          ],
-      ]
+      taskTemplate = [containerSpec: [image: testImage]]
       it
     }]
-    dockerClient.stackDeploy(namespace, config, new DeployStackOptions())
+    dockerClient.stackDeploy(namespace, config, new DeployStackOptions(sendRegistryAuth: true))
     Thread.sleep(1000)
     def originalServices = dockerClient.stackServices(namespace).content
 

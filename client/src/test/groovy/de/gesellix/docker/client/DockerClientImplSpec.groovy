@@ -46,7 +46,7 @@ class DockerClientImplSpec extends Specification {
 
     then:
     1 * httpClient.get([path : "/images/search",
-                        query: [term: "ubuntu"]]) >> [status: [success: true]]
+                        query: [term: "ubuntu", "limit": 25]]) >> [status: [success: true]]
   }
 
   def "get the swarm manager address"() {

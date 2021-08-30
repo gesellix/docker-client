@@ -7,6 +7,7 @@ class TestConstants {
   final String imageName
   final String imageDigest
   final int imageCreated
+  final String volumeTarget
 
   final Map<String, Closure<Boolean>> versionDetails = [:]
 
@@ -14,16 +15,18 @@ class TestConstants {
 
   TestConstants() {
     if (LocalDocker.isNativeWindows()) {
-      imageRepo = "gesellix/testimage"
+      imageRepo = "gesellix/echo-server"
       imageTag = "os-windows"
-      imageDigest = "sha256:21ef7773618aed0ad91c8171698f8ad75ae5927fb8e68b444e9c716cb6450447"
-      imageCreated = 1625426527
+      imageDigest = "sha256:9f33e2a85c7238da1205513c33b4f813176c34dbd3069752500e2f9f12bdde98"
+      imageCreated = 1630412966
+      volumeTarget = "C:/my-volume"
     }
     else {
-      imageRepo = "gesellix/testimage"
+      imageRepo = "gesellix/echo-server"
       imageTag = "os-linux"
-      imageDigest = "sha256:da16ff11360dedb8bbb3f2a89da87527fb5e7d956e9efcb032df123caf2d5c9f"
-      imageCreated = 1625401515
+      imageDigest = "sha256:9161d20871559b45e5afa19047ed0bfc1a0e2c6dfdd6a9488a2fd388fe28642d"
+      imageCreated = 1630419149
+      volumeTarget = "/my-volume"
     }
     imageName = "$imageRepo:$imageTag"
 

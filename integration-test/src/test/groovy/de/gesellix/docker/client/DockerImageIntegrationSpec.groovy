@@ -506,13 +506,13 @@ class DockerImageIntegrationSpec extends Specification {
 
   def "pull image by digest"() {
     given:
-    def digest = isNativeWindows ? "gesellix/testimage@sha256:afee42c0e4653763a5ee2d386afbd8f34ae80ba7644d31830e7aff826ebb1be0" : "gesellix/testimage@sha256:583ada96d700552c6c00d56aa581848264db1a8e2032d67bbaa761ff2d73ec2d"
+    String digest = isNativeWindows ? "gesellix/echo-server@sha256:5521f01c05a79bdae5570955c853ec51474bad3f3f9f6ecf2047414becf4afd2" : "gesellix/echo-server@sha256:04c0275878dc243b2f92193467cb33cdb9ee2262be64b627ed476de73e399244"
 
     when:
-    def imageId = dockerClient.pull(digest)
+    String imageId = dockerClient.pull(digest)
 
     then:
-    imageId == (isNativeWindows ? "sha256:5880c6a3a386d67cd02b0ee4684709f9c966225270e97e0396157894ae74dbe6" : "sha256:0ce18ad10d281bef97fe2333a9bdcc2dbf84b5302f66d796fed73aac675320db")
+    imageId == CONSTANTS.imageDigest
   }
 
   def "pull image from private registry"() {
@@ -581,7 +581,7 @@ class DockerImageIntegrationSpec extends Specification {
     and:
     imageInspection.Id == CONSTANTS.imageDigest
     and:
-    imageInspection.Parent == ""
+    imageInspection.Parent =~ ".*"
     and:
     imageInspection.Container == isNativeWindows ? "todo" : "7ddb235457b38a125d107ec7d53f95254cbf579069f29a2c731bc9471a153524"
   }
@@ -596,7 +596,7 @@ class DockerImageIntegrationSpec extends Specification {
     then:
     List<String> imageIds = history.collect { it.Id }
     imageIds.first() == CONSTANTS.imageDigest
-    imageIds.last() == "<missing>"
+    imageIds.last() =~ ".+"
   }
 
   def "list images"() {
@@ -611,7 +611,7 @@ class DockerImageIntegrationSpec extends Specification {
       it.Id == CONSTANTS.imageDigest
     }
     imageById.Created == CONSTANTS.imageCreated
-    imageById.ParentId == ""
+    imageById.ParentId =~ ".*"
     (imageById.RepoTags == null || imageById.RepoTags.contains(CONSTANTS.imageName))
   }
 
@@ -714,17 +714,19 @@ class DockerImageIntegrationSpec extends Specification {
 
   def "search"() {
     when:
-    def searchResult = dockerClient.search("testimage")
+    def searchResult = dockerClient.search("echo-server", 100)
 
     then:
-    ((List) searchResult.content).find {
-      it.description == "A Testimage used for Docker Client integration tests.\n" &&
-      it.is_automated == true &&
-      it.is_official == false &&
+    ((List) searchResult.content)
+        .findAll { it.name.contains("gesellix") }
+        .find {
+          it.description == "A Testimage used for Docker Client integration tests." &&
+          it.is_automated == false &&
+          it.is_official == false &&
 //            it.is_trusted == true &&
-      it.name == CONSTANTS.imageRepo &&
-      it.star_count == 0
-    }
+          it.name == CONSTANTS.imageRepo &&
+          it.star_count == 0
+        }
   }
 
   InputStream newBuildContext(File baseDirectory) {

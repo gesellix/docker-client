@@ -74,7 +74,9 @@ interface DockerClient
   @Deprecated
   def cleanupVolumes(Closure shouldKeepVolume)
 
-  def search(term)
+  def search(String term)
+
+  def search(String term, int limit)
 
   def getSwarmMangerAddress()
 }

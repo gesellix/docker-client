@@ -134,13 +134,15 @@ class DockerContainerIntegrationSpec extends Specification {
 
   def "diff"() {
     given:
-    def cmd = ["/bin/sh", "-c", "echo 'hallo' > /change.txt"]
+    def cmd = ["-c", "echo 'hallo' > /tmp/change.txt"]
     if (isNativeWindows) {
-      cmd = ["cmd.exe", "/C", "echo The wind caught it. > /change.txt"]
+      cmd = ["/C", "echo The wind caught it. > /change.txt"]
     }
     def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
-    def containerConfig = ["Cmd"  : cmd,
-                           "Image": imageId]
+    def containerConfig = [
+        "Entrypoint": isNativeWindows ? "cmd.exe" : "/bin/sh",
+        "Cmd"       : cmd,
+        "Image"     : imageId]
     String containerId = dockerClient.run(imageId, containerConfig).container.content.Id
     dockerClient.stop(containerId)
     dockerClient.wait(containerId)
@@ -293,14 +295,13 @@ class DockerContainerIntegrationSpec extends Specification {
 
   def "run container with PortBindings"() {
     given:
-    def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
-    def containerConfig = ["Cmd"       : cmds,
-                           ExposedPorts: ["4711/tcp": [:]],
-                           "HostConfig": ["PortBindings": [
-                               "4711/tcp": [
-                                   ["HostIp"  : "0.0.0.0",
-                                    "HostPort": "4712"]]
-                           ]]]
+    def containerConfig = [
+        "ExposedPorts": ["8080/tcp": [:]],
+        "HostConfig"  : ["PortBindings": [
+            "8080/tcp": [
+                ["HostIp"  : "0.0.0.0",
+                 "HostPort": "8081"]]
+        ]]]
 
     when:
     def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag)
@@ -309,12 +310,12 @@ class DockerContainerIntegrationSpec extends Specification {
     then:
     containerStatus.status.status.code == 204
     and:
-    dockerClient.inspectContainer(containerStatus.container.content.Id).content.Config.ExposedPorts == ["4711/tcp": [:]]
+    dockerClient.inspectContainer(containerId).content.Config.ExposedPorts == ["8080/tcp": [:]]
     and:
-    dockerClient.inspectContainer(containerStatus.container.content.Id).content.HostConfig.PortBindings == [
-        "4711/tcp": [
+    dockerClient.inspectContainer(containerId).content.HostConfig.PortBindings == [
+        "8080/tcp": [
             ["HostIp"  : "0.0.0.0",
-             "HostPort": "4712"]]
+             "HostPort": "8081"]]
     ]
 
     cleanup:
@@ -543,11 +544,9 @@ class DockerContainerIntegrationSpec extends Specification {
 
   def "exec start"() {
     given:
-    def cmds = isNativeWindows ? ["cmd", "ping 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
-    def containerConfig = ["Cmd": cmds]
-    def name = "start-exec"
-    def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, name)
-    def containerId = containerStatus.container.content.Id
+    String name = "start-exec"
+    def containerStatus = dockerClient.run(CONSTANTS.imageRepo, [:], CONSTANTS.imageTag, name)
+    String containerId = containerStatus.container.content.Id
     def execCreateConfig = [
         "AttachStdin" : false,
         "AttachStdout": true,
@@ -558,7 +557,7 @@ class DockerContainerIntegrationSpec extends Specification {
         ]]
 
     def execCreateResult = dockerClient.createExec(containerId, execCreateConfig).content
-    def execId = execCreateResult.Id
+    String execId = execCreateResult.Id
 
     when:
     def execStartConfig = [
@@ -578,17 +577,13 @@ class DockerContainerIntegrationSpec extends Specification {
 
   def "exec (interactive)"() {
     given:
-    def containerCmd = isNativeWindows
-        ? ["cmd", "/C", "ping -t 127.0.0.1"]
-        : ["sh", "-c", "ping 127.0.0.1"]
-    def containerConfig = ["Cmd": containerCmd]
-    def name = "attach-exec"
-    def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, name)
+    String name = "attach-exec"
+    def containerStatus = dockerClient.run(CONSTANTS.imageRepo, [:], CONSTANTS.imageTag, name)
     String containerId = containerStatus.container.content.Id
     log.info("container: ${JsonOutput.toJson(dockerClient.inspectContainer(containerId).content)}")
 
-    def logFileName = "/log.txt"
-    def execCmd = isNativeWindows
+    String logFileName = "/tmp/log.txt"
+    List<String> execCmd = isNativeWindows
         ? ["cmd", "/V:ON", "/C", "set /p line= & echo #!line!# > ${logFileName}".toString()]
         : ["/bin/sh", "-c", "read line && echo \"#\$line#\" > ${logFileName}".toString()]
 
@@ -601,10 +596,10 @@ class DockerContainerIntegrationSpec extends Specification {
     ]
 
     def execCreateResult = dockerClient.createExec(containerId, execCreateConfig).content
-    def execId = execCreateResult.Id
+    String execId = execCreateResult.Id
 
-    def input = "exec ${UUID.randomUUID()}"
-    def expectedOutput = "#$input#"
+    String input = "exec ${UUID.randomUUID()}"
+    String expectedOutput = "#$input#"
     def outputStream = new ByteArrayOutputStream()
 
     def onSinkClosed = new CountDownLatch(1)
@@ -657,11 +652,10 @@ class DockerContainerIntegrationSpec extends Specification {
 
   def "get archive (copy from container)"() {
     given:
-    def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
-    def imageName = "copy_container"
-    def containerConfig = ["Cmd": isNativeWindows ? ["cmd", "/C", "echo to be or\nnot to be > /file1.txt"] : ["sh", "-c", "echo -n -e 'to be or\nnot to be' > /file1.txt"]]
+    String imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+    String imageName = "copy_container"
     dockerClient.tag(imageId, imageName)
-    def containerInfo = dockerClient.run(imageName, containerConfig)
+    def containerInfo = dockerClient.run(imageName, [:])
     String containerId = containerInfo.container.content.Id
 
     when:
@@ -673,12 +667,12 @@ class DockerContainerIntegrationSpec extends Specification {
       dockerClient.stop(containerId)
       dockerClient.wait(containerId)
     }
-    def tarContent = dockerClient.getArchive(containerId, "/file1.txt").stream
+    def tarContent = dockerClient.getArchive(containerId, "/gattaca.txt").stream
 
     then:
-    def fileContent = new ArchiveUtil().extractSingleTarEntry(tarContent as InputStream, "file1.txt")
+    def fileContent = new ArchiveUtil().extractSingleTarEntry(tarContent as InputStream, "file.txt")
     and:
-    fileContent == "to be or\nnot to be".bytes
+    new String(fileContent) =~ "The wind\r?\ncaught it.\r?\n"
 
     cleanup:
     dockerClient.stop(containerId)
@@ -810,9 +804,7 @@ class DockerContainerIntegrationSpec extends Specification {
   // the api reference v1.41 says: "On Unix systems, this is done by running the ps command. This endpoint is not supported on Windows."
   def "top"() {
     given:
-    def cmds = isNativeWindows ? ["cmd", "/C", "ping -t 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]
-    def containerConfig = ["Cmd": cmds]
-    def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, "top-example")
+    def containerStatus = dockerClient.run(CONSTANTS.imageRepo, [:], CONSTANTS.imageTag, "top-example")
     String containerId = containerStatus.container.content.Id
 
     when:
@@ -827,9 +819,7 @@ class DockerContainerIntegrationSpec extends Specification {
       top.Titles == (reducedTitleSet ? ["PID", "USER", "TIME", "COMMAND"] : ["UID", "PID", "PPID", "C", "STIME", "TTY", "TIME", "CMD"])
     }
     and:
-    def lastEntry = top.Processes.last()
-    def entryAsString = lastEntry.join(" ")
-    entryAsString.contains(isNativeWindows ? "cmd.exe" : "ping 127.0.0.1")
+    0 < top.Processes.collect { it.join(" ") }.findAll { it.contains("main") }.size()
 
     cleanup:
     dockerClient.stop(containerId)
@@ -889,9 +879,8 @@ class DockerContainerIntegrationSpec extends Specification {
       @Override
       onEvent(Object line) {
         log.info("[logs] $line")
-        if (line && lines.empty) {
+        if (line) {
           lines << line
-          latch.countDown()
         }
       }
 
@@ -899,8 +888,7 @@ class DockerContainerIntegrationSpec extends Specification {
       onFinish() {
       }
     }
-    def containerConfig = ["Cmd": isNativeWindows ? ["cmd", "/C", "ping -t 127.0.0.1"] : ["sh", "-c", "ping 127.0.0.1"]]
-    def containerStatus = dockerClient.run(CONSTANTS.imageRepo, containerConfig, CONSTANTS.imageTag, "logs-example")
+    def containerStatus = dockerClient.run(CONSTANTS.imageRepo, [:], CONSTANTS.imageTag, "logs-example")
     String containerId = containerStatus.container.content.Id
 
     when:
@@ -909,7 +897,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     then:
     !callback.lines.empty
-    callback.lines.first().contains(isNativeWindows ? "Pinging 127.0.0.1" : "64 bytes from 127.0.0.1")
+    callback.lines.any { it.contains("Listening and serving HTTP") }
 
     cleanup:
     response.taskFuture.cancel(true)
@@ -944,9 +932,9 @@ class DockerContainerIntegrationSpec extends Specification {
     given:
     def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
     def containerConfig = [
-        Tty      : true,
-        OpenStdin: true,
-        Cmd      : ["/bin/sh", "-c", "read line && echo \"->\$line\""]
+        Tty       : true,
+        OpenStdin : true,
+        Entrypoint: ["/bin/sh", "-c", "read line && echo \"->\$line\""]
     ]
     String containerId = dockerClient.run(imageId, containerConfig).container.content.Id
 

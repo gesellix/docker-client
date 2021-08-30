@@ -298,10 +298,10 @@ class DockerSwarmIntegrationSpec extends Specification {
     swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
     dockerClient.initSwarm(swarmConfig)
     def serviceConfig = [
-        "Name"        : "redis",
+        "Name"        : "echo-server",
         "TaskTemplate": [
             "ContainerSpec": [
-                "Image": "redis"
+                "Image": "gesellix/echo-server:${TestConstants.CONSTANTS.imageTag}" as String
             ],
             "Resources"    : [
                 "Limits"      : [:],
@@ -329,12 +329,12 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     then:
     response.content.ID =~ /[0-9a-f]+/
-    def redisService = awaitServiceStarted("redis")
-    redisService?.Spec?.Name == "redis"
+    def echoService = awaitServiceStarted("echo-server")
+    echoService?.Spec?.Name == "echo-server"
 
     cleanup:
-    performSilently { dockerClient.rmService("redis") }
-    performSilently { awaitServiceRemoved("redis") }
+    performSilently { dockerClient.rmService("echo-server") }
+    performSilently { awaitServiceRemoved("echo-server") }
     performSilently { dockerClient.leaveSwarm([force: true]) }
   }
 
@@ -344,10 +344,10 @@ class DockerSwarmIntegrationSpec extends Specification {
     swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
     dockerClient.initSwarm(swarmConfig)
     def serviceConfig = [
-        "Name"        : "redis",
+        "Name"        : "echo-server",
         "TaskTemplate": [
             "ContainerSpec": [
-                "Image": "redis"
+                "Image": "gesellix/echo-server:${TestConstants.CONSTANTS.imageTag}" as String
             ]
         ],
         "Mode"        : [
@@ -374,10 +374,10 @@ class DockerSwarmIntegrationSpec extends Specification {
     swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
     dockerClient.initSwarm(swarmConfig)
     def serviceConfig = [
-        "Name"        : "redis",
+        "Name"        : "echo-server",
         "TaskTemplate": [
             "ContainerSpec": [
-                "Image": "redis"
+                "Image": "gesellix/echo-server:${TestConstants.CONSTANTS.imageTag}" as String
             ]
         ],
         "Mode"        : [
@@ -395,8 +395,8 @@ class DockerSwarmIntegrationSpec extends Specification {
     response.content.ID == serviceId
 
     cleanup:
-    performSilently { dockerClient.rmService("redis") }
-    performSilently { awaitServiceRemoved("redis") }
+    performSilently { dockerClient.rmService("echo-server") }
+    performSilently { awaitServiceRemoved("echo-server") }
     performSilently { dockerClient.leaveSwarm([force: true]) }
   }
 
@@ -408,7 +408,7 @@ class DockerSwarmIntegrationSpec extends Specification {
     def serviceConfig = [
         "TaskTemplate": [
             "ContainerSpec": [
-                "Image": "redis"
+                "Image": "gesellix/echo-server:${TestConstants.CONSTANTS.imageTag}" as String
             ]
         ],
         "Mode"        : [
@@ -440,10 +440,10 @@ class DockerSwarmIntegrationSpec extends Specification {
     swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
     dockerClient.initSwarm(swarmConfig)
     def serviceConfig = [
-        "Name"        : "redis",
+        "Name"        : "echo-server",
         "TaskTemplate": [
             "ContainerSpec": [
-                "Image": "redis"
+                "Image": "gesellix/echo-server:${TestConstants.CONSTANTS.imageTag}" as String
             ]
         ],
         "Mode"        : [
@@ -465,8 +465,8 @@ class DockerSwarmIntegrationSpec extends Specification {
     firstTask.ID =~ /[0-9a-f]+/
 
     cleanup:
-    performSilently { dockerClient.rmService("redis") }
-    performSilently { awaitServiceRemoved("redis") }
+    performSilently { dockerClient.rmService("echo-server") }
+    performSilently { awaitServiceRemoved("echo-server") }
     performSilently { dockerClient.leaveSwarm([force: true]) }
   }
 
@@ -476,10 +476,10 @@ class DockerSwarmIntegrationSpec extends Specification {
     swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
     dockerClient.initSwarm(swarmConfig)
     def serviceConfig = [
-        "Name"        : "redis",
+        "Name"        : "echo-server",
         "TaskTemplate": [
             "ContainerSpec": [
-                "Image": "redis"
+                "Image": "gesellix/echo-server:${TestConstants.CONSTANTS.imageTag}" as String
             ]
         ],
         "Mode"        : [
@@ -502,8 +502,8 @@ class DockerSwarmIntegrationSpec extends Specification {
     task.DesiredState == "running"
 
     cleanup:
-    performSilently { dockerClient.rmService("redis") }
-    performSilently { awaitServiceRemoved("redis") }
+    performSilently { dockerClient.rmService("echo-server") }
+    performSilently { awaitServiceRemoved("echo-server") }
     performSilently { dockerClient.leaveSwarm([force: true]) }
   }
 
@@ -516,12 +516,12 @@ class DockerSwarmIntegrationSpec extends Specification {
   }
 
   def awaitServiceStarted(name) {
-    def redisService
+    def theService
     CountDownLatch latch = new CountDownLatch(1)
     Thread.start {
-      while (redisService == null) {
-        redisService = findService(name)
-        if (redisService) {
+      while (theService == null) {
+        theService = findService(name)
+        if (theService) {
           latch.countDown()
         }
         else {
@@ -530,7 +530,7 @@ class DockerSwarmIntegrationSpec extends Specification {
       }
     }
     latch.await(30, SECONDS)
-    return redisService
+    return theService
   }
 
   def awaitTaskStarted(taskId) {
@@ -554,13 +554,13 @@ class DockerSwarmIntegrationSpec extends Specification {
   }
 
   def awaitServiceRemoved(name) {
-    def redisService = findService(name)
-    if (redisService != null) {
+    def theService = findService(name)
+    if (theService != null) {
       CountDownLatch latch = new CountDownLatch(1)
       Thread.start {
-        while (redisService != null) {
-          redisService = findService(name)
-          if (redisService == null) {
+        while (theService != null) {
+          theService = findService(name)
+          if (theService == null) {
             latch.countDown()
           }
           else {

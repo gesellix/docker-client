@@ -12,7 +12,7 @@ interface ManageVolume {
 
 //    inspect     Display detailed information on one or more volumes
 
-  EngineResponse inspectVolume(name)
+  EngineResponse inspectVolume(String name)
 
 //    ls          List volumes
 
@@ -28,5 +28,5 @@ interface ManageVolume {
 
 //    rm          Remove one or more volumes
 
-  EngineResponse rmVolume(name)
+  EngineResponse rmVolume(String name)
 }

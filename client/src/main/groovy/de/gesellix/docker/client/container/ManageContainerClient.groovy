@@ -37,7 +37,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse attach(containerId, query, AttachConfig callback = null) {
+  EngineResponse attach(String containerId, query, AttachConfig callback = null) {
     log.info "docker attach"
 
     // When using the TTY setting is enabled in POST /containers/create,
@@ -58,7 +58,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  WebSocket attachWebsocket(containerId, query, WebSocketListener listener) {
+  WebSocket attachWebsocket(String containerId, query, WebSocketListener listener) {
     log.info "docker attach via websocket"
     WebSocket webSocket = client.webSocket(
         [path : "/containers/${containerId}/attach/ws".toString(),
@@ -69,7 +69,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse resizeTTY(container, height, width) {
+  EngineResponse resizeTTY(String container, height, width) {
     log.info "docker resize container"
 //        if (!inspectContainer(container).Config.Tty) {
 //            log.warn "container '${container}' hasn't been configured with a TTY!"
@@ -100,7 +100,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  getArchiveStats(container, path) {
+  getArchiveStats(String container, path) {
     log.info "docker archive stats ${container}|${path}"
 
     def response = client.head([path : "/containers/${container}/archive".toString(),
@@ -202,14 +202,14 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse diff(containerId) {
+  EngineResponse diff(String containerId) {
     log.info "docker diff"
     def response = client.get([path: "/containers/${containerId}/changes".toString()])
     return response
   }
 
   @Override
-  EngineResponse createExec(containerId, Map execConfig) {
+  EngineResponse createExec(String containerId, Map execConfig) {
     log.info "docker create exec on '${containerId}'"
 
     def response = client.post([path              : "/containers/${containerId}/exec".toString(),
@@ -224,7 +224,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse startExec(execId, Map execConfig, AttachConfig attachConfig = null) {
+  EngineResponse startExec(String execId, Map execConfig, AttachConfig attachConfig = null) {
     log.info "docker start exec '${execId}'"
 
     // When using the TTY setting is enabled in POST /containers/create,
@@ -251,7 +251,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse inspectExec(execId) {
+  EngineResponse inspectExec(String execId) {
     log.info "docker inspect exec '${execId}'"
 
     def response = client.get([path: "/exec/${execId}/json".toString()])
@@ -264,7 +264,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse exec(containerId, command, Map execConfig = [
+  EngineResponse exec(String containerId, command, Map execConfig = [
       "Detach"     : false,
       "AttachStdin": false,
       "Tty"        : false]) {
@@ -279,12 +279,12 @@ class ManageContainerClient implements ManageContainer {
         "Cmd"         : command]
 
     def execCreateResult = createExec(containerId, actualExecConfig)
-    def execId = execCreateResult.content.Id
+    String execId = execCreateResult.content.Id
     return startExec(execId, actualExecConfig)
   }
 
   @Override
-  EngineResponse resizeExec(exec, height, width) {
+  EngineResponse resizeExec(String exec, height, width) {
     log.info "docker resize exec"
 //        if (!inspectExec(exec).ProcessConfig.tty) {
 //            log.warn "exec '${exec}' hasn't been configured with a TTY!"
@@ -298,7 +298,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse export(container) {
+  EngineResponse export(String container) {
     log.info "docker export $container"
 
     def response = client.get([path: "/containers/$container/export".toString()])
@@ -308,7 +308,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse inspectContainer(containerId) {
+  EngineResponse inspectContainer(String containerId) {
     log.info "docker inspect container"
     def response = client.get([path: "/containers/${containerId}/json".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker inspect failed"))
@@ -316,19 +316,19 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse kill(containerId) {
+  EngineResponse kill(String containerId) {
     log.info "docker kill"
     def response = client.post([path: "/containers/${containerId}/kill".toString()])
     return response
   }
 
   @Override
-  EngineResponse logs(container, DockerAsyncCallback callback = null) {
+  EngineResponse logs(String container, DockerAsyncCallback callback = null) {
     return logs(container, [:], callback)
   }
 
   @Override
-  EngineResponse logs(container, query, DockerAsyncCallback callback = null) {
+  EngineResponse logs(String container, query, DockerAsyncCallback callback = null) {
     log.info "docker logs"
 
     def async = callback ? true : false
@@ -376,7 +376,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse pause(containerId) {
+  EngineResponse pause(String containerId) {
     log.info "docker pause"
     def response = client.post([path: "/containers/${containerId}/pause".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker pause failed"))
@@ -441,7 +441,8 @@ class ManageContainerClient implements ManageContainer {
 
     def createContainerResponse = createContainer(containerConfigWithImageName, [name: name ?: ""], authBase64Encoded)
     log.debug "create container result: ${createContainerResponse}"
-    def startContainerResponse = startContainer(createContainerResponse.content.Id)
+    String containerId = createContainerResponse.content.Id
+    def startContainerResponse = startContainer(containerId)
     return [
         container: createContainerResponse,
         status   : startContainerResponse
@@ -449,7 +450,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse startContainer(containerId) {
+  EngineResponse startContainer(String containerId) {
     log.info "docker start"
     def response = client.post([path              : "/containers/${containerId}/start".toString(),
                                 requestContentType: "application/json"])
@@ -457,7 +458,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse stats(container, DockerAsyncCallback callback = null) {
+  EngineResponse stats(String container, DockerAsyncCallback callback = null) {
     log.info "docker stats"
 
     def async = callback ? true : false
@@ -494,7 +495,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse unpause(containerId) {
+  EngineResponse unpause(String containerId) {
     log.info "docker unpause"
     def response = client.post([path: "/containers/${containerId}/unpause".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker unpause failed"))
@@ -513,8 +514,8 @@ class ManageContainerClient implements ManageContainer {
     EngineClient dockerClient = client
     Map<String, EngineResponse> responses = containers.collectEntries { String container ->
       def response = dockerClient.post([path              : "/containers/${container}/update".toString(),
-                                  body              : updateConfig,
-                                  requestContentType: "application/json"])
+                                        body              : updateConfig,
+                                        requestContentType: "application/json"])
       if (response.status?.code != 200) {
         log.error("error updating container '${container}': {}", response.content)
       }
