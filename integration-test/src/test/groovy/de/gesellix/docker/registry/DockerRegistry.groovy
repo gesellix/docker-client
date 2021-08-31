@@ -23,7 +23,8 @@ class DockerRegistry {
   void run() {
     def registryStatus = dockerClient.run(
         getImageName(),
-        ["ExposedPorts": ["5000/tcp": [:]],
+        ["Env"         : ["REGISTRY_VALIDATION_DISABLED=true"],
+         "ExposedPorts": ["5000/tcp": [:]],
          "HostConfig"  : ["PublishAllPorts": true]],
         getImageTag())
     registryId = registryStatus.container.content.Id
