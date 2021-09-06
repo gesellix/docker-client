@@ -13,7 +13,7 @@ val dependencyVersions = listOf(
   "org.codehaus.groovy:groovy-nio:2.5.14",
   "org.codehaus.groovy:groovy-sql:2.5.14",
   "org.codehaus.groovy:groovy-templates:2.5.14",
-  "org.codehaus.groovy:groovy-test:2.5.14",
+  "org.codehaus.groovy:groovy-test:3.0.9",
   "org.codehaus.groovy:groovy-xml:2.5.14",
   "org.jetbrains:annotations:22.0.0"
 )
