@@ -70,7 +70,7 @@ dependencies {
   testImplementation("org.apache.commons:commons-compress:1.21")
 
   testImplementation("org.slf4j:slf4j-api")
-  runtimeOnly("ch.qos.logback:logback-classic:1.2.5")
+  runtimeOnly("ch.qos.logback:logback-classic:1.2.6")
 
   testImplementation("de.gesellix:testutil:[2020-10-03T10-08-28,)")
   testImplementation("org.spockframework:spock-core:2.0-groovy-2.5")

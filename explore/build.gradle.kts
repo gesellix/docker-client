@@ -57,7 +57,7 @@ dependencies {
   testImplementation("org.apache.commons:commons-compress:1.21")
 
   implementation("org.slf4j:slf4j-api")
-  runtimeOnly("ch.qos.logback:logback-classic:1.2.5")
+  runtimeOnly("ch.qos.logback:logback-classic:1.2.6")
 
   testImplementation("org.spockframework:spock-core:2.0-groovy-2.5")
   testRuntimeOnly("cglib:cglib-nodep:3.3.0")
