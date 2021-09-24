@@ -59,7 +59,7 @@ dependencies {
   implementation("org.slf4j:slf4j-api")
   runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.2.6")
 
-  testImplementation("org.spockframework:spock-core:2.0-groovy-2.5")
+  testImplementation("org.spockframework:spock-core:2.0-groovy-3.0")
   testRuntimeOnly("cglib:cglib-nodep:3.3.0")
   testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.2.6")
 }
