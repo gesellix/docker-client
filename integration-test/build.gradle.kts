@@ -56,7 +56,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[1.3,1.6)")
-          prefer("1.5.30")
+          prefer("1.5.31")
         }
       }
     }
@@ -66,17 +66,17 @@ dependencies {
   testImplementation("com.kohlschutter.junixsocket:junixsocket-core:[2.3,)")
   testImplementation("com.kohlschutter.junixsocket:junixsocket-common:[2.3,)")
 
-  testImplementation("net.jodah:failsafe:2.4.3")
+  testImplementation("net.jodah:failsafe:2.4.4")
   testImplementation("org.apache.commons:commons-compress:1.21")
 
   testImplementation("org.slf4j:slf4j-api")
-  runtimeOnly("ch.qos.logback:logback-classic:1.2.5")
+  runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.2.6")
 
   testImplementation("de.gesellix:testutil:[2020-10-03T10-08-28,)")
   testImplementation("org.spockframework:spock-core:2.0-groovy-2.5")
   testRuntimeOnly("cglib:cglib-nodep:3.3.0")
   testImplementation("org.apache.commons:commons-lang3:3.12.0")
-  testRuntimeOnly("ch.qos.logback:logback-classic:1.2.5")
+  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.2.6")
 }
 
 tasks.withType(Test::class) {
