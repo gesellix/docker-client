@@ -31,12 +31,12 @@ class NativeStoreTest extends Specification {
     then:
     result == EMPTY_AUTH_CONFIG
     where:
-    credsStoreHelperResponse << [new CredsStoreHelperResult(error: "for-test"), new CredsStoreHelperResult()]
+    credsStoreHelperResponse << [new CredsStoreHelperResult("for-test"), new CredsStoreHelperResult((String) null)]
   }
 
   def "getAuthConfig returns AuthConfig for valid username/password credentials"() {
     given:
-    def credsStoreHelperResponse = new CredsStoreHelperResult(data: [Username: "foo", Secret: "bar"])
+    def credsStoreHelperResponse = new CredsStoreHelperResult([Username: "foo", Secret: "bar"])
     credsStoreHelper.getAuthentication("test-helper", "host.name") >> credsStoreHelperResponse
 
     when:
@@ -48,7 +48,7 @@ class NativeStoreTest extends Specification {
 
   def "getAuthConfig returns AuthConfig for valid identitytoken credentials"() {
     given:
-    def credsStoreHelperResponse = new CredsStoreHelperResult(data: [Username: "<token>", Secret: "baz"])
+    def credsStoreHelperResponse = new CredsStoreHelperResult([Username: "<token>", Secret: "baz"])
     credsStoreHelper.getAuthentication("test-helper", "host.name") >> credsStoreHelperResponse
 
     when:
@@ -71,15 +71,15 @@ class NativeStoreTest extends Specification {
     Map<String, AuthConfig> result = credsStore.getAuthConfigs()
 
     then:
-    1 * credsStoreHelper.getAllAuthentications("test-helper") >> new CredsStoreHelperResult(data: ["host1.name": "username", "host2.name": "username"])
-    1 * credsStoreHelper.getAuthentication("test-helper", "host1.name") >> new CredsStoreHelperResult(data: [Username: "<token>", Secret: "baz"])
+    1 * credsStoreHelper.getAllAuthentications("test-helper") >> new CredsStoreHelperResult(["host1.name": "username", "host2.name": "username"])
+    1 * credsStoreHelper.getAuthentication("test-helper", "host1.name") >> new CredsStoreHelperResult([Username: "<token>", Secret: "baz"])
     1 * credsStoreHelper.getAuthentication("test-helper", "host2.name") >> credsStoreHelperResponse
     0 * credsStoreHelper._
     result.size() == 2
     result["host2.name"] == EMPTY_AUTH_CONFIG
 
     where:
-    credsStoreHelperResponse << [new CredsStoreHelperResult(error: "for-test"), new CredsStoreHelperResult()]
+    credsStoreHelperResponse << [new CredsStoreHelperResult("for-test"), new CredsStoreHelperResult((String) null)]
   }
 
   def "getAuthConfigs returns AuthConfigs for valid credsStoreHelperResponse"() {
@@ -87,9 +87,9 @@ class NativeStoreTest extends Specification {
     Map<String, AuthConfig> result = credsStore.getAuthConfigs()
 
     then:
-    1 * credsStoreHelper.getAllAuthentications("test-helper") >> new CredsStoreHelperResult(data: ["host1.name": "username", "host2.name": "username"])
-    1 * credsStoreHelper.getAuthentication("test-helper", "host1.name") >> new CredsStoreHelperResult(data: [Username: "user-name", Secret: "password"])
-    1 * credsStoreHelper.getAuthentication("test-helper", "host2.name") >> new CredsStoreHelperResult(data: [Username: "<token>", Secret: "baz"])
+    1 * credsStoreHelper.getAllAuthentications("test-helper") >> new CredsStoreHelperResult(["host1.name": "username", "host2.name": "username"])
+    1 * credsStoreHelper.getAuthentication("test-helper", "host1.name") >> new CredsStoreHelperResult([Username: "user-name", Secret: "password"])
+    1 * credsStoreHelper.getAuthentication("test-helper", "host2.name") >> new CredsStoreHelperResult([Username: "<token>", Secret: "baz"])
     0 * credsStoreHelper._
     result.size() == 2
     result["host1.name"] == new AuthConfig(username: "user-name", password: "password", serveraddress: "host1.name")
