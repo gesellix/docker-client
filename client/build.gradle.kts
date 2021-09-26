@@ -61,8 +61,8 @@ dependencies {
     ).onEach {
       implementation(it) {
         version {
-          strictly("[2.5,)")
-          prefer("2.5.14")
+          strictly("[3,)")
+          prefer("3.0.9")
         }
       }
     }
@@ -91,7 +91,7 @@ dependencies {
 
   testImplementation("de.gesellix:testutil:[2021-08-05T22-09-32,)")
 
-  testImplementation("org.spockframework:spock-core:2.0-groovy-2.5")
+  testImplementation("org.spockframework:spock-core:2.0-groovy-3.0")
   testRuntimeOnly("cglib:cglib-nodep:3.3.0")
 
   testImplementation("org.apache.commons:commons-lang3:3.12.0")
