@@ -2,6 +2,8 @@ package de.gesellix.docker.client.authentication
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
+import de.gesellix.docker.authentication.AuthConfig
+import de.gesellix.docker.authentication.AuthConfigReader
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.engine.DockerEnv
@@ -12,7 +14,7 @@ import spock.lang.Specification
 
 import java.lang.reflect.Type
 
-import static de.gesellix.docker.client.authentication.AuthConfig.EMPTY_AUTH_CONFIG
+import static de.gesellix.docker.authentication.AuthConfig.EMPTY_AUTH_CONFIG
 
 class ManageAuthenticationClientTest extends Specification {
 

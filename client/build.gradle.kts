@@ -11,10 +11,6 @@ plugins {
   id("io.freefair.maven-central.validate-poms")
 }
 
-repositories {
-  mavenCentral()
-}
-
 dependencies {
   constraints {
     implementation("org.slf4j:slf4j-api") {
@@ -68,7 +64,7 @@ dependencies {
     }
   }
 
-  api("de.gesellix:docker-engine:2021-09-26T13-30-00")
+  api("de.gesellix:docker-engine:2021-09-26T18-50-00")
   api("de.gesellix:docker-compose:2021-09-21T08-00-00")
 
   implementation("org.codehaus.groovy:groovy:[2.5,)")

@@ -1,6 +1,6 @@
 package de.gesellix.docker.client.registry
 
-import de.gesellix.docker.client.authentication.AuthConfig
+import de.gesellix.docker.authentication.AuthConfig
 import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.engine.EngineResponse
