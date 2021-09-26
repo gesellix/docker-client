@@ -8,15 +8,12 @@ import de.gesellix.docker.engine.DockerEnv
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
 import groovy.util.logging.Slf4j
-import okio.Okio
-
-import static de.gesellix.docker.client.authentication.AuthConfig.EMPTY_AUTH_CONFIG
 
 @Slf4j
 class ManageAuthenticationClient implements ManageAuthentication {
 
-  private DockerEnv env
-  private EngineClient client
+  AuthConfigReader authConfigReader
+  EngineClient client
   private RegistryElection registryElection
 
   private Moshi moshi = new Moshi.Builder().build()
@@ -24,64 +21,30 @@ class ManageAuthenticationClient implements ManageAuthentication {
   ManageAuthenticationClient(DockerEnv env,
                              EngineClient client,
                              ManageSystem manageSystem) {
-    this.env = env
+    this.authConfigReader = new AuthConfigReader(env)
     this.client = client
     this.registryElection = new RegistryElection(manageSystem, this)
   }
 
   @Override
   Map<String, AuthConfig> getAllAuthConfigs(File dockerCfg = null) {
-    Map parsedDockerCfg = readDockerConfigFile(dockerCfg)
+    Map parsedDockerCfg = authConfigReader.readDockerConfigFile(dockerCfg)
     if (!parsedDockerCfg) {
       return [:]
     }
 
-    CredsStore credsStore = getCredentialsStore(parsedDockerCfg)
+    CredsStore credsStore = authConfigReader.getCredentialsStore(parsedDockerCfg)
     return credsStore.getAuthConfigs()
   }
 
   @Override
   AuthConfig readDefaultAuthConfig() {
-    return readAuthConfig(null, env.getDockerConfigFile())
+    return authConfigReader.readDefaultAuthConfig()
   }
 
   @Override
   AuthConfig readAuthConfig(String hostname, File dockerCfg) {
-    log.debug "read authConfig"
-
-    if (!hostname) {
-      hostname = env.indexUrl_v1
-    }
-
-    Map parsedDockerCfg = readDockerConfigFile(dockerCfg)
-    if (!parsedDockerCfg) {
-      return EMPTY_AUTH_CONFIG
-    }
-
-    CredsStore credsStore = getCredentialsStore(parsedDockerCfg, hostname)
-    return credsStore.getAuthConfig(hostname)
-  }
-
-  Map readDockerConfigFile(File dockerCfg) {
-    if (!dockerCfg) {
-      dockerCfg = env.getDockerConfigFile()
-    }
-    if (!dockerCfg?.exists()) {
-      log.info "docker config '${dockerCfg}' doesn't exist"
-      return [:]
-    }
-    log.debug "reading auth info from ${dockerCfg}"
-    return moshi.adapter(Map).fromJson(Okio.buffer(Okio.source(dockerCfg)))
-  }
-
-  CredsStore getCredentialsStore(Map parsedDockerCfg, String hostname = "") {
-    if (parsedDockerCfg['credHelpers'] && hostname && parsedDockerCfg['credHelpers'][hostname]) {
-      return new NativeStore(parsedDockerCfg['credHelpers'][hostname] as String)
-    }
-    if (parsedDockerCfg['credsStore']) {
-      return new NativeStore(parsedDockerCfg['credsStore'] as String)
-    }
-    return new FileStore(parsedDockerCfg)
+    return authConfigReader.readAuthConfig(hostname, dockerCfg)
   }
 
   @Override

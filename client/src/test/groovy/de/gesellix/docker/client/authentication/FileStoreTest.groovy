@@ -8,7 +8,7 @@ class FileStoreTest extends Specification {
 
   def "getAuthConfig returns entry matching registry hostname"() {
     given:
-    FileStore credsStore = new FileStore([auths: ["host.name": [auth: "Z2VzZWxsaXg6LXlldC1hbm90aGVyLXBhc3N3b3JkLQ=", email: "tobias@gesellix.de"]]])
+    FileStore credsStore = new FileStore([auths: ["host.name": [auth: "Z2VzZWxsaXg6LXlldC1hbm90aGVyLXBhc3N3b3JkLQ==", email: "tobias@gesellix.de"]]])
 
     when:
     AuthConfig result = credsStore.getAuthConfig("host.name")
@@ -24,7 +24,7 @@ class FileStoreTest extends Specification {
 
   def "getAuthConfig returns empty AuthConfig for missing entry"() {
     given:
-    FileStore credsStore = new FileStore([auths: ["host.name": [auth: "Z2VzZWxsaXg6LXlldC1hbm90aGVyLXBhc3N3b3JkLQ=", email: "tobias@gesellix.de"]]])
+    FileStore credsStore = new FileStore([auths: ["host.name": [auth: "Z2VzZWxsaXg6LXlldC1hbm90aGVyLXBhc3N3b3JkLQ==", email: "tobias@gesellix.de"]]])
 
     expect:
     EMPTY_AUTH_CONFIG == credsStore.getAuthConfig("missing.host.name")
@@ -49,7 +49,7 @@ class FileStoreTest extends Specification {
   def "getAuthConfigs all known AuthConfigs"() {
     given:
     FileStore credsStore = new FileStore([auths: [
-        "host1.name": [auth: "Z2VzZWxsaXg6LXlldC1hbm90aGVyLXBhc3N3b3JkLQ=", email: "tobias@gesellix.de"],
+        "host1.name": [auth: "Z2VzZWxsaXg6LXlldC1hbm90aGVyLXBhc3N3b3JkLQ==", email: "tobias@gesellix.de"],
         "host2.name": [auth: "Z2VzZWxsaXg6LWEtcGFzc3dvcmQtZm9yLXF1YXkt", email: "tobias@gesellix.de"]]])
 
     when:
