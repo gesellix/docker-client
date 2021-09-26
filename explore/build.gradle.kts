@@ -8,10 +8,6 @@ java {
   targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-repositories {
-  mavenCentral()
-}
-
 dependencies {
   constraints {
     implementation("org.slf4j:slf4j-api") {

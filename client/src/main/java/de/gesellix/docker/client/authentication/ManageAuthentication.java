@@ -1,5 +1,6 @@
 package de.gesellix.docker.client.authentication;
 
+import de.gesellix.docker.authentication.AuthConfig;
 import de.gesellix.docker.engine.EngineResponse;
 
 import java.io.File;

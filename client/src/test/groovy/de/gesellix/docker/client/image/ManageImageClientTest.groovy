@@ -1,7 +1,7 @@
 package de.gesellix.docker.client.image
 
+import de.gesellix.docker.authentication.AuthConfig
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.authentication.AuthConfig
 import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
