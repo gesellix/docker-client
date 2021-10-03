@@ -530,6 +530,9 @@ class DockerImageIntegrationSpec extends Specification {
     dockerClient.rmi("${registry.url()}/${CONSTANTS.imageRepo}:${CONSTANTS.imageTag}")
   }
 
+  // WCOW does not support exporting containers and we haven't crafted a valid .tar, yet.
+  // See https://github.com/moby/moby/issues/33581
+  @Requires({ !LocalDocker.isNativeWindows() })
   def "import image from url"() {
     given:
     def importUrl = getClass().getResource('importUrl/import-from-url.tar')
@@ -555,6 +558,9 @@ class DockerImageIntegrationSpec extends Specification {
     dockerClient.rmi(imageId)
   }
 
+  // WCOW does not support exporting containers and we haven't crafted a valid .tar, yet.
+  // See https://github.com/moby/moby/issues/33581
+  @Requires({ !LocalDocker.isNativeWindows() })
   def "import image from stream"() {
     given:
     def archive = getClass().getResourceAsStream('importUrl/import-from-url.tar')
