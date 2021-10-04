@@ -23,12 +23,12 @@ import de.gesellix.docker.engine.client.infrastructure.ResponseType
 import de.gesellix.docker.engine.client.infrastructure.ServerError
 import de.gesellix.docker.engine.client.infrastructure.ServerException
 import de.gesellix.docker.engine.client.infrastructure.Success
-import de.gesellix.docker.engine.model.Network
-import de.gesellix.docker.engine.model.NetworkConnectRequest
-import de.gesellix.docker.engine.model.NetworkCreateRequest
-import de.gesellix.docker.engine.model.NetworkCreateResponse
-import de.gesellix.docker.engine.model.NetworkDisconnectRequest
-import de.gesellix.docker.engine.model.NetworkPruneResponse
+import de.gesellix.docker.remote.api.Network
+import de.gesellix.docker.remote.api.NetworkConnectRequest
+import de.gesellix.docker.remote.api.NetworkCreateRequest
+import de.gesellix.docker.remote.api.NetworkCreateResponse
+import de.gesellix.docker.remote.api.NetworkDisconnectRequest
+import de.gesellix.docker.remote.api.NetworkPruneResponse
 import java.net.HttpURLConnection
 
 class NetworkApi(basePath: String = defaultBasePath) : ApiClient(basePath) {

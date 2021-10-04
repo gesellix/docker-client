@@ -2,7 +2,7 @@ package de.gesellix.docker.client.testutil;
 
 import de.gesellix.docker.client.TypeSafeDockerClientImpl;
 import de.gesellix.docker.engine.client.infrastructure.LoggingExtensionsKt;
-import de.gesellix.docker.engine.model.LocalNodeState;
+import de.gesellix.docker.remote.api.LocalNodeState;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtendWith;

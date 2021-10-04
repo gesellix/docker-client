@@ -22,7 +22,7 @@ import de.gesellix.docker.engine.client.infrastructure.ServerError
 import de.gesellix.docker.engine.client.infrastructure.ServerException
 import de.gesellix.docker.engine.client.infrastructure.Success
 import de.gesellix.docker.engine.client.infrastructure.SuccessStream
-import de.gesellix.docker.engine.model.Task
+import de.gesellix.docker.remote.api.Task
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect

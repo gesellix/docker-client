@@ -3,8 +3,8 @@ package de.gesellix.docker.client.testutil;
 import de.gesellix.docker.client.TypeSafeDockerClientImpl;
 import de.gesellix.docker.engine.api.SwarmApi;
 import de.gesellix.docker.engine.api.SystemApi;
-import de.gesellix.docker.engine.model.LocalNodeState;
-import de.gesellix.docker.engine.model.SwarmInitRequest;
+import de.gesellix.docker.remote.api.LocalNodeState;
+import de.gesellix.docker.remote.api.SwarmInitRequest;
 
 public class SwarmUtil {
 

@@ -1,11 +1,11 @@
 package de.gesellix.docker.client.testutil;
 
 import de.gesellix.docker.client.TypeSafeDockerClientImpl;
-import de.gesellix.docker.engine.model.ContainerCreateRequest;
-import de.gesellix.docker.engine.model.ContainerCreateResponse;
-import de.gesellix.docker.engine.model.ContainerInspectResponse;
-import de.gesellix.docker.engine.model.HostConfig;
-import de.gesellix.docker.engine.model.PortBinding;
+import de.gesellix.docker.remote.api.ContainerCreateRequest;
+import de.gesellix.docker.remote.api.ContainerCreateResponse;
+import de.gesellix.docker.remote.api.ContainerInspectResponse;
+import de.gesellix.docker.remote.api.HostConfig;
+import de.gesellix.docker.remote.api.PortBinding;
 
 import java.util.List;
 import java.util.Objects;

@@ -21,7 +21,7 @@ import de.gesellix.docker.engine.client.infrastructure.ResponseType
 import de.gesellix.docker.engine.client.infrastructure.ServerError
 import de.gesellix.docker.engine.client.infrastructure.ServerException
 import de.gesellix.docker.engine.client.infrastructure.Success
-import de.gesellix.docker.engine.model.DistributionInspect
+import de.gesellix.docker.remote.api.DistributionInspect
 
 class DistributionApi(basePath: String = defaultBasePath) : ApiClient(basePath) {
   companion object {

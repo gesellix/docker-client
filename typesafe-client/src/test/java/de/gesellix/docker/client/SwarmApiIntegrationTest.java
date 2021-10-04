@@ -5,9 +5,9 @@ import de.gesellix.docker.client.testutil.InjectDockerClient;
 import de.gesellix.docker.client.testutil.SwarmUtil;
 import de.gesellix.docker.engine.api.SwarmApi;
 import de.gesellix.docker.engine.api.SystemApi;
-import de.gesellix.docker.engine.model.LocalNodeState;
-import de.gesellix.docker.engine.model.Swarm;
-import de.gesellix.docker.engine.model.SwarmInitRequest;
+import de.gesellix.docker.remote.api.LocalNodeState;
+import de.gesellix.docker.remote.api.Swarm;
+import de.gesellix.docker.remote.api.SwarmInitRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

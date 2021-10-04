@@ -24,10 +24,10 @@ import de.gesellix.docker.engine.client.infrastructure.ServerError
 import de.gesellix.docker.engine.client.infrastructure.ServerException
 import de.gesellix.docker.engine.client.infrastructure.Success
 import de.gesellix.docker.engine.client.infrastructure.SuccessStream
-import de.gesellix.docker.engine.model.Service
-import de.gesellix.docker.engine.model.ServiceCreateResponse
-import de.gesellix.docker.engine.model.ServiceSpec
-import de.gesellix.docker.engine.model.ServiceUpdateResponse
+import de.gesellix.docker.remote.api.Service
+import de.gesellix.docker.remote.api.ServiceCreateResponse
+import de.gesellix.docker.remote.api.ServiceSpec
+import de.gesellix.docker.remote.api.ServiceUpdateResponse
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect

@@ -23,9 +23,9 @@ import de.gesellix.docker.engine.client.infrastructure.ResponseType
 import de.gesellix.docker.engine.client.infrastructure.ServerError
 import de.gesellix.docker.engine.client.infrastructure.ServerException
 import de.gesellix.docker.engine.client.infrastructure.Success
-import de.gesellix.docker.engine.model.IdResponse
-import de.gesellix.docker.engine.model.Secret
-import de.gesellix.docker.engine.model.SecretSpec
+import de.gesellix.docker.remote.api.IdResponse
+import de.gesellix.docker.remote.api.Secret
+import de.gesellix.docker.remote.api.SecretSpec
 
 class SecretApi(basePath: String = defaultBasePath) : ApiClient(basePath) {
   companion object {

@@ -4,9 +4,9 @@ import com.squareup.moshi.Moshi;
 import de.gesellix.docker.client.testutil.DockerEngineAvailable;
 import de.gesellix.docker.client.testutil.InjectDockerClient;
 import de.gesellix.docker.engine.api.VolumeApi;
-import de.gesellix.docker.engine.model.Volume;
-import de.gesellix.docker.engine.model.VolumeConfig;
-import de.gesellix.docker.engine.model.VolumePruneResponse;
+import de.gesellix.docker.remote.api.Volume;
+import de.gesellix.docker.remote.api.VolumeConfig;
+import de.gesellix.docker.remote.api.VolumePruneResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -24,10 +24,10 @@ import de.gesellix.docker.engine.client.infrastructure.ServerError
 import de.gesellix.docker.engine.client.infrastructure.ServerException
 import de.gesellix.docker.engine.client.infrastructure.Success
 import de.gesellix.docker.engine.client.infrastructure.SuccessStream
-import de.gesellix.docker.engine.model.ExecConfig
-import de.gesellix.docker.engine.model.ExecInspectResponse
-import de.gesellix.docker.engine.model.ExecStartConfig
-import de.gesellix.docker.engine.model.IdResponse
+import de.gesellix.docker.remote.api.ExecConfig
+import de.gesellix.docker.remote.api.ExecInspectResponse
+import de.gesellix.docker.remote.api.ExecStartConfig
+import de.gesellix.docker.remote.api.IdResponse
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect

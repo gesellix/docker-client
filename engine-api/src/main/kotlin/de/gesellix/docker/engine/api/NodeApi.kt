@@ -23,8 +23,8 @@ import de.gesellix.docker.engine.client.infrastructure.ResponseType
 import de.gesellix.docker.engine.client.infrastructure.ServerError
 import de.gesellix.docker.engine.client.infrastructure.ServerException
 import de.gesellix.docker.engine.client.infrastructure.Success
-import de.gesellix.docker.engine.model.Node
-import de.gesellix.docker.engine.model.NodeSpec
+import de.gesellix.docker.remote.api.Node
+import de.gesellix.docker.remote.api.NodeSpec
 
 class NodeApi(basePath: String = defaultBasePath) : ApiClient(basePath) {
   companion object {

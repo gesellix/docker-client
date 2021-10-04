@@ -7,12 +7,12 @@ import de.gesellix.docker.client.testutil.TestImage;
 import de.gesellix.docker.engine.api.ContainerApi;
 import de.gesellix.docker.engine.api.ImageApi;
 import de.gesellix.docker.engine.api.NetworkApi;
-import de.gesellix.docker.engine.model.ContainerCreateRequest;
-import de.gesellix.docker.engine.model.Network;
-import de.gesellix.docker.engine.model.NetworkConnectRequest;
-import de.gesellix.docker.engine.model.NetworkCreateRequest;
-import de.gesellix.docker.engine.model.NetworkCreateResponse;
-import de.gesellix.docker.engine.model.NetworkDisconnectRequest;
+import de.gesellix.docker.remote.api.ContainerCreateRequest;
+import de.gesellix.docker.remote.api.Network;
+import de.gesellix.docker.remote.api.NetworkConnectRequest;
+import de.gesellix.docker.remote.api.NetworkCreateRequest;
+import de.gesellix.docker.remote.api.NetworkCreateResponse;
+import de.gesellix.docker.remote.api.NetworkDisconnectRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

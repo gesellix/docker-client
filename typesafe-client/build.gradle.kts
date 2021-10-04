@@ -40,7 +40,7 @@ dependencies {
   }
   implementation(project(":engine-api"))
   implementation("de.gesellix:docker-engine:2021-09-29T15-30-00")
-  implementation("de.gesellix:docker-api-model:2021-09-29T15-30-00")
+  implementation("de.gesellix:docker-remote-api-model-1-41:2021-10-04T21-50-00")
   implementation("com.squareup.moshi:moshi:1.12.0")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 

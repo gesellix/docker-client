@@ -23,10 +23,10 @@ import de.gesellix.docker.engine.client.infrastructure.ResponseType
 import de.gesellix.docker.engine.client.infrastructure.ServerError
 import de.gesellix.docker.engine.client.infrastructure.ServerException
 import de.gesellix.docker.engine.client.infrastructure.Success
-import de.gesellix.docker.engine.model.Volume
-import de.gesellix.docker.engine.model.VolumeConfig
-import de.gesellix.docker.engine.model.VolumeListResponse
-import de.gesellix.docker.engine.model.VolumePruneResponse
+import de.gesellix.docker.remote.api.Volume
+import de.gesellix.docker.remote.api.VolumeConfig
+import de.gesellix.docker.remote.api.VolumeListResponse
+import de.gesellix.docker.remote.api.VolumePruneResponse
 
 class VolumeApi(basePath: String = defaultBasePath) : ApiClient(basePath) {
   companion object {

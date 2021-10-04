@@ -23,9 +23,9 @@ import de.gesellix.docker.engine.client.infrastructure.ResponseType
 import de.gesellix.docker.engine.client.infrastructure.ServerError
 import de.gesellix.docker.engine.client.infrastructure.ServerException
 import de.gesellix.docker.engine.client.infrastructure.Success
-import de.gesellix.docker.engine.model.Config
-import de.gesellix.docker.engine.model.ConfigSpec
-import de.gesellix.docker.engine.model.IdResponse
+import de.gesellix.docker.remote.api.Config
+import de.gesellix.docker.remote.api.ConfigSpec
+import de.gesellix.docker.remote.api.IdResponse
 
 class ConfigApi(basePath: String = defaultBasePath) : ApiClient(basePath) {
   companion object {

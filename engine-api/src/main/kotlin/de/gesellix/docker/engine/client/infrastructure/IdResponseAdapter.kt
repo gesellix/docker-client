@@ -6,7 +6,7 @@ import com.squareup.moshi.JsonReader
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
-import de.gesellix.docker.engine.model.IdResponse
+import de.gesellix.docker.remote.api.IdResponse
 import java.lang.reflect.Type
 
 class IdResponseAdapter : JsonAdapter.Factory {

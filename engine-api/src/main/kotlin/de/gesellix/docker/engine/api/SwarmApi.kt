@@ -22,12 +22,12 @@ import de.gesellix.docker.engine.client.infrastructure.ResponseType
 import de.gesellix.docker.engine.client.infrastructure.ServerError
 import de.gesellix.docker.engine.client.infrastructure.ServerException
 import de.gesellix.docker.engine.client.infrastructure.Success
-import de.gesellix.docker.engine.model.Swarm
-import de.gesellix.docker.engine.model.SwarmInitRequest
-import de.gesellix.docker.engine.model.SwarmJoinRequest
-import de.gesellix.docker.engine.model.SwarmSpec
-import de.gesellix.docker.engine.model.SwarmUnlockRequest
-import de.gesellix.docker.engine.model.UnlockKeyResponse
+import de.gesellix.docker.remote.api.Swarm
+import de.gesellix.docker.remote.api.SwarmInitRequest
+import de.gesellix.docker.remote.api.SwarmJoinRequest
+import de.gesellix.docker.remote.api.SwarmSpec
+import de.gesellix.docker.remote.api.SwarmUnlockRequest
+import de.gesellix.docker.remote.api.UnlockKeyResponse
 
 class SwarmApi(basePath: String = defaultBasePath) : ApiClient(basePath) {
   companion object {

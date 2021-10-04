@@ -23,8 +23,8 @@ import de.gesellix.docker.engine.client.infrastructure.ResponseType
 import de.gesellix.docker.engine.client.infrastructure.ServerError
 import de.gesellix.docker.engine.client.infrastructure.ServerException
 import de.gesellix.docker.engine.client.infrastructure.Success
-import de.gesellix.docker.engine.model.Plugin
-import de.gesellix.docker.engine.model.PluginPrivilege
+import de.gesellix.docker.remote.api.Plugin
+import de.gesellix.docker.remote.api.PluginPrivilege
 
 class PluginApi(basePath: String = defaultBasePath) : ApiClient(basePath) {
   companion object {
