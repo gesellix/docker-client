@@ -1,20 +1,20 @@
 package de.gesellix.docker.client
 
-import de.gesellix.docker.engine.api.ConfigApi
-import de.gesellix.docker.engine.api.ContainerApi
-import de.gesellix.docker.engine.api.DistributionApi
-import de.gesellix.docker.engine.api.ExecApi
-import de.gesellix.docker.engine.api.ImageApi
-import de.gesellix.docker.engine.api.NetworkApi
-import de.gesellix.docker.engine.api.NodeApi
-import de.gesellix.docker.engine.api.PluginApi
-import de.gesellix.docker.engine.api.SecretApi
-import de.gesellix.docker.engine.api.ServiceApi
-import de.gesellix.docker.engine.api.SessionApi
-import de.gesellix.docker.engine.api.SwarmApi
-import de.gesellix.docker.engine.api.SystemApi
-import de.gesellix.docker.engine.api.TaskApi
-import de.gesellix.docker.engine.api.VolumeApi
+import de.gesellix.docker.remote.api.client.ConfigApi
+import de.gesellix.docker.remote.api.client.ContainerApi
+import de.gesellix.docker.remote.api.client.DistributionApi
+import de.gesellix.docker.remote.api.client.ExecApi
+import de.gesellix.docker.remote.api.client.ImageApi
+import de.gesellix.docker.remote.api.client.NetworkApi
+import de.gesellix.docker.remote.api.client.NodeApi
+import de.gesellix.docker.remote.api.client.PluginApi
+import de.gesellix.docker.remote.api.client.SecretApi
+import de.gesellix.docker.remote.api.client.ServiceApi
+import de.gesellix.docker.remote.api.client.SessionApi
+import de.gesellix.docker.remote.api.client.SwarmApi
+import de.gesellix.docker.remote.api.client.SystemApi
+import de.gesellix.docker.remote.api.client.TaskApi
+import de.gesellix.docker.remote.api.client.VolumeApi
 
 class TypeSafeDockerClientImpl : TypeSafeDockerClient {
 

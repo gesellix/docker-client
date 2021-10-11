@@ -21,7 +21,7 @@ dependencies {
   implementation("com.squareup.okhttp3:okhttp:4.9.1")
   testImplementation("io.kotlintest:kotlintest-runner-junit5:3.4.2")
   implementation("de.gesellix:docker-remote-api-model-1-41:2021-10-04T21-50-00")
-  implementation("de.gesellix:docker-engine:2021-09-29T15-30-00")
+  implementation("de.gesellix:docker-engine:2021-10-09T19-06-00")
   implementation("de.gesellix:docker-filesocket:2021-09-20T20-10-00")
 
   implementation("org.slf4j:slf4j-api:[1.7,)!!1.7.32")

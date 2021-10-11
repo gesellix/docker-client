@@ -4,15 +4,15 @@ import com.squareup.moshi.Moshi;
 import de.gesellix.docker.client.testutil.DockerEngineAvailable;
 import de.gesellix.docker.client.testutil.InjectDockerClient;
 import de.gesellix.docker.client.testutil.TestImage;
-import de.gesellix.docker.engine.api.ContainerApi;
-import de.gesellix.docker.engine.api.ImageApi;
-import de.gesellix.docker.engine.api.NetworkApi;
 import de.gesellix.docker.remote.api.ContainerCreateRequest;
 import de.gesellix.docker.remote.api.Network;
 import de.gesellix.docker.remote.api.NetworkConnectRequest;
 import de.gesellix.docker.remote.api.NetworkCreateRequest;
 import de.gesellix.docker.remote.api.NetworkCreateResponse;
 import de.gesellix.docker.remote.api.NetworkDisconnectRequest;
+import de.gesellix.docker.remote.api.client.ContainerApi;
+import de.gesellix.docker.remote.api.client.ImageApi;
+import de.gesellix.docker.remote.api.client.NetworkApi;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

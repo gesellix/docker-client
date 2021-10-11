@@ -3,14 +3,14 @@ package de.gesellix.docker.client;
 import de.gesellix.docker.client.testutil.DockerEngineAvailable;
 import de.gesellix.docker.client.testutil.InjectDockerClient;
 import de.gesellix.docker.client.testutil.TestImage;
-import de.gesellix.docker.engine.api.ContainerApi;
-import de.gesellix.docker.engine.api.ExecApi;
-import de.gesellix.docker.engine.api.ImageApi;
 import de.gesellix.docker.remote.api.ContainerCreateRequest;
 import de.gesellix.docker.remote.api.ExecConfig;
 import de.gesellix.docker.remote.api.ExecInspectResponse;
 import de.gesellix.docker.remote.api.ExecStartConfig;
 import de.gesellix.docker.remote.api.IdResponse;
+import de.gesellix.docker.remote.api.client.ContainerApi;
+import de.gesellix.docker.remote.api.client.ExecApi;
+import de.gesellix.docker.remote.api.client.ImageApi;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -3,9 +3,9 @@ package de.gesellix.docker.client;
 import de.gesellix.docker.client.testutil.DisabledIfDaemonOnWindowsOs;
 import de.gesellix.docker.client.testutil.DockerEngineAvailable;
 import de.gesellix.docker.client.testutil.InjectDockerClient;
-import de.gesellix.docker.engine.api.PluginApi;
 import de.gesellix.docker.remote.api.Plugin;
 import de.gesellix.docker.remote.api.PluginPrivilege;
+import de.gesellix.docker.remote.api.client.PluginApi;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

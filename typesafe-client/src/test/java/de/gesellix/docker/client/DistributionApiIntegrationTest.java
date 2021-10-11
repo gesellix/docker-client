@@ -2,8 +2,8 @@ package de.gesellix.docker.client;
 
 import de.gesellix.docker.client.testutil.DockerEngineAvailable;
 import de.gesellix.docker.client.testutil.InjectDockerClient;
-import de.gesellix.docker.engine.api.DistributionApi;
 import de.gesellix.docker.remote.api.DistributionInspect;
+import de.gesellix.docker.remote.api.client.DistributionApi;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

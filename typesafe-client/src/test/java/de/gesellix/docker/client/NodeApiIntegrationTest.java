@@ -2,12 +2,12 @@ package de.gesellix.docker.client;
 
 import de.gesellix.docker.client.testutil.DockerEngineAvailable;
 import de.gesellix.docker.client.testutil.InjectDockerClient;
-import de.gesellix.docker.engine.api.NodeApi;
-import de.gesellix.docker.engine.client.infrastructure.ClientException;
 import de.gesellix.docker.remote.api.LocalNodeState;
 import de.gesellix.docker.remote.api.Node;
 import de.gesellix.docker.remote.api.NodeSpec;
 import de.gesellix.docker.remote.api.NodeState;
+import de.gesellix.docker.remote.api.client.NodeApi;
+import de.gesellix.docker.remote.api.core.ClientException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
