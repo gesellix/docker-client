@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpHandler
 import com.sun.net.httpserver.HttpServer
 import com.sun.net.httpserver.HttpsConfigurator
 import com.sun.net.httpserver.HttpsServer
+import okio.BufferedSink
 import okio.Okio
 
 import javax.net.ssl.KeyManagerFactory
@@ -148,13 +149,15 @@ class HttpTestServer {
     void handle(HttpExchange httpExchange) {
       if (httpExchange.requestMethod == 'GET') {
         httpExchange.sendResponseHeaders(200, 0)
-        httpExchange.responseBody.write(toString((file as URL).newInputStream()).bytes)
+        copy(file.openStream(), httpExchange.getResponseBody())
         httpExchange.responseBody.close()
       }
     }
 
-    private String toString(InputStream source) {
-      Okio.buffer(Okio.source(source)).readUtf8()
+    private void copy(InputStream source, OutputStream sink) throws IOException {
+      BufferedSink bufferedSink = Okio.buffer(Okio.sink(sink))
+      bufferedSink.writeAll(Okio.buffer(Okio.source(source)))
+      bufferedSink.flush()
     }
   }
 }
