@@ -3,6 +3,8 @@ package de.gesellix.docker.client
 import de.gesellix.docker.builder.BuildContextBuilder
 import de.gesellix.docker.client.image.BuildConfig
 import de.gesellix.docker.client.image.BuildResult
+import de.gesellix.docker.client.testutil.ManifestUtil
+import de.gesellix.docker.client.testutil.TarUtil
 import de.gesellix.docker.registry.DockerRegistry
 import de.gesellix.docker.testutil.HttpTestServer
 import de.gesellix.docker.testutil.NetworkInterfaces
@@ -530,12 +532,12 @@ class DockerImageIntegrationSpec extends Specification {
     dockerClient.rmi("${registry.url()}/${CONSTANTS.imageRepo}:${CONSTANTS.imageTag}")
   }
 
-  // WCOW does not support exporting containers and we haven't crafted a valid .tar, yet.
-  // See https://github.com/moby/moby/issues/33581
-  @Requires({ !LocalDocker.isNativeWindows() })
   def "import image from url"() {
     given:
-    def importUrl = getClass().getResource('importUrl/import-from-url.tar')
+    InputStream tarStream = dockerClient.save(CONSTANTS.imageName).stream
+    File destDir = new TarUtil().unTar(tarStream)
+    File rootLayerTar = new ManifestUtil().getRootLayerLocation(destDir)
+    URL importUrl = rootLayerTar.toURI().toURL()
     def server = new HttpTestServer()
     def serverAddress = server.start('/images/', new HttpTestServer.FileServer(importUrl))
     def port = serverAddress.port
@@ -558,12 +560,12 @@ class DockerImageIntegrationSpec extends Specification {
     dockerClient.rmi(imageId)
   }
 
-  // WCOW does not support exporting containers and we haven't crafted a valid .tar, yet.
-  // See https://github.com/moby/moby/issues/33581
-  @Requires({ !LocalDocker.isNativeWindows() })
   def "import image from stream"() {
     given:
-    def archive = getClass().getResourceAsStream('importUrl/import-from-url.tar')
+    InputStream tarStream = dockerClient.save(CONSTANTS.imageName).stream
+    File destDir = new TarUtil().unTar(tarStream)
+    File rootLayerTar = new ManifestUtil().getRootLayerLocation(destDir)
+    def archive = new FileInputStream(rootLayerTar)
 
     when:
     String imageId = dockerClient.importStream(archive, "import-from-url", "foo")
