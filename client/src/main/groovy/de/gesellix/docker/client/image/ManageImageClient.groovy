@@ -322,11 +322,11 @@ class ManageImageClient implements ManageImage {
 
     def response
     if (images.length == 1) {
-      response = client.get([path: "/images/${images.first()}/get"])
+      response = client.get([path: "/images/${images.first()}/get".toString()])
     }
     else {
       response = client.get([path : "/images/get",
-                             query: [names: images]])
+                             query: [names: images.collect { it.toString() }]])
     }
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker save failed"))
 
