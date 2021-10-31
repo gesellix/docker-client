@@ -14,6 +14,26 @@ val dependencyVersions = listOf(
 
 val dependencyVersionsByGroup = mapOf<String, String>()
 
+subprojects {
+  repositories {
+//    mavenLocal()
+//    fun findProperty(s: String) = project.findProperty(s) as String?
+//    listOf(
+//      "docker-client/*"
+//    ).forEach { repo ->
+//      maven {
+//        name = "github"
+//        setUrl("https://maven.pkg.github.com/$repo")
+//        credentials {
+//          username = System.getenv("PACKAGE_REGISTRY_USER") ?: findProperty("github.package-registry.username")
+//          password = System.getenv("PACKAGE_REGISTRY_TOKEN") ?: findProperty("github.package-registry.password")
+//        }
+//      }
+//    }
+    mavenCentral()
+  }
+}
+
 allprojects {
   configurations.all {
     resolutionStrategy {
@@ -26,26 +46,6 @@ allprojects {
         }
       }
     }
-  }
-}
-
-subprojects {
-  repositories {
-//    mavenLocal()
-//    listOf(
-//      "docker-client/docker-engine"
-//    ).forEach { repo ->
-//      fun findProperty(s: String) = project.findProperty(s) as String?
-//      maven {
-//        name = "github"
-//        setUrl("https://maven.pkg.github.com/$repo")
-//        credentials {
-//          username = System.getenv("PACKAGE_REGISTRY_USER") ?: findProperty("github.package-registry.username")
-//          password = System.getenv("PACKAGE_REGISTRY_TOKEN") ?: findProperty("github.package-registry.password")
-//        }
-//      }
-//    }
-    mavenCentral()
   }
 }
 
