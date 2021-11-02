@@ -20,7 +20,7 @@ class ManageVolumeClient implements ManageVolume {
   }
 
   @Override
-  EngineResponse volumes(query = [:]) {
+  EngineResponse volumes(Map<String, Object> query = [:]) {
     log.info "docker volume ls"
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
@@ -39,7 +39,7 @@ class ManageVolumeClient implements ManageVolume {
   }
 
   @Override
-  EngineResponse createVolume(config = [:]) {
+  EngineResponse createVolume(Map<String, Object> config = [:]) {
     log.info "docker volume create"
     def response = client.post([path              : "/volumes/create",
                                 body              : config ?: [:],
@@ -57,7 +57,7 @@ class ManageVolumeClient implements ManageVolume {
   }
 
   @Override
-  EngineResponse pruneVolumes(query = [:]) {
+  EngineResponse pruneVolumes(Map<String, Object> query = [:]) {
     log.info "docker volume prune"
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)

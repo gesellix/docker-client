@@ -61,7 +61,7 @@ class ManageConfigClient implements ManageConfig {
   }
 
   @Override
-  EngineResponse updateConfig(String configId, version, configSpec) {
+  EngineResponse updateConfig(String configId, int version, Map<String, ?> configSpec) {
     log.info "docker config update"
     def response = client.post([path              : "/configs/${configId}/update".toString(),
                                 query             : [version: version],

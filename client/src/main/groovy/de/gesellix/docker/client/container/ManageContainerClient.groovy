@@ -37,7 +37,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse attach(String containerId, query, AttachConfig callback = null) {
+  EngineResponse attach(String containerId, Map<String, Object> query, AttachConfig callback = null) {
     log.info "docker attach"
 
     // When using the TTY setting is enabled in POST /containers/create,
@@ -58,7 +58,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  WebSocket attachWebsocket(String containerId, query, WebSocketListener listener) {
+  WebSocket attachWebsocket(String containerId, Map<String, Object> query, WebSocketListener listener) {
     log.info "docker attach via websocket"
     WebSocket webSocket = client.webSocket(
         [path : "/containers/${containerId}/attach/ws".toString(),
@@ -69,7 +69,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse resizeTTY(String container, height, width) {
+  EngineResponse resizeTTY(String container, Integer height, Integer width) {
     log.info "docker resize container"
 //        if (!inspectContainer(container).Config.Tty) {
 //            log.warn "container '${container}' hasn't been configured with a TTY!"
@@ -100,7 +100,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  getArchiveStats(String container, path) {
+  getArchiveStats(String container, String path) {
     log.info "docker archive stats ${container}|${path}"
 
     def response = client.head([path : "/containers/${container}/archive".toString(),
@@ -170,7 +170,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse createContainer(Map<String, ?> containerConfig, Map<String, ?> query = [name: ""], String authBase64Encoded = "") {
+  EngineResponse createContainer(Map<String, Object> containerConfig, Map<String, Object> query = [name: ""], String authBase64Encoded = "") {
     log.info "docker create"
     def actualContainerConfig = [:] + containerConfig
 
@@ -264,7 +264,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse exec(String containerId, command, Map execConfig = [
+  EngineResponse exec(String containerId, List<String> command, Map<String, Object> execConfig = [
       "Detach"     : false,
       "AttachStdin": false,
       "Tty"        : false]) {
@@ -284,7 +284,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse resizeExec(String exec, height, width) {
+  EngineResponse resizeExec(String exec, Integer height, Integer width) {
     log.info "docker resize exec"
 //        if (!inspectExec(exec).ProcessConfig.tty) {
 //            log.warn "exec '${exec}' hasn't been configured with a TTY!"
@@ -328,7 +328,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse logs(String container, query, DockerAsyncCallback callback = null) {
+  EngineResponse logs(String container, Map<String, Object> query, DockerAsyncCallback callback = null) {
     log.info "docker logs"
 
     def async = callback ? true : false
@@ -363,7 +363,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse ps(Map<String, ?> query = [:]) {
+  EngineResponse ps(Map<String, Object> query = [:]) {
     log.info "docker ps"
     Map actualQuery = query ?: [:]
     Map defaults = [all: true, size: false]
@@ -412,7 +412,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse rm(String containerIdOrName, query = [:]) {
+  EngineResponse rm(String containerIdOrName, Map<String, Object> query = [:]) {
     log.info "docker rm"
     def response = client.delete([path : "/containers/${containerIdOrName}".toString(),
                                   query: query])
@@ -420,7 +420,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  run(String fromImage, containerConfig, String tag = "", String name = "", String authBase64Encoded = "") {
+  run(String fromImage, Map<String, Object> containerConfig, String tag = "", String name = "", String authBase64Encoded = "") {
     log.info "docker run ${fromImage}${tag ? ':' : ''}${tag}"
 /*
     http://docs.docker.com/reference/api/docker_remote_api_v1.13/#31-inside-docker-run
@@ -484,7 +484,7 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse top(String containerIdOrName, ps_args = null) {
+  EngineResponse top(String containerIdOrName, String ps_args = null) {
     log.info "docker top"
 
     def query = ps_args ? [ps_args: ps_args] : [:]
@@ -503,12 +503,12 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse updateContainer(String container, updateConfig) {
+  EngineResponse updateContainer(String container, Map<String, Object> updateConfig) {
     return updateContainers([container], updateConfig)[container]
   }
 
   @Override
-  Map<String, EngineResponse> updateContainers(List<String> containers, updateConfig) {
+  Map<String, EngineResponse> updateContainers(List<String> containers, Map<String, Object> updateConfig) {
     log.info "docker update '${containers}'"
 
     EngineClient dockerClient = client

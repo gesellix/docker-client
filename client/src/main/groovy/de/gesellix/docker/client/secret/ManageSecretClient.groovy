@@ -61,7 +61,7 @@ class ManageSecretClient implements ManageSecret {
   }
 
   @Override
-  EngineResponse updateSecret(String secretId, version, secretSpec) {
+  EngineResponse updateSecret(String secretId, int version, Map<String, Object> secretSpec) {
     log.info "docker secret update"
     def response = client.post([path              : "/secrets/${secretId}/update".toString(),
                                 query             : [version: version],

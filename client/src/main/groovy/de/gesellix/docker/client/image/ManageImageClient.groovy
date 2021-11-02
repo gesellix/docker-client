@@ -170,14 +170,14 @@ class ManageImageClient implements ManageImage {
   }
 
   @Override
-  EngineResponse history(imageId) {
+  EngineResponse history(String imageId) {
     log.info "docker history"
     def response = client.get([path: "/images/${imageId}/history".toString()])
     return response
   }
 
   @Override
-  importUrl(url, repository = "", tag = "") {
+  importUrl(String url, String repository = "", String tag = "") {
     log.info "docker import '${url}' into ${repository}:${tag}"
 
     def response = client.post([path : "/images/create",
@@ -191,7 +191,7 @@ class ManageImageClient implements ManageImage {
   }
 
   @Override
-  String importStream(stream, repository = "", tag = "") {
+  String importStream(InputStream stream, String repository = "", String tag = "") {
     log.info "docker import stream into ${repository}:${tag}"
 
     def response = client.post([path              : "/images/create",
@@ -207,14 +207,14 @@ class ManageImageClient implements ManageImage {
   }
 
   @Override
-  EngineResponse inspectImage(imageId) {
+  EngineResponse inspectImage(String imageId) {
     log.info "docker inspect image"
     def response = client.get([path: "/images/${imageId}/json".toString()])
     return response
   }
 
   @Override
-  EngineResponse load(stream) {
+  EngineResponse load(InputStream stream) {
     log.info "docker load"
 
     def response = client.post([path              : "/images/load",
@@ -226,7 +226,7 @@ class ManageImageClient implements ManageImage {
   }
 
   @Override
-  EngineResponse images(query = [:]) {
+  EngineResponse images(Map<String, Object> query = [:]) {
     log.info "docker images"
     def actualQuery = query ?: [:]
     def defaults = [all: false]
@@ -239,7 +239,7 @@ class ManageImageClient implements ManageImage {
   }
 
   @Override
-  EngineResponse pruneImages(query = [:]) {
+  EngineResponse pruneImages(Map<String, Object> query = [:]) {
     log.info "docker image prune"
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
@@ -271,7 +271,7 @@ class ManageImageClient implements ManageImage {
    */
   @Deprecated
   @Override
-  String pull(imageName, String tag = "", String authBase64Encoded = ".", String registry = "") {
+  String pull(String imageName, String tag = "", String authBase64Encoded = ".", String registry = "") {
     log.info "docker pull '${imageName}:${tag}'"
 
     def actualImageName = imageName
@@ -317,7 +317,7 @@ class ManageImageClient implements ManageImage {
   }
 
   @Override
-  EngineResponse save(... images) {
+  EngineResponse save(String... images) {
     log.info "docker save"
 
     def response
@@ -334,7 +334,7 @@ class ManageImageClient implements ManageImage {
   }
 
   @Override
-  EngineResponse tag(imageId, repository) {
+  EngineResponse tag(String imageId, String repository) {
     log.info "docker tag"
     def repoAndTag = repositoryTagParser.parseRepositoryTag(repository)
     def response = client.post([path : "/images/${imageId}/tag".toString(),
@@ -346,7 +346,7 @@ class ManageImageClient implements ManageImage {
   }
 
   @Override
-  String findImageId(imageName, tag = "") {
+  String findImageId(String imageName, String tag = "") {
     def isDigest = imageName.contains '@'
     def images = images((isDigest) ? [digests: '1'] : [:]).content
 //        println new JsonBuilder(images).toString()

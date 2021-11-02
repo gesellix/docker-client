@@ -1,6 +1,6 @@
-package de.gesellix.docker.client.checkpoint
+package de.gesellix.docker.client.checkpoint;
 
-interface ManageCheckpoint {
+public interface ManageCheckpoint {
 
 //    TODO create      Create a checkpoint from a running container
 
