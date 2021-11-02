@@ -30,7 +30,7 @@ class ManageNodeClient implements ManageNode {
   }
 
   @Override
-  EngineResponse nodes(query = [:]) {
+  EngineResponse nodes(Map<String, Object> query = [:]) {
     log.info "docker node ls"
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
@@ -41,7 +41,7 @@ class ManageNodeClient implements ManageNode {
   }
 
   @Override
-  inspectNode(name) {
+  inspectNode(String name) {
     log.info "docker node inspect"
     def response = client.get([path: "/nodes/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker node inspect failed"))
@@ -57,7 +57,7 @@ class ManageNodeClient implements ManageNode {
   }
 
   @Override
-  updateNode(name, query, config) {
+  EngineResponse updateNode(String name, Map<String, Object> query, Map<String, Object> config) {
     log.info "docker node update"
     def actualQuery = query ?: [:]
     config = config ?: [:]
@@ -71,7 +71,7 @@ class ManageNodeClient implements ManageNode {
   }
 
   @Override
-  promoteNodes(... nodes) {
+  void promoteNodes(String... nodes) {
     log.info "docker node promote"
     nodes?.each { node ->
       def nodeInfo = inspectNode(node).content
@@ -93,11 +93,11 @@ class ManageNodeClient implements ManageNode {
   }
 
   @Override
-  demoteNodes(... nodes) {
+  demoteNodes(String... nodes) {
     log.info "docker node demote"
     nodes?.each { node ->
       def nodeInfo = inspectNode(node).content
-      def nodeSpec = nodeInfo.Spec
+      Map<String, Object> nodeSpec = nodeInfo.Spec
 
       if (nodeSpec.Role == "worker") {
         log.warn("Node ${node} is already a worker.")
@@ -115,7 +115,7 @@ class ManageNodeClient implements ManageNode {
   }
 
   @Override
-  tasksOnNode(node, query = [:]) {
+  EngineResponse tasksOnNode(String node, Map<String, Object> query = [:]) {
     log.info "docker node ps"
     def actualQuery = query ?: [:]
     if (!actualQuery.containsKey('filters')) {

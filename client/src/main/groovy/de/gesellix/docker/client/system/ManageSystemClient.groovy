@@ -26,9 +26,9 @@ class ManageSystemClient implements ManageSystem {
   }
 
   @Override
-  EngineResponse systemDf(Map query = [:]) {
+  EngineResponse systemDf() {
     log.info "docker system df"
-    def actualQuery = query ?: [:]
+    def actualQuery = [:]
     def response = client.get([path : "/system/df",
                                query: actualQuery])
     return response

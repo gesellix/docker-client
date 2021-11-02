@@ -239,7 +239,7 @@ class ManageStackClientTest extends Specification {
             'mode'        : [:],
             'labels'      : [(LabelNamespace): namespace],
             'updateConfig': [:],
-            'networks'    : [:],
+            'networks'    : [],
             'name'        : 'the-stack_service1'],
         [:])
   }

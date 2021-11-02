@@ -31,7 +31,7 @@ class ManageServiceClient implements ManageService {
   }
 
   @Override
-  EngineResponse services(query = [:]) {
+  EngineResponse services(Map<String, Object> query = [:]) {
     log.info "docker service ls"
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
@@ -42,7 +42,7 @@ class ManageServiceClient implements ManageService {
   }
 
   @Override
-  EngineResponse createService(config, createOptions = [:]) {
+  EngineResponse createService(Map<String, Object> config, Map<String, Object> createOptions = [:]) {
     log.info "docker service create"
     config = config ?: [:]
     createOptions = createOptions ?: [:]
@@ -59,7 +59,7 @@ class ManageServiceClient implements ManageService {
   }
 
   @Override
-  EngineResponse rmService(name) {
+  EngineResponse rmService(String name) {
     log.info "docker service rm"
     EngineResponse response = client.delete([path: "/services/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service rm failed"))
@@ -85,7 +85,7 @@ class ManageServiceClient implements ManageService {
 //    }
 
   @Override
-  EngineResponse updateService(name, query, config, updateOptions = [:]) {
+  EngineResponse updateService(String name, Map<String, Object> query, Map<String, Object> config, Map<String, Object> updateOptions = [:]) {
     log.info "docker service update"
     def actualQuery = query ?: [:]
     config = config ?: [:]
@@ -104,7 +104,7 @@ class ManageServiceClient implements ManageService {
   }
 
   @Override
-  EngineResponse scaleService(name, int replicas) {
+  EngineResponse scaleService(String name, int replicas) {
     log.info "docker service scale"
     def service = inspectService(name).content
     def mode = service.Spec.Mode
@@ -116,7 +116,7 @@ class ManageServiceClient implements ManageService {
   }
 
   @Override
-  EngineResponse tasksOfService(service, query = [:]) {
+  EngineResponse tasksOfService(String service, Map<String, Object> query = [:]) {
     log.info "docker service ps"
     def actualQuery = query ?: [:]
     if (!actualQuery.containsKey('filters')) {

@@ -20,7 +20,7 @@ class ManageTaskClient implements ManageTask {
   }
 
   @Override
-  EngineResponse tasks(query = [:]) {
+  EngineResponse tasks(Map<String, Object> query = [:]) {
     log.info "docker tasks"
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
@@ -31,7 +31,7 @@ class ManageTaskClient implements ManageTask {
   }
 
   @Override
-  EngineResponse inspectTask(name) {
+  EngineResponse inspectTask(String name) {
     log.info "docker task inspect"
     EngineResponse response = client.get([path: "/tasks/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker task inspect failed"))
