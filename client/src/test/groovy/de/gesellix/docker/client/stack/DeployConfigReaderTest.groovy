@@ -25,6 +25,19 @@ import de.gesellix.docker.compose.types.ServiceVolumeBind
 import de.gesellix.docker.compose.types.ServiceVolumeVolume
 import de.gesellix.docker.compose.types.StackVolume
 import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.docker.remote.api.HealthConfig
+import de.gesellix.docker.remote.api.Limit
+import de.gesellix.docker.remote.api.Mount
+import de.gesellix.docker.remote.api.MountBindOptions
+import de.gesellix.docker.remote.api.MountVolumeOptions
+import de.gesellix.docker.remote.api.MountVolumeOptionsDriverConfig
+import de.gesellix.docker.remote.api.ResourceObject
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecConfigs
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecFile
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecFile1
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecSecrets
+import de.gesellix.docker.remote.api.TaskSpecResources
+import de.gesellix.docker.remote.api.TaskSpecRestartPolicy
 import spock.lang.Ignore
 import spock.lang.Specification
 
@@ -32,8 +45,6 @@ import java.time.Duration
 import java.time.temporal.ChronoUnit
 
 import static de.gesellix.docker.client.stack.types.ResolutionMode.ResolutionModeDNSRR
-import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.RestartPolicyConditionAny
-import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.RestartPolicyConditionOnFailure
 import static de.gesellix.docker.compose.types.MountPropagation.PropagationShared
 import static de.gesellix.docker.compose.types.MountPropagation.PropagationSlave
 import static de.gesellix.docker.compose.types.ServiceVolumeType.TypeBind
@@ -74,11 +85,11 @@ class DeployConfigReaderTest extends Specification {
   def "prepares service configs"() {
     given:
     def serviceConfig = new ServiceConfig(
-        source: 'config-1',
-        target: 'config-target',
-        uid: '',
-        gid: '',
-        mode: 0)
+        'config-1',
+        'config-target',
+        '',
+        '',
+        0)
 
     when:
     def result = reader.prepareServiceConfigs("name.space", [
@@ -87,9 +98,12 @@ class DeployConfigReaderTest extends Specification {
 
     then:
     result == [
-        [File      : [Name: "config-target", UID: "0", GID: "0", Mode: 292],
-         ConfigID  : "<WILL_BE_PROVIDED_DURING_DEPLOY>",
-         ConfigName: "name.space_config-1"]
+        new TaskSpecContainerSpecConfigs(
+            new TaskSpecContainerSpecFile1("config-target", "0", "0", 292),
+            null,
+            "<WILL_BE_PROVIDED_DURING_DEPLOY>",
+            "name.space_config-1"
+        )
     ]
   }
 
@@ -120,11 +134,11 @@ class DeployConfigReaderTest extends Specification {
   def "prepares service secrets"() {
     given:
     def serviceSecret = new ServiceSecret(
-        source: 'secret-1',
-        target: 'secret-target',
-        uid: '',
-        gid: '',
-        mode: 0)
+        'secret-1',
+        'secret-target',
+        '',
+        '',
+        0)
 
     when:
     def result = reader.prepareServiceSecrets("name.space", [
@@ -133,9 +147,11 @@ class DeployConfigReaderTest extends Specification {
 
     then:
     result == [
-        [File      : [Name: "secret-target", UID: "0", GID: "0", Mode: 292],
-         SecretID  : "<WILL_BE_PROVIDED_DURING_DEPLOY>",
-         SecretName: "name.space_secret-1"]
+        new TaskSpecContainerSpecSecrets(
+            new TaskSpecContainerSpecFile("secret-target", "0", "0", 292),
+            "<WILL_BE_PROVIDED_DURING_DEPLOY>",
+            "name.space_secret-1"
+        )
     ]
   }
 
@@ -285,7 +301,7 @@ class DeployConfigReaderTest extends Specification {
 
   def "test getBindOptions with known mode"() {
     expect:
-    reader.getBindOptions(new ServiceVolumeBind(propagation: PropagationSlave.propagation)) == [propagation: PropagationSlave.propagation]
+    reader.getBindOptions(new ServiceVolumeBind(PropagationSlave.propagation)) == new MountBindOptions(MountBindOptions.Propagation.Slave, null)
   }
 
   def "test getBindOptions with unknown mode"() {
@@ -300,10 +316,7 @@ class DeployConfigReaderTest extends Specification {
         new ServiceVolume(type: TypeVolume.typeName, target: "/foo/bar"),
         [:])
     then:
-    mounts == [
-        type  : "volume",
-        target: "/foo/bar"
-    ]
+    mounts == new Mount("/foo/bar", null, Mount.Type.Volume, null, null, null, null, null)
   }
 
   // TODO move to docker-compose-v3 project
@@ -335,25 +348,28 @@ class DeployConfigReaderTest extends Specification {
         stackVolumes)
 
     then:
-    mount == [
-        type         : "volume",
-        source       : "name-space_normal",
-        target       : "/foo",
-        readOnly     : true,
-        volumeOptions: [
-            noCopy      : false,
-            labels      : [
+    mount == new Mount(
+        "/foo",
+        "name-space_normal",
+        Mount.Type.Volume,
+        true,
+        null,
+        null,
+        new MountVolumeOptions(
+            false,
+            [
                 (ManageStackClient.LabelNamespace): "name-space",
                 "something"                       : "labeled"
             ],
-            driverConfig: [
-                name   : "glusterfs",
-                options: [
+            new MountVolumeOptionsDriverConfig(
+                "glusterfs",
+                [
                     "opt": "value"
                 ]
-            ]
-        ]
-    ]
+            )
+        ),
+        null
+    )
   }
 
   def "test ConvertVolumeToMountNamedVolumeExternal"() {
@@ -371,15 +387,20 @@ class DeployConfigReaderTest extends Specification {
         stackVolumes)
 
     then:
-    mount == [
-        type         : "volume",
-        source       : "special",
-        target       : "/foo",
-        readOnly     : false,
-        volumeOptions: [
-            noCopy: false
-        ]
-    ]
+    mount == new Mount(
+        "/foo",
+        "special",
+        Mount.Type.Volume,
+        false,
+        null,
+        null,
+        new MountVolumeOptions(
+            false,
+            null,
+            null
+        ),
+        null
+    )
   }
 
   def "test ConvertVolumeToMountNamedVolumeExternalNoCopy"() {
@@ -397,15 +418,20 @@ class DeployConfigReaderTest extends Specification {
         stackVolumes)
 
     then:
-    mount == [
-        type         : "volume",
-        source       : "special",
-        target       : "/foo",
-        readOnly     : false,
-        volumeOptions: [
-            noCopy: true
-        ]
-    ]
+    mount == new Mount(
+        "/foo",
+        "special",
+        Mount.Type.Volume,
+        false,
+        null,
+        null,
+        new MountVolumeOptions(
+            true,
+            null,
+            null
+        ),
+        null
+    )
   }
 
   def "test ConvertVolumeToMountBind"() {
@@ -416,15 +442,19 @@ class DeployConfigReaderTest extends Specification {
         [:])
 
     then:
-    mount == [
-        type       : "bind",
-        source     : "/bar",
-        target     : "/foo",
-        readOnly   : true,
-        bindOptions: [
-            propagation: PropagationShared.propagation
-        ]
-    ]
+    mount == new Mount(
+        "/foo",
+        "/bar",
+        Mount.Type.Bind,
+        true,
+        null,
+        new MountBindOptions(
+            MountBindOptions.Propagation.Shared,
+            null
+        ),
+        null,
+        null
+    )
   }
 
   def "test ConvertVolumeToMountVolumeDoesNotExist"() {
@@ -450,11 +480,10 @@ class DeployConfigReaderTest extends Specification {
                 memory: "200000000")
         ))
     then:
-    result == [
-        limits      : [nanoCPUs   : 3000000,
-                       memoryBytes: 300000000],
-        reservations: [nanoCPUs   : 2000000,
-                       memoryBytes: 200000000]]
+    result == new TaskSpecResources(
+        new Limit(3000000, 300000000, null),
+        new ResourceObject(2000000, 200000000, null)
+    )
   }
 
   def "test ConvertResourcesOnlyMemory"() {
@@ -467,9 +496,10 @@ class DeployConfigReaderTest extends Specification {
                 memory: "200000000")
         ))
     then:
-    result == [
-        limits      : [memoryBytes: 300000000],
-        reservations: [memoryBytes: 200000000]]
+    result == new TaskSpecResources(
+        new Limit(null, 300000000, null),
+        new ResourceObject(null, 200000000, null)
+    )
   }
 
   def "test ConvertRestartPolicyFromNone"() {
@@ -489,15 +519,15 @@ class DeployConfigReaderTest extends Specification {
     when:
     def policy = reader.restartPolicy("always", null)
     then:
-    policy == [condition: RestartPolicyConditionAny.value]
+    policy.condition == TaskSpecRestartPolicy.Condition.Any
   }
 
   def "test ConvertRestartPolicyFromFailure"() {
     when:
     def policy = reader.restartPolicy("on-failure:4", null)
     then:
-    policy == [condition  : RestartPolicyConditionOnFailure.value,
-               maxAttempts: 4]
+    policy.condition == TaskSpecRestartPolicy.Condition.OnMinusFailure
+    policy.maxAttempts == 4
   }
 
   def "parse duration"() {
@@ -519,21 +549,26 @@ class DeployConfigReaderTest extends Specification {
         timeout: "30s",
         interval: "2ms",
         retries: 10
-    )) == [
-        test    : ["EXEC", "touch", "/foo"],
-        timeout : Duration.of(30, ChronoUnit.SECONDS).toNanos(),
-        interval: Duration.of(2, ChronoUnit.MILLIS).toNanos(),
-        retries : 10
-    ]
+    )) == new HealthConfig(
+        ["EXEC", "touch", "/foo"],
+        Duration.of(2, ChronoUnit.MILLIS).toNanos().intValue(),
+        Duration.of(30, ChronoUnit.SECONDS).toNanos().intValue(),
+        10,
+        null
+    )
   }
 
   def "test ConvertHealthcheckDisable"() {
     expect:
     reader.convertHealthcheck(new Healthcheck(
         disable: true
-    )) == [
-        test: ["NONE"]
-    ]
+    )) == new HealthConfig(
+        ["NONE"],
+        null,
+        null,
+        null,
+        null
+    )
   }
 
   def "test ConvertHealthcheckDisableWithTest"() {

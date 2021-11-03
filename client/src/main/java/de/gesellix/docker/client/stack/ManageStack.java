@@ -2,7 +2,6 @@ package de.gesellix.docker.client.stack;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Stack;
 
 public interface ManageStack {
 
