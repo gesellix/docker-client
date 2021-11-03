@@ -2,8 +2,10 @@ package de.gesellix.docker.client
 
 import de.gesellix.docker.client.stack.DeployStackConfig
 import de.gesellix.docker.client.stack.DeployStackOptions
-import de.gesellix.docker.client.stack.ManageStackClient
+import de.gesellix.docker.client.stack.Stack
 import de.gesellix.docker.client.stack.types.StackService
+import de.gesellix.docker.remote.api.TaskSpec
+import de.gesellix.docker.remote.api.TaskSpecContainerSpec
 import de.gesellix.docker.testutil.SwarmUtil
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
@@ -54,7 +56,11 @@ class DockerStackIntegrationSpec extends Specification {
     def config = new DeployStackConfig()
     config.services = ["service1": new StackService().with {
       networks = []
-      taskTemplate = [containerSpec: [image: testImage]]
+      taskTemplate = new TaskSpec(null,
+                                  new TaskSpecContainerSpec(testImage, null, null, null, null, null, null,
+                                                            null, null, null, null, null, null, null, null, null, null, null, null, null,
+                                                            null, null, null, null, null, null, null),
+                                  null, null, null, null, null, null, null, null)
       it
     }]
 
@@ -80,7 +86,11 @@ class DockerStackIntegrationSpec extends Specification {
     config.services = ["service2": new StackService().with {
       networks = []
       mode = [replicated: [replicas: 1]]
-      taskTemplate = [containerSpec: [image: testImage]]
+      taskTemplate = new TaskSpec(null,
+                                  new TaskSpecContainerSpec(testImage, null, null, null, null, null, null,
+                                                            null, null, null, null, null, null, null, null, null, null, null, null, null,
+                                                            null, null, null, null, null, null, null),
+                                  null, null, null, null, null, null, null, null)
       it
     }]
     dockerClient.stackDeploy(namespace, config, new DeployStackOptions(sendRegistryAuth: true))
@@ -115,7 +125,11 @@ class DockerStackIntegrationSpec extends Specification {
     def config = new DeployStackConfig()
     config.services = ["service1": new StackService().with {
       networks = []
-      taskTemplate = [containerSpec: [image: testImage]]
+      taskTemplate = new TaskSpec(null,
+                                  new TaskSpecContainerSpec(testImage, null, null, null, null, null, null,
+                                                            null, null, null, null, null, null, null, null, null, null, null, null, null,
+                                                            null, null, null, null, null, null, null),
+                                  null, null, null, null, null, null, null, null)
       it
     }]
 
@@ -123,7 +137,7 @@ class DockerStackIntegrationSpec extends Specification {
     dockerClient.stackDeploy(namespace, config, new DeployStackOptions(sendRegistryAuth: true))
 
     then:
-    dockerClient.lsStacks().find { ManageStackClient.Stack stack ->
+    dockerClient.lsStacks().find { Stack stack ->
       stack.name == namespace && stack.services == config.services.size()
     }
 
@@ -140,7 +154,11 @@ class DockerStackIntegrationSpec extends Specification {
     def config = new DeployStackConfig()
     config.services = ["service1": new StackService().with {
       networks = []
-      taskTemplate = [containerSpec: [image: testImage]]
+      taskTemplate = new TaskSpec(null,
+                                  new TaskSpecContainerSpec(testImage, null, null, null, null, null, null,
+                                                            null, null, null, null, null, null, null, null, null, null, null, null, null,
+                                                            null, null, null, null, null, null, null),
+                                  null, null, null, null, null, null, null, null)
       it
     }]
 
@@ -165,7 +183,11 @@ class DockerStackIntegrationSpec extends Specification {
     def config = new DeployStackConfig()
     config.services = ["service1": new StackService().with {
       networks = []
-      taskTemplate = [containerSpec: [image: testImage]]
+      taskTemplate = new TaskSpec(null,
+                                  new TaskSpecContainerSpec(testImage, null, null, null, null, null, null,
+                                                            null, null, null, null, null, null, null, null, null, null, null, null, null,
+                                                            null, null, null, null, null, null, null),
+                                  null, null, null, null, null, null, null, null)
       it
     }]
 
@@ -190,7 +212,11 @@ class DockerStackIntegrationSpec extends Specification {
     def config = new DeployStackConfig()
     config.services = ["service1": new StackService().with {
       networks = []
-      taskTemplate = [containerSpec: [image: testImage]]
+      taskTemplate = new TaskSpec(null,
+                                  new TaskSpecContainerSpec(testImage, null, null, null, null, null, null,
+                                                            null, null, null, null, null, null, null, null, null, null, null, null, null,
+                                                            null, null, null, null, null, null, null),
+                                  null, null, null, null, null, null, null, null)
       it
     }]
     dockerClient.stackDeploy(namespace, config, new DeployStackOptions(sendRegistryAuth: true))

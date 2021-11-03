@@ -15,6 +15,8 @@ import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.client.tasks.ManageTask
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecConfigs
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecSecrets
 import de.gesellix.util.QueryUtil
 import groovy.transform.EqualsAndHashCode
 import groovy.util.logging.Slf4j
@@ -96,15 +98,37 @@ class ManageStackClient implements ManageStack {
     }
 
     createNetworks(namespace, config.networks)
-    Map<String, EngineResponse> changedSecrets = createSecrets(namespace, config.secrets)
-    Map<String, EngineResponse> changedConfigs = createConfigs(namespace, config.configs)
+    Map<String, String> changedSecrets = createSecrets(namespace, config.secrets)
+    Map<String, String> changedConfigs = createConfigs(namespace, config.configs)
 
     config.services.each { service ->
-      changedSecrets.each { name, res ->
-        service.value.taskTemplate?.containerSpec?.secrets?.find { it.SecretName == name }?.SecretID = res.content.ID
+      def containerSpecSecrets = service.value.taskTemplate?.containerSpec?.secrets
+      if (containerSpecSecrets) {
+        changedSecrets.each { name, secretId ->
+          int index = containerSpecSecrets.findIndexOf { it.secretName == name }
+          if (index >= 0) {
+            containerSpecSecrets.set(index, new TaskSpecContainerSpecSecrets(
+                containerSpecSecrets.get(index).file,
+                secretId,
+                name
+            ))
+          }
+        }
       }
-      changedConfigs.each { name, res ->
-        service.value.taskTemplate?.containerSpec?.configs?.find { it.ConfigName == name }?.ConfigID = res.content.ID
+
+      def containerSpecConfigs = service.value.taskTemplate?.containerSpec?.configs
+      if (containerSpecConfigs) {
+        changedConfigs.each { name, configId ->
+          int index = containerSpecConfigs.findIndexOf { it.configName == name }
+          if (index >= 0) {
+            containerSpecConfigs.set(index, new TaskSpecContainerSpecConfigs(
+                containerSpecConfigs.get(index).file,
+                containerSpecConfigs.get(index).runtime,
+                configId,
+                name
+            ))
+          }
+        }
       }
     }
 
@@ -132,7 +156,7 @@ class ManageStackClient implements ManageStack {
     }
   }
 
-  Map<String, EngineResponse> createSecrets(String namespace, Map<String, StackSecret> secrets) {
+  Map<String, String> createSecrets(String namespace, Map<String, StackSecret> secrets) {
     return secrets.collectEntries { name, secret ->
       List knownSecrets = manageSecret.secrets([filters: [name: [secret.name]]]).content
       log.debug("known: $knownSecrets")
@@ -155,11 +179,11 @@ class ManageStackClient implements ManageStack {
         log.info("update secret ${secret.name}: $secret")
         response = manageSecret.updateSecret(knownSecret.ID as String, knownSecret.Version.Index, toMap(secret))
       }
-      return [(secret.name): response]
+      return [(secret.name): response.content.ID]
     }
   }
 
-  Map<String, EngineResponse> createConfigs(String namespace, Map<String, StackConfig> configs) {
+  Map<String, String> createConfigs(String namespace, Map<String, StackConfig> configs) {
     return configs.collectEntries { name, config ->
       List knownConfigs = manageConfig.configs([filters: [name: [config.name]]]).content
       log.debug("known: $knownConfigs")
@@ -182,7 +206,7 @@ class ManageStackClient implements ManageStack {
         log.info("update config ${config.name}: $config")
         response = manageConfig.updateConfig(knownConfig.ID as String, knownConfig.Version.Index, toMap(config))
       }
-      return [(config.name): response]
+      return [(config.name): response.content.ID]
     }
   }
 
@@ -361,18 +385,6 @@ class ManageStackClient implements ManageStack {
       }
     }
     return infoByServiceId
-  }
-
-  @EqualsAndHashCode
-  static class Stack {
-
-    String name
-    int services
-
-    @Override
-    String toString() {
-      "$name: $services"
-    }
   }
 
   static class ServiceInfo {

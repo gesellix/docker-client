@@ -3,10 +3,7 @@ package de.gesellix.docker.client.stack
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.EnvFileParser
 import de.gesellix.docker.client.LocalDocker
-import de.gesellix.docker.client.stack.types.PlacementPreferences
 import de.gesellix.docker.client.stack.types.ResolutionMode
-import de.gesellix.docker.client.stack.types.RestartPolicyCondition
-import de.gesellix.docker.client.stack.types.Spread
 import de.gesellix.docker.client.stack.types.StackConfig
 import de.gesellix.docker.client.stack.types.StackNetwork
 import de.gesellix.docker.client.stack.types.StackSecret
@@ -17,8 +14,10 @@ import de.gesellix.docker.compose.types.Environment
 import de.gesellix.docker.compose.types.ExtraHosts
 import de.gesellix.docker.compose.types.Healthcheck
 import de.gesellix.docker.compose.types.IpamConfig
+import de.gesellix.docker.compose.types.Limits
 import de.gesellix.docker.compose.types.Logging
 import de.gesellix.docker.compose.types.PortConfigs
+import de.gesellix.docker.compose.types.Reservations
 import de.gesellix.docker.compose.types.Resources
 import de.gesellix.docker.compose.types.RestartPolicy
 import de.gesellix.docker.compose.types.ServiceConfig
@@ -29,6 +28,25 @@ import de.gesellix.docker.compose.types.ServiceVolumeBind
 import de.gesellix.docker.compose.types.ServiceVolumeType
 import de.gesellix.docker.compose.types.StackVolume
 import de.gesellix.docker.compose.types.UpdateConfig
+import de.gesellix.docker.remote.api.HealthConfig
+import de.gesellix.docker.remote.api.Limit
+import de.gesellix.docker.remote.api.Mount
+import de.gesellix.docker.remote.api.MountBindOptions
+import de.gesellix.docker.remote.api.MountVolumeOptions
+import de.gesellix.docker.remote.api.MountVolumeOptionsDriverConfig
+import de.gesellix.docker.remote.api.ResourceObject
+import de.gesellix.docker.remote.api.TaskSpec
+import de.gesellix.docker.remote.api.TaskSpecContainerSpec
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecConfigs
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecFile
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecFile1
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecSecrets
+import de.gesellix.docker.remote.api.TaskSpecLogDriver
+import de.gesellix.docker.remote.api.TaskSpecPlacement
+import de.gesellix.docker.remote.api.TaskSpecPlacementPreferences
+import de.gesellix.docker.remote.api.TaskSpecPlacementSpread
+import de.gesellix.docker.remote.api.TaskSpecResources
+import de.gesellix.docker.remote.api.TaskSpecRestartPolicy
 import groovy.util.logging.Slf4j
 
 import java.nio.file.Files
@@ -39,9 +57,6 @@ import java.time.temporal.ChronoUnit
 import java.util.regex.Pattern
 
 import static de.gesellix.docker.client.stack.types.ResolutionMode.ResolutionModeVIP
-import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.RestartPolicyConditionAny
-import static de.gesellix.docker.client.stack.types.RestartPolicyCondition.RestartPolicyConditionOnFailure
-import static de.gesellix.docker.compose.types.ServiceVolumeType.TypeVolume
 import static java.lang.Double.parseDouble
 import static java.lang.Integer.parseInt
 import static java.lang.Long.parseLong
@@ -102,7 +117,7 @@ class DeployConfigReader {
       def serviceLabels = service.deploy?.labels?.entries ?: [:]
       serviceLabels[ManageStackClient.LabelNamespace] = namespace
 
-      def containerLabels = service.labels?.entries ?: [:]
+      Map<String, String> containerLabels = service.labels?.entries ?: [:]
       containerLabels[ManageStackClient.LabelNamespace] = namespace
 
       Long stopGracePeriod = null
@@ -110,7 +125,7 @@ class DeployConfigReader {
         stopGracePeriod = parseDuration(service.stopGracePeriod).toNanos()
       }
 
-      def env = convertEnvironment(service.workingDir, service.envFile, service.environment)
+      List<String> env = convertEnvironment(service.workingDir, service.envFile, service.environment)
       Collections.sort(env)
 
       def extraHosts = convertExtraHosts(service.extraHosts)
@@ -123,74 +138,95 @@ class DeployConfigReader {
       serviceConfig.mode = serviceMode(service.deploy?.mode, service.deploy?.replicas)
       serviceConfig.networks = convertServiceNetworks(service.networks ?: [:], networks, namespace, name)
       serviceConfig.updateConfig = convertUpdateConfig(service.deploy?.updateConfig)
-      serviceConfig.taskTemplate = [
-          containerSpec: [
-              image          : service.image,
-              command        : service.entrypoint?.parts ?: [],
-              args           : service.command?.parts ?: [],
-              hostname       : service.hostname,
-              hosts          : extraHosts,
-              healthcheck    : convertHealthcheck(service.healthcheck),
-              env            : env,
-              labels         : containerLabels,
-              dir            : service.workingDir,
-              user           : service.user,
-              mounts         : volumesToMounts(namespace, service.volumes as List<ServiceVolume>, volumes),
-              stopGracePeriod: stopGracePeriod,
-              stopSignal     : service.stopSignal,
-              tty            : service.tty,
-              openStdin      : service.stdinOpen,
-              configs        : prepareServiceConfigs(namespace, service.configs),
-              secrets        : prepareServiceSecrets(namespace, service.secrets),
-          ],
-          logDriver    : logDriver(service.logging),
-          resources    : serviceResources(service.deploy?.resources),
-          restartPolicy: restartPolicy(service.restart, service.deploy?.restartPolicy),
-          placement    : [
-              constraints: service.deploy?.placement?.constraints,
-              preferences: placementPreferences(service.deploy?.placement?.preferences),
-              maxReplicas: service.deploy?.maxReplicasPerNode
-          ],
-      ]
+      serviceConfig.taskTemplate = new TaskSpec(
+          null,
+          new TaskSpecContainerSpec(
+              service.image,
+              containerLabels,
+              service.entrypoint?.parts ?: [],
+              service.command?.parts ?: [],
+              service.hostname,
+              env,
+              service.workingDir,
+              service.user,
+              [],
+              null,
+              service.tty,
+              service.stdinOpen,
+              null,
+              volumesToMounts(namespace, service.volumes as List<ServiceVolume>, volumes),
+              service.stopSignal,
+              stopGracePeriod,
+              convertHealthcheck(service.healthcheck),
+              extraHosts,
+              null,
+              prepareServiceSecrets(namespace, service.secrets),
+              prepareServiceConfigs(namespace, service.configs),
+              null,
+              null,
+              [:],
+              [],
+              [],
+              []
+          ),
+          null,
+          serviceResources(service.deploy?.resources),
+          restartPolicy(service.restart, service.deploy?.restartPolicy),
+          new TaskSpecPlacement(
+              service.deploy?.placement?.constraints,
+              placementPreferences(service.deploy?.placement?.preferences),
+              service.deploy?.maxReplicasPerNode,
+              null
+          ),
+          null,
+          null,
+          [],
+          logDriver(service.logging)
+      )
       serviceSpec[name] = serviceConfig
     }
     log.info("services $serviceSpec")
     return serviceSpec
   }
 
-  List<Map> prepareServiceConfigs(String namespace, List<Map<String, ServiceConfig>> configs) {
+  List<TaskSpecContainerSpecConfigs> prepareServiceConfigs(String namespace, List<Map<String, ServiceConfig>> configs) {
     configs?.collect { item ->
       if (item.size() > 1) {
         throw new RuntimeException("expected a unique config entry")
       }
-      def converted = item.entrySet().collect { entry ->
-        [
-            File      : [Name: entry.value?.target ?: (entry.value?.source ?: entry.key),
-                         UID : entry.value?.uid ?: "0",
-                         GID : entry.value?.gid ?: "0",
-                         Mode: entry.value?.mode ?: 0444],
-            ConfigID  : "<WILL_BE_PROVIDED_DURING_DEPLOY>",
-            ConfigName: "${namespace}_${entry.key}" as String
-        ]
+      List<TaskSpecContainerSpecConfigs> converted = item.entrySet().collect { entry ->
+        new TaskSpecContainerSpecConfigs(
+            new TaskSpecContainerSpecFile1(
+                entry.value?.target ?: (entry.value?.source ?: entry.key),
+                entry.value?.uid ?: "0",
+                entry.value?.gid ?: "0",
+                entry.value?.mode ?: 0444
+            ),
+            null,
+            "<WILL_BE_PROVIDED_DURING_DEPLOY>",
+            "${namespace}_${entry.key}".toString()
+        )
       }
       converted.first()
     } ?: []
   }
 
-  List<Map> prepareServiceSecrets(String namespace, List<Map<String, ServiceSecret>> secrets) {
+  List<TaskSpecContainerSpecSecrets> prepareServiceSecrets(String namespace, List<Map<String, ServiceSecret>> secrets) {
     secrets?.collect { item ->
       if (item.size() > 1) {
         throw new RuntimeException("expected a unique secret entry")
       }
-      def converted = item.entrySet().collect { entry ->
-        [
-            File      : [Name: entry.value?.target ?: (entry.value?.source ?: entry.key),
-                         UID : entry.value?.uid ?: "0",
-                         GID : entry.value?.gid ?: "0",
-                         Mode: entry.value?.mode ?: 0444],
-            SecretID  : "<WILL_BE_PROVIDED_DURING_DEPLOY>",
-            SecretName: "${namespace}_${entry.key}" as String
-        ]
+      List<TaskSpecContainerSpecSecrets> converted = item.entrySet().collect { entry ->
+        new TaskSpecContainerSpecSecrets(
+            new TaskSpecContainerSpecFile(
+                entry.value?.target ?: (entry.value?.source ?: entry.key),
+                entry.value?.uid ?: "0",
+                entry.value?.gid ?: "0",
+                entry.value?.mode ?: 0444
+            ),
+            "<WILL_BE_PROVIDED_DURING_DEPLOY>",
+            "${namespace}_${entry.key}".toString()
+        )
       }
       converted.first()
     } ?: []
@@ -309,18 +345,17 @@ class DeployConfigReader {
     }
   }
 
-  def logDriver(Logging logging) {
+  TaskSpecLogDriver logDriver(Logging logging) {
     if (logging) {
-      return [
-          name   : logging.driver,
-          options: logging.options,
-      ]
+      return new TaskSpecLogDriver(
+          logging.driver,
+          logging.options
+      )
     }
     return null
   }
 
-  def convertHealthcheck(Healthcheck healthcheck) {
-
+  HealthConfig convertHealthcheck(Healthcheck healthcheck) {
     if (!healthcheck) {
       return null
     }
@@ -333,9 +368,7 @@ class DeployConfigReader {
       if (healthcheck.test?.parts) {
         throw new IllegalArgumentException("test and disable can't be set at the same time")
       }
-      return [
-          test: ["NONE"]
-      ]
+      return new HealthConfig(["NONE"], null, null, null, null)
     }
 
     if (healthcheck.timeout) {
@@ -348,12 +381,13 @@ class DeployConfigReader {
       retries = new Float(healthcheck.retries).intValue()
     }
 
-    return [
-        test    : healthcheck.test.parts,
-        timeout : timeout ?: 0,
-        interval: interval ?: 0,
-        retries : retries,
-    ]
+    return new HealthConfig(
+        healthcheck.test.parts,
+        interval?.intValue() ?: 0,
+        timeout?.intValue() ?: 0,
+        retries,
+        null
+    )
   }
 
   Map<String, ChronoUnit> unitBySymbol = [
@@ -410,7 +444,7 @@ class DeployConfigReader {
     return duration.multipliedBy(sign == '-' ? -1 : 1)
   }
 
-  def restartPolicy(String restart, RestartPolicy restartPolicy) {
+  TaskSpecRestartPolicy restartPolicy(String restart, RestartPolicy restartPolicy) {
     // TODO: log if restart is being ignored
     if (restartPolicy == null) {
       def policy = parseRestartPolicy(restart)
@@ -424,15 +458,20 @@ class DeployConfigReader {
 
         case "always":
         case "unless-stopped":
-          return [
-              condition: RestartPolicyConditionAny.value
-          ]
+          return new TaskSpecRestartPolicy(
+              TaskSpecRestartPolicy.Condition.Any,
+              null,
+              null,
+              null
+          )
 
         case "on-failure":
-          return [
-              condition  : RestartPolicyConditionOnFailure.value,
-              maxAttempts: policy.maximumRetryCount
-          ]
+          return new TaskSpecRestartPolicy(
+              TaskSpecRestartPolicy.Condition.OnMinusFailure,
+              null,
+              policy.maximumRetryCount as int,
+              null
+          )
 
         default:
           throw new IllegalArgumentException("unknown restart policy: ${restart}")
@@ -447,12 +486,12 @@ class DeployConfigReader {
       if (restartPolicy.window) {
         window = parseDuration(restartPolicy.window).toNanos()
       }
-      return [
-          condition  : RestartPolicyCondition.byValue(restartPolicy.condition).value,
-          delay      : delay,
-          maxAttempts: restartPolicy.maxAttempts,
-          window     : window,
-      ]
+      return new TaskSpecRestartPolicy(
+          TaskSpecRestartPolicy.Condition.values().find { it.value == restartPolicy.condition },
+          delay,
+          restartPolicy.maxAttempts,
+          window
+      )
     }
   }
 
@@ -480,62 +519,97 @@ class DeployConfigReader {
     return restartPolicy
   }
 
-  def serviceResources(Resources resources) {
-    def resourceRequirements = [:]
-    def nanoMultiplier = Math.pow(10, 9)
-    if (resources?.limits) {
-      resourceRequirements['limits'] = [:]
-      if (resources.limits.nanoCpus) {
-        if (resources.limits.nanoCpus.contains('/')) {
-          // TODO
-          throw new UnsupportedOperationException("not supported, yet")
-        }
-        else {
-          resourceRequirements['limits'].nanoCPUs = parseDouble(resources.limits.nanoCpus) * nanoMultiplier
-        }
-      }
-      resourceRequirements['limits'].memoryBytes = parseLong(resources.limits.memory)
+  TaskSpecResources serviceResources(Resources resources) {
+    if (resources?.limits || resources?.reservations) {
+      def nanoMultiplier = Math.pow(10, 9)
+      return new TaskSpecResources(
+          getTaskSpecResourcesLimits(resources?.limits, nanoMultiplier),
+          getTaskSpecResourcesReservation(resources?.reservations, nanoMultiplier)
+      )
     }
-    if (resources?.reservations) {
-      resourceRequirements['reservations'] = [:]
-      if (resources.reservations.nanoCpus) {
-        if (resources.reservations.nanoCpus.contains('/')) {
-          // TODO
-          throw new UnsupportedOperationException("not supported, yet")
-        }
-        else {
-          resourceRequirements['reservations'].nanoCPUs = parseDouble(resources.reservations.nanoCpus) * nanoMultiplier
-        }
-      }
-      resourceRequirements['reservations'].memoryBytes = parseLong(resources.reservations.memory)
-    }
-    return resourceRequirements
+    return new TaskSpecResources()
   }
 
-  def volumesToMounts(String namespace, List<ServiceVolume> serviceVolumes, Map<String, StackVolume> stackVolumes) {
-    def mounts = serviceVolumes.collect { serviceVolume ->
+  Limit getTaskSpecResourcesLimits(Limits limits, double nanoMultiplier) {
+    if (limits) {
+      if (limits.nanoCpus) {
+        if (limits.nanoCpus.contains('/')) {
+          // TODO
+          throw new UnsupportedOperationException("not supported, yet")
+        }
+        else {
+          return new Limit(
+              (parseDouble(limits.nanoCpus) * nanoMultiplier).longValue(),
+              parseLong(limits.memory),
+              null
+          )
+        }
+      }
+      return new Limit(
+          null,
+          parseLong(limits.memory),
+          null
+      )
+    }
+    return null
+  }
+
+  ResourceObject getTaskSpecResourcesReservation(Reservations reservations, double nanoMultiplier) {
+    if (reservations) {
+      if (reservations.nanoCpus) {
+        if (reservations.nanoCpus.contains('/')) {
+          // TODO
+          throw new UnsupportedOperationException("not supported, yet")
+        }
+        else {
+          return new ResourceObject(
+              (parseDouble(reservations.nanoCpus) * nanoMultiplier).longValue(),
+              parseLong(reservations.memory),
+              null
+          )
+        }
+      }
+      return new ResourceObject(
+          null,
+          parseLong(reservations.memory),
+          null
+      )
+    }
+    return null
+  }
+
+  List<Mount> volumesToMounts(String namespace, List<ServiceVolume> serviceVolumes, Map<String, StackVolume> stackVolumes) {
+    List<Mount> mounts = serviceVolumes.collect { serviceVolume ->
       return volumeToMount(namespace, serviceVolume, stackVolumes)
     }
     return mounts
   }
 
-  Map volumeToMount(String namespace, ServiceVolume volumeSpec, Map<String, StackVolume> stackVolumes) {
+  Mount volumeToMount(String namespace, ServiceVolume volumeSpec, Map<String, StackVolume> stackVolumes) {
     if (volumeSpec.source == "") {
       // Anonymous volume
-      return [
-          type  : volumeSpec.type,
-          target: volumeSpec.target,
-      ]
+      return new Mount(
+          volumeSpec.target,
+          null,
+          Mount.Type.values().find { it.getValue() == volumeSpec.type },
+          null,
+          null,
+          null,
+          null,
+          null
+      )
     }
 
     if (volumeSpec.type == ServiceVolumeType.TypeBind.typeName) {
-      return [
-          type       : volumeSpec.type,
-          source     : volumeSpec.source,
-          target     : volumeSpec.target,
-          readOnly   : volumeSpec.readOnly,
-          bindOptions: getBindOptions(volumeSpec.bind)
-      ]
+      return new Mount(
+          volumeSpec.target,
+          volumeSpec.source,
+          Mount.Type.Bind,
+          volumeSpec.readOnly,
+          null,
+          getBindOptions(volumeSpec.bind),
+          null,
+          null)
     }
 
     if (!stackVolumes.containsKey(volumeSpec.source)) {
@@ -544,40 +618,38 @@ class DeployConfigReader {
     def stackVolume = stackVolumes[volumeSpec.source]
 
     String source = volumeSpec.source
-    def volumeOptions
+    MountVolumeOptions volumeOptions
     if (stackVolume?.external?.name) {
-      volumeOptions = [
-          noCopy: volumeSpec.volume?.noCopy ?: false,
-      ]
+      volumeOptions = new MountVolumeOptions(
+          volumeSpec.volume?.noCopy ?: false,
+          null,
+          null)
       source = stackVolume.external.name
     }
     else {
       def labels = stackVolume?.labels?.entries ?: [:]
       labels[(ManageStackClient.LabelNamespace)] = namespace
-      volumeOptions = [
-          labels: labels,
-          noCopy: volumeSpec.volume?.noCopy ?: false,
-      ]
-
-      if (stackVolume?.driver && stackVolume?.driver != "") {
-        volumeOptions.driverConfig = [
-            name   : stackVolume.driver,
-            options: stackVolume.driverOpts.options
-        ]
-      }
+      volumeOptions = new MountVolumeOptions(
+          volumeSpec.volume?.noCopy ?: false,
+          labels,
+          getMountVolumeOptionsDriverConfig(stackVolume)
+      )
       source = "${namespace}_${volumeSpec.source}" as String
       if (stackVolume?.name) {
         source = stackVolume.name
       }
     }
 
-    return [
-        type         : TypeVolume.typeName,
-        target       : volumeSpec.target,
-        source       : source,
-        readOnly     : volumeSpec.readOnly,
-        volumeOptions: volumeOptions
-    ]
+    return new Mount(
+        volumeSpec.target,
+        source,
+        Mount.Type.Volume,
+        volumeSpec.readOnly,
+        null,
+        null,
+        volumeOptions,
+        null
+    )
   }
 
   boolean isReadOnly(List<String> modes) {
@@ -588,9 +660,19 @@ class DeployConfigReader {
     return modes.contains("nocopy")
   }
 
-  def getBindOptions(ServiceVolumeBind bind) {
+  MountVolumeOptionsDriverConfig getMountVolumeOptionsDriverConfig(StackVolume stackVolume) {
+    if (stackVolume?.driver && stackVolume?.driver != "") {
+      return new MountVolumeOptionsDriverConfig(
+          stackVolume.driver,
+          stackVolume.driverOpts.options
+      )
+    }
+    return null
+  }
+
+  MountBindOptions getBindOptions(ServiceVolumeBind bind) {
     if (bind?.propagation) {
-      return [propagation: bind.propagation]
+      return new MountBindOptions(MountBindOptions.Propagation.values().find { it.getValue() == bind.propagation }, null)
     }
     else {
       return null
@@ -765,13 +847,13 @@ class DeployConfigReader {
     return configSpec
   }
 
-  List<PlacementPreferences> placementPreferences(List<de.gesellix.docker.compose.types.PlacementPreferences> preferences) {
+  List<TaskSpecPlacementPreferences> placementPreferences(List<de.gesellix.docker.compose.types.PlacementPreferences> preferences) {
     log.info("placementPreferences: ${preferences}")
     if (preferences == null) {
       return null
     }
-    def spread = new Spread(spreadDescriptor: preferences[0].spread)
+    def spread = new TaskSpecPlacementSpread(preferences[0].spread)
     log.info("spread: ${spread}")
-    return [new PlacementPreferences(spread: spread)]
+    return [new TaskSpecPlacementPreferences(spread)]
   }
 }

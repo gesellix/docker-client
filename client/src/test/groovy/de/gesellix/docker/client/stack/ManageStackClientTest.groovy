@@ -15,6 +15,7 @@ import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.client.tasks.ManageTask
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.docker.remote.api.TaskSpec
 import spock.lang.Specification
 
 import static de.gesellix.docker.client.stack.ManageStackClient.LabelNamespace
@@ -50,7 +51,7 @@ class ManageStackClientTest extends Specification {
 
   def "list stacks"() {
     when:
-    Collection<ManageStackClient.Stack> stacks = service.lsStacks()
+    Collection<Stack> stacks = service.lsStacks()
 
     then:
     1 * manageService.services([filters: [label: [(LabelNamespace): true]]]) >> new EngineResponse(
@@ -62,8 +63,8 @@ class ManageStackClientTest extends Specification {
     )
     and:
     stacks as List == [
-        new ManageStackClient.Stack(name: "service1", services: 2),
-        new ManageStackClient.Stack(name: "service2", services: 1)
+        new Stack(name: "service1", services: 2),
+        new Stack(name: "service2", services: 1)
     ]
   }
 
@@ -189,7 +190,8 @@ class ManageStackClientTest extends Specification {
     String namespace = "the-stack"
     String namespaceFilter = "${LabelNamespace}=${namespace}"
     DeployStackConfig config = new DeployStackConfig()
-    config.services["service1"] = new StackService(taskTemplate: [containerSpec: [:]])
+    config.services["service1"] = new StackService(taskTemplate: new TaskSpec())
+//    config.services["service1"] = new StackService(taskTemplate: [containerSpec: [:]])
     config.networks["network1"] = new StackNetwork(labels: [foo: 'bar'])
     config.secrets["secret1"] = new StackSecret(name: "secret-name-1", data: 'secret'.bytes)
     config.configs["config1"] = new StackConfig(name: "config-name-1", data: 'config'.bytes)
@@ -235,7 +237,7 @@ class ManageStackClientTest extends Specification {
     1 * manageService.createService(
         [
             'endpointSpec': [:],
-            'taskTemplate': [containerSpec: [:]],
+            'taskTemplate': service.toMap(new TaskSpec()),
             'mode'        : [:],
             'labels'      : [(LabelNamespace): namespace],
             'updateConfig': [:],
