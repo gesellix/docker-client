@@ -7,7 +7,7 @@ import de.gesellix.docker.client.container.ArchiveUtil
 class NpipeExecutable {
 
   File createNpipeExe(DockerClientImpl docker) {
-    def repository = LocalDocker.isNativeWindows() ? "gesellix/npipe:windows" : "gesellix/npipe"
+    def repository = LocalDocker.isNativeWindows() ? "gesellix/npipe:windows" : "gesellix/npipe:latest"
     docker.createContainer([Image: repository], [name: "npipe"])
     def archive = docker.getArchive("npipe", "/npipe.exe").stream as InputStream
 
