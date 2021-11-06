@@ -4,7 +4,6 @@ import com.squareup.moshi.Moshi
 import de.gesellix.docker.authentication.AuthConfig
 import de.gesellix.docker.authentication.AuthConfigReader
 import de.gesellix.docker.authentication.CredsStore
-import de.gesellix.docker.client.distribution.ReferenceParser
 import de.gesellix.docker.client.registry.RegistryElection
 import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.engine.DockerEnv
