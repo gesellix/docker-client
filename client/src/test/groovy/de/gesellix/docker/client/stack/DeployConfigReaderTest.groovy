@@ -25,6 +25,7 @@ import de.gesellix.docker.compose.types.ServiceVolumeBind
 import de.gesellix.docker.compose.types.ServiceVolumeVolume
 import de.gesellix.docker.compose.types.StackVolume
 import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.docker.remote.api.EndpointSpec
 import de.gesellix.docker.remote.api.HealthConfig
 import de.gesellix.docker.remote.api.Limit
 import de.gesellix.docker.remote.api.Mount
@@ -44,7 +45,6 @@ import spock.lang.Specification
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 
-import static de.gesellix.docker.client.stack.types.ResolutionMode.ResolutionModeDNSRR
 import static de.gesellix.docker.compose.types.MountPropagation.PropagationShared
 import static de.gesellix.docker.compose.types.MountPropagation.PropagationSlave
 import static de.gesellix.docker.compose.types.ServiceVolumeType.TypeBind
@@ -245,7 +245,7 @@ class DeployConfigReaderTest extends Specification {
 
     then:
     endpoints == [
-        mode : ResolutionModeDNSRR.value,
+        mode : EndpointSpec.Mode.Dnsrr.value,
         ports: [
             [
                 protocol     : "udp",

@@ -3,7 +3,6 @@ package de.gesellix.docker.client.stack
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.EnvFileParser
 import de.gesellix.docker.client.LocalDocker
-import de.gesellix.docker.client.stack.types.ResolutionMode
 import de.gesellix.docker.client.stack.types.StackConfig
 import de.gesellix.docker.client.stack.types.StackNetwork
 import de.gesellix.docker.client.stack.types.StackSecret
@@ -28,6 +27,7 @@ import de.gesellix.docker.compose.types.ServiceVolumeBind
 import de.gesellix.docker.compose.types.ServiceVolumeType
 import de.gesellix.docker.compose.types.StackVolume
 import de.gesellix.docker.compose.types.UpdateConfig
+import de.gesellix.docker.remote.api.EndpointSpec
 import de.gesellix.docker.remote.api.HealthConfig
 import de.gesellix.docker.remote.api.Limit
 import de.gesellix.docker.remote.api.Mount
@@ -56,7 +56,6 @@ import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.regex.Pattern
 
-import static de.gesellix.docker.client.stack.types.ResolutionMode.ResolutionModeVIP
 import static java.lang.Double.parseDouble
 import static java.lang.Integer.parseInt
 import static java.lang.Long.parseLong
@@ -681,7 +680,7 @@ class DeployConfigReader {
 
   def serviceEndpoints(String endpointMode, PortConfigs portConfigs) {
     def endpointSpec = [
-        mode : endpointMode ? ResolutionMode.byValue(endpointMode).value : ResolutionModeVIP.value,
+        mode : endpointMode ? EndpointSpec.Mode.values().find { it.value == endpointMode }.value : EndpointSpec.Mode.Vip.value,
         ports: portConfigs.portConfigs.collect { portConfig ->
           [
               protocol     : portConfig.protocol,
