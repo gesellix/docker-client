@@ -1,9 +1,7 @@
 package de.gesellix.docker.client.node
 
 import de.gesellix.docker.client.system.ManageSystem
-import groovy.util.logging.Slf4j
 
-@Slf4j
 class NodeUtil {
 
   ManageSystem manageSystem

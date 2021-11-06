@@ -31,7 +31,7 @@ class ManageNodeClient implements ManageNode {
 
   @Override
   EngineResponse nodes(Map<String, Object> query = [:]) {
-    log.info "docker node ls"
+    log.info("docker node ls")
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
     def response = client.get([path : "/nodes",
@@ -42,7 +42,7 @@ class ManageNodeClient implements ManageNode {
 
   @Override
   inspectNode(String name) {
-    log.info "docker node inspect"
+    log.info("docker node inspect")
     def response = client.get([path: "/nodes/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker node inspect failed"))
     return response
@@ -50,7 +50,7 @@ class ManageNodeClient implements ManageNode {
 
   @Override
   rmNode(name) {
-    log.info "docker node rm"
+    log.info("docker node rm")
     def response = client.delete([path: "/nodes/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker node rm failed"))
     return response
@@ -58,7 +58,7 @@ class ManageNodeClient implements ManageNode {
 
   @Override
   EngineResponse updateNode(String name, Map<String, Object> query, Map<String, Object> config) {
-    log.info "docker node update"
+    log.info("docker node update")
     def actualQuery = query ?: [:]
     config = config ?: [:]
     def response = client.post([path              : "/nodes/$name/update".toString(),
@@ -72,7 +72,7 @@ class ManageNodeClient implements ManageNode {
 
   @Override
   void promoteNodes(String... nodes) {
-    log.info "docker node promote"
+    log.info("docker node promote")
     nodes?.each { node ->
       def nodeInfo = inspectNode(node).content
       def nodeSpec = nodeInfo.Spec
@@ -94,7 +94,7 @@ class ManageNodeClient implements ManageNode {
 
   @Override
   demoteNodes(String... nodes) {
-    log.info "docker node demote"
+    log.info("docker node demote")
     nodes?.each { node ->
       def nodeInfo = inspectNode(node).content
       Map<String, Object> nodeSpec = nodeInfo.Spec
@@ -116,7 +116,7 @@ class ManageNodeClient implements ManageNode {
 
   @Override
   EngineResponse tasksOnNode(String node, Map<String, Object> query = [:]) {
-    log.info "docker node ps"
+    log.info("docker node ps")
     def actualQuery = query ?: [:]
     if (!actualQuery.containsKey('filters')) {
       actualQuery.filters = [:]

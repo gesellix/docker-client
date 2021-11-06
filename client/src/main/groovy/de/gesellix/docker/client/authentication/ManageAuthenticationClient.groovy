@@ -51,26 +51,26 @@ class ManageAuthenticationClient implements ManageAuthentication {
 
   @Override
   String encodeAuthConfig(AuthConfig authConfig) {
-    log.debug "encode authConfig for ${authConfig.username}@${authConfig.serveraddress}"
+    log.debug("encode authConfig for ${authConfig.username}@${authConfig.serveraddress}")
     String json = moshi.adapter(AuthConfig).toJson(authConfig)
     return json.bytes.encodeBase64().toString()
   }
 
   @Override
   String encodeAuthConfigs(Map<String, AuthConfig> authConfigs) {
-    log.debug "encode authConfigs for ${authConfigs.keySet()}"
+    log.debug("encode authConfigs for ${authConfigs.keySet()}")
     String json = moshi.adapter(Map).toJson(authConfigs)
     return json.bytes.encodeBase64().toString()
   }
 
   @Override
   EngineResponse auth(Map authDetails) {
-    log.info "docker login"
+    log.info("docker login")
     EngineResponse response = client.post([path              : "/auth",
                                            body              : authDetails,
                                            requestContentType: "application/json"])
     if (response == null || response.status == null || !response.status.success) {
-      log.info "login failed for ${authDetails.username}@${authDetails.serveraddress}"
+      log.info("login failed for ${authDetails.username}@${authDetails.serveraddress}")
     }
     return response
   }

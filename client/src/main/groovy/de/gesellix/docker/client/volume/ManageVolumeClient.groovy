@@ -21,7 +21,7 @@ class ManageVolumeClient implements ManageVolume {
 
   @Override
   EngineResponse volumes(Map<String, Object> query = [:]) {
-    log.info "docker volume ls"
+    log.info("docker volume ls")
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
     def response = client.get([path : "/volumes",
@@ -32,7 +32,7 @@ class ManageVolumeClient implements ManageVolume {
 
   @Override
   EngineResponse inspectVolume(String name) {
-    log.info "docker volume inspect"
+    log.info("docker volume inspect")
     def response = client.get([path: "/volumes/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume inspect failed"))
     return response
@@ -40,7 +40,7 @@ class ManageVolumeClient implements ManageVolume {
 
   @Override
   EngineResponse createVolume(Map<String, Object> config = [:]) {
-    log.info "docker volume create"
+    log.info("docker volume create")
     def response = client.post([path              : "/volumes/create",
                                 body              : config ?: [:],
                                 requestContentType: "application/json"])
@@ -50,7 +50,7 @@ class ManageVolumeClient implements ManageVolume {
 
   @Override
   EngineResponse rmVolume(String name) {
-    log.info "docker volume rm"
+    log.info("docker volume rm")
     def response = client.delete([path: "/volumes/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker volume rm failed"))
     return response
@@ -58,7 +58,7 @@ class ManageVolumeClient implements ManageVolume {
 
   @Override
   EngineResponse pruneVolumes(Map<String, Object> query = [:]) {
-    log.info "docker volume prune"
+    log.info("docker volume prune")
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
     def response = client.post([path : "/volumes/prune",

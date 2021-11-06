@@ -228,7 +228,7 @@ class DeployConfigReaderTest extends Specification {
 
   def "converts service endpoints"() {
     given:
-    def ports = new PortConfigs(portConfigs: [
+    def ports = new PortConfigs([
         new PortConfig("host",
                        53,
                        1053,

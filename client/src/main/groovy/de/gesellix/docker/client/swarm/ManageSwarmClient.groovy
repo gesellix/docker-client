@@ -47,7 +47,7 @@ class ManageSwarmClient implements ManageSwarm {
 
   @Override
   EngineResponse initSwarm(Map config) {
-    log.info "docker swarm init"
+    log.info("docker swarm init")
 
     /*
 func runInit(dockerCli *client.DockerCli, flags *pflag.FlagSet, opts initOptions) error {
@@ -106,7 +106,7 @@ return nil
 
   @Override
   EngineResponse joinSwarm(Map config) {
-    log.info "docker swarm join"
+    log.info("docker swarm join")
     config = config ?: [:]
     EngineResponse response = client.post([path              : "/swarm/join",
                                            body              : config,
@@ -118,7 +118,7 @@ return nil
 
   @Override
   EngineResponse leaveSwarm(Map query = [:]) {
-    log.info "docker swarm leave"
+    log.info("docker swarm leave")
     def actualQuery = query ?: [:]
     EngineResponse response = client.post([path : "/swarm/leave",
                                            query: actualQuery])
@@ -129,7 +129,7 @@ return nil
 
   @Override
   EngineResponse updateSwarm(Map query, Map config) {
-    log.info "docker swarm update"
+    log.info("docker swarm update")
     def actualQuery = query ?: [:]
     config = config ?: [:]
     EngineResponse response = client.post([path              : "/swarm/update",
@@ -143,14 +143,14 @@ return nil
 
   @Override
   String getSwarmWorkerToken() {
-    log.info "docker swarm join-token worker"
+    log.info("docker swarm join-token worker")
     def swarm = inspectSwarm().content
     return swarm.JoinTokens.Worker
   }
 
   @Override
   String rotateSwarmWorkerToken() {
-    log.info "docker swarm join-token rotate worker token"
+    log.info("docker swarm join-token rotate worker token")
 
     def swarm = inspectSwarm().content
     def updateResponse = updateSwarm(
@@ -159,20 +159,20 @@ return nil
             "rotateWorkerToken": true
         ],
         swarm.Spec)
-    log.info "rotate worker token: ${updateResponse.status}"
+    log.info("rotate worker token: ${updateResponse.status}")
     return getSwarmWorkerToken()
   }
 
   @Override
   String getSwarmManagerToken() {
-    log.info "docker swarm join-token manager"
+    log.info("docker swarm join-token manager")
     def swarm = inspectSwarm().content
     return swarm.JoinTokens.Manager
   }
 
   @Override
   String rotateSwarmManagerToken() {
-    log.info "docker swarm join-token rotate manager token"
+    log.info("docker swarm join-token rotate manager token")
 
     def swarm = inspectSwarm().content
     def updateResponse = updateSwarm(
@@ -181,13 +181,13 @@ return nil
             "rotateManagerToken": true
         ],
         swarm.Spec)
-    log.info "rotate manager token: ${updateResponse.status}"
+    log.info("rotate manager token: ${updateResponse.status}")
     return getSwarmManagerToken()
   }
 
   @Override
   String getSwarmManagerUnlockKey() {
-    log.info "docker swarm manager unlock key"
+    log.info("docker swarm manager unlock key")
     def response = client.get([path: "/swarm/unlockkey"])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("get swarm manager unlock key failed"))
     return response.content.UnlockKey
@@ -195,7 +195,7 @@ return nil
 
   @Override
   String rotateSwarmManagerUnlockKey() {
-    log.info "docker swarm join-token rotate manager unlock key"
+    log.info("docker swarm join-token rotate manager unlock key")
 
     def swarm = inspectSwarm().content
     def updateResponse = updateSwarm(
@@ -204,13 +204,13 @@ return nil
             "rotateManagerUnlockKey": true
         ],
         swarm.Spec)
-    log.info "rotate manager unlock key: ${updateResponse.status}"
+    log.info("rotate manager unlock key: ${updateResponse.status}")
     return getSwarmManagerUnlockKey()
   }
 
   @Override
   EngineResponse unlockSwarm(String unlockKey) {
-    log.info "docker swarm unlock"
+    log.info("docker swarm unlock")
     EngineResponse response = client.post([path              : "/swarm/unlock",
                                            body              : [UnlockKey: unlockKey],
                                            requestContentType: "application/json"])
@@ -220,7 +220,7 @@ return nil
 
   @Override
   EngineResponse inspectSwarm(Map query = [:]) {
-    log.info "docker swarm inspect"
+    log.info("docker swarm inspect")
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
     EngineResponse response = client.get([path : "/swarm",

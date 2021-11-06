@@ -21,7 +21,7 @@ class ManageNetworkClient implements ManageNetwork {
 
   @Override
   EngineResponse networks(Map<String, Object> query = [:]) {
-    log.info "docker network ls"
+    log.info("docker network ls")
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
     def response = client.get([path : "/networks",
@@ -32,7 +32,7 @@ class ManageNetworkClient implements ManageNetwork {
 
   @Override
   EngineResponse inspectNetwork(String name) {
-    log.info "docker network inspect"
+    log.info("docker network inspect")
     def response = client.get([path: "/networks/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network inspect failed"))
     return response
@@ -40,7 +40,7 @@ class ManageNetworkClient implements ManageNetwork {
 
   @Override
   EngineResponse createNetwork(String name, Map<String, Object> config = [:]) {
-    log.info "docker network create"
+    log.info("docker network create")
     def actualConfig = config ?: [:]
     def defaults = [Name          : name,
                     CheckDuplicate: true]
@@ -54,7 +54,7 @@ class ManageNetworkClient implements ManageNetwork {
 
   @Override
   EngineResponse connectNetwork(String network, String container) {
-    log.info "docker network connect"
+    log.info("docker network connect")
     def response = client.post([path              : "/networks/$network/connect".toString(),
                                 body              : [container: container],
                                 requestContentType: "application/json"])
@@ -64,7 +64,7 @@ class ManageNetworkClient implements ManageNetwork {
 
   @Override
   EngineResponse disconnectNetwork(String network, String container) {
-    log.info "docker network disconnect"
+    log.info("docker network disconnect")
     def response = client.post([path              : "/networks/$network/disconnect".toString(),
                                 body              : [container: container],
                                 requestContentType: "application/json"])
@@ -74,7 +74,7 @@ class ManageNetworkClient implements ManageNetwork {
 
   @Override
   EngineResponse rmNetwork(String name) {
-    log.info "docker network rm"
+    log.info("docker network rm")
     def response = client.delete([path: "/networks/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network rm failed"))
     return response
@@ -82,7 +82,7 @@ class ManageNetworkClient implements ManageNetwork {
 
   @Override
   EngineResponse pruneNetworks(Map<String, Object> query = [:]) {
-    log.info "docker network prune"
+    log.info("docker network prune")
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
     def response = client.post([path : "/networks/prune",

@@ -32,7 +32,7 @@ class ManageServiceClient implements ManageService {
 
   @Override
   EngineResponse services(Map<String, Object> query = [:]) {
-    log.info "docker service ls"
+    log.info("docker service ls")
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
     def response = client.get([path : "/services",
@@ -43,7 +43,7 @@ class ManageServiceClient implements ManageService {
 
   @Override
   EngineResponse createService(Map<String, Object> config, Map<String, Object> createOptions = [:]) {
-    log.info "docker service create"
+    log.info("docker service create")
     config = config ?: [:]
     createOptions = createOptions ?: [:]
     def headers = [:]
@@ -60,7 +60,7 @@ class ManageServiceClient implements ManageService {
 
   @Override
   EngineResponse rmService(String name) {
-    log.info "docker service rm"
+    log.info("docker service rm")
     EngineResponse response = client.delete([path: "/services/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service rm failed"))
     IOUtils.closeQuietly(response.stream)
@@ -69,7 +69,7 @@ class ManageServiceClient implements ManageService {
 
   @Override
   EngineResponse inspectService(name) {
-    log.info "docker service inspect"
+    log.info("docker service inspect")
     def response = client.get([path: "/services/$name".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service inspect failed"))
     return response
@@ -86,7 +86,7 @@ class ManageServiceClient implements ManageService {
 
   @Override
   EngineResponse updateService(String name, Map<String, Object> query, Map<String, Object> config, Map<String, Object> updateOptions = [:]) {
-    log.info "docker service update"
+    log.info("docker service update")
     def actualQuery = query ?: [:]
     config = config ?: [:]
     updateOptions = updateOptions ?: [:]
@@ -105,7 +105,7 @@ class ManageServiceClient implements ManageService {
 
   @Override
   EngineResponse scaleService(String name, int replicas) {
-    log.info "docker service scale"
+    log.info("docker service scale")
     def service = inspectService(name).content
     def mode = service.Spec.Mode
     if (!mode.Replicated) {
@@ -117,7 +117,7 @@ class ManageServiceClient implements ManageService {
 
   @Override
   EngineResponse tasksOfService(String service, Map<String, Object> query = [:]) {
-    log.info "docker service ps"
+    log.info("docker service ps")
     def actualQuery = query ?: [:]
     if (!actualQuery.containsKey('filters')) {
       actualQuery.filters = [:]

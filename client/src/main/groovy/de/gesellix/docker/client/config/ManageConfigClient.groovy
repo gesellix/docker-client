@@ -21,7 +21,7 @@ class ManageConfigClient implements ManageConfig {
 
   @Override
   EngineResponse createConfig(String name, byte[] configData, Map<String, String> labels = [:]) {
-    log.info "docker config create"
+    log.info("docker config create")
     // TODO do we need to base64 encode the config data?
     def configConfig = [Name  : name,
                         Data  : configData,
@@ -35,7 +35,7 @@ class ManageConfigClient implements ManageConfig {
 
   @Override
   EngineResponse inspectConfig(String configId) {
-    log.info "docker config inspect"
+    log.info("docker config inspect")
     def response = client.get([path: "/configs/${configId}".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker config inspect failed"))
     return response
@@ -43,7 +43,7 @@ class ManageConfigClient implements ManageConfig {
 
   @Override
   EngineResponse configs(Map query = [:]) {
-    log.info "docker config ls"
+    log.info("docker config ls")
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
     def response = client.get([path : "/configs",
@@ -54,7 +54,7 @@ class ManageConfigClient implements ManageConfig {
 
   @Override
   EngineResponse rmConfig(String configId) {
-    log.info "docker config rm"
+    log.info("docker config rm")
     def response = client.delete([path: "/configs/${configId}".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker config rm failed"))
     return response
@@ -62,7 +62,7 @@ class ManageConfigClient implements ManageConfig {
 
   @Override
   EngineResponse updateConfig(String configId, int version, Map<String, ?> configSpec) {
-    log.info "docker config update"
+    log.info("docker config update")
     def response = client.post([path              : "/configs/${configId}/update".toString(),
                                 query             : [version: version],
                                 body              : configSpec,

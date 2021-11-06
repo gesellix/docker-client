@@ -21,7 +21,7 @@ class ManageSecretClient implements ManageSecret {
 
   @Override
   EngineResponse createSecret(String name, byte[] secretData, Map<String, String> labels = [:]) {
-    log.info "docker secret create"
+    log.info("docker secret create")
     def secretDataBase64 = Base64.encoder.encode(secretData)
     def secretConfig = [Name  : name,
                         Data  : secretDataBase64,
@@ -35,7 +35,7 @@ class ManageSecretClient implements ManageSecret {
 
   @Override
   EngineResponse inspectSecret(String secretId) {
-    log.info "docker secret inspect"
+    log.info("docker secret inspect")
     def response = client.get([path: "/secrets/${secretId}".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker secret inspect failed"))
     return response
@@ -43,7 +43,7 @@ class ManageSecretClient implements ManageSecret {
 
   @Override
   EngineResponse secrets(Map query = [:]) {
-    log.info "docker secret ls"
+    log.info("docker secret ls")
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
     def response = client.get([path : "/secrets",
@@ -54,7 +54,7 @@ class ManageSecretClient implements ManageSecret {
 
   @Override
   EngineResponse rmSecret(String secretId) {
-    log.info "docker secret rm"
+    log.info("docker secret rm")
     def response = client.delete([path: "/secrets/${secretId}".toString()])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker secret rm failed"))
     return response
@@ -62,7 +62,7 @@ class ManageSecretClient implements ManageSecret {
 
   @Override
   EngineResponse updateSecret(String secretId, int version, Map<String, Object> secretSpec) {
-    log.info "docker secret update"
+    log.info("docker secret update")
     def response = client.post([path              : "/secrets/${secretId}/update".toString(),
                                 query             : [version: version],
                                 body              : secretSpec,

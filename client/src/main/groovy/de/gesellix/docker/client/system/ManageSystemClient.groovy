@@ -27,7 +27,7 @@ class ManageSystemClient implements ManageSystem {
 
   @Override
   EngineResponse systemDf() {
-    log.info "docker system df"
+    log.info("docker system df")
     def actualQuery = [:]
     def response = client.get([path : "/system/df",
                                query: actualQuery])
@@ -36,7 +36,7 @@ class ManageSystemClient implements ManageSystem {
 
   @Override
   EngineResponse events(DockerAsyncCallback callback, Map query = [:]) {
-    log.info "docker events"
+    log.info("docker events")
 
     queryUtil.jsonEncodeFilters(query)
     def response = client.get([path : "/events",
@@ -51,7 +51,7 @@ class ManageSystemClient implements ManageSystem {
 
   @Override
   EngineResponse ping() {
-    log.info "docker ping"
+    log.info("docker ping")
     def response = client.get([path: "/_ping", timeout: 2000])
 
     // Recently (no idea since when), the engine responds with a chunked transfer-encoding on this endpoint,
@@ -66,14 +66,14 @@ class ManageSystemClient implements ManageSystem {
 
   @Override
   EngineResponse version() {
-    log.info "docker version"
+    log.info("docker version")
     def response = client.get([path: "/version"])
     return response
   }
 
   @Override
   EngineResponse info() {
-    log.info "docker info"
+    log.info("docker info")
     def response = client.get([path: "/info"])
     return response
   }

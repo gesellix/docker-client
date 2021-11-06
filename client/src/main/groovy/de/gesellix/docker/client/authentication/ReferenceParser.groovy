@@ -66,7 +66,7 @@ class ReferenceParser {
       throw new IllegalArgumentException("invalid reference format")
     }
 
-    log.debug "referenceMatcher.groupCount(): ${referenceMatcher.groupCount()}"
+    log.debug("referenceMatcher.groupCount(): ${referenceMatcher.groupCount()}")
     if (referenceMatcher.group(1).length() > NameTotalLengthMax) {
       throw new IllegalArgumentException("repository name must not be more than ${NameTotalLengthMax} characters")
     }
@@ -75,11 +75,11 @@ class ReferenceParser {
         domain: "",
         path  : ""
     ]
-    log.debug "anchoredNameRegexp: ${anchoredNameRegexp}"
+    log.debug("anchoredNameRegexp: ${anchoredNameRegexp}")
     Pattern anchoredNamePattern = Pattern.compile(anchoredNameRegexp)
     Matcher anchoredNameMatcher = anchoredNamePattern.matcher(referenceMatcher.group(1))
 
-    log.debug "anchoredNameMatcher.matches(${referenceMatcher.group(1)}): ${anchoredNameMatcher.matches()}"
+    log.debug("anchoredNameMatcher.matches(${referenceMatcher.group(1)}): ${anchoredNameMatcher.matches()}")
     log.debug "anchoredNameMatcher.groupCount(): ${anchoredNameMatcher.groupCount()}"
 
     if (anchoredNameMatcher.matches()
@@ -118,31 +118,31 @@ class ReferenceParser {
     if (!RepoName(ref.repo as Map)) {
       // Allow digest only references
       if (ref.digest) {
-        log.debug "--> digest"
+        log.debug("--> digest")
         return ref.digest
       }
-      log.debug "--> null (no name, no digest)"
+      log.debug("--> null (no name, no digest)")
       return null
     }
     if (!ref.tag) {
       if (ref.digest) {
-        log.debug "--> repo + digest"
+        log.debug("--> repo + digest")
         return [
             repo  : ref.repo,
             digest: ref.digest
         ]
       }
-      log.debug "--> repo"
+      log.debug("--> repo")
       return ref.repo
     }
     if (!ref.digest) {
-      log.debug "--> repo + tag"
+      log.debug("--> repo + tag")
       return [
           repo: ref.repo,
           tag : ref.tag
       ]
     }
-    log.debug "--> ref"
+    log.debug("--> ref")
     return ref
   }
 

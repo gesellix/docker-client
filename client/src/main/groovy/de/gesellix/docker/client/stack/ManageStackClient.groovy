@@ -18,7 +18,6 @@ import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.docker.remote.api.TaskSpecContainerSpecConfigs
 import de.gesellix.docker.remote.api.TaskSpecContainerSpecSecrets
 import de.gesellix.util.QueryUtil
-import groovy.transform.EqualsAndHashCode
 import groovy.util.logging.Slf4j
 
 @Slf4j
@@ -62,7 +61,7 @@ class ManageStackClient implements ManageStack {
 
   @Override
   Collection<Stack> lsStacks() {
-    log.info "docker stack ls"
+    log.info("docker stack ls")
 
     Map<String, Stack> stacksByName = [:]
 
@@ -88,7 +87,7 @@ class ManageStackClient implements ManageStack {
 
   @Override
   void stackDeploy(String namespace, DeployStackConfig config, DeployStackOptions options) {
-    log.info "docker stack deploy"
+    log.info("docker stack deploy")
 
     checkDaemonIsSwarmManager()
 
@@ -289,7 +288,7 @@ class ManageStackClient implements ManageStack {
 
   @Override
   EngineResponse stackPs(String namespace, Map filters = [:]) {
-    log.info "docker stack ps"
+    log.info("docker stack ps")
 
     String namespaceFilter = "${LabelNamespace}=${namespace}"
 
@@ -306,7 +305,7 @@ class ManageStackClient implements ManageStack {
 
   @Override
   void stackRm(String namespace) {
-    log.info "docker stack rm"
+    log.info("docker stack rm")
 
     String namespaceFilter = "${LabelNamespace}=${namespace}"
 
@@ -331,7 +330,7 @@ class ManageStackClient implements ManageStack {
 
   @Override
   EngineResponse stackServices(String namespace, Map filters = [:]) {
-    log.info "docker stack services"
+    log.info("docker stack services")
 
     String namespaceFilter = "${LabelNamespace}=${namespace}"
     def actualFilters = filters ?: [:]
