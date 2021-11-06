@@ -1,4 +1,4 @@
-package de.gesellix.docker.client.distribution
+package de.gesellix.docker.client.authentication
 
 import com.google.re2j.Matcher
 import com.google.re2j.Pattern

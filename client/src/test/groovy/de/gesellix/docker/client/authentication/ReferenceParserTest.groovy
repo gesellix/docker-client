@@ -1,4 +1,4 @@
-package de.gesellix.docker.client.distribution
+package de.gesellix.docker.client.authentication
 
 import spock.lang.Specification
 import spock.lang.Unroll
