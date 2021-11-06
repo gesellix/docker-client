@@ -102,7 +102,7 @@ class DockerClientImpl implements DockerClient {
     this.proxy = proxy
 
     this.httpClient = new OkDockerClient(dockerClientConfig, proxy)
-    log.info "using docker at '${env.dockerHost}'"
+    log.info("using docker at '${env.dockerHost}'")
 
     this.responseHandler = new DockerResponseHandler()
     this.repositoryTagParser = new RepositoryTagParser()
@@ -146,15 +146,15 @@ class DockerClientImpl implements DockerClient {
   /**
    * @deprecated Please use the prune* commands.
    * @see ManageContainer#pruneContainers(java.lang.Object)
-   * @see ManageImage#pruneImages(java.lang.Object)
-   * @see ManageVolume#pruneVolumes(java.lang.Object)
+   * @see ManageImage#pruneImages(java.util.Map)
+   * @see ManageVolume#pruneVolumes(java.util.Map)
    */
   @Deprecated
   @Override
   cleanupStorage(Closure shouldKeepContainer, Closure shouldKeepVolume = { true }) {
-    cleanupContainers shouldKeepContainer
+    cleanupContainers(shouldKeepContainer)
     cleanupImages()
-    cleanupVolumes shouldKeepVolume
+    cleanupVolumes(shouldKeepVolume)
   }
 
   /**
@@ -168,27 +168,27 @@ class DockerClientImpl implements DockerClient {
     allContainers.findAll { Map container ->
       !shouldKeepContainer(container)
     }.each { container ->
-      log.debug "docker rm ${container.Id} (${container.Names.first()})"
+      log.debug("docker rm ${container.Id} (${container.Names.first()})")
       rm(container.Id)
     }
   }
 
   /**
    * @deprecated Please use the prune* commands.
-   * @see ManageImage#pruneImages(java.lang.Object)
+   * @see ManageImage#pruneImages(java.util.Map)
    */
   @Deprecated
   @Override
   cleanupImages() {
     images([filters: [dangling: ["true"]]]).content.each { image ->
-      log.debug "docker rmi ${image.Id}"
+      log.debug("docker rmi ${image.Id}")
       rmi(image.Id as String)
     }
   }
 
   /**
    * @deprecated Please use the prune* commands.
-   * @see ManageVolume#pruneVolumes(java.lang.Object)
+   * @see ManageVolume#pruneVolumes(java.util.Map)
    */
   @Deprecated
   @Override
@@ -197,14 +197,14 @@ class DockerClientImpl implements DockerClient {
     allVolumes.findAll { Map volume ->
       !shouldKeepVolume(volume)
     }.each { volume ->
-      log.debug "docker volume rm ${volume.Name}"
+      log.debug("docker volume rm ${volume.Name}")
       rmVolume(volume.Name)
     }
   }
 
   @Override
   search(String term, int limit = 25) {
-    log.info "docker search"
+    log.info("docker search")
     def response = httpClient.get([path : "/images/search".toString(),
                                    query: [term : term,
                                            limit: limit]])
@@ -214,7 +214,7 @@ class DockerClientImpl implements DockerClient {
 
   @Override
   getSwarmMangerAddress() {
-    log.info "docker get swarm manager address"
+    log.info("docker get swarm manager address")
     def swarmNodeId = info().content.Swarm.NodeID
     def node = inspectNode(swarmNodeId).content
     return node.ManagerStatus.Addr

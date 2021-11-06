@@ -9,7 +9,7 @@ import static de.gesellix.docker.engine.DockerVersion.parseDockerVersion
 class LocalDocker {
 
   static void main(String[] args) {
-    log.debug available() ? "connection success" : "failed to connect"
+    log.debug(available() ? "connection success" : "failed to connect")
   }
 
   static boolean available() {

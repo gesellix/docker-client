@@ -57,7 +57,7 @@ class ManageImageClient implements ManageImage {
 
       @Override
       onEvent(Object event) {
-        log.info "$event"
+        log.info("$event")
         if (event instanceof String) {
           chunks << new JsonSlurper().parseText(event as String)
         }
@@ -68,7 +68,7 @@ class ManageImageClient implements ManageImage {
 
       @Override
       onFinish() {
-        log.debug "build finished"
+        log.debug("build finished")
         buildLatch.countDown()
       }
     }
@@ -129,7 +129,7 @@ class ManageImageClient implements ManageImage {
   }
 
   EngineResponse buildAsync(InputStream buildContext, BuildConfig config = new BuildConfig(), DockerAsyncCallback callback) {
-    log.info "docker build"
+    log.info("docker build")
     def actualQuery = config.query ?: [:]
     queryUtil.jsonEncodeBuildargs(actualQuery)
     def actualBuildOptions = config.options ?: [:]
@@ -171,14 +171,14 @@ class ManageImageClient implements ManageImage {
 
   @Override
   EngineResponse history(String imageId) {
-    log.info "docker history"
+    log.info("docker history")
     def response = client.get([path: "/images/${imageId}/history".toString()])
     return response
   }
 
   @Override
   importUrl(String url, String repository = "", String tag = "") {
-    log.info "docker import '${url}' into ${repository}:${tag}"
+    log.info("docker import '${url}' into ${repository}:${tag}")
 
     def response = client.post([path : "/images/create",
                                 query: [fromSrc: url.toString(),
@@ -192,7 +192,7 @@ class ManageImageClient implements ManageImage {
 
   @Override
   String importStream(InputStream stream, String repository = "", String tag = "") {
-    log.info "docker import stream into ${repository}:${tag}"
+    log.info("docker import stream into ${repository}:${tag}")
 
     def response = client.post([path              : "/images/create",
                                 body              : stream,
@@ -208,26 +208,24 @@ class ManageImageClient implements ManageImage {
 
   @Override
   EngineResponse inspectImage(String imageId) {
-    log.info "docker inspect image"
+    log.info("docker inspect image")
     def response = client.get([path: "/images/${imageId}/json".toString()])
     return response
   }
 
   @Override
   EngineResponse load(InputStream stream) {
-    log.info "docker load"
-
+    log.info("docker load")
     def response = client.post([path              : "/images/load",
                                 body              : stream,
                                 requestContentType: "application/x-tar"])
     responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker load failed"))
-
     return response
   }
 
   @Override
   EngineResponse images(Map<String, Object> query = [:]) {
-    log.info "docker images"
+    log.info("docker images")
     def actualQuery = query ?: [:]
     def defaults = [all: false]
     queryUtil.applyDefaults(actualQuery, defaults)
@@ -240,7 +238,7 @@ class ManageImageClient implements ManageImage {
 
   @Override
   EngineResponse pruneImages(Map<String, Object> query = [:]) {
-    log.info "docker image prune"
+    log.info("docker image prune")
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
     def response = client.post([path : "/images/prune",
@@ -251,7 +249,7 @@ class ManageImageClient implements ManageImage {
 
   @Override
   EngineResponse create(Map query = [:], Map createOptions = [:]) {
-    log.info "docker image create"
+    log.info("docker image create")
     createOptions = createOptions ?: [:]
     def headers = [:]
     if (createOptions.EncodedRegistryAuth) {
@@ -272,7 +270,7 @@ class ManageImageClient implements ManageImage {
   @Deprecated
   @Override
   String pull(String imageName, String tag = "", String authBase64Encoded = ".", String registry = "") {
-    log.info "docker pull '${imageName}:${tag}'"
+    log.info("docker pull '${imageName}:${tag}'")
 
     def actualImageName = imageName
     if (registry) {
@@ -293,7 +291,7 @@ class ManageImageClient implements ManageImage {
 
   @Override
   EngineResponse push(String imageName, String authBase64Encoded = ".", String registry = "") {
-    log.info "docker push '${imageName}'"
+    log.info("docker push '${imageName}'")
 
     def actualImageName = imageName
     if (registry) {
@@ -311,14 +309,14 @@ class ManageImageClient implements ManageImage {
 
   @Override
   EngineResponse rmi(String imageId) {
-    log.info "docker rmi"
+    log.info("docker rmi")
     def response = client.delete([path: "/images/${imageId}".toString()])
     return response
   }
 
   @Override
   EngineResponse save(String... images) {
-    log.info "docker save"
+    log.info("docker save")
 
     def response
     if (images.length == 1) {
@@ -335,7 +333,7 @@ class ManageImageClient implements ManageImage {
 
   @Override
   EngineResponse tag(String imageId, String repository) {
-    log.info "docker tag"
+    log.info("docker tag")
     def repoAndTag = repositoryTagParser.parseRepositoryTag(repository)
     def response = client.post([path : "/images/${imageId}/tag".toString(),
                                 query: [repo: repoAndTag.repo,
