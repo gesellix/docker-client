@@ -23,13 +23,13 @@ dependencies {
       implementation(it) {
         version {
           strictly("[4,4.10)")
-          prefer("4.9.1")
+          prefer("4.9.2")
         }
       }
     }
     implementation("com.squareup.okio:okio") {
       version {
-        strictly("[2.9.0,3)")
+        strictly("[2,4)")
       }
     }
     implementation("com.squareup.moshi:moshi") {
