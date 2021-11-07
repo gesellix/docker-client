@@ -1,93 +1,113 @@
 package de.gesellix.docker.client.network
 
-import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.engine.EngineClient
-import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.docker.client.EngineResponseContent
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.IPAM
+import de.gesellix.docker.remote.api.Network
+import de.gesellix.docker.remote.api.NetworkConnectRequest
+import de.gesellix.docker.remote.api.NetworkCreateRequest
+import de.gesellix.docker.remote.api.NetworkCreateResponse
+import de.gesellix.docker.remote.api.NetworkDisconnectRequest
+import de.gesellix.docker.remote.api.NetworkPruneResponse
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 
 @Slf4j
 class ManageNetworkClient implements ManageNetwork {
 
-  private EngineClient client
-  private DockerResponseHandler responseHandler
+  private EngineApiClient client
   private QueryUtil queryUtil
 
-  ManageNetworkClient(EngineClient client, DockerResponseHandler responseHandler) {
+  ManageNetworkClient(EngineApiClient client) {
     this.client = client
-    this.responseHandler = responseHandler
     this.queryUtil = new QueryUtil()
   }
 
   @Override
-  EngineResponse networks(Map<String, Object> query = [:]) {
+  EngineResponseContent<List<Network>> networks(Map<String, Object> query) {
     log.info("docker network ls")
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
-    def response = client.get([path : "/networks",
-                               query: actualQuery])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network ls failed"))
-    return response
+    return networks(actualQuery.filters as String)
   }
 
   @Override
-  EngineResponse inspectNetwork(String name) {
+  EngineResponseContent<List<Network>> networks(String filters = null) {
+    log.info("docker network ls")
+    def networks = client.getNetworkApi().networkList(filters)
+    return new EngineResponseContent<List<Network>>(networks)
+  }
+
+  @Override
+  EngineResponseContent<Network> inspectNetwork(String name) {
     log.info("docker network inspect")
-    def response = client.get([path: "/networks/$name".toString()])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network inspect failed"))
-    return response
+    def network = client.getNetworkApi().networkInspect(name, null, null)
+    return new EngineResponseContent<Network>(network)
   }
 
   @Override
-  EngineResponse createNetwork(String name, Map<String, Object> config = [:]) {
-    log.info("docker network create")
+  EngineResponseContent<NetworkCreateResponse> createNetwork(String name, Map<String, Object> config = [:]) {
     def actualConfig = config ?: [:]
-    def defaults = [Name          : name,
-                    CheckDuplicate: true]
+    def defaults = [
+        Name          : name,
+        CheckDuplicate: true]
     queryUtil.applyDefaults(actualConfig, defaults)
-    def response = client.post([path              : "/networks/create",
-                                body              : actualConfig ?: [:],
-                                requestContentType: "application/json"])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network create failed"))
-    return response
+
+    def request = new NetworkCreateRequest(
+        actualConfig.Name as String,
+        actualConfig.CheckDuplicate as Boolean,
+        actualConfig.Driver as String,
+        actualConfig.Internal as Boolean,
+        actualConfig.Attachable as Boolean,
+        actualConfig.Ingress as Boolean,
+        actualConfig.IPAM == null ? null : new IPAM(
+            actualConfig.IPAM?.Driver as String,
+            actualConfig.IPAM?.Config as List,
+            actualConfig.IPAM?.Options as Map),
+        actualConfig.EnableIPv6 as Boolean,
+        actualConfig.Options as Map,
+        actualConfig.Labels as Map)
+    return createNetwork(request)
   }
 
   @Override
-  EngineResponse connectNetwork(String network, String container) {
+  EngineResponseContent<NetworkCreateResponse> createNetwork(NetworkCreateRequest networkCreateRequest) {
+    log.info("docker network create")
+    // TODO set defaults
+    def networkCreate = client.getNetworkApi().networkCreate(networkCreateRequest)
+    return new EngineResponseContent<NetworkCreateResponse>(networkCreate)
+  }
+
+  @Override
+  void connectNetwork(String network, String container) {
     log.info("docker network connect")
-    def response = client.post([path              : "/networks/$network/connect".toString(),
-                                body              : [container: container],
-                                requestContentType: "application/json"])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network connect failed"))
-    return response
+    client.getNetworkApi().networkConnect(network, new NetworkConnectRequest(container, null))
   }
 
   @Override
-  EngineResponse disconnectNetwork(String network, String container) {
+  void disconnectNetwork(String network, String container) {
     log.info("docker network disconnect")
-    def response = client.post([path              : "/networks/$network/disconnect".toString(),
-                                body              : [container: container],
-                                requestContentType: "application/json"])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network disconnect failed"))
-    return response
+    client.getNetworkApi().networkDisconnect(network, new NetworkDisconnectRequest(container, null))
   }
 
   @Override
-  EngineResponse rmNetwork(String name) {
+  void rmNetwork(String name) {
     log.info("docker network rm")
-    def response = client.delete([path: "/networks/$name".toString()])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network rm failed"))
-    return response
+    client.getNetworkApi().networkDelete(name)
   }
 
   @Override
-  EngineResponse pruneNetworks(Map<String, Object> query = [:]) {
+  EngineResponseContent<NetworkPruneResponse> pruneNetworks(Map<String, Object> query) {
     log.info("docker network prune")
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
-    def response = client.post([path : "/networks/prune",
-                                query: actualQuery])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker network prune failed"))
-    return response
+    return pruneNetworks(actualQuery.filters as String)
+  }
+
+  @Override
+  EngineResponseContent<NetworkPruneResponse> pruneNetworks(String filters = null) {
+    log.info("docker network prune")
+    def networkPrune = client.getNetworkApi().networkPrune(filters)
+    return new EngineResponseContent<NetworkPruneResponse>(networkPrune)
   }
 }

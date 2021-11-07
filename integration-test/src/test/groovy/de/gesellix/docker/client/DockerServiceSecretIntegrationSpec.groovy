@@ -1,5 +1,8 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.remote.api.LocalNodeState
+import de.gesellix.docker.remote.api.Secret
+import de.gesellix.docker.remote.api.SwarmInitRequest
 import de.gesellix.docker.testutil.SwarmUtil
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
@@ -16,7 +19,7 @@ class DockerServiceSecretIntegrationSpec extends Specification {
   def setupSpec() {
     dockerClient = new DockerClientImpl()
     swarmAdvertiseAddr = new SwarmUtil().getAdvertiseAddr()
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def cleanup() {
@@ -24,24 +27,19 @@ class DockerServiceSecretIntegrationSpec extends Specification {
   }
 
   def ping() {
-    when:
-    def ping = dockerClient.ping()
-
-    then:
-    ping.status.code == 200
-    ping.content == "OK"
+    expect:
+    "OK" == dockerClient.ping().content
   }
 
   def "expect inactive swarm"() {
     expect:
-    dockerClient.info().content.Swarm.LocalNodeState == "inactive"
+    dockerClient.info().content.swarm.localNodeState == LocalNodeState.Inactive
   }
 
   def "create, list, and remove a secret"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    dockerClient.initSwarm(swarmConfig)
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null))
 
     when:
     dockerClient.createSecret("test-secret", "some-secret-stuff".bytes)
@@ -49,12 +47,12 @@ class DockerServiceSecretIntegrationSpec extends Specification {
     then:
     def secrets = dockerClient.secrets([filters: [names: ["test-secret"]]]).content
     secrets.size() == 1
-    Map testSecret = secrets.first()
-    testSecret.Spec.Name == "test-secret"
+    Secret testSecret = secrets.first()
+    testSecret.spec.name == "test-secret"
 
     cleanup:
     performSilently { dockerClient.rmSecret("test-secret") }
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def performSilently(Closure action) {

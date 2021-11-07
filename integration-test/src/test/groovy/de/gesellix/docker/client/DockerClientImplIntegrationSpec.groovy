@@ -1,6 +1,7 @@
 package de.gesellix.docker.client
 
 import de.gesellix.docker.engine.DockerEnv
+import de.gesellix.docker.remote.api.AuthConfig
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
 import spock.lang.Specification
@@ -24,12 +25,8 @@ class DockerClientImplIntegrationSpec extends Specification {
   }
 
   def "ping"() {
-    when:
-    def ping = dockerClient.ping()
-
-    then:
-    ping.status.code == 200
-    ping.content == "OK"
+    expect:
+    "OK" == dockerClient.ping().content
   }
 
   def "info"() {
@@ -37,31 +34,11 @@ class DockerClientImplIntegrationSpec extends Specification {
     def info = dockerClient.info().content
 
     then:
-    def expectedKeys = [
-        "Architecture",
-        "BridgeNfIp6tables", "BridgeNfIptables",
-        "CPUSet", "CPUShares", "CgroupDriver", "ClusterAdvertise", "ClusterStore", "Containers", "ContainersPaused", "ContainersRunning", "ContainersStopped", "CpuCfsPeriod", "CpuCfsQuota",
-        "Debug", "DockerRootDir", "Driver", "DriverStatus",
-        "ExecutionDriver", "ExperimentalBuild",
-        "HttpProxy", "HttpsProxy",
-        "ID", "IPv4Forwarding", "Images", "IndexServerAddress",
-        "KernelMemory", "KernelVersion",
-        "Labels", "LoggingDriver",
-        "MemTotal", "MemoryLimit",
-        "NCPU", "NEventsListener", "NFd", "NGoroutines", "Name", "NoProxy",
-        "OSType", "OomKillDisable", "OperatingSystem",
-        "Plugins",
-        "RegistryConfig",
-        "ServerVersion", "SwapLimit", "SystemStatus", "SystemTime"]
-    new ArrayList<>(info.keySet() as Set).each { expectedKeys.contains(it) }
-
-    and:
-    info.Containers >= 0
     if (nativeWindows) {
-      info.DockerRootDir == "C:\\\\ProgramData\\\\Docker"
+      info.dockerRootDir == "C:\\\\ProgramData\\\\Docker"
     }
     else {
-      info.DockerRootDir =~ "(/mnt/sda1)?/var/lib/docker"
+      info.dockerRootDir =~ "(/mnt/sda1)?/var/lib/docker"
     }
 
     def expectedDriverStatusProperties
@@ -71,29 +48,28 @@ class DockerClientImplIntegrationSpec extends Specification {
     else {
       expectedDriverStatusProperties = ["Backing Filesystem"]
     }
-    info.DriverStatus.findAll {
+    info.driverStatus.findAll {
       it.first() in expectedDriverStatusProperties
     }.size() == expectedDriverStatusProperties.size()
-    info.HttpProxy in ["", "http.docker.internal:3128", "docker.for.mac.http.internal:3128", "gateway.docker.internal:3128"]
-    info.HttpsProxy in ["", "http.docker.internal:3128", "docker.for.mac.http.internal:3129", "gateway.docker.internal:3129"]
+    info.httpProxy in ["", "http.docker.internal:3128", "docker.for.mac.http.internal:3128", "gateway.docker.internal:3128"]
+    info.httpsProxy in ["", "http.docker.internal:3128", "docker.for.mac.http.internal:3129", "gateway.docker.internal:3129"]
     info.ID =~ "\\w[\\w-]+"
-    info.Images >= 0
-    info.IndexServerAddress == "https://index.docker.io/v1/"
-    info.IPv4Forwarding == true
-    info.Labels == null || info.Labels == []
-    info.LoggingDriver == "json-file"
-    info.MemTotal > 0
-    info.MemoryLimit != nativeWindows
-    info.NoProxy == "" || info.NoProxy == "*.local, 169.254/16"
-    info.OomKillDisable == !nativeWindows
+    info.indexServerAddress == "https://index.docker.io/v1/"
+    info.ipv4Forwarding == true
+    info.labels == null || info.labels == []
+    info.loggingDriver == "json-file"
+    info.memTotal > 0
+    info.memoryLimit != nativeWindows
+    info.noProxy == "" || info.noProxy == "*.local, 169.254/16"
+    info.oomKillDisable == !nativeWindows
 
-    def officialRegistry = info.RegistryConfig.IndexConfigs['docker.io']
-    officialRegistry.Name == "docker.io"
-    officialRegistry.Official == true
-    officialRegistry.Secure == true
+    def officialRegistry = info.registryConfig.indexConfigs['docker.io']
+    officialRegistry.name == "docker.io"
+    officialRegistry.official == true
+    officialRegistry.secure == true
 
-    info.RegistryConfig.InsecureRegistryCIDRs == ["127.0.0.0/8"]
-    info.SystemTime =~ "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2,}.(\\d{3,}Z)?"
+    info.registryConfig.insecureRegistryCIDRs == ["127.0.0.0/8"]
+    info.systemTime =~ "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2,}.(\\d{3,}Z)?"
   }
 
   def "version"() {
@@ -111,9 +87,11 @@ class DockerClientImplIntegrationSpec extends Specification {
     given:
 //        def authDetails = dockerClient.readAuthConfig(null, null)
     def authDetails = dockerClient.readDefaultAuthConfig()
-    def authPlain = [username     : authDetails.username,
-                     password     : authDetails.password,
-                     serveraddress: authDetails.serveraddress]
+    def authPlain = new AuthConfig(
+        authDetails.username,
+        authDetails.password,
+        null,
+        authDetails.serveraddress)
 
     when:
     def authResult = null
@@ -125,9 +103,9 @@ class DockerClientImplIntegrationSpec extends Specification {
     }
 
     then:
-    authDetails.username == null || authResult?.status?.code == 200
-//        authResult.content.IdentityToken == ""
-//        authResult.content.Status == "Login Succeeded"
+    authDetails.username == null || authResult?.content?.status == "Login Succeeded"
+//        authResult.content.identityToken == ""
+//        authResult.content.status == "Login Succeeded"
   }
 
   def "allows configuration via setter"() {

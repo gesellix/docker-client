@@ -1,462 +1,419 @@
 package de.gesellix.docker.client.container
 
-import ch.qos.logback.classic.spi.LoggingEvent
-import de.gesellix.docker.client.DockerClientException
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.image.ManageImage
 import de.gesellix.docker.engine.EngineClient
-import de.gesellix.docker.engine.EngineResponse
-import de.gesellix.docker.rawstream.RawInputStream
-import de.gesellix.testutil.MemoryAppender
-import groovy.json.JsonBuilder
+import de.gesellix.docker.remote.api.ContainerConfig
+import de.gesellix.docker.remote.api.ContainerCreateRequest
+import de.gesellix.docker.remote.api.ContainerCreateResponse
+import de.gesellix.docker.remote.api.ContainerInspectResponse
+import de.gesellix.docker.remote.api.ContainerPruneResponse
+import de.gesellix.docker.remote.api.ContainerTopResponse
+import de.gesellix.docker.remote.api.ContainerUpdateRequest
+import de.gesellix.docker.remote.api.ContainerUpdateResponse
+import de.gesellix.docker.remote.api.ContainerWaitResponse
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.ExecConfig
+import de.gesellix.docker.remote.api.ExecInspectResponse
+import de.gesellix.docker.remote.api.ExecStartConfig
+import de.gesellix.docker.remote.api.HealthConfig
+import de.gesellix.docker.remote.api.IdResponse
+import de.gesellix.docker.remote.api.ProcessConfig
+import de.gesellix.docker.remote.api.client.ContainerApi
+import de.gesellix.docker.remote.api.client.ExecApi
+import de.gesellix.docker.remote.api.client.ImageApi
+import de.gesellix.docker.remote.api.core.StreamCallback
+import io.github.joke.spockmockable.Mockable
 import spock.lang.Ignore
 import spock.lang.Specification
 
-import static ch.qos.logback.classic.Level.ERROR
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 
+@Mockable([
+    ContainerApi, ContainerCreateRequest, ContainerCreateResponse, ContainerInspectResponse, ContainerConfig, ContainerWaitResponse, ContainerTopResponse, ContainerPruneResponse, ContainerUpdateRequest, ContainerUpdateResponse,
+    ExecApi, ExecConfig, IdResponse, ExecInspectResponse, ProcessConfig])
 class ManageContainerClientTest extends Specification {
 
   ManageContainerClient service
+  EngineApiClient client = Mock(EngineApiClient)
   EngineClient httpClient = Mock(EngineClient)
   DockerResponseHandler responseHandler = Mock(DockerResponseHandler)
 
   def setup() {
     service = Spy(ManageContainerClient, constructorArgs: [
+        client,
         httpClient,
-        responseHandler,
-        Mock(ManageImage)])
+        responseHandler])
   }
 
   def "export container"() {
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+    def exportedFile = Mock(InputStream)
+
     when:
     def response = service.export("container-id")
 
     then:
-    1 * httpClient.get([path: "/containers/container-id/export"]) >> [content: [status: "image-id"]]
+    1 * containerApi.containerExport("container-id") >> exportedFile
     and:
-    responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-      assert arguments[1]?.message == "docker export failed"
-    }
-    and:
-    response
+    response.content == exportedFile
   }
 
   def "restart container"() {
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+
     when:
     service.restart("a-container")
 
     then:
-    1 * httpClient.post([path : "/containers/a-container/restart",
-                         query: [t: 5]])
+    1 * containerApi.containerRestart("a-container", 5)
   }
 
   def "stop container"() {
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+
     when:
     service.stop("a-container")
 
     then:
-    1 * httpClient.post([path : "/containers/a-container/stop",
-                         query: [t: 10]])
+    1 * containerApi.containerStop("a-container", 10)
   }
 
   def "kill container"() {
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+
     when:
     service.kill("a-container")
 
     then:
-    1 * httpClient.post([path: "/containers/a-container/kill"])
+    1 * containerApi.containerKill("a-container", null)
   }
 
   def "wait container"() {
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+    def response = Mock(ContainerWaitResponse)
+
     when:
-    service.wait("a-container")
+    def result = service.wait("a-container")
 
     then:
-    1 * httpClient.post([path: "/containers/a-container/wait"])
+    1 * containerApi.containerWait("a-container", "not-running") >> response
+    result.content == response
   }
 
   def "pause container"() {
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+
     when:
     service.pause("a-container")
 
     then:
-    1 * httpClient.post([path: "/containers/a-container/pause"])
+    1 * containerApi.containerPause("a-container")
   }
 
   def "unpause container"() {
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+
     when:
     service.unpause("a-container")
 
     then:
-    1 * httpClient.post([path: "/containers/a-container/unpause"])
+    1 * containerApi.containerUnpause("a-container")
   }
 
   def "rm container"() {
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+
     when:
     service.rm("a-container")
 
     then:
-    1 * httpClient.delete([path : "/containers/a-container",
-                           query: [:]])
+    1 * containerApi.containerDelete("a-container", null, null, null)
   }
 
   def "rm container with query"() {
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+
     when:
-    service.rm("a-container", ["v": 0])
+    service.rm("a-container", [v: false, force: true, link: false])
 
     then:
-    1 * httpClient.delete([path : "/containers/a-container",
-                           query: ["v": 0]])
+    1 * containerApi.containerDelete("a-container", false, true, false)
   }
 
   def "ps containers"() {
-    when:
-    service.ps()
-
-    then:
-    1 * httpClient.get([path : "/containers/json",
-                        query: [all : true,
-                                size: false]]) >> [status: [success: true]]
-  }
-
-  def "ps containers with query"() {
     given:
-    def filters = [status: ["exited"]]
-    def expectedFilterValue = new JsonBuilder(filters).toString()
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+    String filters = '{"status":["exited"]}'
+    def containers = Mock(List)
 
     when:
-    service.ps([filters: filters])
+    def responseContent = service.ps(null, null, null, filters)
 
     then:
-    1 * httpClient.get([path : "/containers/json",
-                        query: [all    : true,
-                                size   : false,
-                                filters: expectedFilterValue]]) >> [status: [success: true]]
+    1 * containerApi.containerList(true, null, false, filters) >> containers
+    responseContent.content == containers
   }
 
   def "inspect container"() {
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.getContainerApi() >> containerApi
+    def inspect = Mock(ContainerInspectResponse)
+
     when:
-    service.inspectContainer("a-container")
+    def inspectContainer = service.inspectContainer("a-container")
 
     then:
-    1 * httpClient.get([path: "/containers/a-container/json"]) >> [status : [success: true],
-                                                                   content: [:]]
+    1 * containerApi.containerInspect("a-container", null) >> inspect
+    inspectContainer.content == inspect
   }
 
   def "diff"() {
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+    def changes = Mock(List)
+
     when:
-    service.diff("a-container")
+    def diff = service.diff("a-container")
 
     then:
-    1 * httpClient.get([path: "/containers/a-container/changes"])
+    1 * containerApi.containerChanges("a-container") >> changes
+    diff.content == changes
   }
 
   def "create exec"() {
-    def execCreateConfig = [:]
-
-    when:
-    service.createExec("a-container", execCreateConfig)
-
-    then:
-    1 * httpClient.post([path              : "/containers/a-container/exec",
-                         body              : execCreateConfig,
-                         requestContentType: "application/json"]) >> [status: [:]]
-    and:
-    responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-      assert arguments[1]?.message == "docker exec create failed"
-    }
-  }
-
-  def "create exec with missing container"() {
-    def execCreateConfig = [:]
     given:
-    httpClient.post([path              : "/containers/a-missing-container/exec",
-                     body              : execCreateConfig,
-                     requestContentType: "application/json"]) >> [status: [code: 404]]
-    MemoryAppender.clearLoggedEvents()
+    def execApi = Mock(ExecApi)
+    client.execApi >> execApi
+    def execConfig = Mock(ExecConfig)
+    def idResponse = Mock(IdResponse)
 
     when:
-    service.createExec("a-missing-container", execCreateConfig)
+    def exec = service.createExec("a-container", execConfig)
 
     then:
-    MemoryAppender.findLoggedEvent(new LoggingEvent(
-        level: ERROR,
-        message: "no such container 'a-missing-container'"))
-    and:
-    1 * responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-      assert arguments[1]?.message == "docker exec create failed"
-    }
-
-    cleanup:
-    MemoryAppender.clearLoggedEvents()
+    1 * execApi.containerExec("a-container", execConfig) >> idResponse
+    exec.content == idResponse
   }
 
   def "start exec"() {
-    def execStartConfig = [:]
-
-    when:
-    service.startExec("an-exec", execStartConfig)
-
-    then:
-    1 * httpClient.get([path: "/exec/an-exec/json"]) >> new EngineResponse(
-        status: [success: true],
-        content: [ProcessConfig: [tty: true]])
-    and:
-    1 * responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-      assert arguments[1]?.message == "docker inspect exec failed"
-    }
-
-    then:
-    1 * httpClient.post([path              : "/exec/an-exec/start",
-                         body              : execStartConfig,
-                         requestContentType: "application/json",
-                         attach            : null,
-                         multiplexStreams  : false]) >> new EngineResponse(
-        status: [:],
-        stream: new RawInputStream())
-    and:
-    1 * responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-      assert arguments[1]?.message == "docker exec start failed"
-    }
-  }
-
-  def "start exec with missing exec"() {
-    def execStartConfig = [:]
     given:
-    service.inspectExec('a-missing-exec') >> {
-      throw new DockerClientException(new IllegalStateException("docker inspect exec failed"))
-    }
-    MemoryAppender.clearLoggedEvents()
+    def execApi = Mock(ExecApi)
+    client.execApi >> execApi
+    def execStartConfig = new ExecStartConfig(true, false)
+    def callback = Mock(StreamCallback)
 
     when:
-    service.startExec("a-missing-exec", execStartConfig)
+    service.startExec("an-exec", execStartConfig, callback, Duration.of(5, ChronoUnit.SECONDS))
 
     then:
-    thrown(DockerClientException)
-
-    cleanup:
-    MemoryAppender.clearLoggedEvents()
+    1 * execApi.execStart("an-exec", execStartConfig, callback, 5000)
   }
 
   def "inspect exec"() {
-    when:
-    service.inspectExec("an-exec")
-
-    then:
-    1 * httpClient.get([path: "/exec/an-exec/json"]) >> [status: [:]]
-    and:
-    responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-      assert arguments[1]?.message == "docker inspect exec failed"
-    }
-  }
-
-  def "inspect exec with missing exec"() {
     given:
-    MemoryAppender.clearLoggedEvents()
+    def execApi = Mock(ExecApi)
+    client.execApi >> execApi
+    def inspectResponse = Mock(ExecInspectResponse)
 
     when:
-    service.inspectExec("a-missing-exec")
+    def inspectExec = service.inspectExec("an-exec")
 
     then:
-    1 * httpClient.get([path: "/exec/a-missing-exec/json"]) >> new EngineResponse(status: [code: 404])
-    and:
-    MemoryAppender.findLoggedEvent(new LoggingEvent(
-        level: ERROR,
-        message: "no such exec 'a-missing-exec'"))
-    and:
-    responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-      assert arguments[1]?.message == "docker inspect exec failed"
-    }
-
-    cleanup:
-    MemoryAppender.clearLoggedEvents()
+    1 * execApi.execInspect("an-exec") >> inspectResponse
+    inspectExec.content == inspectResponse
   }
 
   def "exec"() {
-    def execConfig = [:]
+    given:
+    def execApi = Mock(ExecApi)
+    client.execApi >> execApi
+    def idResponse = Mock(IdResponse)
+    idResponse.id >> "exec-id"
+    def callback = Mock(StreamCallback)
 
     when:
-    service.exec("container-id", ["command", "line"], execConfig)
+    def exec = service.exec("container-id", ["command", "line"], callback, Duration.of(1, ChronoUnit.SECONDS), [:])
 
     then:
-    1 * service.createExec("container-id", [
-        "AttachStdin" : false,
-        "AttachStdout": true,
-        "AttachStderr": true,
-        "Detach"      : false,
-        "Tty"         : false,
-        "Cmd"         : ["command", "line"]]) >> [status : [:],
-                                                  content: [Id: "exec-id"]]
+    1 * execApi.containerExec("container-id",
+                              new ExecConfig(false, true, true,
+                                             null, false,
+                                             null, ["command", "line"],
+                                             null, null, null)) >> idResponse
     then:
-    1 * service.startExec("exec-id", [
-        "AttachStdin" : false,
-        "AttachStdout": true,
-        "AttachStderr": true,
-        "Detach"      : false,
-        "Tty"         : false,
-        "Cmd"         : ["command", "line"]]) >> [status: [:]]
+    1 * execApi.execStart("exec-id",
+                          new ExecStartConfig(false, false),
+                          callback, 1000)
+    and:
+    exec.content == idResponse
   }
 
   def "create container with defaults"() {
-    def containerConfig = [Cmd: "true"]
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+    def containerConfig = new ContainerCreateRequest().tap { c ->
+      c.cmd = ["true"]
+      c.image = "example"
+    }
+    def createResponse = Mock(ContainerCreateResponse)
 
     when:
-    service.createContainer(containerConfig)
+    def createContainer = service.createContainer(containerConfig)
 
     then:
-    1 * httpClient.post([path              : "/containers/create",
-                         query             : [name: ""],
-                         body              : containerConfig,
-                         requestContentType: "application/json"]) >> [status: [success: true]]
+    1 * containerApi.containerCreate(containerConfig, "") >> createResponse
+    createContainer.content == createResponse
   }
 
-  def "create container with query"() {
-    def containerConfig = [Cmd: "true"]
-    def query = [name: "foo"]
+  def "create container with name"() {
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+    def containerConfig = new ContainerCreateRequest().tap { c ->
+      c.image = "example"
+    }
+    def createResponse = Mock(ContainerCreateResponse)
 
     when:
-    service.createContainer(containerConfig, query)
+    def createContainer = service.createContainer(containerConfig, "foo")
 
     then:
-    1 * httpClient.post([path              : "/containers/create",
-                         query             : query,
-                         body              : containerConfig,
-                         requestContentType: "application/json"]) >> [status: [success: true]]
+    1 * containerApi.containerCreate(containerConfig, "foo") >> createResponse
+    createContainer.content == createResponse
   }
 
   def "start container"() {
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+
     when:
     service.startContainer("a-container")
 
     then:
-    1 * httpClient.post([path              : "/containers/a-container/start",
-                         requestContentType: "application/json"])
+    1 * containerApi.containerStart("a-container", null)
   }
 
   def "update a container's resources"() {
-    def containerConfig = [:]
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+    def updateRequest = Mock(ContainerUpdateRequest)
+    def updateResponse = Mock(ContainerUpdateResponse)
 
     when:
-    service.updateContainer("a-container", containerConfig)
+    def responseContent = service.updateContainer("a-container", updateRequest)
 
     then:
-    1 * httpClient.post([path              : "/containers/a-container/update",
-                         body              : containerConfig,
-                         requestContentType: "application/json"]) >> [status: [:]]
-    and:
-    responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-      assert arguments[1]?.message == "docker update failed"
-    }
-  }
-
-  def "update multiple containers' resources"() {
-    def containerConfig = [:]
-
-    when:
-    service.updateContainers(["container1", "container2"], containerConfig)
-
-    then:
-    1 * httpClient.post([path              : "/containers/container1/update",
-                         body              : containerConfig,
-                         requestContentType: "application/json"]) >> [status: [:]]
-    1 * httpClient.post([path              : "/containers/container2/update",
-                         body              : containerConfig,
-                         requestContentType: "application/json"]) >> [status: [:]]
-    and:
-    responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-      assert arguments[1]?.message == "docker update failed"
-    }
+    1 * containerApi.containerUpdate("a-container", updateRequest) >> updateResponse
+    responseContent.content == updateResponse
   }
 
   def "run container with defaults"() {
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+    def createRequest = Mock(ContainerCreateRequest, { it.image >> "an-image" })
+    def createResponse = Mock(ContainerCreateResponse, { it.id >> "container-id" })
+
     when:
-    service.run("an-image", [:])
+    def responseContent = service.run(createRequest)
 
     then:
-    1 * service.createContainer(["Image": "an-image"], [name: ""], "") >> [content: [Id: "container-id"]]
-
+    1 * containerApi.containerCreate(createRequest, "") >> createResponse
     then:
-    1 * service.startContainer("container-id")
+    1 * containerApi.containerStart("container-id", null)
+    and:
+    responseContent.content == createResponse
   }
 
   def "retrieve file/folder stats"() {
     given:
-    def containerPathStatHeader = 'X-Docker-Container-Path-Stat'.toLowerCase()
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
     def expectedStats = [key: 42]
-    def encodedStats = new JsonBuilder(expectedStats).toString().bytes.encodeBase64()
-    def expectedResponse = [status : [success: true],
-                            headers: [:]]
-    expectedResponse.headers[containerPathStatHeader] = [encodedStats]
 
     when:
     def stats = service.getArchiveStats("a-container", "/path/")
 
     then:
-    1 * httpClient.head([path : "/containers/a-container/archive",
-                         query: [path: "/path/"]]) >> expectedResponse
-    stats == [key: 42]
+    1 * containerApi.containerArchiveInfo("a-container", "/path/") >> expectedStats
+    stats.content == expectedStats
   }
 
   def "download file/folder from container"() {
     given:
-    def tarStream = new ByteArrayInputStream("tar".bytes)
-    def containerPathStatHeader = 'X-Docker-Container-Path-Stat'.toLowerCase()
-    def expectedStats = [key: 42]
-    def encodedStats = new JsonBuilder(expectedStats).toString().bytes.encodeBase64()
-    def expectedResponse = [status : [success: true],
-                            headers: [:],
-                            stream : tarStream]
-    expectedResponse.headers[containerPathStatHeader] = encodedStats
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+    def archive = Mock(InputStream)
 
     when:
     def result = service.getArchive("a-container", "/path/")
 
     then:
-    1 * httpClient.get([path : "/containers/a-container/archive",
-                        query: [path: "/path/"]]) >> expectedResponse
-    result.headers[containerPathStatHeader] == encodedStats
-    result.stream == tarStream
+    1 * containerApi.containerArchive("a-container", "/path/") >> archive
+    result.content == archive
   }
 
   def "upload file/folder to container"() {
     given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
     def tarStream = new ByteArrayInputStream("tar".bytes)
-    def expectedResponse = [status: [success: true]]
 
     when:
     service.putArchive("a-container", "/path/", tarStream)
 
     then:
-    1 * httpClient.put([path              : "/containers/a-container/archive",
-                        query             : [path: "/path/"],
-                        requestContentType: "application/x-tar",
-                        body              : tarStream]) >> expectedResponse
+    1 * containerApi.putContainerArchive("a-container", "/path/", tarStream, null, null)
   }
 
   def "rename container"() {
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+
     when:
     service.rename("an-old-container", "a-new-container-name")
 
     then:
-    1 * httpClient.post([path : "/containers/an-old-container/rename",
-                         query: [name: "a-new-container-name"]]) >> [status: [success: true]]
+    1 * containerApi.containerRename("an-old-container", "a-new-container-name")
   }
 
   def "attach"() {
     given:
-    httpClient.get([path: "/containers/a-container/json"]) >> new EngineResponse(
-        status: [success: true],
-        content: [Config: [Tty: false]])
+    def containerApi = Mock(ContainerApi)
+    client.getContainerApi() >> containerApi
+    def callback = Mock(StreamCallback)
+    def timeout = Duration.of(1, ChronoUnit.SECONDS)
 
     when:
-    service.attach("a-container", [stream: true])
+    service.attach("a-container", null, true, true, false, true, true, callback, timeout)
 
     then:
-    1 * httpClient.post([path            : "/containers/a-container/attach",
-                         query           : [stream: true],
-                         attach          : null,
-                         multiplexStreams: true]) >> new EngineResponse(
-        stream: new RawInputStream())
+    1 * containerApi.containerAttach("a-container", null, true, true, false, true, true, callback, timeout.toMillis())
   }
 
   // TODO
@@ -480,8 +437,13 @@ class ManageContainerClientTest extends Specification {
   }
 
   def "commit container"() {
+    given:
+    def imageApi = Mock(ImageApi)
+    client.imageApi >> imageApi
+    def result = Mock(IdResponse)
+
     when:
-    service.commit("a-container", [
+    def responseContent = service.commit("a-container", [
         repo   : 'a-repo',
         tag    : 'the-tag',
         comment: 'a test',
@@ -489,101 +451,124 @@ class ManageContainerClientTest extends Specification {
     ])
 
     then:
-    1 * httpClient.post([path              : "/commit",
-                         query             : [
-                             container: "a-container",
-                             repo     : 'a-repo',
-                             tag      : 'the-tag',
-                             comment  : 'a test',
-                             author   : 'Andrew Niccol <g@tta.ca>'
-                         ],
-                         requestContentType: "application/json",
-                         body              : [:]]) >> [status: [success: true]]
+    1 * imageApi.imageCommit("a-container",
+                             'a-repo', 'the-tag',
+                             'a test', 'Andrew Niccol <g@tta.ca>',
+                             null, null,
+                             new ContainerConfig(
+                                 null, null, null, null, null, null, null, null,
+                                 null, null, null, null, new HealthConfig(), null, null,
+                                 null, null, null, null, null, null, null, null, null, null
+                             )) >> result
+    responseContent.content == result
   }
 
   def "commit container with changed container config"() {
+    given:
+    def imageApi = Mock(ImageApi)
+    client.imageApi >> imageApi
+    def result = Mock(IdResponse)
+
     when:
-    service.commit("a-container",
-                   [
-                       repo   : 'a-repo',
-                       tag    : 'the-tag',
-                       comment: 'a test',
-                       author : 'Andrew Niccol <g@tta.ca>'
-                   ],
-                   [Cmd: "date"])
+    def responseContent = service.commit("a-container",
+                                         [
+                                             repo   : 'a-repo',
+                                             tag    : 'the-tag',
+                                             comment: 'a test',
+                                             author : 'Andrew Niccol <g@tta.ca>'
+                                         ],
+                                         [Cmd: "date"])
 
     then:
-    1 * httpClient.post([path              : "/commit",
-                         query             : [
-                             container: "a-container",
-                             repo     : 'a-repo',
-                             tag      : 'the-tag',
-                             comment  : 'a test',
-                             author   : 'Andrew Niccol <g@tta.ca>'
-                         ],
-                         requestContentType: "application/json",
-                         body              : [Cmd: "date"]]) >> [status: [success: true]]
+    1 * imageApi.imageCommit("a-container",
+                             'a-repo', 'the-tag',
+                             'a test', 'Andrew Niccol <g@tta.ca>',
+                             null, null,
+                             new ContainerConfig(
+                                 null, null, null, null, null, null, null, null,
+                                 null, null, null, ["date"], new HealthConfig(),
+                                 null, null, null, null, null,
+                                 null, null, null, null, null, null, null
+                             )) >> result
+    responseContent.content == result
   }
 
   def "resize container tty"() {
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+
     when:
     service.resizeTTY("a-container", 42, 31)
 
     then:
-    1 * httpClient.post([path              : "/containers/a-container/resize",
-                         query             : [w: 31, h: 42],
-                         requestContentType: "text/plain"]) >> [status: [success: true]]
+    1 * containerApi.containerResize("a-container", 42, 31)
   }
 
   def "resize exec tty"() {
+    given:
+    def execApi = Mock(ExecApi)
+    client.execApi >> execApi
+
     when:
-    service.resizeExec("an-exec", 42, 31)
+    service.resizeExec("an-exec", 11, 44)
 
     then:
-    1 * httpClient.post([path              : "/exec/an-exec/resize",
-                         query             : [w: 31, h: 42],
-                         requestContentType: "text/plain"]) >> [status: [success: true]]
+    1 * execApi.execResize("an-exec", 11, 44)
   }
 
   def "top"() {
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+    def topResponse = Mock(ContainerTopResponse)
+
     when:
-    service.top("a-container", "aux")
+    def response = service.top("a-container", "aux")
 
     then:
-    1 * httpClient.get([path : "/containers/a-container/top",
-                        query: [ps_args: "aux"]]) >> [status: [success: true]]
+    1 * containerApi.containerTop("a-container", "aux") >> topResponse
+    response.content == topResponse
   }
 
   def "stats"() {
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+    def callback = Mock(StreamCallback)
+    def timeout = Duration.of(1, ChronoUnit.SECONDS)
+
     when:
-    service.stats("a-container")
+    service.stats("a-container", true, callback, timeout)
 
     then:
-    1 * httpClient.get([path : "/containers/a-container/stats",
-                        query: [stream: false],
-                        async: false]) >> [status: [success: true]]
+    1 * containerApi.containerStats("a-container", true, null, callback, timeout.toMillis())
   }
 
   def "logs"() {
     given:
-    httpClient.get([path: "/containers/a-container/json"]) >> [status : [success: true],
-                                                               content: [Config: [Tty: false]]]
+    def containerApi = Mock(ContainerApi)
+    client.getContainerApi() >> containerApi
+    def callback = Mock(StreamCallback)
 
     when:
-    service.logs("a-container")
+    service.logs("a-container", null, callback, Duration.of(1, ChronoUnit.SECONDS))
 
     then:
-    1 * httpClient.get([path : "/containers/a-container/logs",
-                        query: [follow: false, stdout: true, stderr: true, timestamps: false, since: 0, tail: 'all'],
-                        async: false]) >> [status: [success: true]]
+    1 * containerApi.containerLogs("a-container", true, true, true, 0, null, false, 'all', callback, 1000)
   }
 
-  def "pruneContainers removes stopped containers"() {
+  def "pruneContainers removes containers"() {
+    given:
+    def containerApi = Mock(ContainerApi)
+    client.containerApi >> containerApi
+    def prunedContainers = Mock(ContainerPruneResponse)
+
     when:
-    service.pruneContainers()
+    def responseContent = service.pruneContainers('a-filter')
 
     then:
-    1 * httpClient.post([path : "/containers/prune",
-                         query: [:]]) >> [status: [success: true]]
+    1 * containerApi.containerPrune('a-filter') >> prunedContainers
+    responseContent.content == prunedContainers
   }
 }

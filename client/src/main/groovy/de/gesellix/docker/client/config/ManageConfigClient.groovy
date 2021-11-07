@@ -1,73 +1,61 @@
 package de.gesellix.docker.client.config
 
-import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.engine.EngineClient
-import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.docker.client.EngineResponseContent
+import de.gesellix.docker.remote.api.Config
+import de.gesellix.docker.remote.api.ConfigSpec
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.IdResponse
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 
 @Slf4j
 class ManageConfigClient implements ManageConfig {
 
-  private EngineClient client
-  private DockerResponseHandler responseHandler
-  private QueryUtil queryUtil
+  private EngineApiClient client
 
-  ManageConfigClient(EngineClient client, DockerResponseHandler responseHandler) {
+  ManageConfigClient(EngineApiClient client) {
     this.client = client
-    this.responseHandler = responseHandler
-    this.queryUtil = new QueryUtil()
   }
 
   @Override
-  EngineResponse createConfig(String name, byte[] configData, Map<String, String> labels = [:]) {
+  EngineResponseContent<IdResponse> createConfig(String name, byte[] configData, Map<String, String> labels = [:]) {
     log.info("docker config create")
-    // TODO do we need to base64 encode the config data?
-    def configConfig = [Name  : name,
-                        Data  : configData,
-                        Labels: labels]
-    def response = client.post([path              : "/configs/create",
-                                body              : configConfig,
-                                requestContentType: "application/json"])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker config create failed"))
-    return response
+    def configDataBase64 = Base64.encoder.encodeToString(configData)
+    def configConfig = new ConfigSpec(name, labels, configDataBase64, null)
+    def response = client.configApi.configCreate(configConfig)
+    return new EngineResponseContent<IdResponse>(response)
   }
 
   @Override
-  EngineResponse inspectConfig(String configId) {
+  EngineResponseContent<Config> inspectConfig(String configId) {
     log.info("docker config inspect")
-    def response = client.get([path: "/configs/${configId}".toString()])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker config inspect failed"))
-    return response
+    def configInspect = client.configApi.configInspect(configId)
+    return new EngineResponseContent(configInspect)
   }
 
   @Override
-  EngineResponse configs(Map query = [:]) {
-    log.info("docker config ls")
+  EngineResponseContent<List<Config>> configs(Map query) {
     def actualQuery = query ?: [:]
-    queryUtil.jsonEncodeFilters(actualQuery)
-    def response = client.get([path : "/configs",
-                               query: actualQuery])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker config ls failed"))
-    return response
+    new QueryUtil().jsonEncodeFilters(actualQuery)
+    return configs(actualQuery.filters as String)
   }
 
   @Override
-  EngineResponse rmConfig(String configId) {
+  EngineResponseContent<List<Config>> configs(String filters = null) {
+    log.info("docker config ls")
+    def configs = client.configApi.configList(filters)
+    return new EngineResponseContent<List<Config>>(configs)
+  }
+
+  @Override
+  void rmConfig(String configId) {
     log.info("docker config rm")
-    def response = client.delete([path: "/configs/${configId}".toString()])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker config rm failed"))
-    return response
+    client.configApi.configDelete(configId)
   }
 
   @Override
-  EngineResponse updateConfig(String configId, int version, Map<String, ?> configSpec) {
+  void updateConfig(String configId, long version, ConfigSpec configSpec) {
     log.info("docker config update")
-    def response = client.post([path              : "/configs/${configId}/update".toString(),
-                                query             : [version: version],
-                                body              : configSpec,
-                                requestContentType: "application/json"])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker config update failed"))
-    return response
+    client.configApi.configUpdate(configId, version, configSpec)
   }
 }

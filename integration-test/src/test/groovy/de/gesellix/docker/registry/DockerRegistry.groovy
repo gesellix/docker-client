@@ -2,6 +2,8 @@ package de.gesellix.docker.registry
 
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.LocalDocker
+import de.gesellix.docker.remote.api.ContainerCreateRequest
+import de.gesellix.docker.remote.api.HostConfig
 
 class DockerRegistry {
 
@@ -21,13 +23,14 @@ class DockerRegistry {
   }
 
   void run() {
-    def registryStatus = dockerClient.run(
-        getImageName(),
-        ["Env"         : ["REGISTRY_VALIDATION_DISABLED=true"],
-         "ExposedPorts": ["5000/tcp": [:]],
-         "HostConfig"  : ["PublishAllPorts": true]],
-        getImageTag())
-    registryId = registryStatus.container.content.Id
+    def containerConfig = new ContainerCreateRequest().tap { c ->
+      c.image = "${getImageName()}:${getImageTag()}"
+      c.env = ["REGISTRY_VALIDATION_DISABLED=true"]
+      c.exposedPorts = ["5000/tcp": [:]]
+      c.hostConfig = new HostConfig().tap { h -> h.publishAllPorts = true }
+    }
+    def registryStatus = dockerClient.run(containerConfig)
+    registryId = registryStatus.content.id
   }
 
   String address() {
@@ -44,8 +47,8 @@ class DockerRegistry {
 
   int port() {
     def registryContainer = dockerClient.inspectContainer(registryId).content
-    def portBinding = registryContainer.NetworkSettings.Ports["5000/tcp"]
-    return portBinding[0].HostPort as Integer
+    def portBinding = registryContainer.networkSettings.ports["5000/tcp"]
+    return portBinding.first().hostPort as Integer
   }
 
   String url() {

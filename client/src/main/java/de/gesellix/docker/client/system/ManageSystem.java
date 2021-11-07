@@ -1,21 +1,23 @@
 package de.gesellix.docker.client.system;
 
-import de.gesellix.docker.client.DockerAsyncCallback;
 import de.gesellix.docker.engine.EngineResponse;
+import de.gesellix.docker.remote.api.EventMessage;
+import de.gesellix.docker.remote.api.SystemDataUsageResponse;
+import de.gesellix.docker.remote.api.SystemInfo;
+import de.gesellix.docker.remote.api.SystemVersion;
+import de.gesellix.docker.remote.api.core.StreamCallback;
 
-import java.util.Map;
+import java.time.Duration;
 
 public interface ManageSystem {
 
-  EngineResponse systemDf();
+  EngineResponse<SystemDataUsageResponse> systemDf();
 
-  EngineResponse events(DockerAsyncCallback callback);
+  void events(SystemEventsRequest request, StreamCallback<EventMessage> callback, Duration timeout);
 
-  EngineResponse events(DockerAsyncCallback callback, Map query);
+  EngineResponse<String> ping();
 
-  EngineResponse ping();
+  EngineResponse<SystemVersion> version();
 
-  EngineResponse version();
-
-  EngineResponse info();
+  EngineResponse<SystemInfo> info();
 }

@@ -1,36 +1,52 @@
 package de.gesellix.docker.client.container
 
-import de.gesellix.docker.client.DockerAsyncCallback
-import de.gesellix.docker.client.DockerAsyncConsumer
 import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.image.ManageImage
+import de.gesellix.docker.client.EngineResponseContent
 import de.gesellix.docker.client.repository.RepositoryTagParser
 import de.gesellix.docker.engine.AttachConfig
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
-import de.gesellix.docker.rawstream.RawInputStream
+import de.gesellix.docker.remote.api.ContainerChangeResponseItem
+import de.gesellix.docker.remote.api.ContainerConfig
+import de.gesellix.docker.remote.api.ContainerCreateRequest
+import de.gesellix.docker.remote.api.ContainerCreateResponse
+import de.gesellix.docker.remote.api.ContainerInspectResponse
+import de.gesellix.docker.remote.api.ContainerPruneResponse
+import de.gesellix.docker.remote.api.ContainerTopResponse
+import de.gesellix.docker.remote.api.ContainerUpdateRequest
+import de.gesellix.docker.remote.api.ContainerUpdateResponse
+import de.gesellix.docker.remote.api.ContainerWaitResponse
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.ExecConfig
+import de.gesellix.docker.remote.api.ExecInspectResponse
+import de.gesellix.docker.remote.api.ExecStartConfig
+import de.gesellix.docker.remote.api.HealthConfig
+import de.gesellix.docker.remote.api.IdResponse
+import de.gesellix.docker.remote.api.core.ClientException
+import de.gesellix.docker.remote.api.core.Frame
+import de.gesellix.docker.remote.api.core.StreamCallback
 import de.gesellix.util.QueryUtil
-import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
-import static java.util.concurrent.Executors.newSingleThreadExecutor
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 
 @Slf4j
 class ManageContainerClient implements ManageContainer {
 
-  private EngineClient client
+  private EngineApiClient client
+  private EngineClient engineClient
   private DockerResponseHandler responseHandler
   private QueryUtil queryUtil
   private ArchiveUtil archiveUtil
   private RepositoryTagParser repositoryTagParser
-  private ManageImage manageImage
 
-  ManageContainerClient(EngineClient client, DockerResponseHandler responseHandler, ManageImage manageImage) {
+  ManageContainerClient(EngineApiClient client, EngineClient engineClient, DockerResponseHandler responseHandler) {
     this.client = client
+    this.engineClient = engineClient
     this.responseHandler = responseHandler
-    this.manageImage = manageImage
     this.repositoryTagParser = new RepositoryTagParser()
     this.queryUtil = new QueryUtil()
     this.archiveUtil = new ArchiveUtil()
@@ -44,12 +60,13 @@ class ManageContainerClient implements ManageContainer {
     // the stream is the raw data from the process PTY and client’s stdin.
     // When the TTY is disabled, then the stream is multiplexed to separate stdout and stderr.
     def container = inspectContainer(containerId)
-    def multiplexStreams = !container.content.Config.Tty
+    def multiplexStreams = !container.content.config.tty
 
-    def response = client.post([path            : "/containers/${containerId}/attach".toString(),
-                                query           : query,
-                                attach          : callback,
-                                multiplexStreams: multiplexStreams])
+    def response = engineClient.post([
+        path            : "/containers/${containerId}/attach".toString(),
+        query           : query,
+        attach          : callback,
+        multiplexStreams: multiplexStreams])
 
     if (!callback) {
       response.stream.multiplexStreams = multiplexStreams
@@ -58,9 +75,17 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
+  void attach(String containerId, String detachKeys, Boolean logs, Boolean stream,
+              Boolean stdin, Boolean stdout, Boolean stderr,
+              StreamCallback<Frame> callback, Duration timeout) {
+    log.info("docker attach")
+    client.containerApi.containerAttach(containerId, detachKeys, logs, stream, stdin, stdout, stderr, callback, timeout.toMillis())
+  }
+
+  @Override
   WebSocket attachWebsocket(String containerId, Map<String, Object> query, WebSocketListener listener) {
     log.info("docker attach via websocket")
-    WebSocket webSocket = client.webSocket(
+    WebSocket webSocket = engineClient.webSocket(
         [path : "/containers/${containerId}/attach/ws".toString(),
          query: query],
         listener
@@ -69,21 +94,16 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponse resizeTTY(String container, Integer height, Integer width) {
+  void resizeTTY(String container, Integer height, Integer width) {
     log.info("docker resize container")
-//        if (!inspectContainer(container).Config.Tty) {
-//            log.warn "container '${container}' hasn't been configured with a TTY!"
-//        }
-    def response = client.post([path              : "/containers/${container}/resize".toString(),
-                                query             : [h: height,
-                                                     w: width],
-                                requestContentType: "text/plain"])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker resize(tty) failed"))
-    return response
+//    if (!inspectContainer(container).content.config.tty) {
+//      log.warn("container '${container}' hasn't been configured with a TTY!")
+//    }
+    client.containerApi.containerResize(container, height, width)
   }
 
   @Override
-  EngineResponse commit(String container, Map query, Map config = [:]) {
+  EngineResponseContent<IdResponse> commit(String container, Map query, Map config = [:]) {
     log.info("docker commit")
 
     def finalQuery = query ?: [:]
@@ -91,36 +111,36 @@ class ManageContainerClient implements ManageContainer {
 
     config = config ?: [:]
 
-    def response = client.post([path              : "/commit",
-                                query             : finalQuery,
-                                requestContentType: "application/json",
-                                body              : config])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker commit failed"))
-    return response
+    def imageCommit = client.imageApi.imageCommit(
+        container,
+        query.repo as String, query.tag as String,
+        query.comment as String, query.author as String,
+        query.pause as Boolean,
+        query.changes as String,
+        new ContainerConfig(
+            config.Hostname as String, config.Domainname as String,
+            config.User as String,
+            config.AttachStdin as Boolean, config.AttachStdout as Boolean, config.AttachStderr as Boolean,
+            config.ExposedPorts as Map, config.Tty as Boolean, config.OpenStdin as Boolean, config.StdinOnce as Boolean,
+            config.Env as List,
+            config.Cmd instanceof String ? [config.Cmd as String] : config.Cmd as List, new HealthConfig(),
+            config.ArgsEscaped as Boolean, config.Image as String, config.Volumes as Map,
+            config.WorkingDir as String,
+            config.Entrypoint instanceof String ? [config.Entrypoint as String] : config.Entrypoint as List,
+            config.NetworkDisabled as Boolean, config.MacAddress as String,
+            config.OnBuild as List, config.Labels as Map,
+            config.StopSignal as String, config.StopTimeout as Integer,
+            config.Shell as List
+        ))
+    return new EngineResponseContent<IdResponse>(imageCommit)
   }
 
   @Override
-  getArchiveStats(String container, String path) {
+  EngineResponseContent<Map<String, Object>> getArchiveStats(String container, String path) {
     log.info("docker archive stats ${container}|${path}")
 
-    def response = client.head([path : "/containers/${container}/archive".toString(),
-                                query: [path: path]])
-
-    if (response.status.code == 404) {
-      log.error("no such container ${container} or path ${path}")
-    }
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker head archive failed"))
-
-    def pathInfo = response.headers['X-Docker-Container-Path-Stat'.toLowerCase()] as List
-    if (!pathInfo) {
-      log.error("didn't find 'X-Docker-Container-Path-Stat' header in response")
-      return response
-    }
-
-    def firstPathInfo = pathInfo.first() as String
-    log.debug firstPathInfo
-    def decodedPathInfo = new JsonSlurper().parseText(new String(firstPathInfo.decodeBase64()))
-    return decodedPathInfo
+    Map<String, Object> archiveInfo = client.containerApi.containerArchiveInfo(container, path)
+    return new EngineResponseContent<Map<String, Object>>(archiveInfo)
   }
 
   @Override
@@ -128,116 +148,74 @@ class ManageContainerClient implements ManageContainer {
     log.info("extract '${filename}' from '${container}'")
 
     def response = getArchive(container, filename)
-    return archiveUtil.extractSingleTarEntry(response.stream as InputStream, filename)
+    return archiveUtil.extractSingleTarEntry(response.content, filename)
   }
 
   @Override
-  EngineResponse getArchive(String container, String path) {
+  EngineResponseContent<InputStream> getArchive(String container, String path) {
     log.info("docker download from ${container}|${path}")
 
-    def response = client.get([path : "/containers/${container}/archive".toString(),
-                               query: [path: path]])
-
-    if (response.status.code == 404) {
-      log.error("no such container ${container} or path ${path}")
-    }
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker get archive failed"))
-
-    String pathInfo = response.headers['X-Docker-Container-Path-Stat'.toLowerCase()]
-    if (pathInfo) {
-      log.debug("archiveStats: ${new JsonSlurper().parseText(new String(pathInfo.decodeBase64()))}")
-    }
-    return response
+    def archive = client.containerApi.containerArchive(container, path)
+    return new EngineResponseContent<InputStream>(archive)
   }
 
   @Override
-  EngineResponse putArchive(String container, String path, InputStream archive, Map<String, ?> query = [:]) {
+  void putArchive(String container, String path, InputStream archive) {
     log.info("docker upload to ${container}|${path}")
-
-    def finalQuery = query ?: [:]
-    finalQuery.path = path
-
-    def response = client.put([path              : "/containers/${container}/archive".toString(),
-                               query             : finalQuery,
-                               requestContentType: "application/x-tar",
-                               body              : archive])
-
-    if (response.status.code == 404) {
-      log.error("no such container ${container} or path ${path}")
-    }
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker put archive failed"))
-    return response
+    client.containerApi.putContainerArchive(container, path, archive, null, null)
   }
 
   @Override
-  EngineResponse createContainer(Map<String, Object> containerConfig, Map<String, Object> query = [name: ""], String authBase64Encoded = "") {
+  EngineResponseContent<ContainerCreateResponse> createContainer(ContainerCreateRequest containerCreateRequest, String name = "", String authBase64Encoded = "") {
     log.info("docker create")
-    def actualContainerConfig = [:] + containerConfig
-
-    def response = client.post([path              : "/containers/create".toString(),
-                                query             : query,
-                                body              : actualContainerConfig,
-                                requestContentType: "application/json"])
-
-    if (!response.status.success) {
-      if (response.status?.code == 404) {
-        def repoAndTag = repositoryTagParser.parseRepositoryTag(containerConfig.Image)
-        log.info "'${repoAndTag.repo}:${repoAndTag.tag}' not found."
-        manageImage.create([fromImage: repoAndTag.repo,
-                            tag      : repoAndTag.tag],
-                           [EncodedRegistryAuth: authBase64Encoded ?: ""])
-//                manageImage.pull(repoAndTag.repo, repoAndTag.tag, authBase64Encoded)
-        // retry...
-        response = client.post([path              : "/containers/create".toString(),
-                                query             : query,
-                                body              : actualContainerConfig,
-                                requestContentType: "application/json"])
-        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker create failed after retry"))
-      }
-      else {
-        responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker create failed"))
-      }
+    if (!containerCreateRequest.image) {
+      throw new IllegalArgumentException("'Image' missing in containerCreateRequest")
     }
-    return response
+    try {
+      def containerCreate = client.containerApi.containerCreate(containerCreateRequest, name)
+      return new EngineResponseContent<ContainerCreateResponse>(containerCreate)
+    }
+    catch (ClientException exception) {
+      if (exception.statusCode == 404) {
+        def repoAndTag = repositoryTagParser.parseRepositoryTag(containerCreateRequest.image)
+        log.info("'${repoAndTag.repo}:${repoAndTag.tag}' not found locally.")
+        client.imageApi.imageCreate(repoAndTag.repo, null, null, repoAndTag.tag, null, authBase64Encoded, null, null, null)
+        def containerCreateWithPulledImage = client.containerApi.containerCreate(containerCreateRequest, name)
+        return new EngineResponseContent<ContainerCreateResponse>(containerCreateWithPulledImage)
+      }
+      throw exception
+    }
   }
 
   @Override
-  EngineResponse diff(String containerId) {
+  EngineResponseContent<List<ContainerChangeResponseItem>> diff(String containerId) {
     log.info("docker diff")
-    def response = client.get([path: "/containers/${containerId}/changes".toString()])
-    return response
+    def containerChanges = client.containerApi.containerChanges(containerId)
+    return new EngineResponseContent<List<ContainerChangeResponseItem>>(containerChanges)
   }
 
   @Override
-  EngineResponse createExec(String containerId, Map execConfig) {
+  EngineResponseContent<IdResponse> createExec(String containerId, ExecConfig execConfig) {
     log.info("docker create exec on '${containerId}'")
-
-    def response = client.post([path              : "/containers/${containerId}/exec".toString(),
-                                body              : execConfig,
-                                requestContentType: "application/json"])
-
-    if (response.status?.code == 404) {
-      log.error("no such container '${containerId}'")
-    }
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker exec create failed"))
-    return response
+    def containerExec = client.execApi.containerExec(containerId, execConfig)
+    return new EngineResponseContent<IdResponse>(containerExec)
   }
 
   @Override
-  EngineResponse startExec(String execId, Map execConfig, AttachConfig attachConfig = null) {
+  void startExec(String execId, ExecStartConfig execStartConfig, AttachConfig attachConfig) {
     log.info("docker start exec '${execId}'")
 
     // When using the TTY setting is enabled in POST /containers/create,
     // the stream is the raw data from the process PTY and client’s stdin.
     // When the TTY is disabled, then the stream is multiplexed to separate stdout and stderr.
-    def exec = inspectExec(execId)
-    def multiplexStreams = !exec.content.ProcessConfig.tty
-
-    def response = client.post([path              : "/exec/${execId}/start".toString(),
-                                body              : execConfig,
-                                requestContentType: "application/json",
-                                attach            : attachConfig,
-                                multiplexStreams  : multiplexStreams])
+    def execInspect = client.execApi.execInspect(execId)
+    def multiplexStreams = !execInspect.processConfig.tty
+    def response = engineClient.post([
+        path              : "/exec/${execId}/start".toString(),
+        body              : [Detach: execStartConfig.detach, Tty: execStartConfig.tty],
+        requestContentType: "application/json",
+        attach            : attachConfig,
+        multiplexStreams  : multiplexStreams])
 
     if (!attachConfig) {
       if (response.status?.code == 404) {
@@ -246,182 +224,171 @@ class ManageContainerClient implements ManageContainer {
       responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker exec start failed"))
       response.stream.multiplexStreams = multiplexStreams
     }
-
-    return response
+//    return response
   }
 
   @Override
-  EngineResponse inspectExec(String execId) {
+  void startExec(String execId, ExecStartConfig execStartConfig, StreamCallback<Frame> callback, Duration timeout) {
+    log.info("docker start exec '${execId}'")
+    client.execApi.execStart(execId, execStartConfig, callback, timeout?.toMillis())
+  }
+
+  @Override
+  EngineResponseContent<ExecInspectResponse> inspectExec(String execId) {
     log.info("docker inspect exec '${execId}'")
-
-    def response = client.get([path: "/exec/${execId}/json".toString()])
-
-    if (response.status?.code == 404) {
-      log.error("no such exec '${execId}'")
-    }
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker inspect exec failed"))
-    return response
+    def execInspect = client.execApi.execInspect(execId)
+    return new EngineResponseContent<ExecInspectResponse>(execInspect)
   }
 
   @Override
-  EngineResponse exec(String containerId, List<String> command, Map<String, Object> execConfig = [
-      "Detach"     : false,
-      "AttachStdin": false,
-      "Tty"        : false]) {
+  EngineResponseContent<IdResponse> exec(String containerId, List<String> command,
+                                         StreamCallback<Frame> callback, Duration timeout,
+                                         Map<String, Object> execConfig = [
+                                             "Detach"     : false,
+                                             "AttachStdin": false,
+                                             "Tty"        : false]) {
     log.info("docker exec '${containerId}' '${command}'")
 
-    def actualExecConfig = [
-        "AttachStdin" : execConfig.AttachStdin ?: false,
-        "AttachStdout": true,
-        "AttachStderr": true,
-        "Detach"      : execConfig.Detach ?: false,
-        "Tty"         : execConfig.Tty ?: false,
-        "Cmd"         : command]
+    def actualExecConfig = new ExecConfig(
+        (execConfig.AttachStdin ?: false) as Boolean,
+        true,
+        true,
+        null,
+        (execConfig.Tty ?: false) as Boolean,
+        null,
+        command,
+        null,
+        null,
+        null)
 
     def execCreateResult = createExec(containerId, actualExecConfig)
-    String execId = execCreateResult.content.Id
-    return startExec(execId, actualExecConfig)
+    String execId = execCreateResult.content.id
+    def execStartConfig = new ExecStartConfig(
+        (execConfig.Detach ?: false) as Boolean,
+        actualExecConfig.tty)
+    startExec(execId, execStartConfig, callback, timeout)
+    return execCreateResult
   }
 
   @Override
-  EngineResponse resizeExec(String exec, Integer height, Integer width) {
+  void resizeExec(String exec, Integer height, Integer width) {
     log.info("docker resize exec")
-//        if (!inspectExec(exec).ProcessConfig.tty) {
-//            log.warn "exec '${exec}' hasn't been configured with a TTY!"
-//        }
-    def response = client.post([path              : "/exec/${exec}/resize".toString(),
-                                query             : [h: height,
-                                                     w: width],
-                                requestContentType: "text/plain"])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker resize(exec) failed"))
-    return response
+//    if (!client.execApi.execInspect(exec).processConfig.tty) {
+//      log.warn("exec '${exec}' hasn't been configured with a TTY!")
+//    }
+    client.execApi.execResize(exec, height, width)
   }
 
   @Override
-  EngineResponse export(String container) {
+  EngineResponseContent<InputStream> export(String container) {
     log.info("docker export $container")
-
-    def response = client.get([path: "/containers/$container/export".toString()])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker export failed"))
-
-    return response
+    def containerExport = client.containerApi.containerExport(container)
+    return new EngineResponseContent<InputStream>(containerExport)
   }
 
   @Override
-  EngineResponse inspectContainer(String containerId) {
+  EngineResponse<ContainerInspectResponse> inspectContainer(String containerId) {
     log.info("docker inspect container")
-    def response = client.get([path: "/containers/${containerId}/json".toString()])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker inspect failed"))
-    return response
+    def containerInspect = client.containerApi.containerInspect(containerId, null)
+    return new EngineResponseContent(containerInspect)
   }
 
   @Override
-  EngineResponse kill(String containerId) {
+  void kill(String containerId) {
     log.info("docker kill")
-    def response = client.post([path: "/containers/${containerId}/kill".toString()])
-    return response
+    client.containerApi.containerKill(containerId, null)
   }
 
   @Override
-  EngineResponse logs(String container, DockerAsyncCallback callback = null) {
-    return logs(container, [:], callback)
-  }
-
-  @Override
-  EngineResponse logs(String container, Map<String, Object> query, DockerAsyncCallback callback = null) {
+  void logs(String container, Map<String, Object> query, StreamCallback<Frame> callback, Duration timeout) {
     log.info("docker logs")
 
-    def async = callback ? true : false
     def actualQuery = query ?: [:]
-    def defaults = [follow    : async,
-                    stdout    : true,
-                    stderr    : true,
-                    timestamps: false,
-                    since     : 0,
-                    tail      : "all"]
+    def defaults = [
+        follow    : true,
+        stdout    : true,
+        stderr    : true,
+        timestamps: false,
+        since     : 0,
+        tail      : "all"]
     queryUtil.applyDefaults(actualQuery, defaults)
 
     // When using the TTY setting is enabled in POST /containers/create,
     // the stream is the raw data from the process PTY and client’s stdin.
     // When the TTY is disabled, then the stream is multiplexed to separate stdout and stderr.
-    def multiplexStreams = !inspectContainer(container).content.Config.Tty
-    def response = client.get([path : "/containers/${container}/logs".toString(),
-                               query: actualQuery,
-                               async: async])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker logs failed"))
-    if (async) {
-      // TODO this one would work automatically, when the response content-type would be set correctly :-/
-      // see https://github.com/gesellix/docker-client/issues/21
-      if (multiplexStreams) {
-        response.stream = new RawInputStream(response.stream as InputStream)
-      }
-      def executor = newSingleThreadExecutor()
-      def future = executor.submit(new DockerAsyncConsumer(response as EngineResponse, callback))
-      response.taskFuture = future
-    }
-    return response
+//    def multiplexStreams = !inspectContainer(container).content.config.tty
+
+    client.containerApi.containerLogs(container,
+                                      actualQuery.follow as Boolean,
+                                      actualQuery.stdout as Boolean,
+                                      actualQuery.stderr as Boolean,
+                                      actualQuery.since as Integer,
+                                      actualQuery.until as Integer,
+                                      actualQuery.timestamps as Boolean,
+                                      actualQuery.tail as String,
+                                      callback, timeout.toMillis())
   }
 
   @Override
-  EngineResponse ps(Map<String, Object> query = [:]) {
+  EngineResponseContent<List<Map<String, Object>>> ps(Map<String, Object> query) {
     log.info("docker ps")
     Map actualQuery = query ?: [:]
     Map defaults = [all: true, size: false]
     queryUtil.applyDefaults(actualQuery, defaults)
     queryUtil.jsonEncodeFilters(actualQuery)
-    def response = client.get([path : "/containers/json",
-                               query: actualQuery])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker ps failed"))
-    return response
+    def containerList = client.containerApi.containerList(
+        actualQuery.all as Boolean,
+        actualQuery.limit as Integer,
+        actualQuery.size as Boolean,
+        actualQuery.filters as String)
+    return new EngineResponseContent<List<Map<String, Object>>>(containerList)
   }
 
   @Override
-  EngineResponse pause(String containerId) {
+  EngineResponseContent<List<Map<String, Object>>> ps(Boolean all = true, Integer limit = null, Boolean size = false, String filters = null) {
+    log.info("docker ps")
+    def containerList = client.containerApi.containerList(
+        all == null ? true : all,
+        limit,
+        size ?: false,
+        filters)
+    return new EngineResponseContent<List<Map<String, Object>>>(containerList)
+  }
+
+  @Override
+  void pause(String containerId) {
     log.info("docker pause")
-    def response = client.post([path: "/containers/${containerId}/pause".toString()])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker pause failed"))
-    return response
+    client.containerApi.containerPause(containerId)
   }
 
   @Override
-  EngineResponse pruneContainers(query = [:]) {
+  EngineResponseContent<ContainerPruneResponse> pruneContainers(String filters = null) {
     log.info("docker container prune")
-    def actualQuery = query ?: [:]
-    queryUtil.jsonEncodeFilters(actualQuery)
-    def response = client.post([path : "/containers/prune",
-                                query: actualQuery])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker container prune failed"))
-    return response
+    def containerPrune = client.containerApi.containerPrune(filters)
+    return new EngineResponseContent<ContainerPruneResponse>(containerPrune)
   }
 
   @Override
-  EngineResponse rename(String container, String newName) {
+  void rename(String container, String newName) {
     log.info("docker rename")
-    def response = client.post([path : "/containers/${container}/rename".toString(),
-                                query: [name: newName]])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker rename failed"))
-    return response
+    client.containerApi.containerRename(container, newName)
   }
 
   @Override
-  EngineResponse restart(String containerIdOrName) {
+  void restart(String containerIdOrName) {
     log.info("docker restart")
-    def response = client.post([path : "/containers/${containerIdOrName}/restart".toString(),
-                                query: [t: 5]])
-    return response
+    client.containerApi.containerRestart(containerIdOrName, 5)
   }
 
   @Override
-  EngineResponse rm(String containerIdOrName, Map<String, Object> query = [:]) {
+  void rm(String containerIdOrName, Map<String, Object> query = [:]) {
     log.info("docker rm")
-    def response = client.delete([path : "/containers/${containerIdOrName}".toString(),
-                                  query: query])
-    return response
+    client.containerApi.containerDelete(containerIdOrName, query.v as Boolean, query.force as Boolean, query.link as Boolean)
   }
 
   @Override
-  run(String fromImage, Map<String, Object> containerConfig, String tag = "", String name = "", String authBase64Encoded = "") {
-    log.info("docker run ${fromImage}${tag ? ':' : ''}${tag}")
+  EngineResponseContent<ContainerCreateResponse> run(ContainerCreateRequest containerCreateRequest, String name = "", String authBase64Encoded = "") {
+    log.info("docker run ${containerCreateRequest.image}")
 /*
     http://docs.docker.com/reference/api/docker_remote_api_v1.13/#31-inside-docker-run
 
@@ -436,117 +403,79 @@ class ManageContainerClient implements ManageContainer {
       If in detached mode or only stdin is attached:
         - Display the container’s id
 */
-    Map<String, ?> containerConfigWithImageName = [:] + containerConfig
-    containerConfigWithImageName.Image = fromImage + (tag ? ":$tag" : "")
-
-    def createContainerResponse = createContainer(containerConfigWithImageName, [name: name ?: ""], authBase64Encoded)
+    def createContainerResponse = createContainer(containerCreateRequest, name, authBase64Encoded)
     log.debug("create container result: ${createContainerResponse}")
-    String containerId = createContainerResponse.content.Id
-    def startContainerResponse = startContainer(containerId)
-    return [
-        container: createContainerResponse,
-        status   : startContainerResponse
-    ]
+    String containerId = createContainerResponse.content.id
+    startContainer(containerId)
+    return createContainerResponse
   }
 
   @Override
-  EngineResponse startContainer(String containerId) {
+  void startContainer(String containerId) {
     log.info("docker start")
-    def response = client.post([path              : "/containers/${containerId}/start".toString(),
-                                requestContentType: "application/json"])
-    return response
+    client.containerApi.containerStart(containerId, null)
   }
 
   @Override
-  EngineResponse stats(String container, DockerAsyncCallback callback = null) {
+  void stats(String container, Boolean stream, StreamCallback<Object> callback, Duration timeout) {
     log.info("docker stats")
-
-    def async = callback ? true : false
-    def response = client.get([path : "/containers/${container}/stats".toString(),
-                               query: [stream: async],
-                               async: async])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker stats failed"))
-    if (async) {
-      def executor = newSingleThreadExecutor()
-      def future = executor.submit(new DockerAsyncConsumer(response as EngineResponse, callback))
-      response.taskFuture = future
-    }
-    return response
+    client.containerApi.containerStats(container, stream, null, callback, timeout.toMillis())
   }
 
   @Override
-  EngineResponse stop(String containerIdOrName, Integer timeoutSeconds = 10) {
+  void stop(String containerIdOrName, Integer timeoutSeconds) {
+    stop(containerIdOrName, timeoutSeconds != null ? Duration.of(timeoutSeconds, ChronoUnit.SECONDS) : null)
+  }
+
+  @Override
+  void stop(String containerIdOrName, Duration timeout = Duration.of(10, ChronoUnit.SECONDS)) {
     log.info("docker stop")
-    def query = [t: timeoutSeconds ?: 10]
-    def response = client.post([path : "/containers/${containerIdOrName}/stop".toString(),
-                                query: query])
-    return response
+    def timeoutInSeconds = (timeout ?: Duration.of(10, ChronoUnit.SECONDS)).seconds
+    client.containerApi.containerStop(containerIdOrName, timeoutInSeconds as int)
   }
 
   @Override
-  EngineResponse top(String containerIdOrName, String ps_args = null) {
+  EngineResponseContent<ContainerTopResponse> top(String containerIdOrName, String psArgs = null) {
     log.info("docker top")
-
-    def query = ps_args ? [ps_args: ps_args] : [:]
-    def response = client.get([path : "/containers/${containerIdOrName}/top".toString(),
-                               query: query])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker top failed"))
-    return response
+    def containerTop = client.containerApi.containerTop(containerIdOrName, psArgs ?: null)
+    return new EngineResponseContent<ContainerTopResponse>(containerTop)
   }
 
   @Override
-  EngineResponse unpause(String containerId) {
+  void unpause(String containerId) {
     log.info("docker unpause")
-    def response = client.post([path: "/containers/${containerId}/unpause".toString()])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker unpause failed"))
-    return response
+    client.containerApi.containerUnpause(containerId)
   }
 
   @Override
-  EngineResponse updateContainer(String container, Map<String, Object> updateConfig) {
-    return updateContainers([container], updateConfig)[container]
+  EngineResponseContent<ContainerUpdateResponse> updateContainer(String container, ContainerUpdateRequest containerUpdateRequest) {
+    log.info("docker update '${container}'")
+    def containerUpdate = client.containerApi.containerUpdate(container, containerUpdateRequest)
+    return new EngineResponseContent<ContainerUpdateResponse>(containerUpdate)
   }
 
+  /**
+   ContainerWait waits until the specified container is in a certain state
+   indicated by the given condition, either "not-running" (default),
+   "next-exit", or "removed".
+
+   If this client's API version is before 1.30, condition is ignored and
+   ContainerWait will return immediately with the two channels, as the server
+   will wait as if the condition were "not-running".
+
+   TODO - not yet implemented
+   If this client's API version is at least 1.30, ContainerWait blocks until
+   the request has been acknowledged by the server (with a response header),
+   then returns two channels on which the caller can wait for the exit status
+   of the container or an error if there was a problem either beginning the
+   wait request or in getting the response. This allows the caller to
+   synchronize ContainerWait with other calls, such as specifying a
+   "next-exit" condition before issuing a ContainerStart request.
+   */
   @Override
-  Map<String, EngineResponse> updateContainers(List<String> containers, Map<String, Object> updateConfig) {
-    log.info("docker update '${containers}'")
-
-    EngineClient dockerClient = client
-    Map<String, EngineResponse> responses = containers.collectEntries { String container ->
-      def response = dockerClient.post([path              : "/containers/${container}/update".toString(),
-                                        body              : updateConfig,
-                                        requestContentType: "application/json"])
-      if (response.status?.code != 200) {
-        log.error("error updating container '${container}': {}", response.content)
-      }
-      Map<String, EngineResponse> updateResult = [:]
-      updateResult[container] = response
-      return updateResult
-    }
-    return responses
-  }
-
-// TODO
-// ContainerWait waits until the specified container is in a certain state
-// indicated by the given condition, either "not-running" (default),
-// "next-exit", or "removed".
-//
-// If this client's API version is before 1.30, condition is ignored and
-// ContainerWait will return immediately with the two channels, as the server
-// will wait as if the condition were "not-running".
-//
-// If this client's API version is at least 1.30, ContainerWait blocks until
-// the request has been acknowledged by the server (with a response header),
-// then returns two channels on which the caller can wait for the exit status
-// of the container or an error if there was a problem either beginning the
-// wait request or in getting the response. This allows the caller to
-// synchronize ContainerWait with other calls, such as specifying a
-// "next-exit" condition before issuing a ContainerStart request.
-
-  @Override
-  EngineResponse wait(String containerIdOrName) {
+  EngineResponseContent<ContainerWaitResponse> wait(String containerIdOrName) {
     log.info("docker wait")
-    def response = client.post([path: "/containers/${containerIdOrName}/wait".toString()])
-    return response
+    def containerWait = client.containerApi.containerWait(containerIdOrName, "not-running")
+    return new EngineResponseContent<ContainerWaitResponse>(containerWait)
   }
 }

@@ -1,69 +1,128 @@
 package de.gesellix.docker.client.volume
 
-import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.engine.EngineClient
-import groovy.json.JsonBuilder
+import com.squareup.moshi.Moshi
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.Volume
+import de.gesellix.docker.remote.api.VolumeConfig
+import de.gesellix.docker.remote.api.VolumeListResponse
+import de.gesellix.docker.remote.api.VolumePruneResponse
+import de.gesellix.docker.remote.api.client.VolumeApi
+import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
+@Mockable([VolumeApi, VolumeListResponse, Volume, VolumePruneResponse])
 class ManageVolumeClientTest extends Specification {
 
-  EngineClient httpClient = Mock(EngineClient)
+  EngineApiClient client = Mock(EngineApiClient)
   ManageVolumeClient service
 
+  private Moshi moshi = new Moshi.Builder().build()
+
   def setup() {
-    service = new ManageVolumeClient(httpClient, Mock(DockerResponseHandler))
+    service = new ManageVolumeClient(client)
   }
 
-  def "volumes with query"() {
+  def "volumes with query DEPRECATED"() {
     given:
+    def volumeApi = Mock(VolumeApi)
+    client.volumeApi >> volumeApi
+    def volumesList = Mock(VolumeListResponse)
+
     def filters = [dangling: ["true"]]
-    def expectedFilterValue = new JsonBuilder(filters).toString()
-    def query = [filters: filters]
+    def expectedFilterValue = moshi.adapter(Map).toJson(filters)
 
     when:
-    service.volumes(query)
+    def volumes = service.volumes([filters: filters])
 
     then:
-    1 * httpClient.get([path : "/volumes",
-                        query: [filters: expectedFilterValue]]) >> [status: [success: true]]
+    1 * volumeApi.volumeList(expectedFilterValue) >> volumesList
+    volumes.content == volumesList
+  }
+
+  def "volumes with filters"() {
+    given:
+    def filters = moshi.adapter(Map).toJson([dangling: ["true"]])
+    def volumeApi = Mock(VolumeApi)
+    client.volumeApi >> volumeApi
+    def volumesList = Mock(VolumeListResponse)
+
+    when:
+    def volumes = service.volumes(filters)
+
+    then:
+    1 * volumeApi.volumeList(filters) >> volumesList
+    volumes.content == volumesList
   }
 
   def "inspect volume"() {
+    given:
+    def volumeApi = Mock(VolumeApi)
+    client.volumeApi >> volumeApi
+    def volumeInspect = Mock(Volume)
+
     when:
-    service.inspectVolume("a-volume")
+    def volume = service.inspectVolume("a-volume")
 
     then:
-    1 * httpClient.get([path: "/volumes/a-volume"]) >> [status: [success: true]]
+    1 * volumeApi.volumeInspect("a-volume") >> volumeInspect
+    volume.content == volumeInspect
+  }
+
+  def "create volume with config DEPRECATED"() {
+    given:
+    def volumeApi = Mock(VolumeApi)
+    client.volumeApi >> volumeApi
+    def volumeResponse = Mock(Volume)
+
+    when:
+    def volume = service.createVolume([
+        Name      : "my-fancy-volume",
+        Driver    : "local",
+        DriverOpts: [:]])
+
+    then:
+    1 * volumeApi.volumeCreate(new VolumeConfig("my-fancy-volume", "local", [:], null)) >> volumeResponse
+    volume.content == volumeResponse
   }
 
   def "create volume with config"() {
-    def volumeConfig = [Name      : "my-volume",
-                        Driver    : "local",
-                        DriverOpts: [:]]
+    given:
+    def volumeApi = Mock(VolumeApi)
+    client.volumeApi >> volumeApi
+    def volumeResponse = Mock(Volume)
+    def volumeConfig = new VolumeConfig("my-volume", "local", [:], [:])
 
     when:
-    service.createVolume(volumeConfig)
+    def volume = service.createVolume(volumeConfig)
 
     then:
-    1 * httpClient.post([path              : "/volumes/create",
-                         body              : volumeConfig,
-                         requestContentType: "application/json"]) >> [status: [success: true]]
+    1 * volumeApi.volumeCreate(volumeConfig) >> volumeResponse
+    volume.content == volumeResponse
   }
 
   def "rm volume"() {
+    given:
+    def volumeApi = Mock(VolumeApi)
+    client.volumeApi >> volumeApi
+
     when:
     service.rmVolume("a-volume")
 
     then:
-    1 * httpClient.delete([path: "/volumes/a-volume"]) >> [status: [success: true]]
+    1 * volumeApi.volumeDelete("a-volume", null)
   }
 
   def "pruneVolumes removes unused volumes"() {
+    given:
+    def volumeApi = Mock(VolumeApi)
+    client.volumeApi >> volumeApi
+    def response = Mock(VolumePruneResponse)
+
     when:
-    service.pruneVolumes()
+    def pruneVolumes = service.pruneVolumes("filter")
 
     then:
-    1 * httpClient.post([path : "/volumes/prune",
-                         query: [:]]) >> [status: [success: true]]
+    1 * volumeApi.volumePrune("filter") >> response
+    pruneVolumes.content == response
   }
 }

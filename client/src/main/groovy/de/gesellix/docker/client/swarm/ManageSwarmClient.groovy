@@ -1,53 +1,44 @@
 package de.gesellix.docker.client.swarm
 
-import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.engine.EngineClient
-import de.gesellix.docker.engine.EngineResponse
-import de.gesellix.util.IOUtils
-import de.gesellix.util.QueryUtil
+import de.gesellix.docker.client.EngineResponseContent
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.Swarm
+import de.gesellix.docker.remote.api.SwarmInitRequest
+import de.gesellix.docker.remote.api.SwarmJoinRequest
+import de.gesellix.docker.remote.api.SwarmSpec
+import de.gesellix.docker.remote.api.SwarmUnlockRequest
 import groovy.util.logging.Slf4j
 
 @Slf4j
 class ManageSwarmClient implements ManageSwarm {
 
-  private EngineClient client
-  private DockerResponseHandler responseHandler
-  private QueryUtil queryUtil
+  private EngineApiClient client
 
-  ManageSwarmClient(EngineClient client, DockerResponseHandler responseHandler) {
+  ManageSwarmClient(EngineApiClient client) {
     this.client = client
-    this.responseHandler = responseHandler
-    this.queryUtil = new QueryUtil()
   }
 
   @Override
-  Map newSwarmConfig() {
-    return [
-        "ListenAddr"     : "0.0.0.0:2377",
-        "ForceNewCluster": false
-//                ,"Spec"           : [
-//                        "AcceptancePolicy": [
-//                                "Policies": [
-//                                        ["Role": "MANAGER", "Autoaccept": true],
-//                                        ["Role": "WORKER", "Autoaccept": true]
-//                                ]
-//                        ],
-//                        "Orchestration"   : [:],
-//                        "Raft"            : [:],
-//                        "Dispatcher"      : [:],
-//                        "CAConfig"        : [:]
-//                ]
-    ]
+  SwarmInitRequest newSwarmInitRequest() {
+    return new SwarmInitRequest(
+        "0.0.0.0:2377", null,
+        null, null,
+        null,
+        false,
+        null,
+        null)
   }
 
   @Override
-  EngineResponse initSwarm() {
-    initSwarm(newSwarmConfig())
+  EngineResponseContent<String> initSwarm() {
+    return initSwarm(newSwarmInitRequest())
   }
 
   @Override
-  EngineResponse initSwarm(Map config) {
+  EngineResponseContent<String> initSwarm(SwarmInitRequest swarmInitRequest) {
     log.info("docker swarm init")
+    def nodeId = client.swarmApi.swarmInit(swarmInitRequest)
+    return new EngineResponseContent<String>(nodeId)
 
     /*
 func runInit(dockerCli *client.DockerCli, flags *pflag.FlagSet, opts initOptions) error {
@@ -95,71 +86,38 @@ fmt.Fprintf(dockerCli.Out(), "To add a worker to this swarm, run the following c
 return nil
 }
      */
-
-    config = config ?: [:]
-    def response = client.post([path              : "/swarm/init",
-                                body              : config,
-                                requestContentType: "application/json"])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm init failed"))
-    return response
   }
 
   @Override
-  EngineResponse joinSwarm(Map config) {
+  void joinSwarm(SwarmJoinRequest swarmJoinRequest) {
     log.info("docker swarm join")
-    config = config ?: [:]
-    EngineResponse response = client.post([path              : "/swarm/join",
-                                           body              : config,
-                                           requestContentType: "application/json"])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm join failed"))
-    IOUtils.closeQuietly(response.stream)
-    return response
+    client.swarmApi.swarmJoin(swarmJoinRequest)
   }
 
   @Override
-  EngineResponse leaveSwarm(Map query = [:]) {
+  void leaveSwarm(Boolean force = null) {
     log.info("docker swarm leave")
-    def actualQuery = query ?: [:]
-    EngineResponse response = client.post([path : "/swarm/leave",
-                                           query: actualQuery])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm leave failed"))
-    IOUtils.closeQuietly(response.stream)
-    return response
+    client.swarmApi.swarmLeave(force)
   }
 
   @Override
-  EngineResponse updateSwarm(Map query, Map config) {
+  void updateSwarm(long version, SwarmSpec spec, Boolean rotateWorkerToken = null, Boolean rotateManagerToken = null, Boolean rotateManagerUnlockKey = null) {
     log.info("docker swarm update")
-    def actualQuery = query ?: [:]
-    config = config ?: [:]
-    EngineResponse response = client.post([path              : "/swarm/update",
-                                           query             : actualQuery,
-                                           body              : config,
-                                           requestContentType: "application/json"])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm update failed"))
-    IOUtils.closeQuietly(response.stream)
-    return response
+    client.swarmApi.swarmUpdate(version, spec, rotateWorkerToken, rotateManagerToken, rotateManagerUnlockKey)
   }
 
   @Override
   String getSwarmWorkerToken() {
     log.info("docker swarm join-token worker")
     def swarm = inspectSwarm().content
-    return swarm.JoinTokens.Worker
+    return swarm.joinTokens.worker
   }
 
   @Override
   String rotateSwarmWorkerToken() {
     log.info("docker swarm join-token rotate worker token")
-
     def swarm = inspectSwarm().content
-    def updateResponse = updateSwarm(
-        [
-            "version"          : swarm.Version.Index,
-            "rotateWorkerToken": true
-        ],
-        swarm.Spec)
-    log.info("rotate worker token: ${updateResponse.status}")
+    client.swarmApi.swarmUpdate(swarm.version.index, swarm.spec, true, false, false)
     return getSwarmWorkerToken()
   }
 
@@ -167,65 +125,42 @@ return nil
   String getSwarmManagerToken() {
     log.info("docker swarm join-token manager")
     def swarm = inspectSwarm().content
-    return swarm.JoinTokens.Manager
+    return swarm.joinTokens.manager
   }
 
   @Override
   String rotateSwarmManagerToken() {
     log.info("docker swarm join-token rotate manager token")
-
     def swarm = inspectSwarm().content
-    def updateResponse = updateSwarm(
-        [
-            "version"           : swarm.Version.Index,
-            "rotateManagerToken": true
-        ],
-        swarm.Spec)
-    log.info("rotate manager token: ${updateResponse.status}")
+    client.swarmApi.swarmUpdate(swarm.version.index, swarm.spec, false, true, false)
     return getSwarmManagerToken()
   }
 
   @Override
   String getSwarmManagerUnlockKey() {
     log.info("docker swarm manager unlock key")
-    def response = client.get([path: "/swarm/unlockkey"])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("get swarm manager unlock key failed"))
-    return response.content.UnlockKey
+    def unlockkey = client.swarmApi.swarmUnlockkey()
+    return unlockkey.unlockKey
   }
 
   @Override
   String rotateSwarmManagerUnlockKey() {
     log.info("docker swarm join-token rotate manager unlock key")
-
     def swarm = inspectSwarm().content
-    def updateResponse = updateSwarm(
-        [
-            "version"               : swarm.Version.Index,
-            "rotateManagerUnlockKey": true
-        ],
-        swarm.Spec)
-    log.info("rotate manager unlock key: ${updateResponse.status}")
+    client.swarmApi.swarmUpdate(swarm.version.index, swarm.spec, false, false, true)
     return getSwarmManagerUnlockKey()
   }
 
   @Override
-  EngineResponse unlockSwarm(String unlockKey) {
+  void unlockSwarm(String unlockKey) {
     log.info("docker swarm unlock")
-    EngineResponse response = client.post([path              : "/swarm/unlock",
-                                           body              : [UnlockKey: unlockKey],
-                                           requestContentType: "application/json"])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("unlock swarm failed"))
-    return response
+    client.swarmApi.swarmUnlock(new SwarmUnlockRequest(unlockKey))
   }
 
   @Override
-  EngineResponse inspectSwarm(Map query = [:]) {
+  EngineResponseContent<Swarm> inspectSwarm() {
     log.info("docker swarm inspect")
-    def actualQuery = query ?: [:]
-    queryUtil.jsonEncodeFilters(actualQuery)
-    EngineResponse response = client.get([path : "/swarm",
-                                          query: actualQuery])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker swarm inspect failed"))
-    return response
+    def swarmInspect = client.swarmApi.swarmInspect()
+    return new EngineResponseContent<Swarm>(swarmInspect)
   }
 }

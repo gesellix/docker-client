@@ -2,7 +2,6 @@ package de.gesellix.docker.client.stack
 
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.stack.types.StackConfig
-import de.gesellix.docker.client.stack.types.StackNetwork
 import de.gesellix.docker.client.stack.types.StackSecret
 import de.gesellix.docker.compose.types.Command
 import de.gesellix.docker.compose.types.DriverOpts
@@ -23,16 +22,23 @@ import de.gesellix.docker.compose.types.ServiceSecret
 import de.gesellix.docker.compose.types.ServiceVolume
 import de.gesellix.docker.compose.types.ServiceVolumeBind
 import de.gesellix.docker.compose.types.ServiceVolumeVolume
+import de.gesellix.docker.compose.types.StackNetwork
 import de.gesellix.docker.compose.types.StackVolume
 import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.docker.remote.api.EndpointPortConfig
 import de.gesellix.docker.remote.api.EndpointSpec
 import de.gesellix.docker.remote.api.HealthConfig
+import de.gesellix.docker.remote.api.IPAM
 import de.gesellix.docker.remote.api.Limit
 import de.gesellix.docker.remote.api.Mount
 import de.gesellix.docker.remote.api.MountBindOptions
 import de.gesellix.docker.remote.api.MountVolumeOptions
 import de.gesellix.docker.remote.api.MountVolumeOptionsDriverConfig
+import de.gesellix.docker.remote.api.NetworkAttachmentConfig
+import de.gesellix.docker.remote.api.NetworkCreateRequest
 import de.gesellix.docker.remote.api.ResourceObject
+import de.gesellix.docker.remote.api.ServiceSpecMode
+import de.gesellix.docker.remote.api.ServiceSpecModeReplicated
 import de.gesellix.docker.remote.api.TaskSpecContainerSpecConfigs
 import de.gesellix.docker.remote.api.TaskSpecContainerSpecFile
 import de.gesellix.docker.remote.api.TaskSpecContainerSpecFile1
@@ -41,6 +47,7 @@ import de.gesellix.docker.remote.api.TaskSpecResources
 import de.gesellix.docker.remote.api.TaskSpecRestartPolicy
 import spock.lang.Ignore
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import java.time.Duration
 import java.time.temporal.ChronoUnit
@@ -69,7 +76,7 @@ class DeployConfigReaderTest extends Specification {
     def result = reader.configs(
         "name-space",
         ['config-1'  : config1,
-         'ext-config': new de.gesellix.docker.compose.types.StackConfig(external: new External(external: true))],
+         'ext-config': new de.gesellix.docker.compose.types.StackConfig(null, new External(true, ""), null)],
         config1FileDirectory
     )
 
@@ -118,7 +125,7 @@ class DeployConfigReaderTest extends Specification {
     def result = reader.secrets(
         "name-space",
         ['secret-1'  : secret1,
-         'ext-secret': new de.gesellix.docker.compose.types.StackSecret(external: new External(external: true))],
+         'ext-secret': new de.gesellix.docker.compose.types.StackSecret(null, new External(true, ""), null)],
         secret1FileDirectory
     )
 
@@ -158,7 +165,7 @@ class DeployConfigReaderTest extends Specification {
   def "converts networks"() {
     given:
     reader.dockerClient.version() >> new EngineResponse(content: [:])
-    def normalNet = new de.gesellix.docker.compose.types.StackNetwork(
+    def normalNet = new StackNetwork(
         driver: "overlay",
         driverOpts: new DriverOpts(["opt": "value"]),
         ipam: new Ipam(
@@ -167,16 +174,16 @@ class DeployConfigReaderTest extends Specification {
         ),
         labels: new Labels(["something": "labeled"])
     )
-    def outsideNet = new de.gesellix.docker.compose.types.StackNetwork(
+    def outsideNet = new StackNetwork(
         external: new External(
             external: true,
             name: "special"))
-    def attachableNet = new de.gesellix.docker.compose.types.StackNetwork(
+    def attachableNet = new StackNetwork(
         driver: "overlay",
         attachable: true)
 
     when:
-    Map<String, StackNetwork> networks
+    Map<String, NetworkCreateRequest> networks
     List<String> externals
 
     (networks, externals) = reader.networks(
@@ -195,31 +202,24 @@ class DeployConfigReaderTest extends Specification {
     )
 
     then:
-    1 * reader.dockerClient.inspectNetwork("special") >> [content: [Scope: "swarm"]]
+    1 * reader.dockerClient.inspectNetwork("special") >> [content: [scope: "swarm"]]
 
     externals == ["special"]
     networks.keySet().sort() == ["default", "normal", "attachablenet"].sort()
-    networks["default"] == new StackNetwork(
-        driver: "overlay",
-        labels: [(ManageStackClient.LabelNamespace): "name-space"]
-    )
-    networks["attachablenet"] == new StackNetwork(
-        attachable: true,
-        driver: "overlay",
-        labels: [(ManageStackClient.LabelNamespace): "name-space"]
-    )
-    networks["normal"] == new StackNetwork(
-        driver: "overlay",
-        driverOpts: [
-            opt: "value"
-        ],
-        ipam: [
-            driver: "driver",
-            config: [
-                [subnet: '10.0.0.0']
-            ]
-        ],
-        labels: [
+    networks["default"] == new NetworkCreateRequest(
+        "default", true,
+        "overlay",
+        null, null, null, null, null, null,
+        [(ManageStackClient.LabelNamespace): "name-space"])
+    networks["attachablenet"] == new NetworkCreateRequest(
+        "attachablenet", true, "overlay", false, true,
+        null, null, null, [:], [(ManageStackClient.LabelNamespace): "name-space"])
+    networks["normal"] == new NetworkCreateRequest(
+        "normal", true, "overlay",
+        false, false, null,
+        new IPAM("driver", [[subnet: '10.0.0.0']], null),
+        null, [opt: "value"],
+        [
             (ManageStackClient.LabelNamespace): "name-space",
             something                         : "labeled"
         ]
@@ -244,35 +244,38 @@ class DeployConfigReaderTest extends Specification {
     def endpoints = reader.serviceEndpoints('dnsrr', ports)
 
     then:
-    endpoints == [
-        mode : EndpointSpec.Mode.Dnsrr.value,
-        ports: [
-            [
-                protocol     : "udp",
-                targetPort   : 53,
-                publishedPort: 1053,
-                publishMode  : "host"
-            ],
-            [
-                protocol     : null,
-                targetPort   : 8080,
-                publishedPort: 80,
-                publishMode  : null
-            ]
+    endpoints == new EndpointSpec(
+        EndpointSpec.Mode.Dnsrr,
+        [
+            new EndpointPortConfig(
+                null,
+                EndpointPortConfig.Protocol.Udp,
+                53,
+                1053,
+                EndpointPortConfig.PublishMode.Host
+            ),
+            new EndpointPortConfig(
+                null,
+                null,
+                8080,
+                80,
+                null
+            )
         ]
-    ]
+    )
   }
 
-  def "converts service deploy mode"() {
+  @Unroll
+  def "converts service deploy mode '#mode'"() {
     expect:
     reader.serviceMode(mode, replicas) == serviceMode
     where:
     mode         | replicas || serviceMode
-    "global"     | null     || [global: [:]]
-    null         | null     || [replicated: [replicas: 1]]
-    ""           | null     || [replicated: [replicas: 1]]
-    "replicated" | null     || [replicated: [replicas: 1]]
-    "replicated" | 42       || [replicated: [replicas: 42]]
+    "global"     | null     || new ServiceSpecMode().tap { global = [:] }
+    null         | null     || new ServiceSpecMode().tap { replicated = new ServiceSpecModeReplicated(1) }
+    ""           | null     || new ServiceSpecMode().tap { replicated = new ServiceSpecModeReplicated(1) }
+    "replicated" | null     || new ServiceSpecMode().tap { replicated = new ServiceSpecModeReplicated(1) }
+    "replicated" | 42       || new ServiceSpecMode().tap { replicated = new ServiceSpecModeReplicated(42) }
   }
 
   def "test isReadOnly"() {
@@ -313,7 +316,7 @@ class DeployConfigReaderTest extends Specification {
     when:
     def mounts = reader.volumeToMount(
         "name-space",
-        new ServiceVolume(type: TypeVolume.typeName, target: "/foo/bar"),
+        new ServiceVolume(TypeVolume.typeName, "", "/foo/bar", false, "", null, null),
         [:])
     then:
     mounts == new Mount("/foo/bar", null, Mount.Type.Volume, null, null, null, null, null)
@@ -325,7 +328,7 @@ class DeployConfigReaderTest extends Specification {
     when:
     reader.volumeToMount(
         "name-space",
-        new ServiceVolume(type: TypeVolume.typeName, target: volume),
+        new ServiceVolume(TypeVolume.typeName, null, volume, false, null, null, null),
         [:])
     then:
     def exc = thrown(IllegalArgumentException)
@@ -344,7 +347,7 @@ class DeployConfigReaderTest extends Specification {
     when:
     def mount = reader.volumeToMount(
         "name-space",
-        new ServiceVolume(type: TypeVolume.typeName, source: "normal", target: "/foo", readOnly: true),
+        new ServiceVolume(TypeVolume.typeName, "normal", "/foo", true, "", null, null),
         stackVolumes)
 
     then:
@@ -383,7 +386,7 @@ class DeployConfigReaderTest extends Specification {
     when:
     def mount = reader.volumeToMount(
         "name-space",
-        new ServiceVolume(type: TypeVolume.typeName, source: "outside", target: "/foo"),
+        new ServiceVolume(TypeVolume.typeName, "outside", "/foo", false, "", null, null),
         stackVolumes)
 
     then:
@@ -414,7 +417,7 @@ class DeployConfigReaderTest extends Specification {
     when:
     def mount = reader.volumeToMount(
         "name-space",
-        new ServiceVolume(type: TypeVolume.typeName, source: "outside", target: "/foo", volume: new ServiceVolumeVolume(true)),
+        new ServiceVolume(TypeVolume.typeName, "outside", "/foo", false, "", null, new ServiceVolumeVolume(true)),
         stackVolumes)
 
     then:
@@ -438,7 +441,7 @@ class DeployConfigReaderTest extends Specification {
     when:
     def mount = reader.volumeToMount(
         "name-space",
-        new ServiceVolume(type: TypeBind.typeName, source: "/bar", target: "/foo", readOnly: true, bind: new ServiceVolumeBind(propagation: PropagationShared.propagation)),
+        new ServiceVolume(TypeBind.typeName, "/bar", "/foo", true, "", new ServiceVolumeBind(PropagationShared.propagation), null),
         [:])
 
     then:
@@ -594,10 +597,7 @@ class DeployConfigReaderTest extends Specification {
         "service")
     then:
     result == [
-        [
-            target : "name-space_default",
-            aliases: ["service"]
-        ]
+        new NetworkAttachmentConfig("name-space_default", ["service"], null)
     ]
   }
 
@@ -624,14 +624,8 @@ class DeployConfigReaderTest extends Specification {
         "service")
     then:
     result == [
-        [
-            target : "fronttier",
-            aliases: ["something", "service"],
-        ],
-        [
-            target : "name-space_back",
-            aliases: ["other", "service"],
-        ]
+        new NetworkAttachmentConfig("fronttier", ["something", "service"], null),
+        new NetworkAttachmentConfig("name-space_back", ["other", "service"], null)
     ]
   }
 
@@ -654,10 +648,7 @@ class DeployConfigReaderTest extends Specification {
         "service")
     then:
     result == [
-        [
-            target : "custom",
-            aliases: ["service"],
-        ]
+        new NetworkAttachmentConfig("custom", ["service"], null)
     ]
   }
 

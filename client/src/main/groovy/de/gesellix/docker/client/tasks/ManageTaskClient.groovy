@@ -1,40 +1,38 @@
 package de.gesellix.docker.client.tasks
 
-import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.engine.EngineClient
-import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.docker.client.EngineResponseContent
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.Task
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 
 @Slf4j
 class ManageTaskClient implements ManageTask {
 
-  private EngineClient client
-  private DockerResponseHandler responseHandler
-  private QueryUtil queryUtil
+  private EngineApiClient client
 
-  ManageTaskClient(EngineClient client, DockerResponseHandler responseHandler) {
+  ManageTaskClient(EngineApiClient client) {
     this.client = client
-    this.responseHandler = responseHandler
-    this.queryUtil = new QueryUtil()
   }
 
   @Override
-  EngineResponse tasks(Map<String, Object> query = [:]) {
-    log.info("docker tasks")
+  EngineResponseContent<List<Task>> tasks(Map<String, Object> query) {
     def actualQuery = query ?: [:]
-    queryUtil.jsonEncodeFilters(actualQuery)
-    def response = client.get([path : "/tasks",
-                               query: actualQuery])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker tasks failed"))
-    return response
+    new QueryUtil().jsonEncodeFilters(actualQuery)
+    return tasks(actualQuery.filters as String)
   }
 
   @Override
-  EngineResponse inspectTask(String name) {
+  EngineResponseContent<List<Task>> tasks(String filters = null) {
+    log.info("docker tasks")
+    def tasks = client.taskApi.taskList(filters)
+    return new EngineResponseContent<List<Task>>(tasks)
+  }
+
+  @Override
+  EngineResponseContent<Task> inspectTask(String name) {
     log.info("docker task inspect")
-    EngineResponse response = client.get([path: "/tasks/$name".toString()])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker task inspect failed"))
-    return response
+    def taskInspect = client.taskApi.taskInspect(name)
+    return new EngineResponseContent<Task>(taskInspect)
   }
 }

@@ -1,5 +1,6 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.authentication.AuthConfigReader
 import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.client.authentication.ManageAuthenticationClient
 import de.gesellix.docker.client.config.ManageConfig
@@ -34,6 +35,8 @@ import de.gesellix.docker.engine.DockerClientConfig
 import de.gesellix.docker.engine.DockerEnv
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.OkDockerClient
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.EngineApiClientImpl
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 
@@ -50,6 +53,7 @@ class DockerClientImpl implements DockerClient {
   DockerClientConfig dockerClientConfig
   DockerEnv env
   EngineClient httpClient
+  EngineApiClient engineApiClient
 
   @Delegate
   ManageSystem manageSystem
@@ -101,6 +105,8 @@ class DockerClientImpl implements DockerClient {
     this.env = dockerClientConfig.env
     this.proxy = proxy
 
+    def authConfigReader = new AuthConfigReader(env)
+    this.engineApiClient = new EngineApiClientImpl(dockerClientConfig, proxy)
     this.httpClient = new OkDockerClient(dockerClientConfig, proxy)
     log.info("using docker at '${env.dockerHost}'")
 
@@ -108,23 +114,21 @@ class DockerClientImpl implements DockerClient {
     this.repositoryTagParser = new RepositoryTagParser()
     this.queryUtil = new QueryUtil()
 
-    this.manageSystem = new ManageSystemClient(httpClient, responseHandler)
-    this.manageAuthentication = new ManageAuthenticationClient(env, httpClient, manageSystem)
-    this.manageImage = new ManageImageClient(httpClient, responseHandler, manageAuthentication)
-    this.manageDistribution = new ManageDistributionService(httpClient, responseHandler)
-    this.manageContainer = new ManageContainerClient(httpClient, responseHandler, manageImage)
-    this.manageVolume = new ManageVolumeClient(httpClient, responseHandler)
-    this.manageNetwork = new ManageNetworkClient(httpClient, responseHandler)
-    this.manageSwarm = new ManageSwarmClient(httpClient, responseHandler)
-    this.manageSecret = new ManageSecretClient(httpClient, responseHandler)
-    this.manageConfig = new ManageConfigClient(httpClient, responseHandler)
-    this.manageTask = new ManageTaskClient(httpClient, responseHandler)
+    this.manageSystem = new ManageSystemClient(engineApiClient)
+    this.manageAuthentication = new ManageAuthenticationClient(engineApiClient, authConfigReader)
+    this.manageImage = new ManageImageClient(engineApiClient, manageAuthentication)
+    this.manageDistribution = new ManageDistributionService(engineApiClient)
+    this.manageContainer = new ManageContainerClient(engineApiClient, httpClient, responseHandler)
+    this.manageVolume = new ManageVolumeClient(engineApiClient)
+    this.manageNetwork = new ManageNetworkClient(engineApiClient)
+    this.manageSwarm = new ManageSwarmClient(engineApiClient)
+    this.manageSecret = new ManageSecretClient(engineApiClient)
+    this.manageConfig = new ManageConfigClient(engineApiClient)
+    this.manageTask = new ManageTaskClient(engineApiClient)
     NodeUtil nodeUtil = new NodeUtil(manageSystem)
-    this.manageService = new ManageServiceClient(httpClient, responseHandler, manageTask, nodeUtil)
-    this.manageNode = new ManageNodeClient(httpClient, responseHandler, manageTask, nodeUtil)
+    this.manageService = new ManageServiceClient(engineApiClient, manageTask, nodeUtil)
+    this.manageNode = new ManageNodeClient(engineApiClient, manageTask, nodeUtil)
     this.manageStack = new ManageStackClient(
-        httpClient,
-        responseHandler,
         manageService,
         manageTask,
         manageNode,
@@ -143,11 +147,12 @@ class DockerClientImpl implements DockerClient {
     setDockerClientConfig(new DockerClientConfig(env))
   }
 
+  // TODO move to ManageSwarm?
   @Override
-  getSwarmMangerAddress() {
+  String getSwarmMangerAddress() {
     log.info("docker get swarm manager address")
-    def swarmNodeId = info().content.Swarm.NodeID
+    def swarmNodeId = info().content.swarm.nodeID
     def node = inspectNode(swarmNodeId).content
-    return node.ManagerStatus.Addr
+    return node.managerStatus.addr
   }
 }

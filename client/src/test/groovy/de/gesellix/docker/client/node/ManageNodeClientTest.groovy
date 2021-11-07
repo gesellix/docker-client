@@ -1,125 +1,122 @@
 package de.gesellix.docker.client.node
 
-import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.tasks.ManageTask
-import de.gesellix.docker.engine.EngineClient
-import groovy.json.JsonBuilder
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.Node
+import de.gesellix.docker.remote.api.NodeSpec
+import de.gesellix.docker.remote.api.ObjectVersion
+import de.gesellix.docker.remote.api.client.NodeApi
+import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
+@Mockable([NodeApi, Node])
 class ManageNodeClientTest extends Specification {
 
-  EngineClient httpClient = Mock(EngineClient)
+  EngineApiClient client = Mock(EngineApiClient)
   ManageTask manageTask = Mock(ManageTask)
   NodeUtil nodeUtil = Mock(NodeUtil)
 
   ManageNodeClient service
 
   def setup() {
-    service = new ManageNodeClient(httpClient, Mock(DockerResponseHandler), manageTask, nodeUtil)
+    service = new ManageNodeClient(client, manageTask, nodeUtil)
   }
 
-  def "list nodes with query"() {
+  def "list nodes"() {
     given:
-    def filters = [membership: ["accepted"], role: ["worker"]]
-    def expectedFilterValue = new JsonBuilder(filters).toString()
-    def query = [filters: filters]
+    def nodeApi = Mock(NodeApi)
+    client.nodeApi >> nodeApi
+    def nodes = Mock(List)
+    def filters = '{"membership":["accepted"],"role":["worker"]}'
 
     when:
-    service.nodes(query)
+    def responseContent = service.nodes(filters)
 
     then:
-    1 * httpClient.get([path : "/nodes",
-                        query: [filters: expectedFilterValue]]) >> [status: [success: true]]
+    1 * client.nodeApi.nodeList(filters) >> nodes
+    responseContent.content == nodes
   }
 
   def "inspect node"() {
+    given:
+    def nodeApi = Mock(NodeApi)
+    client.nodeApi >> nodeApi
+    def node = Mock(Node)
+
     when:
-    service.inspectNode("node-id")
+    def inspectNode = service.inspectNode("node-id")
 
     then:
-    1 * httpClient.get([path: "/nodes/node-id"]) >> [status: [success: true]]
+    1 * nodeApi.nodeInspect("node-id") >> node
+    inspectNode.content == node
   }
 
   def "update node"() {
     given:
-    def query = [version: 42]
-    def config = [
-        "AcceptancePolicy": [
-            "Policies": [
-                ["Role": "MANAGER", "Autoaccept": false],
-                ["Role": "WORKER", "Autoaccept": true]
-            ]
-        ]
-    ]
+    def nodeApi = Mock(NodeApi)
+    client.nodeApi >> nodeApi
+    def nodeSpec = new NodeSpec(
+        null,
+        null,
+        null,
+        NodeSpec.Availability.Active
+    )
 
     when:
-    service.updateNode("node-id", query, config)
+    service.updateNode("node-id", 42, nodeSpec)
 
     then:
-    1 * httpClient.post([path              : "/nodes/node-id/update",
-                         query             : query,
-                         body              : config,
-                         requestContentType: "application/json"]) >> [status: [success: true]]
+    1 * nodeApi.nodeUpdate("node-id", 42, nodeSpec)
   }
 
   def "promote nodes"() {
     given:
-    def node1Config = [
-        Version: [Index: 1],
-        Spec   : [Role: "worker"]]
-    def node1ChangedSpec = [Role: "manager"]
-    def node2Config = [
-        Version: [Index: 1],
-        Spec   : [Role: "manager"]]
+    def nodeApi = Mock(NodeApi)
+    client.nodeApi >> nodeApi
+    def node1Info = new Node("ID1", new ObjectVersion(23), null, null,
+                             new NodeSpec("node-1", null, NodeSpec.Role.Worker, null), null, null, null)
+    def node1UpdatedSpec = new NodeSpec("node-1", null, NodeSpec.Role.Manager, null)
+    def node2Info = new Node("ID2", new ObjectVersion(43), null, null,
+                             new NodeSpec(null, null, NodeSpec.Role.Manager, null), null, null, null)
 
     when:
     service.promoteNodes("node-1", "node-2")
 
     then:
-    1 * httpClient.get([path: "/nodes/node-1"]) >> [
-        status : [success: true],
-        content: node1Config]
-    1 * httpClient.get([path: "/nodes/node-2"]) >> [
-        status : [success: true],
-        content: node2Config]
-    1 * httpClient.post([path              : "/nodes/node-1/update",
-                         query             : ["version": 1],
-                         body              : node1ChangedSpec,
-                         requestContentType: "application/json"]) >> [status: [success: true]]
+    1 * nodeApi.nodeInspect("node-1") >> node1Info
+    1 * nodeApi.nodeInspect("node-2") >> node2Info
+    1 * nodeApi.nodeUpdate("ID1", 23, node1UpdatedSpec)
   }
 
   def "demote nodes"() {
     given:
-    def node1Config = [
-        Version: [Index: 1],
-        Spec   : [Role: "worker"]]
-    def node2Config = [
-        Version: [Index: 1],
-        Spec   : [Role: "manager"]]
-    def node2ChangedSpec = [Role: "worker"]
+    def nodeApi = Mock(NodeApi)
+    client.nodeApi >> nodeApi
+    def node1Info = new Node("ID1", new ObjectVersion(23), null, null,
+                             new NodeSpec("node-1", null, NodeSpec.Role.Worker, null), null, null, null)
+    def node2Info = new Node("ID2", new ObjectVersion(43), null, null,
+                             new NodeSpec("node-2", null, NodeSpec.Role.Manager, null), null, null, null)
+    def node2UpdatedSpec = new NodeSpec("node-2", null, NodeSpec.Role.Worker, null)
 
     when:
     service.demoteNodes("node-1", "node-2")
 
     then:
-    1 * httpClient.get([path: "/nodes/node-1"]) >> [
-        status : [success: true],
-        content: node1Config]
-    1 * httpClient.get([path: "/nodes/node-2"]) >> [
-        status : [success: true],
-        content: node2Config]
-    1 * httpClient.post([path              : "/nodes/node-2/update",
-                         query             : ["version": 1],
-                         body              : node2ChangedSpec,
-                         requestContentType: "application/json"]) >> [status: [success: true]]
+    1 * nodeApi.nodeInspect("node-1") >> node1Info
+    1 * nodeApi.nodeInspect("node-2") >> node2Info
+    1 * nodeApi.nodeUpdate("ID2", 43, node2UpdatedSpec)
   }
 
   def "rm node"() {
+    given:
+    def nodeApi = Mock(NodeApi)
+    client.nodeApi >> nodeApi
+
     when:
     service.rmNode("node-id")
 
     then:
-    1 * httpClient.delete([path: "/nodes/node-id"]) >> [status: [success: true]]
+    1 * nodeApi.nodeDelete("node-id", null)
   }
 
   def "list tasks on node 'self' with query"() {

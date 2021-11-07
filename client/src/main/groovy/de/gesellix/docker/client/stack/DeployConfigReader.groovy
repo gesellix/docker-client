@@ -4,9 +4,7 @@ import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.EnvFileParser
 import de.gesellix.docker.client.LocalDocker
 import de.gesellix.docker.client.stack.types.StackConfig
-import de.gesellix.docker.client.stack.types.StackNetwork
 import de.gesellix.docker.client.stack.types.StackSecret
-import de.gesellix.docker.client.stack.types.StackService
 import de.gesellix.docker.compose.ComposeFileReader
 import de.gesellix.docker.compose.types.ComposeConfig
 import de.gesellix.docker.compose.types.Environment
@@ -15,6 +13,7 @@ import de.gesellix.docker.compose.types.Healthcheck
 import de.gesellix.docker.compose.types.IpamConfig
 import de.gesellix.docker.compose.types.Limits
 import de.gesellix.docker.compose.types.Logging
+import de.gesellix.docker.compose.types.PlacementPreferences
 import de.gesellix.docker.compose.types.PortConfigs
 import de.gesellix.docker.compose.types.Reservations
 import de.gesellix.docker.compose.types.Resources
@@ -25,16 +24,27 @@ import de.gesellix.docker.compose.types.ServiceSecret
 import de.gesellix.docker.compose.types.ServiceVolume
 import de.gesellix.docker.compose.types.ServiceVolumeBind
 import de.gesellix.docker.compose.types.ServiceVolumeType
+import de.gesellix.docker.compose.types.StackNetwork
+import de.gesellix.docker.compose.types.StackService
 import de.gesellix.docker.compose.types.StackVolume
 import de.gesellix.docker.compose.types.UpdateConfig
+import de.gesellix.docker.remote.api.EndpointPortConfig
 import de.gesellix.docker.remote.api.EndpointSpec
 import de.gesellix.docker.remote.api.HealthConfig
+import de.gesellix.docker.remote.api.IPAM
 import de.gesellix.docker.remote.api.Limit
 import de.gesellix.docker.remote.api.Mount
 import de.gesellix.docker.remote.api.MountBindOptions
 import de.gesellix.docker.remote.api.MountVolumeOptions
 import de.gesellix.docker.remote.api.MountVolumeOptionsDriverConfig
+import de.gesellix.docker.remote.api.Network
+import de.gesellix.docker.remote.api.NetworkAttachmentConfig
+import de.gesellix.docker.remote.api.NetworkCreateRequest
 import de.gesellix.docker.remote.api.ResourceObject
+import de.gesellix.docker.remote.api.ServiceSpec
+import de.gesellix.docker.remote.api.ServiceSpecMode
+import de.gesellix.docker.remote.api.ServiceSpecModeReplicated
+import de.gesellix.docker.remote.api.ServiceSpecUpdateConfig
 import de.gesellix.docker.remote.api.TaskSpec
 import de.gesellix.docker.remote.api.TaskSpecContainerSpec
 import de.gesellix.docker.remote.api.TaskSpecContainerSpecConfigs
@@ -81,7 +91,7 @@ class DeployConfigReader {
     ComposeConfig composeConfig = composeFileReader.load(composeFile, workingDir, environment)
     log.info("composeContent: $composeConfig}")
 
-    List<String> serviceNetworkNames = composeConfig.services.collect { String name, de.gesellix.docker.compose.types.StackService service ->
+    List<String> serviceNetworkNames = composeConfig.services.collect { String name, StackService service ->
       if (!service.networks) {
         return ["default"]
       }
@@ -91,7 +101,7 @@ class DeployConfigReader {
     }.flatten().unique()
     log.info("service network names: ${serviceNetworkNames}")
 
-    Map<String, StackNetwork> networkConfigs
+    Map<String, NetworkCreateRequest> networkConfigs
     List<String> externalNetworks
     (networkConfigs, externalNetworks) = networks(namespace, serviceNetworkNames, composeConfig.networks ?: [:])
     def secrets = secrets(namespace, composeConfig.secrets, workingDir)
@@ -106,12 +116,12 @@ class DeployConfigReader {
     return cfg
   }
 
-  Map<String, StackService> services(
+  Map<String, ServiceSpec> services(
       String namespace,
-      Map<String, de.gesellix.docker.compose.types.StackService> services,
-      Map<String, de.gesellix.docker.compose.types.StackNetwork> networks,
+      Map<String, StackService> services,
+      Map<String, StackNetwork> networks,
       Map<String, StackVolume> volumes) {
-    Map<String, StackService> serviceSpec = [:]
+    Map<String, ServiceSpec> serviceSpec = [:]
     services.each { name, service ->
       def serviceLabels = service.deploy?.labels?.entries ?: [:]
       serviceLabels[ManageStackClient.LabelNamespace] = namespace
@@ -130,7 +140,7 @@ class DeployConfigReader {
       def extraHosts = convertExtraHosts(service.extraHosts)
       Collections.sort(extraHosts)
 
-      def serviceConfig = new StackService()
+      def serviceConfig = new ServiceSpec()
       serviceConfig.name = ("${namespace}_${name}" as String)
       serviceConfig.labels = serviceLabels
       serviceConfig.endpointSpec = serviceEndpoints(service.deploy?.endpointMode, service.ports)
@@ -252,7 +262,7 @@ class DeployConfigReader {
     } ?: []
   }
 
-  def convertUpdateConfig(UpdateConfig updateConfig) {
+  ServiceSpecUpdateConfig convertUpdateConfig(UpdateConfig updateConfig) {
     if (!updateConfig) {
       return null
     }
@@ -272,19 +282,19 @@ class DeployConfigReader {
       monitor = parseDuration(updateConfig.monitor).toNanos()
     }
 
-    return [
-        parallelism    : parallel,
-        delay          : delay,
-        failureAction  : updateConfig.failureAction,
-        monitor        : monitor,
-        maxFailureRatio: updateConfig.maxFailureRatio,
-        order          : updateConfig.order
-    ]
+    return new ServiceSpecUpdateConfig(
+        parallel,
+        delay,
+        updateConfig.failureAction ? ServiceSpecUpdateConfig.FailureAction.values().find { it.value == updateConfig.failureAction } : null,
+        monitor,
+        new BigDecimal(updateConfig.maxFailureRatio),
+        updateConfig.order ? ServiceSpecUpdateConfig.Order.values().find { it.value == updateConfig.order } : null
+    )
   }
 
-  def convertServiceNetworks(
+  List<NetworkAttachmentConfig> convertServiceNetworks(
       Map<String, ServiceNetwork> serviceNetworks,
-      Map<String, de.gesellix.docker.compose.types.StackNetwork> networkConfigs,
+      Map<String, StackNetwork> networkConfigs,
       String namespace,
       String serviceName) {
 
@@ -311,10 +321,11 @@ class DeployConfigReader {
         aliases << serviceName
       }
 
-      serviceNetworkConfigs << [
-          target : target,
-          aliases: aliases,
-      ]
+      serviceNetworkConfigs << new NetworkAttachmentConfig(
+          target,
+          aliases,
+          null
+      )
     }
 
     Collections.sort(serviceNetworkConfigs, new NetworkConfigByTargetComparator())
@@ -323,7 +334,7 @@ class DeployConfigReader {
 
   String getTargetNetworkName(String namespace, String networkName, Map<String, de.gesellix.docker.compose.types.StackNetwork> networkConfigs) {
     if (networkConfigs?.containsKey(networkName)) {
-      de.gesellix.docker.compose.types.StackNetwork networkConfig = networkConfigs[networkName]
+      StackNetwork networkConfig = networkConfigs[networkName]
       if (networkConfig?.external?.external) {
         if (networkConfig?.external?.name) {
           return networkConfig.external.name
@@ -336,11 +347,11 @@ class DeployConfigReader {
     return "${namespace}_${networkName}" as String
   }
 
-  static class NetworkConfigByTargetComparator implements Comparator {
+  static class NetworkConfigByTargetComparator implements Comparator<NetworkAttachmentConfig> {
 
     @Override
-    int compare(Object o1, Object o2) {
-      return o1.target.compareTo(o2.target)
+    int compare(NetworkAttachmentConfig o1, NetworkAttachmentConfig o2) {
+      return o1.target <=> o2.target
     }
   }
 
@@ -678,82 +689,76 @@ class DeployConfigReader {
     }
   }
 
-  def serviceEndpoints(String endpointMode, PortConfigs portConfigs) {
-    def endpointSpec = [
-        mode : endpointMode ? EndpointSpec.Mode.values().find { it.value == endpointMode }.value : EndpointSpec.Mode.Vip.value,
-        ports: portConfigs.portConfigs.collect { portConfig ->
-          [
-              protocol     : portConfig.protocol,
-              targetPort   : portConfig.target,
-              publishedPort: portConfig.published,
-              publishMode  : portConfig.mode,
-          ]
+  EndpointSpec serviceEndpoints(String endpointMode, PortConfigs portConfigs) {
+    def endpointSpec = new EndpointSpec(
+        endpointMode ? EndpointSpec.Mode.values().find { it.value == endpointMode } : EndpointSpec.Mode.Vip,
+        portConfigs.portConfigs.collect { portConfig ->
+          new EndpointPortConfig(
+              null,
+              portConfig.protocol ? EndpointPortConfig.Protocol.values().find { it.value == portConfig.protocol } : null,
+              portConfig.target,
+              portConfig.published,
+              portConfig.mode ? EndpointPortConfig.PublishMode.values().find { it.value == portConfig.mode } : null
+          )
         }
-    ]
-
+    )
     return endpointSpec
   }
 
-  def serviceMode(String mode, Integer replicas) {
+  ServiceSpecMode serviceMode(String mode, Integer replicas) {
     switch (mode) {
       case "global":
         if (replicas) {
           throw new IllegalArgumentException("replicas can only be used with replicated mode")
         }
-        return [global: [:]]
+        return new ServiceSpecMode(null, [:], null, null)
 
       case null:
       case "":
       case "replicated":
-        return [replicated: [replicas: replicas ?: 1]]
+        return new ServiceSpecMode(new ServiceSpecModeReplicated(replicas ?: 1), null, null, null)
 
       default:
         throw new IllegalArgumentException("Unknown mode: '$mode'")
     }
   }
 
-  Tuple2<Map<String, StackNetwork>, List<String>> networks(
+  Tuple2<Map<String, NetworkCreateRequest>, List<String>> networks(
       String namespace,
       List<String> serviceNetworkNames,
-      Map<String, de.gesellix.docker.compose.types.StackNetwork> networks) {
-    Map<String, StackNetwork> networkSpec = [:]
+      Map<String, StackNetwork> networks) {
+    Map<String, NetworkCreateRequest> networkSpec = [:]
 
     def externalNetworkNames = []
     serviceNetworkNames.each { String internalName ->
       def network = networks[internalName]
       if (!network) {
-        def createOpts = new StackNetwork()
-        createOpts.labels = [(ManageStackClient.LabelNamespace): namespace]
-        createOpts.driver = "overlay"
-        networkSpec[internalName] = createOpts
+        networkSpec[internalName] = new NetworkCreateRequest(
+            internalName,
+            true,
+            "overlay",
+            null, null,
+            null, null, null,
+            null,
+            getLabels(namespace, null)
+        )
       }
       else if (network?.external?.external) {
         externalNetworkNames << (network.external.name ?: internalName)
       }
       else {
-        def createOpts = new StackNetwork()
-
-        Map<String, String> labels = [:]
-        labels.putAll(network.labels?.entries ?: [:])
-        labels[(ManageStackClient.LabelNamespace)] = namespace
-        createOpts.labels = labels
-        createOpts.driver = network.driver ?: "overlay"
-        createOpts.driverOpts = network.driverOpts.options
-        createOpts.internal = Boolean.valueOf(network.internal)
-        createOpts.attachable = network.attachable
-        if (network.ipam?.driver || network.ipam?.config) {
-          createOpts.ipam = [:]
-        }
-        if (network.ipam?.driver) {
-          createOpts.ipam.driver = network.ipam.driver
-        }
-        if (network.ipam?.config) {
-          createOpts.ipam.config = []
-          network.ipam.config.each { IpamConfig config ->
-            createOpts.ipam.config << [subnet: config.subnet]
-          }
-        }
-        networkSpec[internalName] = createOpts
+        networkSpec[internalName] = new NetworkCreateRequest(
+            internalName,
+            true,
+            network.driver ?: "overlay",
+            Boolean.valueOf(network.internal),
+            network.attachable,
+            null,
+            getIpam(network),
+            null,
+            network.driverOpts.options,
+            getLabels(namespace, network)
+        )
       }
     }
 
@@ -763,6 +768,33 @@ class DeployConfigReader {
     validateExternalNetworks(externalNetworkNames)
 
     return [networkSpec, externalNetworkNames]
+  }
+
+  IPAM getIpam(StackNetwork network) {
+    if (!network) {
+      return null
+    }
+    if (!network.ipam?.driver && !network.ipam?.config) {
+      return null
+    }
+    def ipamConfig = []
+    if (network.ipam?.config) {
+      network.ipam.config.each { IpamConfig config ->
+        ipamConfig << [subnet: config.subnet]
+      }
+    }
+    return new IPAM(
+        network.ipam?.driver,
+        ipamConfig,
+        null
+    )
+  }
+
+  Map<String, String> getLabels(String namespace, StackNetwork network) {
+    Map<String, String> labels = [:]
+    labels.putAll(network?.labels?.entries ?: [:])
+    labels[(ManageStackClient.LabelNamespace)] = namespace
+    return labels
   }
 
   boolean isContainerNetwork(String networkName) {
@@ -782,17 +814,17 @@ class DeployConfigReader {
       // local-scoped networks, so there's no need to inspect them.
       isUserDefined(name, isWindows)
     }.each { name ->
-      def network
+      Network network
       try {
-        network = dockerClient.inspectNetwork(name)
+        network = dockerClient.inspectNetwork(name).content
       }
       catch (Exception e) {
         log.error("network ${name} is declared as external, but could not be inspected. You need to create the network before the stack is deployed (with overlay driver)")
         throw new IllegalStateException("network ${name} is declared as external, but could not be inspected.", e)
       }
 
-      if (network.content.Scope != "swarm") {
-        log.error("network ${name} is declared as external, but it is not in the right scope: '${network.content.Scope}' instead of 'swarm'")
+      if (network.scope != "swarm") {
+        log.error("network ${name} is declared as external, but it is not in the right scope: '${network.scope}' instead of 'swarm'")
         throw new IllegalStateException("network ${name} is declared as external, but is not in 'swarm' scope.")
       }
     }
@@ -846,7 +878,7 @@ class DeployConfigReader {
     return configSpec
   }
 
-  List<TaskSpecPlacementPreferences> placementPreferences(List<de.gesellix.docker.compose.types.PlacementPreferences> preferences) {
+  List<TaskSpecPlacementPreferences> placementPreferences(List<PlacementPreferences> preferences) {
     log.info("placementPreferences: ${preferences}")
     if (preferences == null) {
       return null

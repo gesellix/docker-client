@@ -2,17 +2,17 @@ package de.gesellix.docker.testutil
 
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpHandler
-import de.gesellix.docker.client.Timeout
 import groovy.util.logging.Slf4j
-import okio.Okio
+
+import java.time.Duration
 
 @Slf4j
 class ChunkedStreamServer implements HttpHandler {
 
   List<String> chunks
-  private Timeout pauseBetweenChunks
+  private Duration pauseBetweenChunks
 
-  ChunkedStreamServer(List<String> chunks, Timeout pauseBetweenChunks) {
+  ChunkedStreamServer(List<String> chunks, Duration pauseBetweenChunks) {
     this.chunks = chunks
     this.pauseBetweenChunks = pauseBetweenChunks
   }
@@ -28,13 +28,9 @@ class ChunkedStreamServer implements HttpHandler {
         httpExchange.responseBody.write(chunk.bytes)
         httpExchange.responseBody.flush()
         log.info("pausing chunk...")
-        Thread.sleep(pauseBetweenChunks.unit.toMillis(pauseBetweenChunks.timeout))
+        Thread.sleep(pauseBetweenChunks.toMillis())
       }
       httpExchange.responseBody.close()
     }
-  }
-
-  private String toString(InputStream source) {
-    Okio.buffer(Okio.source(source)).readUtf8()
   }
 }

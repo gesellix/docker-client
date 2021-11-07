@@ -1,5 +1,7 @@
 package de.gesellix.docker.client.stack.types;
 
+import de.gesellix.docker.remote.api.Driver;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;

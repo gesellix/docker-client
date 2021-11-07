@@ -64,8 +64,11 @@ dependencies {
     }
   }
 
+  // TODO consider changing this from api to implementation.
+  // The change would require to move api.core client classes like `ClientException` to another module.
+  api("de.gesellix:docker-remote-api-client:2021-12-01T23-14-00")
   api("de.gesellix:docker-remote-api-model-1-41:2021-11-21T21-26-00")
-  api("de.gesellix:docker-engine:2021-11-06T21-36-00")
+  api("de.gesellix:docker-engine:2021-12-01T22-48-00")
   api("de.gesellix:docker-compose:2021-09-21T08-00-00")
 
   implementation("org.codehaus.groovy:groovy:[2.5,)")
@@ -90,6 +93,7 @@ dependencies {
 
   testImplementation("org.spockframework:spock-core:2.0-groovy-3.0")
   testRuntimeOnly("cglib:cglib-nodep:3.3.0")
+  testImplementation("io.github.joke:spock-mockable:1.4.3")
 
   testImplementation("org.apache.commons:commons-lang3:3.12.0")
 }

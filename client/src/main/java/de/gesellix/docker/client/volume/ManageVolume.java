@@ -1,24 +1,49 @@
 package de.gesellix.docker.client.volume;
 
 import de.gesellix.docker.engine.EngineResponse;
+import de.gesellix.docker.remote.api.Volume;
+import de.gesellix.docker.remote.api.VolumeConfig;
+import de.gesellix.docker.remote.api.VolumeListResponse;
+import de.gesellix.docker.remote.api.VolumePruneResponse;
 
 import java.util.Map;
 
 public interface ManageVolume {
 
-  EngineResponse createVolume();
+  /**
+   * @see #createVolume(VolumeConfig)
+   * @deprecated use {@link #createVolume(VolumeConfig)}
+   */
+  @Deprecated
+  EngineResponse<Volume> createVolume(Map<String, Object> config);
 
-  EngineResponse createVolume(Map<String, Object> config);
+  EngineResponse<Volume> createVolume();
 
-  EngineResponse inspectVolume(String name);
+  EngineResponse<Volume> createVolume(VolumeConfig volumeConfig);
 
-  EngineResponse volumes();
+  EngineResponse<Volume> inspectVolume(String name);
 
-  EngineResponse volumes(Map<String, Object> query);
+  /**
+   * @see #volumes(String)
+   * @deprecated use {@link #volumes(String)}
+   */
+  @Deprecated
+  EngineResponse<VolumeListResponse> volumes(Map<String, Object> query);
 
-  EngineResponse pruneVolumes();
+  EngineResponse<VolumeListResponse> volumes();
 
-  EngineResponse pruneVolumes(Map<String, Object> query);
+  EngineResponse<VolumeListResponse> volumes(String filters);
 
-  EngineResponse rmVolume(String name);
+  /**
+   * @see #pruneVolumes(String)
+   * @deprecated use {@link #pruneVolumes(String)}
+   */
+  @Deprecated
+  EngineResponse<VolumePruneResponse> pruneVolumes(Map<String, Object> query);
+
+  EngineResponse<VolumePruneResponse> pruneVolumes();
+
+  EngineResponse<VolumePruneResponse> pruneVolumes(String filters);
+
+  void rmVolume(String name);
 }

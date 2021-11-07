@@ -1,22 +1,22 @@
 package de.gesellix.docker.client.swarm;
 
 import de.gesellix.docker.engine.EngineResponse;
-
-import java.util.Map;
+import de.gesellix.docker.remote.api.Swarm;
+import de.gesellix.docker.remote.api.SwarmInitRequest;
+import de.gesellix.docker.remote.api.SwarmJoinRequest;
+import de.gesellix.docker.remote.api.SwarmSpec;
 
 public interface ManageSwarm {
 
-  Map newSwarmConfig();
+  SwarmInitRequest newSwarmInitRequest();
 
-  EngineResponse initSwarm();
+  EngineResponse<String> initSwarm();
 
-  EngineResponse initSwarm(Map config);
+  EngineResponse<String> initSwarm(SwarmInitRequest swarmInitRequest);
 
-  EngineResponse joinSwarm(Map config);
+  void joinSwarm(SwarmJoinRequest swarmJoinRequest);
 
-  EngineResponse inspectSwarm();
-
-  EngineResponse inspectSwarm(Map query);
+  EngineResponse<Swarm> inspectSwarm();
 
   String getSwarmWorkerToken();
 
@@ -26,15 +26,21 @@ public interface ManageSwarm {
 
   String rotateSwarmManagerToken();
 
-  EngineResponse leaveSwarm();
+  void leaveSwarm();
 
-  EngineResponse leaveSwarm(Map query);
+  void leaveSwarm(Boolean force);
 
-  EngineResponse unlockSwarm(String unlockKey);
+  void unlockSwarm(String unlockKey);
 
   String getSwarmManagerUnlockKey();
 
   String rotateSwarmManagerUnlockKey();
 
-  EngineResponse updateSwarm(Map query, Map config);
+  void updateSwarm(long version, SwarmSpec spec);
+
+  void updateSwarm(long version, SwarmSpec spec, Boolean rotateWorkerToken);
+
+  void updateSwarm(long version, SwarmSpec spec, Boolean rotateWorkerToken, Boolean rotateManagerToken);
+
+  void updateSwarm(long version, SwarmSpec spec, Boolean rotateWorkerToken, Boolean rotateManagerToken, Boolean rotateManagerUnlockKey);
 }

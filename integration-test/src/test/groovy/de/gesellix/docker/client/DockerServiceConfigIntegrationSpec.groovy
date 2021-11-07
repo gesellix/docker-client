@@ -1,5 +1,8 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.remote.api.Config
+import de.gesellix.docker.remote.api.LocalNodeState
+import de.gesellix.docker.remote.api.SwarmInitRequest
 import de.gesellix.docker.testutil.SwarmUtil
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
@@ -16,7 +19,7 @@ class DockerServiceConfigIntegrationSpec extends Specification {
   def setupSpec() {
     dockerClient = new DockerClientImpl()
     swarmAdvertiseAddr = new SwarmUtil().getAdvertiseAddr()
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def cleanup() {
@@ -24,24 +27,19 @@ class DockerServiceConfigIntegrationSpec extends Specification {
   }
 
   def ping() {
-    when:
-    def ping = dockerClient.ping()
-
-    then:
-    ping.status.code == 200
-    ping.content == "OK"
+    expect:
+    "OK" == dockerClient.ping().content
   }
 
   def "expect inactive swarm"() {
     expect:
-    dockerClient.info().content.Swarm.LocalNodeState == "inactive"
+    dockerClient.info().content.swarm.localNodeState == LocalNodeState.Inactive
   }
 
   def "create, list, and remove a config"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    dockerClient.initSwarm(swarmConfig)
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null))
 
     when:
     dockerClient.createConfig("test-config", "some-fancy-stuff".bytes)
@@ -49,13 +47,13 @@ class DockerServiceConfigIntegrationSpec extends Specification {
     then:
     def configs = dockerClient.configs([filters: [name: ["test-config"]]]).content
     configs.size() == 1
-    Map testConfig = configs.first()
-    testConfig.Spec.Name == "test-config"
-    Base64.decoder.decode(testConfig.Spec.Data as String) == "some-fancy-stuff".bytes
+    Config testConfig = configs.first()
+    testConfig.spec.name == "test-config"
+    Base64.decoder.decode(testConfig.spec.data as String) == "some-fancy-stuff".bytes
 
     cleanup:
     performSilently { dockerClient.rmConfig("test-config") }
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def performSilently(Closure action) {

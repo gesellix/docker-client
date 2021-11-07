@@ -35,5 +35,5 @@ interface DockerClient
             ManageTask,
             ManageVolume {
 
-  def getSwarmMangerAddress()
+  String getSwarmMangerAddress()
 }

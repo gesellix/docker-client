@@ -21,11 +21,10 @@ class DockerDistributionIntegrationSpec extends Specification {
     def alpineDescriptor = dockerClient.descriptor("alpine:edge")
 
     then:
-    alpineDescriptor.status.code == 200
-    alpineDescriptor.content.Descriptor.mediaType == "application/vnd.docker.distribution.manifest.list.v2+json"
-    alpineDescriptor.content.Descriptor.digest =~ "sha256:[a-f0-9]{64}"
-    alpineDescriptor.content.Descriptor.size =~ "\\d{3,4}"
-    alpineDescriptor.content.Platforms.find { it.architecture == "amd64" && it.os == "linux" }
+    alpineDescriptor.content.descriptor.mediaType == "application/vnd.docker.distribution.manifest.list.v2+json"
+    alpineDescriptor.content.descriptor.digest =~ "sha256:[a-f0-9]{64}"
+    alpineDescriptor.content.descriptor.size =~ "\\d{3,4}"
+    alpineDescriptor.content.platforms.find { it.architecture == "amd64" && it.os == "linux" }
   }
 
   @Requires({ LocalDocker.dockerVersion >= DockerVersion.parseDockerVersion("17.06") })
@@ -34,10 +33,9 @@ class DockerDistributionIntegrationSpec extends Specification {
     def debianDescriptor = dockerClient.descriptor("debian:latest")
 
     then:
-    debianDescriptor.status.code == 200
-    debianDescriptor.content.Descriptor.mediaType == "application/vnd.docker.distribution.manifest.list.v2+json"
-    debianDescriptor.content.Descriptor.digest =~ "sha256:[a-f0-9]{64}"
-    debianDescriptor.content.Descriptor.size =~ "\\d{3,4}"
-    debianDescriptor.content.Platforms.find { it.architecture == "amd64" && it.os == "linux" }
+    debianDescriptor.content.descriptor.mediaType == "application/vnd.docker.distribution.manifest.list.v2+json"
+    debianDescriptor.content.descriptor.digest =~ "sha256:[a-f0-9]{64}"
+    debianDescriptor.content.descriptor.size =~ "\\d{3,4}"
+    debianDescriptor.content.platforms.find { it.architecture == "amd64" && it.os == "linux" }
   }
 }
