@@ -1,0 +1,17 @@
+---
+name: "Install Docker on macOS"
+description: "Performs an unattended install of Docker Desktop for MacOS"
+runs:
+  using: "composite"
+  steps:
+    # From https://github.com/docker/for-mac/issues/2359#issuecomment-943131345
+    - run: |
+        brew install --cask docker
+        sudo /Applications/Docker.app/Contents/MacOS/Docker --unattended --install-privileged-components
+        open -a /Applications/Docker.app --args --unattended --accept-license
+        while ! /Applications/Docker.app/Contents/Resources/bin/docker info &>/dev/null; do sleep 1; done
+      shell: bash
+branding:
+  icon: "tag"
+  color: "blue"
+...
