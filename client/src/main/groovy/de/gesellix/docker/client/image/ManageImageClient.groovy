@@ -35,6 +35,16 @@ class ManageImageClient implements ManageImage {
     this.queryUtil = new QueryUtil()
   }
 
+  @Override
+  EngineResponse search(String term, Integer limit = 25) {
+    log.info("docker search")
+    def response = client.get([path : "/images/search".toString(),
+                               query: [term : term,
+                                       limit: limit]])
+    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker search failed"))
+    return response
+  }
+
   /**
    * @deprecated use buildWithLogs(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
    * @see #buildWithLogs(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)

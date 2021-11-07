@@ -38,8 +38,8 @@ interface DockerClient
   /**
    * @deprecated Please use the prune* commands.
    * @see ManageContainer#pruneContainers(java.lang.Object)
-   * @see ManageImage#pruneImages(java.lang.Object)
-   * @see ManageVolume#pruneVolumes(java.lang.Object)
+   * @see ManageImage#pruneImages(java.util.Map)
+   * @see ManageVolume#pruneVolumes(java.util.Map)
    */
   @Deprecated
   def cleanupStorage(Closure shouldKeepContainer)
@@ -47,15 +47,15 @@ interface DockerClient
   /**
    * @deprecated Please use the prune* commands.
    * @see ManageContainer#pruneContainers(java.lang.Object)
-   * @see ManageImage#pruneImages(java.lang.Object)
-   * @see ManageVolume#pruneVolumes(java.lang.Object)
+   * @see ManageImage#pruneImages(java.util.Map)
+   * @see ManageVolume#pruneVolumes(java.util.Map)
    */
   @Deprecated
   def cleanupStorage(Closure shouldKeepContainer, Closure shouldKeepVolume)
 
   /**
    * @deprecated Please use the prune* commands.
-   * @see ManageImage#pruneImages(java.lang.Object)
+   * @see ManageImage#pruneImages(java.util.Map)
    */
   @Deprecated
   def cleanupImages()
@@ -69,14 +69,10 @@ interface DockerClient
 
   /**
    * @deprecated Please use the prune* commands.
-   * @see ManageVolume#pruneVolumes(java.lang.Object)
+   * @see ManageVolume#pruneVolumes(java.util.Map)
    */
   @Deprecated
   def cleanupVolumes(Closure shouldKeepVolume)
-
-  def search(String term)
-
-  def search(String term, int limit)
 
   def getSwarmMangerAddress()
 }

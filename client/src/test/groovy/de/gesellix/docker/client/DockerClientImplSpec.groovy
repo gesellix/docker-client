@@ -40,15 +40,6 @@ class DockerClientImplSpec extends Specification {
     httpClient.proxy == proxy
   }
 
-  def "search"() {
-    when:
-    dockerClient.search("ubuntu")
-
-    then:
-    1 * httpClient.get([path : "/images/search",
-                        query: [term: "ubuntu", "limit": 25]]) >> [status: [success: true]]
-  }
-
   def "get the swarm manager address"() {
     when:
     def managerAddress = dockerClient.getSwarmMangerAddress()
