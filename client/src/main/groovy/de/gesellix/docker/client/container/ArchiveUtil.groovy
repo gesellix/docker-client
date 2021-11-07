@@ -27,7 +27,7 @@ class ArchiveUtil {
     log.debug("going to read ${content.length} bytes")
 
     stream.read(content, 0, content.length)
-    IOUtils.closeQuietly(stream)
+    IOUtils.closeQuietly(Okio.source(stream))
 
     return content
   }

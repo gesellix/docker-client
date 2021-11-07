@@ -1,73 +1,61 @@
 package de.gesellix.docker.client.secret
 
-import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.engine.EngineClient
-import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.docker.client.EngineResponseContent
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.IdResponse
+import de.gesellix.docker.remote.api.Secret
+import de.gesellix.docker.remote.api.SecretSpec
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 
 @Slf4j
 class ManageSecretClient implements ManageSecret {
 
-  private EngineClient client
-  private DockerResponseHandler responseHandler
-  private QueryUtil queryUtil
+  private EngineApiClient client
 
-  ManageSecretClient(EngineClient client, DockerResponseHandler responseHandler) {
+  ManageSecretClient(EngineApiClient client) {
     this.client = client
-    this.responseHandler = responseHandler
-    this.queryUtil = new QueryUtil()
   }
 
   @Override
-  EngineResponse createSecret(String name, byte[] secretData, Map<String, String> labels = [:]) {
+  EngineResponseContent<IdResponse> createSecret(String name, byte[] secretData, Map<String, String> labels = [:]) {
     log.info("docker secret create")
-    def secretDataBase64 = Base64.encoder.encode(secretData)
-    def secretConfig = [Name  : name,
-                        Data  : secretDataBase64,
-                        Labels: labels]
-    def response = client.post([path              : "/secrets/create",
-                                body              : secretConfig,
-                                requestContentType: "application/json"])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker secret create failed"))
-    return response
+    def secretDataBase64 = Base64.encoder.encodeToString(secretData)
+    def secretConfig = new SecretSpec(name, labels, secretDataBase64, null, null)
+    def secretCreate = client.secretApi.secretCreate(secretConfig)
+    return new EngineResponseContent<IdResponse>(secretCreate)
   }
 
   @Override
-  EngineResponse inspectSecret(String secretId) {
+  EngineResponseContent<Secret> inspectSecret(String secretId) {
     log.info("docker secret inspect")
-    def response = client.get([path: "/secrets/${secretId}".toString()])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker secret inspect failed"))
-    return response
+    def secretInspect = client.secretApi.secretInspect(secretId)
+    return new EngineResponseContent<Secret>(secretInspect)
   }
 
   @Override
-  EngineResponse secrets(Map query = [:]) {
-    log.info("docker secret ls")
+  EngineResponseContent<List<Secret>> secrets(Map query) {
     def actualQuery = query ?: [:]
-    queryUtil.jsonEncodeFilters(actualQuery)
-    def response = client.get([path : "/secrets",
-                               query: actualQuery])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker secret ls failed"))
-    return response
+    new QueryUtil().jsonEncodeFilters(actualQuery)
+    return secrets(actualQuery.filters as String)
   }
 
   @Override
-  EngineResponse rmSecret(String secretId) {
+  EngineResponseContent<List<Secret>> secrets(String filters = null) {
+    log.info("docker secret ls")
+    def secrets = client.secretApi.secretList(filters)
+    return new EngineResponseContent<List<Secret>>(secrets)
+  }
+
+  @Override
+  void rmSecret(String secretId) {
     log.info("docker secret rm")
-    def response = client.delete([path: "/secrets/${secretId}".toString()])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker secret rm failed"))
-    return response
+    client.secretApi.secretDelete(secretId)
   }
 
   @Override
-  EngineResponse updateSecret(String secretId, int version, Map<String, Object> secretSpec) {
+  void updateSecret(String secretId, long version, SecretSpec secretSpec) {
     log.info("docker secret update")
-    def response = client.post([path              : "/secrets/${secretId}/update".toString(),
-                                query             : [version: version],
-                                body              : secretSpec,
-                                requestContentType: "application/json"])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker secret update failed"))
-    return response
+    client.secretApi.secretUpdate(secretId, version, secretSpec)
   }
 }

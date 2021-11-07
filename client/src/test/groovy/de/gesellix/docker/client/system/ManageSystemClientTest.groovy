@@ -1,125 +1,94 @@
 package de.gesellix.docker.client.system
 
-import de.gesellix.docker.client.DockerAsyncCallback
-import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.engine.EngineClient
-import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.SystemDataUsageResponse
+import de.gesellix.docker.remote.api.SystemInfo
+import de.gesellix.docker.remote.api.SystemVersion
+import de.gesellix.docker.remote.api.client.SystemApi
+import de.gesellix.docker.remote.api.core.StreamCallback
+import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 
+@Mockable([SystemApi, SystemDataUsageResponse, SystemInfo, SystemVersion])
 class ManageSystemClientTest extends Specification {
 
-  EngineClient httpClient = Mock(EngineClient)
+  EngineApiClient client = Mock(EngineApiClient)
   ManageSystemClient service
 
   def setup() {
-    service = new ManageSystemClient(httpClient, Mock(DockerResponseHandler))
+    service = new ManageSystemClient(client)
   }
 
-  def "system df"() {
+  def "data usage"() {
+    given:
+    def systemApi = Mock(SystemApi)
+    client.systemApi >> systemApi
+    def dataUsageResponse = Mock(SystemDataUsageResponse)
+
     when:
-    service.systemDf()
+    def systemDf = service.systemDf()
 
     then:
-    1 * httpClient.get([path : "/system/df",
-                        query: [:]])
+    1 * systemApi.systemDataUsage() >> dataUsageResponse
+    systemDf.content == dataUsageResponse
   }
 
   def "ping"() {
+    given:
+    def systemApi = Mock(SystemApi)
+    client.systemApi >> systemApi
+
     when:
-    service.ping()
+    def ping = service.ping()
 
     then:
-    1 * httpClient.get([path: "/_ping", timeout: 2000]) >> new EngineResponse()
+    1 * systemApi.systemPing() >> "OK"
+    ping.content == "OK"
   }
 
   def "version"() {
+    given:
+    def systemApi = Mock(SystemApi)
+    client.systemApi >> systemApi
+    def systemVersion = Mock(SystemVersion)
+
     when:
-    service.version()
+    def version = service.version()
 
     then:
-    1 * httpClient.get([path: "/version"])
+    1 * systemApi.systemVersion() >> systemVersion
+    version.content == systemVersion
   }
 
   def "info"() {
-    when:
-    service.info()
-
-    then:
-    1 * httpClient.get([path: "/info"])
-  }
-
-  def "events (streaming)"() {
     given:
-    def latch = new CountDownLatch(1)
-    def content = new ByteArrayInputStream('{"status":"created"}\n'.bytes)
-    DockerAsyncCallback callback = new DockerAsyncCallback() {
-
-      def events = []
-
-      @Override
-      onEvent(Object event) {
-        events << event
-        latch.countDown()
-      }
-
-      @Override
-      onFinish() {
-      }
-    }
+    def systemApi = Mock(SystemApi)
+    client.systemApi >> systemApi
+    def systemInfo = Mock(SystemInfo)
 
     when:
-    service.events(callback)
-    latch.await(5000, TimeUnit.SECONDS)
+    def info = service.info()
 
     then:
-    1 * httpClient.get([path: "/events", query: [:], async: true]) >> new EngineResponse(
-        status: [success: true],
-        stream: content)
-    and:
-    callback.events.first() == '{"status":"created"}'
+    1 * systemApi.systemInfo() >> systemInfo
+    info.content == systemInfo
   }
 
-  def "events (polling)"() {
+  def "events"() {
     given:
-    def latch = new CountDownLatch(1)
-    def content = new ByteArrayInputStream('{"status":"created"}\n'.bytes)
-    DockerAsyncCallback callback = new DockerAsyncCallback() {
-
-      def events = []
-
-      @Override
-      onEvent(Object event) {
-        events << event
-        latch.countDown()
-      }
-
-      @Override
-      onFinish() {
-      }
-    }
-    def since = new Date().time
+    def systemApi = Mock(SystemApi)
+    client.systemApi >> systemApi
+    def systemEventsRequest = new SystemEventsRequest("since", "until", "filters")
+    def callback = Mock(StreamCallback)
+    def timeout = Duration.of(1, ChronoUnit.SECONDS)
 
     when:
-    service.events(callback, [since: since])
-    latch.await(5000, TimeUnit.SECONDS)
+    service.events(systemEventsRequest, callback, timeout)
 
     then:
-    1 * httpClient.get([path: "/events", query: [since: since], async: true]) >> new EngineResponse(
-        status: [success: true],
-        stream: content)
-    and:
-    callback.events.first() == '{"status":"created"}'
-  }
-
-  def "events (with filters)"() {
-    when:
-    service.events(Mock(DockerAsyncCallback), [filters: [container: ["foo"]]])
-
-    then:
-    1 * httpClient.get([path: "/events", query: ['filters': '{"container":["foo"]}'], async: true]) >> new EngineResponse(
-        status: [success: true])
+    1 * systemApi.systemEvents("since", "until", "filters", callback, timeout.toMillis())
   }
 }

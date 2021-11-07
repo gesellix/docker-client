@@ -1,20 +1,20 @@
-package de.gesellix.docker.client.registry
+package de.gesellix.docker.client.authentication
 
 import de.gesellix.docker.authentication.AuthConfig
-import de.gesellix.docker.client.authentication.ManageAuthentication
-import de.gesellix.docker.client.system.ManageSystem
+import de.gesellix.docker.authentication.AuthConfigReader
 import de.gesellix.docker.engine.DockerEnv
+import de.gesellix.docker.remote.api.client.SystemApi
 import groovy.util.logging.Slf4j
 
 @Slf4j
 class RegistryElection {
 
-  private ManageSystem system
-  private ManageAuthentication authentication
+  private SystemApi systemApi
+  private AuthConfigReader authConfigReader
 
-  RegistryElection(ManageSystem system, ManageAuthentication authentication) {
-    this.authentication = authentication
-    this.system = system
+  RegistryElection(SystemApi systemApi, AuthConfigReader authConfigReader) {
+    this.systemApi = systemApi
+    this.authConfigReader = authConfigReader
   }
 
   // ResolveAuthConfig is like registry.ResolveAuthConfig, but if using the
@@ -26,7 +26,7 @@ class RegistryElection {
       configKey = electAuthServer()
     }
 
-    return authentication.readAuthConfig(configKey, null)
+    return authConfigReader.readAuthConfig(configKey, null)
   }
 
   // ElectAuthServer returns the default registry to use (by asking the daemon)
@@ -35,14 +35,14 @@ class RegistryElection {
     // used. This is essential in cross-platforms environment, where for
     // example a Linux client might be interacting with a Windows daemon, hence
     // the default registry URL might be Windows specific.
-    def serverAddress = new DockerEnv().indexUrl_v1
+    String serverAddress = new DockerEnv().indexUrl_v1
     try {
-      def info = system.info().content
-      if (!info?.IndexServerAddress) {
+      def info = systemApi.systemInfo()
+      if (!info?.indexServerAddress) {
         log.warn("Empty registry endpoint from daemon. Using system default: ${serverAddress}")
       }
       else {
-        serverAddress = info.IndexServerAddress
+        serverAddress = info.indexServerAddress
       }
     }
     catch (Exception e) {

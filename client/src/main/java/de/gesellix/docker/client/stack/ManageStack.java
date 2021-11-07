@@ -1,6 +1,11 @@
 package de.gesellix.docker.client.stack;
 
+import de.gesellix.docker.engine.EngineResponse;
+import de.gesellix.docker.remote.api.Service;
+import de.gesellix.docker.remote.api.Task;
+
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public interface ManageStack {
@@ -12,13 +17,13 @@ public interface ManageStack {
 
   Collection<Stack> lsStacks();
 
-  Object stackPs(String namespace);
+  EngineResponse<List<Task>> stackPs(String namespace);
 
-  Object stackPs(String namespace, Map filters);
+  EngineResponse<List<Task>> stackPs(String namespace, Map filters);
 
   void stackRm(String namespace);
 
-  Object stackServices(String namespace);
+  EngineResponse<List<Service>> stackServices(String namespace);
 
-  Object stackServices(String namespace, Map filters);
+  EngineResponse<List<Service>> stackServices(String namespace, Map filters);
 }

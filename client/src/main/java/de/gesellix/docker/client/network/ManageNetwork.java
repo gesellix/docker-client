@@ -1,28 +1,54 @@
 package de.gesellix.docker.client.network;
 
 import de.gesellix.docker.engine.EngineResponse;
+import de.gesellix.docker.remote.api.Network;
+import de.gesellix.docker.remote.api.NetworkCreateRequest;
+import de.gesellix.docker.remote.api.NetworkCreateResponse;
+import de.gesellix.docker.remote.api.NetworkPruneResponse;
 
+import java.util.List;
 import java.util.Map;
 
 public interface ManageNetwork {
 
-  EngineResponse connectNetwork(String network, String container);
+  void connectNetwork(String network, String container);
 
-  EngineResponse createNetwork(String name);
+  void disconnectNetwork(String network, String container);
 
-  EngineResponse createNetwork(String name, Map<String, Object> config);
+  /**
+   * @see #createNetwork(NetworkCreateRequest)
+   * @deprecated use {@link #createNetwork(NetworkCreateRequest)}
+   */
+  @Deprecated
+  EngineResponse<NetworkCreateResponse> createNetwork(String name, Map<String, Object> config);
 
-  EngineResponse disconnectNetwork(String network, String container);
+  EngineResponse<NetworkCreateResponse> createNetwork(String name);
 
-  EngineResponse inspectNetwork(String name);
+  EngineResponse<NetworkCreateResponse> createNetwork(NetworkCreateRequest networkCreateRequest);
 
-  EngineResponse networks();
+  EngineResponse<Network> inspectNetwork(String name);
 
-  EngineResponse networks(Map<String, Object> query);
+  /**
+   * @see #networks(String)
+   * @deprecated use {@link #networks(String)}
+   */
+  @Deprecated
+  EngineResponse<List<Network>> networks(Map<String, Object> query);
 
-  EngineResponse pruneNetworks();
+  EngineResponse<List<Network>> networks();
 
-  EngineResponse pruneNetworks(Map<String, Object> query);
+  EngineResponse<List<Network>> networks(String filters);
 
-  EngineResponse rmNetwork(String name);
+  /**
+   * @see #pruneNetworks(String)
+   * @deprecated use {@link #pruneNetworks(String)}
+   */
+  @Deprecated
+  EngineResponse<NetworkPruneResponse> pruneNetworks(Map<String, Object> query);
+
+  EngineResponse<NetworkPruneResponse> pruneNetworks();
+
+  EngineResponse<NetworkPruneResponse> pruneNetworks(String filters);
+
+  void rmNetwork(String name);
 }

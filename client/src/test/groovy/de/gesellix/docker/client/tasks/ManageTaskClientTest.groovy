@@ -1,38 +1,47 @@
 package de.gesellix.docker.client.tasks
 
-import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.engine.EngineClient
-import groovy.json.JsonBuilder
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.Task
+import de.gesellix.docker.remote.api.client.TaskApi
+import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
+@Mockable([TaskApi, Task])
 class ManageTaskClientTest extends Specification {
 
-  EngineClient httpClient = Mock(EngineClient)
+  EngineApiClient client = Mock(EngineApiClient)
   ManageTaskClient service
 
   def setup() {
-    service = new ManageTaskClient(httpClient, Mock(DockerResponseHandler))
+    service = new ManageTaskClient(client)
   }
 
-  def "list tasks with query"() {
+  def "list tasks"() {
     given:
-    def filters = [name: ["service-name"]]
-    def expectedFilterValue = new JsonBuilder(filters).toString()
-    def query = [filters: filters]
+    def taskApi = Mock(TaskApi)
+    client.taskApi >> taskApi
+    def tasks = Mock(List)
+    def filters = '{"name":["service-name"]}'
 
     when:
-    service.tasks(query)
+    def responseContent = service.tasks(filters)
 
     then:
-    1 * httpClient.get([path : "/tasks",
-                        query: [filters: expectedFilterValue]]) >> [status: [success: true]]
+    1 * taskApi.taskList(filters) >> tasks
+    responseContent.content == tasks
   }
 
   def "inspect task"() {
+    given:
+    def taskApi = Mock(TaskApi)
+    client.taskApi >> taskApi
+    def task = Mock(Task)
+
     when:
-    service.inspectTask("task-id")
+    def inspectTask = service.inspectTask("task-id")
 
     then:
-    1 * httpClient.get([path: "/tasks/task-id"]) >> [status: [success: true]]
+    1 * taskApi.taskInspect("task-id") >> task
+    inspectTask.content == task
   }
 }

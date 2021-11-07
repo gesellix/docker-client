@@ -1,12 +1,28 @@
 package de.gesellix.docker.client.container;
 
-import de.gesellix.docker.client.DockerAsyncCallback;
+import de.gesellix.docker.client.EngineResponseContent;
 import de.gesellix.docker.engine.AttachConfig;
 import de.gesellix.docker.engine.EngineResponse;
+import de.gesellix.docker.remote.api.ContainerChangeResponseItem;
+import de.gesellix.docker.remote.api.ContainerCreateRequest;
+import de.gesellix.docker.remote.api.ContainerCreateResponse;
+import de.gesellix.docker.remote.api.ContainerInspectResponse;
+import de.gesellix.docker.remote.api.ContainerPruneResponse;
+import de.gesellix.docker.remote.api.ContainerTopResponse;
+import de.gesellix.docker.remote.api.ContainerUpdateRequest;
+import de.gesellix.docker.remote.api.ContainerUpdateResponse;
+import de.gesellix.docker.remote.api.ContainerWaitResponse;
+import de.gesellix.docker.remote.api.ExecConfig;
+import de.gesellix.docker.remote.api.ExecInspectResponse;
+import de.gesellix.docker.remote.api.ExecStartConfig;
+import de.gesellix.docker.remote.api.IdResponse;
+import de.gesellix.docker.remote.api.core.Frame;
+import de.gesellix.docker.remote.api.core.StreamCallback;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -16,105 +32,107 @@ public interface ManageContainer {
 
   EngineResponse attach(String container, Map<String, Object> query, AttachConfig callback);
 
-  EngineResponse resizeTTY(String container, Integer height, Integer width);
+  void attach(String containerId,
+              String detachKeys,
+              Boolean logs, Boolean stream,
+              Boolean stdin, Boolean stdout, Boolean stderr,
+              StreamCallback<Frame> callback, Duration timeout);
+
+  void resizeTTY(String container, Integer height, Integer width);
 
   WebSocket attachWebsocket(String container, Map<String, Object> query, WebSocketListener listener);
 
-  EngineResponse commit(String container, Map query);
+  EngineResponse<IdResponse> commit(String container, Map query);
 
-  EngineResponse commit(String container, Map query, Map config);
+  EngineResponse<IdResponse> commit(String container, Map query, Map config);
 
-  Object getArchiveStats(String container, String path);
+  EngineResponse<Map<String, Object>> getArchiveStats(String container, String path);
 
   byte[] extractFile(String container, String filename);
 
-  EngineResponse getArchive(String container, String path);
+  EngineResponse<InputStream> getArchive(String container, String path);
 
-  EngineResponse putArchive(String container, String path, InputStream archive);
+  void putArchive(String container, String path, InputStream archive);
 
-  EngineResponse putArchive(String container, String path, InputStream archive, Map<String, ?> query);
+  EngineResponse<ContainerCreateResponse> createContainer(ContainerCreateRequest containerCreateRequest);
 
-  EngineResponse createContainer(Map<String, Object> containerConfig);
+  EngineResponse<ContainerCreateResponse> createContainer(ContainerCreateRequest containerCreateRequest, String name);
 
-  EngineResponse createContainer(Map<String, Object> containerConfig, Map<String, Object> query);
+  EngineResponse<ContainerCreateResponse> createContainer(ContainerCreateRequest containerCreateRequest, String name, String authBase64Encoded);
 
-  EngineResponse createContainer(Map<String, Object> containerConfig, Map<String, Object> query, String authBase64Encoded);
+  EngineResponse<List<ContainerChangeResponseItem>> diff(String container);
 
-  EngineResponse diff(String container);
+  EngineResponse<IdResponse> createExec(String container, ExecConfig execConfig);
 
-  EngineResponse createExec(String container, Map execConfig);
+  void startExec(String execId, ExecStartConfig execStartConfig, AttachConfig attachConfig);
 
-  EngineResponse startExec(String execId, Map execConfig);
+  void startExec(String execId, ExecStartConfig execStartConfig, StreamCallback<Frame> callback, Duration timeout);
 
-  EngineResponse startExec(String execId, Map execConfig, AttachConfig attachConfig);
+  EngineResponse<ExecInspectResponse> inspectExec(String execId);
 
-  EngineResponse inspectExec(String execId);
+  EngineResponse<IdResponse> exec(String container, List<String> command, StreamCallback<Frame> callback, Duration timeout);
 
-  EngineResponse exec(String container, List<String> command);
+  EngineResponse<IdResponse> exec(String container, List<String> command, StreamCallback<Frame> callback, Duration timeout, Map<String, Object> execConfig);
 
-  EngineResponse exec(String container, List<String> command, Map<String, Object> execConfig);
+  void resizeExec(String exec, Integer height, Integer width);
 
-  EngineResponse resizeExec(String exec, Integer height, Integer width);
+  EngineResponse<InputStream> export(String container);
 
-  EngineResponse export(String container);
+  EngineResponse<ContainerInspectResponse> inspectContainer(String container);
 
-  EngineResponse inspectContainer(String container);
+  void kill(String container);
 
-  EngineResponse kill(String container);
+  void logs(String container, Map<String, Object> query, StreamCallback<Frame> callback, Duration timeout);
 
-  EngineResponse logs(String container);
+  EngineResponse<List<Map<String, Object>>> ps(Map<String, Object> query);
 
-  EngineResponse logs(String container, DockerAsyncCallback callback);
+  EngineResponse<List<Map<String, Object>>> ps();
 
-  EngineResponse logs(String container, Map<String, Object> query);
+  EngineResponse<List<Map<String, Object>>> ps(Boolean all);
 
-  EngineResponse logs(String container, Map<String, Object> query, DockerAsyncCallback callback);
+  EngineResponse<List<Map<String, Object>>> ps(Boolean all, Integer limit);
 
-  EngineResponse ps();
+  EngineResponse<List<Map<String, Object>>> ps(Boolean all, Integer limit, Boolean size);
 
-  EngineResponse ps(Map<String, Object> query);
+  EngineResponse<List<Map<String, Object>>> ps(Boolean all, Integer limit, Boolean size, String filters);
 
-  EngineResponse pause(String container);
+  void pause(String container);
 
-  EngineResponse pruneContainers();
+  EngineResponse<ContainerPruneResponse> pruneContainers();
 
-  EngineResponse pruneContainers(Object query);
+  EngineResponse<ContainerPruneResponse> pruneContainers(String filters);
 
-  EngineResponse rename(String container, String newName);
+  void rename(String container, String newName);
 
-  EngineResponse restart(String containerIdOrName);
+  void restart(String containerIdOrName);
 
-  EngineResponse rm(String containerIdOrName);
+  void rm(String containerIdOrName);
 
-  EngineResponse rm(String containerIdOrName, Map<String, Object> query);
+  void rm(String containerIdOrName, Map<String, Object> query);
 
-  Object run(String image, Map<String, Object> containerConfig);
+  EngineResponseContent<ContainerCreateResponse> run(ContainerCreateRequest containerCreateRequest);
 
-  Object run(String image, Map<String, Object> containerConfig, String tag);
+  EngineResponseContent<ContainerCreateResponse> run(ContainerCreateRequest containerCreateRequest, String name);
 
-  Object run(String image, Map<String, Object> containerConfig, String tag, String name);
+  EngineResponseContent<ContainerCreateResponse> run(ContainerCreateRequest containerCreateRequest, String name, String authBase64Encoded);
 
-  Object run(String image, Map<String, Object> containerConfig, String tag, String name, String authBase64Encoded);
+  void startContainer(String container);
 
-  EngineResponse startContainer(String container);
+  void stats(String container, Boolean stream, StreamCallback<Object> callback, Duration timeout);
 
-  EngineResponse stats(String container);
+  void stop(String containerIdOrName);
 
-  EngineResponse stats(String container, DockerAsyncCallback callback);
+  void stop(String containerIdOrName, Integer timeoutSeconds);
 
-  EngineResponse stop(String containerIdOrName);
+  void stop(String containerIdOrName, Duration timeout);
 
-  EngineResponse stop(String containerIdOrName, Integer timeout);
+  EngineResponse<ContainerTopResponse> top(String containerIdOrName);
 
-  EngineResponse top(String containerIdOrName);
+  EngineResponse<ContainerTopResponse> top(String containerIdOrName, String psArgs);
 
-  EngineResponse top(String containerIdOrName, String ps_args);
+  void unpause(String container);
 
-  EngineResponse unpause(String container);
+  EngineResponse<ContainerUpdateResponse> updateContainer(String container, ContainerUpdateRequest containerUpdateRequest);
 
-  EngineResponse updateContainer(String container, Map<String, Object> containerConfig);
-
-  Map<String, EngineResponse> updateContainers(List<String> containers, Map<String, Object> containerConfig);
-
-  EngineResponse wait(String containerIdOrName);
+  EngineResponse<ContainerWaitResponse> wait(String containerIdOrName);
 }

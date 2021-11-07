@@ -2,6 +2,11 @@ package de.gesellix.docker.client
 
 import de.gesellix.docker.client.stack.DeployConfigReader
 import de.gesellix.docker.client.stack.DeployStackOptions
+import de.gesellix.docker.remote.api.EndpointSpec
+import de.gesellix.docker.remote.api.Mount
+import de.gesellix.docker.remote.api.MountVolumeOptions
+import de.gesellix.docker.remote.api.SwarmInitRequest
+import de.gesellix.docker.remote.api.TaskSpecRestartPolicy
 import de.gesellix.docker.testutil.SwarmUtil
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
@@ -22,7 +27,7 @@ class DockerStackComposeIntegrationSpec extends Specification {
     dockerClient = new DockerClientImpl()
     composeFilePath = Paths.get(getClass().getResource('compose/docker-stack.yml').toURI())
     swarmAdvertiseAddr = new SwarmUtil().getAdvertiseAddr()
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def cleanup() {
@@ -31,9 +36,8 @@ class DockerStackComposeIntegrationSpec extends Specification {
 
   def "deploy a new stack with compose file"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    dockerClient.initSwarm(swarmConfig)
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null))
 
     def composeStream = composeFilePath.toFile().newInputStream()
     def environment = [
@@ -52,48 +56,52 @@ class DockerStackComposeIntegrationSpec extends Specification {
     def tasks = delay { dockerClient.stackPs(namespace).content }
     tasks.size() == config.services.size()
 
-    def spec = dockerClient.inspectService("${namespace}_service").content.Spec
-    def containerSpec = spec.TaskTemplate.ContainerSpec
+    def spec = dockerClient.inspectService("${namespace}_service").content.spec
+    def containerSpec = spec.taskTemplate.containerSpec
 
-    spec.EndpointSpec == [Mode: 'vip']
-    spec.Labels == ['com.docker.stack.namespace': namespace]
-    spec.Mode == [Replicated: [Replicas: 1]]
-    spec.Name == "${namespace}_service"
-    spec.Networks.Aliases == [['service']]
-    spec.TaskTemplate.RestartPolicy == [
-        Condition  : 'on-failure',
-        Delay      : 5000000000,
-        MaxAttempts: 3,
-        Window     : 120000000000
-    ]
+    spec.endpointSpec.mode == EndpointSpec.Mode.Vip
+    spec.labels == ['com.docker.stack.namespace': namespace]
+    spec.mode.replicated.replicas == 1
+    spec.name == "${namespace}_service"
+    spec.networks.aliases == [['service']]
+    spec.taskTemplate.restartPolicy.condition == TaskSpecRestartPolicy.Condition.OnMinusFailure
+    spec.taskTemplate.restartPolicy.delay == 5000000000
+    spec.taskTemplate.restartPolicy.maxAttempts == 3
+    spec.taskTemplate.restartPolicy.window == 120000000000
 
-    containerSpec.Args == ['-']
-    containerSpec.Env == ['SOME_VAR=' + environment.SOME_VAR]
-    containerSpec.Image =~ "gesellix/echo-server:${environment.IMAGE_VERSION}(@sha256:[a-f0-9]{64})?"
-    containerSpec.Labels == ['com.docker.stack.namespace': namespace]
-    containerSpec.Mounts == [
-        [
-            Type         : 'volume',
-            Source       : "${namespace}_example" as String,
-            Target       : TestConstants.CONSTANTS.volumeTarget,
-            VolumeOptions: [Labels: ['com.docker.stack.namespace': namespace]]
-        ]
+    containerSpec.args == ['-']
+    containerSpec.env == ['SOME_VAR=' + environment.SOME_VAR]
+    containerSpec.image =~ "gesellix/echo-server:${environment.IMAGE_VERSION}(@sha256:[a-f0-9]{64})?"
+    containerSpec.labels == ['com.docker.stack.namespace': namespace]
+    containerSpec.mounts == [
+        new Mount(
+            TestConstants.CONSTANTS.volumeTarget,
+            "${namespace}_example",
+            Mount.Type.Volume,
+            null, null, null,
+            new MountVolumeOptions(
+                null,
+                ['com.docker.stack.namespace': namespace],
+                null
+            ),
+            null
+        )
     ]
-    containerSpec.Configs.findAll { it.ConfigName == "${namespace}_my-config" }.size() == 1
-    containerSpec.Secrets.findAll { it.SecretName == "${namespace}_my-secret" }.size() == 1
+    containerSpec.configs.findAll { it.configName == "${namespace}_my-config" }.size() == 1
+    containerSpec.secrets.findAll { it.secretName == "${namespace}_my-secret" }.size() == 1
 
     def networkInfo = delayAndRetrySilently { dockerClient.inspectNetwork("${namespace}_my-subnet") }
-    networkInfo.status.code == 200
+    networkInfo.content.name == "${namespace}_my-subnet"
 
     def volumeInfo = delayAndRetrySilently { dockerClient.inspectVolume("${namespace}_example") }
     println "volumes: ${dockerClient.volumes().content}"
-    volumeInfo.status.code == 200
+    volumeInfo.content.name == "${namespace}_example"
 
     cleanup:
     composeStream.close()
     performSilently { dockerClient.stackRm(namespace) }
     delayAndRetrySilently { dockerClient.rmVolume("${namespace}_example") }
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def performSilently(Closure action) {
@@ -104,13 +112,13 @@ class DockerStackComposeIntegrationSpec extends Specification {
     }
   }
 
-  def delay(Integer secondsToWait = 1, Closure action) {
+  def <R> R delay(Integer secondsToWait = 1, Closure<R> action) {
     Thread.sleep(secondsToWait * 1000)
     action()
   }
 
-  def delayAndRetrySilently(Integer secondsToWait = 1, Closure action, Integer retryCount = 5) {
-    Object retVal = null
+  def <R> R delayAndRetrySilently(Integer secondsToWait = 1, Closure<R> action, Integer retryCount = 5) {
+    R retVal = null
     for (_ in 1..retryCount) {
       try {
         Thread.sleep(secondsToWait * 1000)

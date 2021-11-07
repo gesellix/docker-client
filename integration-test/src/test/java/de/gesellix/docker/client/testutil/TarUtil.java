@@ -6,17 +6,12 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 
 public class TarUtil {
-
-  public File unTar(File tarFile) throws IOException {
-    return unTar(new FileInputStream(tarFile));
-  }
 
   public File unTar(InputStream tarFile) throws IOException {
     File destDir = Files.createTempDirectory("de-gesellix-tests").toFile();

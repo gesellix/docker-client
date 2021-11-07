@@ -1,23 +1,32 @@
 package de.gesellix.docker.client.distribution
 
-import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.remote.api.DistributionInspect
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.client.DistributionApi
+import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
+@Mockable([DistributionApi, DistributionInspect])
 class ManageDistributionServiceTest extends Specification {
 
-  EngineClient httpClient = Mock(EngineClient)
+  EngineApiClient client = Mock(EngineApiClient)
   ManageDistributionService service
 
   def setup() {
-    service = new ManageDistributionService(httpClient, Mock(DockerResponseHandler))
+    service = new ManageDistributionService(client)
   }
 
   def "distribution descriptor"() {
+    given:
+    def distributionApi = Mock(DistributionApi)
+    client.distributionApi >> distributionApi
+    def distributionInspect = Mock(DistributionInspect)
+
     when:
-    service.descriptor("image-name")
+    def response = service.descriptor("image-name")
 
     then:
-    1 * httpClient.get([path: "/distribution/image-name/json"])
+    1 * distributionApi.distributionInspect("image-name") >> distributionInspect
+    response.content == distributionInspect
   }
 }

@@ -8,8 +8,12 @@ import de.gesellix.docker.client.volume.ManageVolume
 import de.gesellix.docker.engine.DockerEnv
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.docker.remote.api.SwarmInfo
+import de.gesellix.docker.remote.api.SystemInfo
+import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
+@Mockable([SystemInfo, SwarmInfo])
 class DockerClientImplSpec extends Specification {
 
   EngineClient httpClient = Mock(EngineClient)
@@ -41,16 +45,21 @@ class DockerClientImplSpec extends Specification {
   }
 
   def "get the swarm manager address"() {
+    given:
+    def swarmInfo = Mock(SwarmInfo)
+    swarmInfo.nodeID >> "node-id"
+    def systemInfo = Mock(SystemInfo)
+    systemInfo.swarm >> swarmInfo
+
     when:
     def managerAddress = dockerClient.getSwarmMangerAddress()
+
     then:
-    1 * dockerClient.manageSystem.info() >> new EngineResponse(
-        status: [success: true],
-        content: [Swarm: [NodeID: "node-id"]])
+    1 * dockerClient.manageSystem.info() >> new EngineResponseContent<SystemInfo>(systemInfo)
     then:
     1 * dockerClient.manageNode.inspectNode("node-id") >> new EngineResponse(
         status: [success: true],
-        content: [ManagerStatus: [Addr: "192.168.42.2:2377"]])
+        content: [managerStatus: [addr: "192.168.42.2:2377"]])
     and:
     managerAddress == "192.168.42.2:2377"
   }

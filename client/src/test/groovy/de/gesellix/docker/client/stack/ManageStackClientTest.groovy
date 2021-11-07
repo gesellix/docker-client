@@ -1,6 +1,6 @@
 package de.gesellix.docker.client.stack
 
-import de.gesellix.docker.client.DockerResponseHandler
+import de.gesellix.docker.client.EngineResponseContent
 import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.client.config.ManageConfig
 import de.gesellix.docker.client.network.ManageNetwork
@@ -8,22 +8,25 @@ import de.gesellix.docker.client.node.ManageNode
 import de.gesellix.docker.client.secret.ManageSecret
 import de.gesellix.docker.client.service.ManageService
 import de.gesellix.docker.client.stack.types.StackConfig
-import de.gesellix.docker.client.stack.types.StackNetwork
 import de.gesellix.docker.client.stack.types.StackSecret
-import de.gesellix.docker.client.stack.types.StackService
 import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.client.tasks.ManageTask
-import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.docker.remote.api.Network
+import de.gesellix.docker.remote.api.NetworkCreateRequest
+import de.gesellix.docker.remote.api.Service
+import de.gesellix.docker.remote.api.ServiceSpec
+import de.gesellix.docker.remote.api.SwarmInfo
+import de.gesellix.docker.remote.api.SystemInfo
 import de.gesellix.docker.remote.api.TaskSpec
+import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
 import static de.gesellix.docker.client.stack.ManageStackClient.LabelNamespace
 
+@Mockable([SystemInfo, SwarmInfo, Network, Service, ServiceSpec])
 class ManageStackClientTest extends Specification {
 
-  EngineClient httpClient = Mock(EngineClient)
-  DockerResponseHandler responseHandler = Mock(DockerResponseHandler)
   ManageService manageService = Mock(ManageService)
   ManageTask manageTask = Mock(ManageTask)
   ManageNode manageNode = Mock(ManageNode)
@@ -37,8 +40,6 @@ class ManageStackClientTest extends Specification {
 
   def setup() {
     service = new ManageStackClient(
-        httpClient,
-        responseHandler,
         manageService,
         manageTask,
         manageNode,
@@ -50,15 +51,20 @@ class ManageStackClientTest extends Specification {
   }
 
   def "list stacks"() {
+    given:
+    def service1 = Mock(Service, { it.spec >> Mock(ServiceSpec, { it.labels >> [(LabelNamespace): "service1"] }) })
+    def service2 = Mock(Service, { it.spec >> Mock(ServiceSpec, { it.labels >> [(LabelNamespace): "service2"] }) })
+    def service3 = Mock(Service, { it.spec >> Mock(ServiceSpec, { it.labels >> [(LabelNamespace): "service1"] }) })
+
     when:
     Collection<Stack> stacks = service.lsStacks()
 
     then:
     1 * manageService.services([filters: [label: [(LabelNamespace): true]]]) >> new EngineResponse(
         content: [
-            [Spec: [Labels: [(LabelNamespace): "service1"]]],
-            [Spec: [Labels: [(LabelNamespace): "service2"]]],
-            [Spec: [Labels: [(LabelNamespace): "service1"]]]
+            service1,
+            service2,
+            service3
         ]
     )
     and:
@@ -138,6 +144,8 @@ class ManageStackClientTest extends Specification {
     given:
     String namespace = "the-stack"
     String namespaceFilter = "${LabelNamespace}=${namespace}"
+    def network = Mock(Network)
+    network.id >> "network1-id"
 
     when:
     service.stackRm(namespace)
@@ -146,10 +154,9 @@ class ManageStackClientTest extends Specification {
     1 * manageService.services([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
         content: [[ID: "service1-id"]]
     )
+
     then:
-    1 * manageNetwork.networks([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
-        content: [[Id: "network1-id"]]
-    )
+    1 * manageNetwork.networks([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponseContent<List<Network>>([network])
     then:
     1 * manageSecret.secrets([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
         content: [[ID: "secret1-id"]]
@@ -173,12 +180,16 @@ class ManageStackClientTest extends Specification {
     given:
     String namespace = "the-stack"
     String namespaceFilter = "${LabelNamespace}=${namespace}"
+    def swarmInfo = Mock(SwarmInfo)
+    swarmInfo.controlAvailable >> true
+    def systemInfo = Mock(SystemInfo)
+    systemInfo.swarm >> swarmInfo
 
     when:
     service.stackDeploy(namespace, new DeployStackConfig(), new DeployStackOptions())
 
     then:
-    manageSystem.info() >> new EngineResponse(content: [Swarm: [ControlAvailable: true]])
+    1 * manageSystem.info() >> new EngineResponseContent<SystemInfo>(systemInfo)
     1 * manageNetwork.networks([
         filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse()
     1 * manageService.services([
@@ -190,30 +201,42 @@ class ManageStackClientTest extends Specification {
     String namespace = "the-stack"
     String namespaceFilter = "${LabelNamespace}=${namespace}"
     DeployStackConfig config = new DeployStackConfig()
-    config.services["service1"] = new StackService(taskTemplate: new TaskSpec())
-//    config.services["service1"] = new StackService(taskTemplate: [containerSpec: [:]])
-    config.networks["network1"] = new StackNetwork(labels: [foo: 'bar'])
+    def serviceSpec = new ServiceSpec().tap {
+      taskTemplate = new TaskSpec()
+    }
+    config.services["service1"] = serviceSpec
+    config.networks["network1"] = new NetworkCreateRequest(
+        "network1",
+        null, null, false, false,
+        null, null, null,
+        null, [foo: 'bar']
+    )
     config.secrets["secret1"] = new StackSecret(name: "secret-name-1", data: 'secret'.bytes)
     config.configs["config1"] = new StackConfig(name: "config-name-1", data: 'config'.bytes)
+    def swarmInfo = Mock(SwarmInfo)
+    swarmInfo.controlAvailable >> true
+    def systemInfo = Mock(SystemInfo)
+    systemInfo.swarm >> swarmInfo
 
     when:
     service.stackDeploy(namespace, config, new DeployStackOptions())
 
     then:
-    manageSystem.info() >> new EngineResponse(content: [Swarm: [ControlAvailable: true]])
+    1 * manageSystem.info() >> new EngineResponseContent<SystemInfo>(systemInfo)
 
     and:
     1 * manageNetwork.networks([
         filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse()
-    1 * manageNetwork.createNetwork("the-stack_network1", [
-        'ipam'      : [:],
-        'driverOpts': [:],
-        'labels'    : [
-            'foo'           : 'bar',
-            (LabelNamespace): namespace],
-        'driver'    : null,
-        'internal'  : false,
-        'attachable': false])
+    1 * manageNetwork.createNetwork({ NetworkCreateRequest r ->
+      r.name == "the-stack_network1"
+          && r.getIPAM() == null
+          && r.driver == null
+          && r.labels == [
+          'foo'           : 'bar',
+          (LabelNamespace): namespace]
+          && r.internal == false
+          && r.attachable == false
+    })
 
     and:
     1 * manageSecret.secrets([filters: [name: ["secret-name-1"]]]) >> new EngineResponse(
@@ -234,15 +257,6 @@ class ManageStackClientTest extends Specification {
     and:
     1 * manageService.services([
         filters: ['label': [(namespaceFilter): true]]]) >> new EngineResponse()
-    1 * manageService.createService(
-        [
-            'endpointSpec': [:],
-            'taskTemplate': service.toMap(new TaskSpec()),
-            'mode'        : [:],
-            'labels'      : [(LabelNamespace): namespace],
-            'updateConfig': [:],
-            'networks'    : [],
-            'name'        : 'the-stack_service1'],
-        [:])
+    1 * manageService.createService(serviceSpec, null)
   }
 }

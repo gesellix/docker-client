@@ -4,28 +4,25 @@ import com.squareup.moshi.Moshi
 import de.gesellix.docker.authentication.AuthConfig
 import de.gesellix.docker.authentication.AuthConfigReader
 import de.gesellix.docker.authentication.CredsStore
-import de.gesellix.docker.client.registry.RegistryElection
-import de.gesellix.docker.client.system.ManageSystem
-import de.gesellix.docker.engine.DockerEnv
-import de.gesellix.docker.engine.EngineClient
-import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.docker.client.EngineResponseContent
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.SystemAuthResponse
 import groovy.util.logging.Slf4j
 
 @Slf4j
 class ManageAuthenticationClient implements ManageAuthentication {
 
   AuthConfigReader authConfigReader
-  EngineClient client
+  EngineApiClient client
+
   private RegistryElection registryElection
 
   private Moshi moshi = new Moshi.Builder().build()
 
-  ManageAuthenticationClient(DockerEnv env,
-                             EngineClient client,
-                             ManageSystem manageSystem) {
-    this.authConfigReader = new AuthConfigReader(env)
+  ManageAuthenticationClient(EngineApiClient client, AuthConfigReader authConfigReader) {
     this.client = client
-    this.registryElection = new RegistryElection(manageSystem, this)
+    this.authConfigReader = authConfigReader
+    this.registryElection = new RegistryElection(client.getSystemApi(), authConfigReader)
   }
 
   @Override
@@ -64,15 +61,10 @@ class ManageAuthenticationClient implements ManageAuthentication {
   }
 
   @Override
-  EngineResponse auth(Map authDetails) {
+  EngineResponseContent<SystemAuthResponse> auth(de.gesellix.docker.remote.api.AuthConfig authDetails) {
     log.info("docker login")
-    EngineResponse response = client.post([path              : "/auth",
-                                           body              : authDetails,
-                                           requestContentType: "application/json"])
-    if (response == null || response.status == null || !response.status.success) {
-      log.info("login failed for ${authDetails.username}@${authDetails.serveraddress}")
-    }
-    return response
+    def systemAuth = client.systemApi.systemAuth(authDetails)
+    return new EngineResponseContent(systemAuth)
   }
 
   @Override
@@ -81,7 +73,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
     return encodeAuthConfig(authConfig)
   }
 
-  def resolveAuthConfigForImage(String image) {
+  AuthConfig resolveAuthConfigForImage(String image) {
     if (/^([a-f0-9]{64})$/.matches(image)) {
       throw new IllegalArgumentException("invalid repository name (${image}), cannot specify 64-byte hexadecimal strings")
     }

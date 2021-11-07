@@ -1,306 +1,226 @@
 package de.gesellix.docker.client.image
 
-import de.gesellix.docker.client.DockerAsyncCallback
-import de.gesellix.docker.client.DockerAsyncConsumer
-import de.gesellix.docker.client.DockerClientException
-import de.gesellix.docker.client.DockerResponseHandler
-import de.gesellix.docker.client.Timeout
+import de.gesellix.docker.client.EngineResponseContent
 import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.client.repository.RepositoryTagParser
-import de.gesellix.docker.engine.EngineClient
-import de.gesellix.docker.engine.EngineResponse
-import de.gesellix.util.IOUtils
+import de.gesellix.docker.remote.api.BuildInfo
+import de.gesellix.docker.remote.api.CreateImageInfo
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.HistoryResponseItem
+import de.gesellix.docker.remote.api.Image
+import de.gesellix.docker.remote.api.ImageDeleteResponseItem
+import de.gesellix.docker.remote.api.ImagePruneResponse
+import de.gesellix.docker.remote.api.ImageSearchResponseItem
+import de.gesellix.docker.remote.api.ImageSummary
+import de.gesellix.docker.remote.api.PushImageInfo
+import de.gesellix.docker.remote.api.core.StreamCallback
 import de.gesellix.util.QueryUtil
-import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 
-import java.util.concurrent.CountDownLatch
-
-import static java.util.concurrent.Executors.newSingleThreadExecutor
+import java.time.Duration
 
 @Slf4j
 class ManageImageClient implements ManageImage {
 
-  private EngineClient client
-  private DockerResponseHandler responseHandler
+  private EngineApiClient client
   private RepositoryTagParser repositoryTagParser
   private QueryUtil queryUtil
   private ManageAuthentication manageAuthentication
 
-  ManageImageClient(EngineClient client, DockerResponseHandler responseHandler, ManageAuthentication manageAuthentication) {
+  ManageImageClient(EngineApiClient client, ManageAuthentication manageAuthentication) {
     this.client = client
-    this.responseHandler = responseHandler
     this.manageAuthentication = manageAuthentication
     this.repositoryTagParser = new RepositoryTagParser()
     this.queryUtil = new QueryUtil()
   }
 
   @Override
-  EngineResponse search(String term, Integer limit = 25) {
+  EngineResponseContent<List<ImageSearchResponseItem>> search(String term, Integer limit = 25) {
     log.info("docker search")
-    def response = client.get([path : "/images/search".toString(),
-                               query: [term : term,
-                                       limit: limit]])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker search failed"))
-    return response
-  }
-
-  /**
-   * @deprecated use buildWithLogs(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
-   * @see #buildWithLogs(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
-   */
-  @Deprecated
-  @Override
-  buildWithLogs(InputStream buildContext, Map query, Timeout timeout = null) {
-    return buildWithLogs(buildContext, new BuildConfig(query: query, timeout: timeout))
+    def imageSearch = client.imageApi.imageSearch(term, limit, null)
+    return new EngineResponseContent<List<ImageSearchResponseItem>>(imageSearch)
   }
 
   @Override
-  BuildResult buildWithLogs(InputStream buildContext, BuildConfig buildConfig = new BuildConfig()) {
-    if (buildConfig.callback) {
-      throw new UnsupportedOperationException("Currently cannot handle two callbacks.")
-    }
-
-    def buildLatch = new CountDownLatch(1)
-    def chunks = []
-    def callback = new DockerAsyncCallback() {
-
-      @Override
-      onEvent(Object event) {
-        log.info("$event")
-        if (event instanceof String) {
-          chunks << new JsonSlurper().parseText(event as String)
-        }
-        else {
-          chunks << event
-        }
-      }
-
-      @Override
-      onFinish() {
-        log.debug("build finished")
-        buildLatch.countDown()
-      }
-    }
-    buildConfig.callback = callback
-    def asyncBuildResponse = build(buildContext, buildConfig)
-
-    def builtInTime = buildLatch.await(buildConfig.timeout.timeout, buildConfig.timeout.unit)
-    asyncBuildResponse.response.taskFuture.cancel(false)
-
-    def lastLogEvent
-    if (chunks.empty) {
-      log.warn("no build log collected - timeout of ${buildConfig.timeout} reached?")
-      lastLogEvent = null
-    }
-    else {
-      lastLogEvent = chunks.last()
-    }
-
-    if (!builtInTime) {
-      throw new DockerClientException(new RuntimeException("docker build timeout"), lastLogEvent)
-    }
-    if (lastLogEvent?.error) {
-      throw new DockerClientException(new RuntimeException("docker build failed"), lastLogEvent)
-    }
-    return [log    : chunks,
-            imageId: getBuildResultAsImageId(chunks)]
-  }
-
-  /**
-   * @deprecated use build(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
-   * @see #build(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
-   */
-  @Deprecated
-  @Override
-  build(InputStream buildContext, Map query, DockerAsyncCallback callback = null) {
-    BuildResult result = build(buildContext, new BuildConfig(query: query, callback: callback))
-    if (callback) {
-      return result.response
-    }
-    else {
-      return result.imageId
-    }
+  void build(InputStream buildContext) {
+    build(null, null,
+          buildContext)
   }
 
   @Override
-  BuildResult build(InputStream buildContext, BuildConfig config = new BuildConfig()) {
-    EngineResponse response = buildAsync(buildContext, config, config.callback)
-    if (config.callback) {
-      def executor = newSingleThreadExecutor()
-      def future = executor.submit(new DockerAsyncConsumer(response as EngineResponse, config.callback))
-      response.taskFuture = future
-      return new BuildResult(response: response)
-    }
-    else {
-      String imageId = getBuildResultAsImageId(response.content as List)
-      return new BuildResult(response: response, imageId: imageId)
-    }
+  void build(StreamCallback<BuildInfo> callback, Duration timeout,
+             InputStream buildContext) {
+    build(callback, timeout,
+          null, null, null, null, null, null, null, null, null, null, buildContext)
   }
 
-  EngineResponse buildAsync(InputStream buildContext, BuildConfig config = new BuildConfig(), DockerAsyncCallback callback) {
+  @Override
+  void build(String tag,
+             InputStream buildContext) {
+    build(null, null,
+          buildContext)
+  }
+
+  @Override
+  void build(StreamCallback<BuildInfo> callback, Duration timeout,
+             String tag,
+             InputStream buildContext) {
+    build(callback, timeout,
+          null, tag, null, null, null, null, null, null, null, null, buildContext)
+  }
+
+  @Override
+  void build(String dockerfile, String tag, Boolean quiet, Boolean nocache, String pull, Boolean rm,
+             String buildargs, String labels, String encodedRegistryConfig, String contentType, InputStream buildContext) {
+    build(null, null,
+          dockerfile, tag, quiet, nocache, pull, rm, buildargs, labels, encodedRegistryConfig, contentType, buildContext)
+  }
+
+  @Override
+  void build(StreamCallback<BuildInfo> callback, Duration timeout,
+             String dockerfile, String tag, Boolean quiet, Boolean nocache, String pull, Boolean rm,
+             String buildargs, String labels, String encodedRegistryConfig, String contentType, InputStream buildContext) {
     log.info("docker build")
-    def actualQuery = config.query ?: [:]
-    queryUtil.jsonEncodeBuildargs(actualQuery)
-    def actualBuildOptions = config.options ?: [:]
-    def request = [path              : "/build",
-                   query             : actualQuery,
-                   body              : buildContext,
-                   requestContentType: "application/octet-stream",
-                   async             : callback ? true : false]
-    if (actualBuildOptions.EncodedRegistryConfig) {
-      request.headers = ["X-Registry-Config": actualBuildOptions.EncodedRegistryConfig as String]
-    }
-    else {
-      request.headers = ["X-Registry-Config": manageAuthentication.encodeAuthConfigs(manageAuthentication.getAllAuthConfigs())]
-    }
-    def response = client.post(request)
 
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker build failed"))
-
-    return response
-  }
-
-  String getBuildResultAsImageId(List<Map<String, String>> chunks) {
-    def reversedChunks = chunks.reverse()
-    def buildResultMessage = reversedChunks.find { Map<String, String> chunk ->
-      chunk.aux?.ID
+    if (!encodedRegistryConfig) {
+      encodedRegistryConfig = manageAuthentication.encodeAuthConfigs(manageAuthentication.getAllAuthConfigs())
     }
-    if (buildResultMessage) {
-      return buildResultMessage.aux.ID
-    }
-//        throw new IllegalStateException("Couldn't find image id in build output.")
 
-    log.info("Couldn't find aux.ID in build output, trying via fallback.")
-
-    buildResultMessage = reversedChunks.find { Map<String, String> chunk ->
-      chunk.stream?.trim()?.startsWith("Successfully built ")
-    }
-    return buildResultMessage.stream.trim() - "Successfully built "
+    client.imageApi.imageBuild(dockerfile,
+                               tag, null, null, quiet, nocache, null, pull,
+                               rm == null ? true : rm, null,
+                               null, null, null, null, null, null,
+                               buildargs,
+                               null,
+                               null,
+                               labels,
+                               null,
+                               contentType ?: "application/x-tar",
+                               encodedRegistryConfig,
+                               null, null,
+                               null,
+                               buildContext,
+                               callback, timeout ? timeout.toMillis() : null)
   }
 
   @Override
-  EngineResponse history(String imageId) {
+  EngineResponseContent<List<HistoryResponseItem>> history(String imageId) {
     log.info("docker history")
-    def response = client.get([path: "/images/${imageId}/history".toString()])
-    return response
+    def imageHistory = client.imageApi.imageHistory(imageId)
+    return new EngineResponseContent<List<HistoryResponseItem>>(imageHistory)
   }
 
   @Override
-  importUrl(String url, String repository = "", String tag = "") {
-    log.info("docker import '${url}' into ${repository}:${tag}")
-
-    def response = client.post([path : "/images/create",
-                                query: [fromSrc: url.toString(),
-                                        repo   : repository ?: "",
-                                        tag    : tag ?: ""]])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker import from url failed"))
-
-    def responseBody = response.content
-    return responseBody.status.last()
-  }
-
-  @Override
-  String importStream(InputStream stream, String repository = "", String tag = "") {
-    log.info("docker import stream into ${repository}:${tag}")
-
-    def response = client.post([path              : "/images/create",
-                                body              : stream,
-                                query             : [fromSrc: "-",
-                                                     repo   : repository ?: "",
-                                                     tag    : tag ?: ""],
-                                requestContentType: "application/x-tar"])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker import from stream failed"))
-
-    def responseBody = response.content
-    return responseBody.status
-  }
-
-  @Override
-  EngineResponse inspectImage(String imageId) {
+  EngineResponseContent<Image> inspectImage(String imageId) {
     log.info("docker inspect image")
-    def response = client.get([path: "/images/${imageId}/json".toString()])
-    return response
+    def imageInspect = client.imageApi.imageInspect(imageId)
+    return new EngineResponseContent<Image>(imageInspect)
   }
 
   @Override
-  EngineResponse load(InputStream stream) {
+  void load(InputStream imagesTarball) {
     log.info("docker load")
-    def response = client.post([path              : "/images/load",
-                                body              : stream,
-                                requestContentType: "application/x-tar"])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker load failed"))
-    return response
+    client.imageApi.imageLoad(null, imagesTarball)
   }
 
   @Override
-  EngineResponse images(Map<String, Object> query = [:]) {
-    log.info("docker images")
+  EngineResponseContent<List<ImageSummary>> images(Map<String, Object> query) {
     def actualQuery = query ?: [:]
     def defaults = [all: false]
     queryUtil.applyDefaults(actualQuery, defaults)
     queryUtil.jsonEncodeFilters(actualQuery)
-    def response = client.get([path : "/images/json",
-                               query: actualQuery])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker images failed"))
-    return response
+    return images(actualQuery.all as Boolean, actualQuery.filters as String, actualQuery.digests as Boolean)
   }
 
   @Override
-  EngineResponse pruneImages(Map<String, Object> query = [:]) {
-    log.info("docker image prune")
+  EngineResponseContent<List<ImageSummary>> images(Boolean all = false, String filters = null, Boolean digests = null) {
+    log.info("docker images")
+    def imageList = client.imageApi.imageList(all, filters, digests)
+    return new EngineResponseContent<List<ImageSummary>>(imageList)
+  }
+
+  @Override
+  EngineResponseContent<ImagePruneResponse> pruneImages(Map<String, Object> query) {
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
-    def response = client.post([path : "/images/prune",
-                                query: actualQuery])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker image prune failed"))
-    return response
+    return pruneImages(actualQuery.filters as String)
   }
 
   @Override
-  EngineResponse create(Map query = [:], Map createOptions = [:]) {
-    log.info("docker image create")
-    createOptions = createOptions ?: [:]
-    def headers = [:]
-    if (createOptions.EncodedRegistryAuth) {
-      headers["X-Registry-Auth"] = createOptions.EncodedRegistryAuth as String
-    }
-    def actualQuery = query ?: [:]
-    def response = client.post([path   : "/images/create",
-                                query  : actualQuery,
-                                headers: headers])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker images create failed"))
-    return response
+  EngineResponseContent<ImagePruneResponse> pruneImages(String filters = null) {
+    log.info("docker image prune")
+    def imagePrune = client.imageApi.imagePrune(filters)
+    return new EngineResponseContent<ImagePruneResponse>(imagePrune)
   }
 
-  /**
-   * @deprecated please use #create(query, createOptions)
-   * @see #create(Map, Map)
-   */
-  @Deprecated
   @Override
-  String pull(String imageName, String tag = "", String authBase64Encoded = ".", String registry = "") {
+  void pull(StreamCallback<CreateImageInfo> callback, Duration timeout,
+            String imageName, String tag = "", String authBase64Encoded = ".") {
     log.info("docker pull '${imageName}:${tag}'")
 
-    def actualImageName = imageName
-    if (registry) {
-      actualImageName = "$registry/$imageName".toString()
-    }
-
-    def response = create([fromImage: actualImageName,
-                           tag      : tag],
-                          [EncodedRegistryAuth: authBase64Encoded])
-//        println new JsonBuilder(response.content).toString()
-    if (response.status.success) {
-      return findImageId(actualImageName, tag)
-    }
-    else {
-      return null
-    }
+    client.imageApi.imageCreate(
+        imageName,
+        null,
+        null,
+        tag ?: "", // "latest" as default?
+        null,
+        authBase64Encoded,
+        null,
+        null,
+        null,
+        callback,
+        timeout ? timeout.toMillis() : null
+    )
+//    return findImageId(actualImageName, tag)
   }
 
   @Override
-  EngineResponse push(String imageName, String authBase64Encoded = ".", String registry = "") {
+  void importUrl(StreamCallback<CreateImageInfo> callback, Duration timeout,
+                 String url, String repository = "", String tag = "") {
+    log.info("docker import '${url}' into ${repository}:${tag}")
+
+    client.imageApi.imageCreate(
+        null,
+        url,
+        repository ?: "",
+        tag ?: "", // "latest" as default?
+        null,
+        null,
+        null,
+        null,
+        null,
+        callback,
+        timeout ? timeout.toMillis() : null
+    )
+  }
+
+  @Override
+  void importStream(StreamCallback<CreateImageInfo> callback, Duration timeout,
+                    InputStream stream, String repository = "", String tag = "") {
+    log.info("docker import stream into ${repository}:${tag}")
+
+    client.imageApi.imageCreate(
+        null,
+        "-",
+        repository ?: "",
+        tag ?: "", // "latest" as default?
+        null,
+        null,
+        null,
+        null,
+        stream,
+        callback,
+        timeout ? timeout.toMillis() : null
+    )
+  }
+
+  @Override
+  void push(String imageName, String authBase64Encoded = ".", String registry = "") {
+    push(null, null, imageName, authBase64Encoded, registry)
+  }
+
+  @Override
+  void push(StreamCallback<PushImageInfo> callback, Duration timeout, String imageName, String authBase64Encoded = ".", String registry = "") {
     log.info("docker push '${imageName}'")
 
     def actualImageName = imageName
@@ -310,47 +230,32 @@ class ManageImageClient implements ManageImage {
     }
     def repoAndTag = repositoryTagParser.parseRepositoryTag(actualImageName)
 
-    def response = client.post([path   : "/images/${repoAndTag.repo}/push".toString(),
-                                query  : [tag: repoAndTag.tag],
-                                headers: ["X-Registry-Auth": authBase64Encoded ?: "."]])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker push failed"))
-    return response
+    client.imageApi.imagePush(repoAndTag.repo as String,
+                              authBase64Encoded ?: ".",
+                              repoAndTag.tag as String,
+                              callback,
+                              timeout ? timeout.toMillis() : null)
   }
 
   @Override
-  EngineResponse rmi(String imageId) {
+  EngineResponseContent<List<ImageDeleteResponseItem>> rmi(String imageId) {
     log.info("docker rmi")
-    def response = client.delete([path: "/images/${imageId}".toString()])
-    return response
+    def imageDelete = client.imageApi.imageDelete(imageId, null, null)
+    return new EngineResponseContent<List<ImageDeleteResponseItem>>(imageDelete)
   }
 
   @Override
-  EngineResponse save(String... images) {
+  EngineResponseContent<InputStream> save(List<String> images) {
     log.info("docker save")
-
-    def response
-    if (images.length == 1) {
-      response = client.get([path: "/images/${images.first()}/get".toString()])
-    }
-    else {
-      response = client.get([path : "/images/get",
-                             query: [names: images.collect { it.toString() }]])
-    }
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker save failed"))
-
-    return response
+    def savedImages = client.imageApi.imageGetAll(images)
+    return new EngineResponseContent<InputStream>(savedImages)
   }
 
   @Override
-  EngineResponse tag(String imageId, String repository) {
+  void tag(String imageId, String repository) {
     log.info("docker tag")
     def repoAndTag = repositoryTagParser.parseRepositoryTag(repository)
-    def response = client.post([path : "/images/${imageId}/tag".toString(),
-                                query: [repo: repoAndTag.repo,
-                                        tag : repoAndTag.tag]])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker tag failed"))
-    IOUtils.closeQuietly(response.stream)
-    return response
+    client.imageApi.imageTag(imageId, repoAndTag.repo, repoAndTag.tag)
   }
 
   @Override
@@ -359,16 +264,16 @@ class ManageImageClient implements ManageImage {
     def images = images((isDigest) ? [digests: '1'] : [:]).content
 //        println new JsonBuilder(images).toString()
     def imageIdsByRepoDigest = images.collectEntries { image ->
-      image.RepoDigests?.collectEntries { String repoDigest ->
+      image.repoDigests?.collectEntries { String repoDigest ->
         def idByDigest = [:]
-        idByDigest[repoDigest] = (String) image.Id
+        idByDigest[repoDigest] = (String) image.id
         idByDigest
       } ?: [:]
     }
     def imageIdsByName = images.collectEntries { image ->
-      image.RepoTags?.collectEntries { String repoTag ->
+      image.repoTags?.collectEntries { String repoTag ->
         def idByName = [:]
-        idByName[repoTag] = (String) image.Id
+        idByName[repoTag] = (String) image.id
         idByName
       } ?: [:]
     }

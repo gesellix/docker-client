@@ -1,5 +1,6 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.remote.api.SwarmInitRequest
 import de.gesellix.docker.testutil.SwarmUtil
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
@@ -16,12 +17,8 @@ class DockerNetworkIntegrationSpec extends Specification {
   }
 
   def ping() {
-    when:
-    def ping = dockerClient.ping()
-
-    then:
-    ping.status.code == 200
-    ping.content == "OK"
+    expect:
+    "OK" == dockerClient.ping().content
   }
 
   def "list networks"() {
@@ -29,18 +26,18 @@ class DockerNetworkIntegrationSpec extends Specification {
     def networks = dockerClient.networks().content
 
     then:
-    networks.find { it.Name == "none" }
+    networks.find { it.name == "none" }
   }
 
   def "create default network"() {
     given:
-    !dockerClient.networks().content.find { it.Name == "test-net" }
+    !dockerClient.networks().content.find { it.name == "test-net" }
 
     when:
     dockerClient.createNetwork('test-net')
 
     then:
-    dockerClient.networks().content.find { it.Name == "test-net" }
+    dockerClient.networks().content.find { it.name == "test-net" }
 
     cleanup:
     performSilently { dockerClient.rmNetwork('test-net') }
@@ -49,13 +46,15 @@ class DockerNetworkIntegrationSpec extends Specification {
   @Requires({ LocalDocker.supportsSwarmMode() })
   def "create overlay network"() {
     given:
-    performSilently { dockerClient.leaveSwarm([force: true]) }
-    !dockerClient.networks().content.find { it.Name == "test-net" }
-    dockerClient.initSwarm([
-        "AdvertiseAddr"  : new SwarmUtil().getAdvertiseAddr(),
-        "ListenAddr"     : "0.0.0.0",
-        "ForceNewCluster": false
-    ])
+    performSilently { dockerClient.leaveSwarm(true) }
+    !dockerClient.networks().content.find { it.name == "test-net" }
+    dockerClient.initSwarm(new SwarmInitRequest(
+        "0.0.0.0",
+        new SwarmUtil().getAdvertiseAddr(),
+        null, null, null,
+        true,
+        null, null
+    ))
 
     when:
     dockerClient.createNetwork('test-net', [
@@ -66,11 +65,11 @@ class DockerNetworkIntegrationSpec extends Specification {
     ])
 
     then:
-    dockerClient.networks().content.find { it.Name == "test-net" }
+    dockerClient.networks().content.find { it.name == "test-net" }
 
     cleanup:
     performSilently { dockerClient.rmNetwork('test-net') }
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def performSilently(Closure action) {

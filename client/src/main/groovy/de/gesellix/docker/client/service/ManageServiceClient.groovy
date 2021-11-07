@@ -1,78 +1,69 @@
 package de.gesellix.docker.client.service
 
-import de.gesellix.docker.client.DockerResponseHandler
+import de.gesellix.docker.client.EngineResponseContent
 import de.gesellix.docker.client.node.NodeUtil
 import de.gesellix.docker.client.tasks.ManageTask
-import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
-import de.gesellix.util.IOUtils
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.Service
+import de.gesellix.docker.remote.api.ServiceCreateResponse
+import de.gesellix.docker.remote.api.ServiceSpec
+import de.gesellix.docker.remote.api.ServiceUpdateResponse
+import de.gesellix.docker.remote.api.Task
 import de.gesellix.util.QueryUtil
 import groovy.util.logging.Slf4j
 
 @Slf4j
 class ManageServiceClient implements ManageService {
 
-  private EngineClient client
-  private DockerResponseHandler responseHandler
+  private EngineApiClient client
   private QueryUtil queryUtil
   private ManageTask manageTask
   private NodeUtil nodeUtil
 
   ManageServiceClient(
-      EngineClient client,
-      DockerResponseHandler responseHandler,
+      EngineApiClient client,
       ManageTask manageTask,
       NodeUtil nodeUtil) {
     this.client = client
-    this.responseHandler = responseHandler
     this.queryUtil = new QueryUtil()
     this.manageTask = manageTask
     this.nodeUtil = nodeUtil
   }
 
   @Override
-  EngineResponse services(Map<String, Object> query = [:]) {
+  EngineResponseContent<List<Service>> services(Map<String, Object> query) {
     log.info("docker service ls")
     def actualQuery = query ?: [:]
     queryUtil.jsonEncodeFilters(actualQuery)
-    def response = client.get([path : "/services",
-                               query: actualQuery])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service ls failed"))
-    return response
+    return services(actualQuery.filters as String, actualQuery.status as Boolean)
   }
 
   @Override
-  EngineResponse createService(Map<String, Object> config, Map<String, Object> createOptions = [:]) {
+  EngineResponseContent<List<Service>> services(String filters = null, Boolean status = null) {
+    log.info("docker service ls")
+    def serviceList = client.serviceApi.serviceList(filters, status)
+    return new EngineResponseContent<List<Service>>(serviceList)
+  }
+
+  @Override
+  EngineResponse<ServiceCreateResponse> createService(ServiceSpec serviceSpec, String encodedRegistryAuth = null) {
     log.info("docker service create")
-    config = config ?: [:]
-    createOptions = createOptions ?: [:]
-    def headers = [:]
-    if (createOptions.EncodedRegistryAuth) {
-      headers["X-Registry-Auth"] = createOptions.EncodedRegistryAuth as String
-    }
-    def response = client.post([path              : "/services/create",
-                                headers           : headers,
-                                body              : config,
-                                requestContentType: "application/json"])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service create failed"))
-    return response
+    def serviceCreate = client.serviceApi.serviceCreate(serviceSpec, encodedRegistryAuth)
+    return new EngineResponseContent<ServiceCreateResponse>(serviceCreate)
   }
 
   @Override
-  EngineResponse rmService(String name) {
+  void rmService(String name) {
     log.info("docker service rm")
-    EngineResponse response = client.delete([path: "/services/$name".toString()])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service rm failed"))
-    IOUtils.closeQuietly(response.stream)
-    return response
+    client.serviceApi.serviceDelete(name)
   }
 
   @Override
-  EngineResponse inspectService(name) {
+  EngineResponseContent<Service> inspectService(String name) {
     log.info("docker service inspect")
-    def response = client.get([path: "/services/$name".toString()])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service inspect failed"))
-    return response
+    def serviceInspect = client.serviceApi.serviceInspect(name, null)
+    return new EngineResponseContent<Service>(serviceInspect)
   }
 
 //    @Override
@@ -85,38 +76,33 @@ class ManageServiceClient implements ManageService {
 //    }
 
   @Override
-  EngineResponse updateService(String name, Map<String, Object> query, Map<String, Object> config, Map<String, Object> updateOptions = [:]) {
-    log.info("docker service update")
-    def actualQuery = query ?: [:]
-    config = config ?: [:]
-    updateOptions = updateOptions ?: [:]
-    def headers = [:]
-    if (updateOptions.EncodedRegistryAuth) {
-      headers["X-Registry-Auth"] = updateOptions.EncodedRegistryAuth as String
-    }
-    def response = client.post([path              : "/services/$name/update".toString(),
-                                query             : actualQuery,
-                                headers           : headers,
-                                body              : config,
-                                requestContentType: "application/json"])
-    responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker service update failed"))
-    return response
+  EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, ServiceSpec serviceSpec, String registryAuthFrom = null, String encodedRegistryAuth = null) {
+    log.info("docker service update $name@$version")
+    def serviceUpdate = client.serviceApi.serviceUpdate(name, version, serviceSpec, registryAuthFrom ?: "spec", null, encodedRegistryAuth)
+    return new EngineResponseContent<ServiceUpdateResponse>(serviceUpdate)
   }
 
   @Override
-  EngineResponse scaleService(String name, int replicas) {
+  EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, String rollback, String registryAuthFrom = null, String encodedRegistryAuth = null) {
+    log.info("docker service update $name@$version")
+    def serviceUpdate = client.serviceApi.serviceUpdate(name, version, null, registryAuthFrom, rollback, encodedRegistryAuth)
+    return new EngineResponseContent<ServiceUpdateResponse>(serviceUpdate)
+  }
+
+  @Override
+  EngineResponseContent<ServiceUpdateResponse> scaleService(String name, int replicas) {
     log.info("docker service scale")
     def service = inspectService(name).content
-    def mode = service.Spec.Mode
-    if (!mode.Replicated) {
+    def mode = service.spec.mode
+    if (!mode.replicated) {
       throw new IllegalStateException("scale can only be used with replicated mode")
     }
-    mode.Replicated.Replicas = replicas
-    return updateService(name, [version: service.Version], service.Spec)
+    mode.replicated.replicas = replicas
+    return updateService(name, service.version.index, service.spec)
   }
 
   @Override
-  EngineResponse tasksOfService(String service, Map<String, Object> query = [:]) {
+  EngineResponse<List<Task>> tasksOfService(String service, Map<String, Object> query = [:]) {
     log.info("docker service ps")
     def actualQuery = query ?: [:]
     if (!actualQuery.containsKey('filters')) {

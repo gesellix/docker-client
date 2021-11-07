@@ -1,22 +1,33 @@
 package de.gesellix.docker.client.secret;
 
 import de.gesellix.docker.engine.EngineResponse;
+import de.gesellix.docker.remote.api.IdResponse;
+import de.gesellix.docker.remote.api.Secret;
+import de.gesellix.docker.remote.api.SecretSpec;
 
+import java.util.List;
 import java.util.Map;
 
 public interface ManageSecret {
 
-  EngineResponse createSecret(String name, byte[] secretData);
+  EngineResponse<IdResponse> createSecret(String name, byte[] secretData);
 
-  EngineResponse createSecret(String name, byte[] secretData, Map<String, String> labels);
+  EngineResponse<IdResponse> createSecret(String name, byte[] secretData, Map<String, String> labels);
 
-  EngineResponse inspectSecret(String secretId);
+  EngineResponse<Secret> inspectSecret(String secretId);
 
-  EngineResponse secrets();
+  /**
+   * @see #secrets(String)
+   * @deprecated use {@link #secrets(String)}
+   */
+  @Deprecated
+  EngineResponse<List<Secret>> secrets(Map<String, Object> query);
 
-  EngineResponse secrets(Map<String, Object> query);
+  EngineResponse<List<Secret>> secrets();
 
-  EngineResponse rmSecret(String secretId);
+  EngineResponse<List<Secret>> secrets(String filters);
 
-  EngineResponse updateSecret(String secretId, int version, Map<String, Object> secretSpec);
+  void rmSecret(String secretId);
+
+  void updateSecret(String secretId, long version, SecretSpec secretSpec);
 }

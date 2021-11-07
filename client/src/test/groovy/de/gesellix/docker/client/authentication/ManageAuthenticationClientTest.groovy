@@ -5,10 +5,12 @@ import com.squareup.moshi.Types
 import de.gesellix.docker.authentication.AuthConfig
 import de.gesellix.docker.authentication.AuthConfigReader
 import de.gesellix.docker.client.DockerClient
-import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.engine.DockerEnv
-import de.gesellix.docker.engine.EngineClient
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.SystemAuthResponse
+import de.gesellix.docker.remote.api.client.SystemApi
 import de.gesellix.testutil.ResourceReader
+import io.github.joke.spockmockable.Mockable
 import spock.lang.Requires
 import spock.lang.Specification
 
@@ -16,6 +18,7 @@ import java.lang.reflect.Type
 
 import static de.gesellix.docker.authentication.AuthConfig.EMPTY_AUTH_CONFIG
 
+@Mockable([SystemApi, SystemAuthResponse])
 class ManageAuthenticationClientTest extends Specification {
 
   DockerEnv env
@@ -25,14 +28,14 @@ class ManageAuthenticationClientTest extends Specification {
 
   def setup() {
     env = Mock(DockerEnv)
-    service = new ManageAuthenticationClient(env, Mock(EngineClient), Mock(ManageSystem))
+    service = new ManageAuthenticationClient(Mock(EngineApiClient), new AuthConfigReader(env))
     service.authConfigReader = Spy(AuthConfigReader, constructorArgs: [env])
   }
 
   def "read authConfig (new format)"() {
     given:
-    def oldDockerConfig = System.clearProperty("docker.config")
-    def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/config.json', DockerClient)
+    String oldDockerConfig = System.clearProperty("docker.config")
+    File expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/config.json', DockerClient)
     env.indexUrl_v1 >> 'https://index.docker.io/v1/'
 
     when:
@@ -52,8 +55,8 @@ class ManageAuthenticationClientTest extends Specification {
 
   def "read authConfig (legacy format)"() {
     given:
-    def oldDockerConfig = System.clearProperty("docker.config")
-    def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg', DockerClient)
+    String oldDockerConfig = System.clearProperty("docker.config")
+    File expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg', DockerClient)
     env.indexUrl_v1 >> 'https://index.docker.io/v1/'
 
     when:
@@ -72,11 +75,35 @@ class ManageAuthenticationClientTest extends Specification {
   }
 
   @Requires({ System.properties['user.name'] == 'gesellix' })
+  def "read all auth configs (deprecated)"() {
+    given:
+    String oldDockerConfig = System.clearProperty("docker.config")
+    String configFile = "/auth/dockercfg-with-credsStore-${System.properties['os.name'].toString().toLowerCase().capitalize().replaceAll("\\s", "_")}"
+    File expectedConfigFile = new ResourceReader().getClasspathResourceAsFile(configFile, DockerClient)
+    env.indexUrl_v1 >> 'https://index.docker.io/v1/'
+
+    when:
+    Map<String, AuthConfig> result = service.getAllAuthConfigs(expectedConfigFile)
+
+    then:
+    result.size() == 1
+    AuthConfig authConfig = result["https://index.docker.io/v1/"]
+    authConfig.serveraddress == "https://index.docker.io/v1/"
+    authConfig.username == "gesellix"
+    authConfig.password =~ ".+"
+
+    cleanup:
+    if (oldDockerConfig) {
+      System.setProperty("docker.config", oldDockerConfig)
+    }
+  }
+
+  @Requires({ System.properties['user.name'] == 'gesellix' })
   def "read all auth configs"() {
     given:
-    def oldDockerConfig = System.clearProperty("docker.config")
-    def configFile = "/auth/dockercfg-with-credsStore-${System.properties['os.name'].toString().toLowerCase().capitalize().replaceAll("\\s", "_")}"
-    def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile(configFile, DockerClient)
+    String oldDockerConfig = System.clearProperty("docker.config")
+    String configFile = "/auth/dockercfg-with-credsStore-${System.properties['os.name'].toString().toLowerCase().capitalize().replaceAll("\\s", "_")}"
+    File expectedConfigFile = new ResourceReader().getClasspathResourceAsFile(configFile, DockerClient)
     env.indexUrl_v1 >> 'https://index.docker.io/v1/'
 
     when:
@@ -100,7 +127,7 @@ class ManageAuthenticationClientTest extends Specification {
     def expectedAuthConfig = new AuthConfig(username: "gesellix", password: "-yet-another-password-", email: "tobias@gesellix.de", serveraddress: "https://index.docker.io/v1/")
 
     when:
-    def authResult = service.encodeAuthConfig(expectedAuthConfig)
+    String authResult = service.encodeAuthConfig(expectedAuthConfig)
 
     then:
     moshi.adapter(AuthConfig).fromJson(new String(authResult.decodeBase64())) == expectedAuthConfig
@@ -111,7 +138,7 @@ class ManageAuthenticationClientTest extends Specification {
     def expectedAuthConfigs = ["for-test": new AuthConfig(username: "user", password: "secret")]
 
     when:
-    def authResult = service.encodeAuthConfigs(expectedAuthConfigs)
+    String authResult = service.encodeAuthConfigs(expectedAuthConfigs)
 
     then:
     Type type = Types.newParameterizedType(Map, String, AuthConfig)
@@ -119,20 +146,24 @@ class ManageAuthenticationClientTest extends Specification {
   }
 
   def "login"() {
-    def authDetails = [:]
+    given:
+    def systemApi = Mock(SystemApi)
+    service.client.systemApi >> systemApi
+    def authConfig = new de.gesellix.docker.remote.api.AuthConfig()
+    def authResponse = Mock(SystemAuthResponse)
+
     when:
-    service.auth(authDetails)
+    def auth = service.auth(authConfig)
 
     then:
-    1 * service.client.post([path              : "/auth",
-                             body              : authDetails,
-                             requestContentType: "application/json"])
+    1 * systemApi.systemAuth(authConfig) >> authResponse
+    auth.content == authResponse
   }
 
   def "read auth config for official Docker index"() {
     given:
     env.indexUrl_v1 >> 'https://index.docker.io/v1/'
-    def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/config.json', DockerClient)
+    File dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/config.json', DockerClient)
 
     when:
     def authDetails = service.readAuthConfig(null, dockerCfg)
@@ -149,7 +180,7 @@ class ManageAuthenticationClientTest extends Specification {
 
   def "read auth config for quay.io"() {
     given:
-    def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/config.json', DockerClient)
+    File dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/config.json', DockerClient)
 
     when:
     def authDetails = service.readAuthConfig("quay.io", dockerCfg)
@@ -178,7 +209,7 @@ class ManageAuthenticationClientTest extends Specification {
 
   def "read auth config for unknown registry hostname"() {
     given:
-    def dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/config.json', DockerClient)
+    File dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/config.json', DockerClient)
 
     when:
     def authDetails = service.readAuthConfig("unknown.example.com", dockerCfg)
@@ -213,8 +244,8 @@ class ManageAuthenticationClientTest extends Specification {
 
   def "read default authConfig"() {
     given:
-    def oldDockerConfig = System.clearProperty("docker.config")
-    def expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/config.json', DockerClient)
+    String oldDockerConfig = System.clearProperty("docker.config")
+    File expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/config.json', DockerClient)
     env.indexUrl_v1 >> 'https://index.docker.io/v1/'
     env.getDockerConfigFile() >> expectedConfigFile
 

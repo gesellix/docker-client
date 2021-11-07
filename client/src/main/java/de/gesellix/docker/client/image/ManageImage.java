@@ -1,123 +1,121 @@
 package de.gesellix.docker.client.image;
 
-import de.gesellix.docker.client.DockerAsyncCallback;
-import de.gesellix.docker.client.Timeout;
 import de.gesellix.docker.engine.EngineResponse;
+import de.gesellix.docker.remote.api.BuildInfo;
+import de.gesellix.docker.remote.api.CreateImageInfo;
+import de.gesellix.docker.remote.api.HistoryResponseItem;
+import de.gesellix.docker.remote.api.Image;
+import de.gesellix.docker.remote.api.ImageDeleteResponseItem;
+import de.gesellix.docker.remote.api.ImagePruneResponse;
+import de.gesellix.docker.remote.api.ImageSearchResponseItem;
+import de.gesellix.docker.remote.api.ImageSummary;
+import de.gesellix.docker.remote.api.PushImageInfo;
+import de.gesellix.docker.remote.api.core.StreamCallback;
 
 import java.io.InputStream;
+import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 
 public interface ManageImage {
 
-  EngineResponse search(String term);
+  EngineResponse<List<ImageSearchResponseItem>> search(String term);
 
-  EngineResponse search(String term, Integer limit);
+  EngineResponse<List<ImageSearchResponseItem>> search(String term, Integer limit);
 
-  BuildResult buildWithLogs(InputStream buildContext);
+  void build(InputStream buildContext);
 
-  BuildResult buildWithLogs(InputStream buildContext, BuildConfig config);
+  void build(StreamCallback<BuildInfo> callback, Duration timeout,
+             InputStream buildContext);
 
-  /**
-   * @see #buildWithLogs(InputStream, BuildConfig)
-   * @deprecated use buildWithLogs(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
-   */
-  @Deprecated
-  Object buildWithLogs(InputStream buildContext, Map<String, Object> query);
+  void build(StreamCallback<BuildInfo> callback, Duration timeout,
+             String tag,
+             InputStream buildContext);
 
-  /**
-   * @see #buildWithLogs(InputStream, BuildConfig)
-   * @deprecated use buildWithLogs(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
-   */
-  @Deprecated
-  Object buildWithLogs(InputStream buildContext, Map<String, Object> query, Timeout timeout);
+  void build(String tag,
+             InputStream buildContext);
 
-  BuildResult build(InputStream buildContext);
+  void build(String dockerfile, String tag, Boolean quiet, Boolean nocache, String pull, Boolean rm,
+             String buildargs, String labels, String encodedRegistryConfig, String contentType,
+             InputStream buildContext);
 
-  BuildResult build(InputStream buildContext, BuildConfig config);
+  void build(StreamCallback<BuildInfo> callback, Duration timeout,
+             String dockerfile, String tag, Boolean quiet, Boolean nocache, String pull, Boolean rm,
+             String buildargs, String labels, String encodedRegistryConfig, String contentType,
+             InputStream buildContext);
 
-  /**
-   * @see #build(InputStream, BuildConfig)
-   * @deprecated use build(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
-   */
-  @Deprecated
-  Object build(InputStream buildContext, Map<String, Object> query);
+  EngineResponse<List<HistoryResponseItem>> history(String image);
+
+  EngineResponse<Image> inspectImage(String image);
+
+  void load(InputStream imagesTarball);
 
   /**
-   * @see #build(InputStream, BuildConfig)
-   * @deprecated use build(java.io.InputStream, de.gesellix.docker.client.image.BuildConfig)
+   * @see #images(Boolean, String, Boolean)
+   * @deprecated use {@link #images(Boolean, String, Boolean)}
    */
   @Deprecated
-  Object build(InputStream buildContext, Map<String, Object> query, DockerAsyncCallback callback);
+  EngineResponse<List<ImageSummary>> images(Map<String, Object> query);
 
-  EngineResponse history(String image);
+  EngineResponse<List<ImageSummary>> images();
 
-  Object importUrl(String url);
-
-  Object importUrl(String url, String repository);
-
-  Object importUrl(String url, String repository, String tag);
-
-  String importStream(InputStream stream);
-
-  String importStream(InputStream stream, String repository);
-
-  String importStream(InputStream stream, String repository, String tag);
-
-  EngineResponse inspectImage(String image);
-
-  EngineResponse load(InputStream stream);
-
-  EngineResponse images();
-
-  EngineResponse images(Map<String, Object> query);
-
-  EngineResponse pruneImages();
-
-  EngineResponse pruneImages(Map<String, Object> query);
-
-  EngineResponse create(Map<String, Object> query);
-
-  EngineResponse create(Map<String, Object> query, Map<String, Object> createOptions);
+  EngineResponse<List<ImageSummary>> images(Boolean all, String filters, Boolean digests);
 
   /**
-   * @see #create(Map, Map)
-   * @deprecated please use #create(query, createOptions)
+   * @see #pruneImages(String)
+   * @deprecated use {@link #pruneImages(String)}
    */
   @Deprecated
-  String pull(String image);
+  EngineResponse<ImagePruneResponse> pruneImages(Map<String, Object> query);
 
-  /**
-   * @see #create(Map, Map)
-   * @deprecated please use #create(query, createOptions)
-   */
-  @Deprecated
-  String pull(String image, String tag);
+  EngineResponse<ImagePruneResponse> pruneImages();
 
-  /**
-   * @see #create(Map, Map)
-   * @deprecated please use #create(query, createOptions)
-   */
-  @Deprecated
-  String pull(String image, String tag, String authBase64Encoded);
+  EngineResponse<ImagePruneResponse> pruneImages(String filters);
 
-  /**
-   * @see #create(Map, Map)
-   * @deprecated please use #create(query, createOptions)
-   */
-  @Deprecated
-  String pull(String image, String tag, String authBase64Encoded, String registry);
+  void pull(StreamCallback<CreateImageInfo> callback, Duration timeout,
+            String imageName);
 
-  EngineResponse push(String image);
+  void pull(StreamCallback<CreateImageInfo> callback, Duration timeout,
+            String imageName, String tag);
 
-  EngineResponse push(String image, String authBase64Encoded);
+  void pull(StreamCallback<CreateImageInfo> callback, Duration timeout,
+            String imageName, String tag, String authBase64Encoded);
 
-  EngineResponse push(String image, String authBase64Encoded, String registry);
+  void importUrl(StreamCallback<CreateImageInfo> callback, Duration timeout,
+                 String url);
 
-  EngineResponse rmi(String image);
+  void importUrl(StreamCallback<CreateImageInfo> callback, Duration timeout,
+                 String url, String repository);
 
-  EngineResponse save(String[] images);
+  void importUrl(StreamCallback<CreateImageInfo> callback, Duration timeout,
+                 String url, String repository, String tag);
 
-  EngineResponse tag(String image, String repository);
+  void importStream(StreamCallback<CreateImageInfo> callback, Duration timeout,
+                    InputStream stream);
+
+  void importStream(StreamCallback<CreateImageInfo> callback, Duration timeout,
+                    InputStream stream, String repository);
+
+  void importStream(StreamCallback<CreateImageInfo> callback, Duration timeout,
+                    InputStream stream, String repository, String tag);
+
+  void push(String image);
+
+  void push(StreamCallback<PushImageInfo> callback, Duration timeout, String image);
+
+  void push(String image, String authBase64Encoded);
+
+  void push(StreamCallback<PushImageInfo> callback, Duration timeout, String image, String authBase64Encoded);
+
+  void push(String image, String authBase64Encoded, String registry);
+
+  void push(StreamCallback<PushImageInfo> callback, Duration timeout, String image, String authBase64Encoded, String registry);
+
+  EngineResponse<List<ImageDeleteResponseItem>> rmi(String image);
+
+  EngineResponse<InputStream> save(List<String> images);
+
+  void tag(String image, String repository);
 
   String findImageId(String imageName);
 

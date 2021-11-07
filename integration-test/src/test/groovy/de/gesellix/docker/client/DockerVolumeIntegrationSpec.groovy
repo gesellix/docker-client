@@ -1,5 +1,6 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.remote.api.Volume
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
 import spock.lang.Specification
@@ -15,12 +16,8 @@ class DockerVolumeIntegrationSpec extends Specification {
   }
 
   def ping() {
-    when:
-    def ping = dockerClient.ping()
-
-    then:
-    ping.status.code == 200
-    ping.content == "OK"
+    expect:
+    "OK" == dockerClient.ping().content
   }
 
   def "list volumes"() {
@@ -28,7 +25,7 @@ class DockerVolumeIntegrationSpec extends Specification {
     def volumes = dockerClient.volumes().content
 
     then:
-    volumes.Volumes instanceof List
+    volumes.volumes instanceof List
   }
 
   def "create volume"() {
@@ -42,13 +39,13 @@ class DockerVolumeIntegrationSpec extends Specification {
     def volume = dockerClient.createVolume(volumeConfig).content
 
     then:
-    volume.Name == "my-volume"
+    volume.name == "my-volume"
     and:
-    volume.Driver == "local"
+    volume.driver == "local"
     and:
-    volume.Mountpoint?.contains("my-volume")
+    volume.mountpoint?.contains("my-volume")
     and:
-    volume.Scope == "" || volume.Scope == "local"
+    volume.scope == null || volume.scope == Volume.Scope.Local
 
     cleanup:
     dockerClient.rmVolume("my-volume")

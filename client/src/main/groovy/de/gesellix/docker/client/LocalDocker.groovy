@@ -1,6 +1,7 @@
 package de.gesellix.docker.client
 
 import de.gesellix.docker.engine.DockerVersion
+import de.gesellix.docker.remote.api.SystemInfo
 import groovy.util.logging.Slf4j
 
 import static de.gesellix.docker.engine.DockerVersion.parseDockerVersion
@@ -9,12 +10,13 @@ import static de.gesellix.docker.engine.DockerVersion.parseDockerVersion
 class LocalDocker {
 
   static void main(String[] args) {
+//    println(available() ? "connection success" : "failed to connect")
     log.debug(available() ? "connection success" : "failed to connect")
   }
 
   static boolean available() {
     try {
-      return new DockerClientImpl().ping().status.code == 200
+      return new DockerClientImpl().ping().content == "OK"
     }
     catch (Exception e) {
       log.info("Docker not available", e)
@@ -68,7 +70,7 @@ class LocalDocker {
 
   static DockerVersion getDockerVersion() {
     try {
-      def version = new DockerClientImpl().version().content.Version as String
+      def version = new DockerClientImpl().version().content.version as String
       return parseDockerVersion(version)
     }
     catch (Exception e) {
@@ -80,8 +82,8 @@ class LocalDocker {
   static boolean isNativeWindows(DockerClient client = null) {
     try {
       def dockerClient = (client ?: new DockerClientImpl())
-      def arch = dockerClient.version().content.Arch as String
-      def os = dockerClient.version().content.Os as String
+      def arch = dockerClient.version().content.arch
+      def os = dockerClient.version().content.os
       return "$os/$arch".toString() == "windows/amd64"
     }
     catch (Exception e) {
@@ -94,7 +96,7 @@ class LocalDocker {
     def dockerClient = (client ?: new DockerClientImpl())
     def daemonPlatform = getDaemonPlatform(dockerClient)
     def daemonIsolation = getDaemonIsolation(dockerClient)
-    return daemonPlatform != "windows" || daemonIsolation != "process"
+    return daemonPlatform != "windows" || daemonIsolation != SystemInfo.Isolation.Process
   }
 
   static boolean isLinuxContainersOnWindows() {
@@ -105,7 +107,7 @@ class LocalDocker {
   static String getDaemonPlatform(DockerClient client = null) {
     try {
       def dockerClient = (client ?: new DockerClientImpl())
-      def osType = dockerClient.info().content.OSType as String
+      def osType = dockerClient.info().content.osType
       return osType
     }
     catch (Exception e) {
@@ -114,10 +116,10 @@ class LocalDocker {
     }
   }
 
-  static String getDaemonIsolation(DockerClient client = null) {
+  static SystemInfo.Isolation getDaemonIsolation(DockerClient client = null) {
     try {
       def dockerClient = (client ?: new DockerClientImpl())
-      def isolation = dockerClient.info().content.Isolation as String
+      def isolation = dockerClient.info().content.isolation
       return isolation
     }
     catch (Exception e) {

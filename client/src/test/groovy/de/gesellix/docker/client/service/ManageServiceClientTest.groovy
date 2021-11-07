@@ -1,135 +1,126 @@
 package de.gesellix.docker.client.service
 
-import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.node.NodeUtil
 import de.gesellix.docker.client.tasks.ManageTask
-import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
-import groovy.json.JsonBuilder
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.ObjectVersion
+import de.gesellix.docker.remote.api.Service
+import de.gesellix.docker.remote.api.ServiceCreateResponse
+import de.gesellix.docker.remote.api.ServiceSpec
+import de.gesellix.docker.remote.api.ServiceSpecMode
+import de.gesellix.docker.remote.api.ServiceSpecModeReplicated
+import de.gesellix.docker.remote.api.ServiceUpdateResponse
+import de.gesellix.docker.remote.api.client.ServiceApi
+import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
+@Mockable([ServiceApi, Service, ServiceSpec, ServiceCreateResponse, ServiceUpdateResponse, ServiceSpecMode, ServiceSpecModeReplicated])
 class ManageServiceClientTest extends Specification {
 
+  EngineApiClient client = Mock(EngineApiClient)
   ManageTask manageTask = Mock(ManageTask)
   NodeUtil nodeUtil = Mock(NodeUtil)
-  EngineClient httpClient = Mock(EngineClient)
 
   ManageServiceClient service
 
   def setup() {
-    service = new ManageServiceClient(httpClient, Mock(DockerResponseHandler), manageTask, nodeUtil)
+    service = new ManageServiceClient(client, manageTask, nodeUtil)
   }
 
   def "list services with query"() {
     given:
-    def filters = [name: ["node-name"]]
-    def expectedFilterValue = new JsonBuilder(filters).toString()
-    def query = [filters: filters]
+    def serviceApi = Mock(ServiceApi)
+    client.serviceApi >> serviceApi
+    def filters = '{"name":["node-name"]}'
+    def services = Mock(List)
 
     when:
-    service.services(query)
+    def responseContent = service.services(filters, null)
 
     then:
-    1 * httpClient.get([path : "/services",
-                        query: [filters: expectedFilterValue]]) >> [status: [success: true]]
+    1 * serviceApi.serviceList(filters, null) >> services
+    responseContent.content == services
   }
 
   def "create a service"() {
     given:
-    def config = [
-        "Name"        : "redis",
-        "Task"        : [
-            "ContainerSpec": [
-                "Image": "redis"
-            ],
-            "Resources"    : [
-                "Limits"      : [:],
-                "Reservations": [:]
-            ],
-            "RestartPolicy": [:],
-            "Placement"    : [:]
-        ],
-        "Mode"        : [
-            "Replicated": [
-                "Instances": 1
-            ]
-        ],
-        "UpdateConfig": [
-            "Parallelism": 1
-        ],
-        "EndpointSpec": [
-            "ExposedPorts": [
-                ["Protocol": "tcp", "Port": 6379]
-            ]
-        ]
-    ]
+    def serviceApi = Mock(ServiceApi)
+    client.serviceApi >> serviceApi
+    def serviceSpec = Mock(ServiceSpec)
+    def encodedAuth = "base64"
+    def createResponse = Mock(ServiceCreateResponse)
 
     when:
-    service.createService(config)
+    def responseContent = service.createService(serviceSpec, encodedAuth)
 
     then:
-    1 * httpClient.post([path              : "/services/create",
-                         headers           : [:],
-                         body              : config,
-                         requestContentType: "application/json"]) >> [status: [success: true]]
+    1 * serviceApi.serviceCreate(serviceSpec, encodedAuth) >> createResponse
+    responseContent.content == createResponse
   }
 
   def "rm service"() {
+    given:
+    def serviceApi = Mock(ServiceApi)
+    client.serviceApi >> serviceApi
+
     when:
     service.rmService("service-name")
 
     then:
-    1 * httpClient.delete([path: "/services/service-name"]) >> [status: [success: true]]
+    1 * serviceApi.serviceDelete("service-name")
   }
 
   def "inspect service"() {
+    given:
+    def serviceApi = Mock(ServiceApi)
+    client.serviceApi >> serviceApi
+    def inspected = Mock(Service)
+
     when:
-    service.inspectService("service-name")
+    def responseContent = service.inspectService("service-name")
 
     then:
-    1 * httpClient.get([path: "/services/service-name"]) >> [status: [success: true]]
+    1 * serviceApi.serviceInspect("service-name", null) >> inspected
+    responseContent.content == inspected
   }
 
   def "update service"() {
     given:
-    def query = [version: 42]
-    def config = [
-        "Name"        : "redis",
-        "Mode"        : [
-            "Replicated": [
-                "Instances": 1
-            ]
-        ],
-        "UpdateConfig": [
-            "Parallelism": 1
-        ],
-        "EndpointSpec": [
-            "ExposedPorts": [
-                ["Protocol": "tcp", "Port": 6379]
-            ]
-        ]
-    ]
+    def serviceApi = Mock(ServiceApi)
+    client.serviceApi >> serviceApi
+    def serviceSpec = Mock(ServiceSpec)
+    def updateResponse = Mock(ServiceUpdateResponse)
 
     when:
-    service.updateService("service-name", query, config)
+    def responseContent = service.updateService("service-name", 42, serviceSpec, null, null)
 
     then:
-    1 * httpClient.post([path              : "/services/service-name/update",
-                         query             : query,
-                         headers           : [:],
-                         body              : config,
-                         requestContentType: "application/json"]) >> [status: [success: true]]
+    1 * serviceApi.serviceUpdate("service-name", 42, serviceSpec, "spec", null, null) >> updateResponse
+    responseContent.content == updateResponse
   }
 
   def "scale service"() {
+    given:
+    def serviceApi = Mock(ServiceApi)
+    client.serviceApi >> serviceApi
+
+    def originalReplicated = Mock(ServiceSpecModeReplicated)
+    def originalMode = Mock(ServiceSpecMode, { it.replicated >> originalReplicated })
+    def originalSpec = Mock(ServiceSpec, { it.mode >> originalMode })
+    def inspected = Mock(Service, { it.spec >> originalSpec; it.version >> new ObjectVersion(5) })
+    def updateResponse = Mock(ServiceUpdateResponse)
+
     when:
-    service.scaleService("service-id", 42)
+    def responseContent = service.scaleService("service-id", 42)
+
     then:
-    1 * httpClient.get([path: "/services/service-id"]) >> [status : [success: true],
-                                                           content: [Version: 1,
-                                                                     Spec   : [Mode: [Replicated: [Replicas: 1]]]]]
+    1 * serviceApi.serviceInspect("service-id", null) >> inspected
     then:
-    service.updateService("service-id", [version: 1], [Mode: [Replicated: [Replicas: 42]]]) >> [status: [success: true]]
+    1 * originalReplicated.setReplicas(42)
+    1 * serviceApi.serviceUpdate("service-id", 5, originalSpec, "spec", null, null) >> updateResponse
+    and:
+    responseContent.content == updateResponse
   }
 
   def "list tasks of service with query"() {

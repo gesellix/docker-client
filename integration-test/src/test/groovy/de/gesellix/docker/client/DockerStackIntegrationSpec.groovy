@@ -3,7 +3,11 @@ package de.gesellix.docker.client
 import de.gesellix.docker.client.stack.DeployStackConfig
 import de.gesellix.docker.client.stack.DeployStackOptions
 import de.gesellix.docker.client.stack.Stack
-import de.gesellix.docker.client.stack.types.StackService
+import de.gesellix.docker.remote.api.LocalNodeState
+import de.gesellix.docker.remote.api.ServiceSpec
+import de.gesellix.docker.remote.api.ServiceSpecMode
+import de.gesellix.docker.remote.api.ServiceSpecModeReplicated
+import de.gesellix.docker.remote.api.SwarmInitRequest
 import de.gesellix.docker.remote.api.TaskSpec
 import de.gesellix.docker.remote.api.TaskSpecContainerSpec
 import de.gesellix.docker.testutil.SwarmUtil
@@ -25,8 +29,8 @@ class DockerStackIntegrationSpec extends Specification {
     dockerClient = new DockerClientImpl()
 //        dockerClient.config.apiVersion = "v1.24"
     swarmAdvertiseAddr = new SwarmUtil().getAdvertiseAddr()
-    performSilently { dockerClient.leaveSwarm([force: true]) }
-    dockerClient.pull(testImage)
+    performSilently { dockerClient.leaveSwarm(true) }
+    dockerClient.pull(null, null, testImage)
     println "images: ${dockerClient.images().content}"
   }
 
@@ -35,17 +39,13 @@ class DockerStackIntegrationSpec extends Specification {
   }
 
   def ping() {
-    when:
-    def ping = dockerClient.ping()
-
-    then:
-    ping.status.code == 200
-    ping.content == "OK"
+    expect:
+    "OK" == dockerClient.ping().content
   }
 
   def "expect inactive swarm"() {
     expect:
-    dockerClient.info().content.Swarm.LocalNodeState == "inactive"
+    dockerClient.info().content.swarm.localNodeState == LocalNodeState.Inactive
   }
 
   def "deploy a new stack"() {
@@ -54,7 +54,7 @@ class DockerStackIntegrationSpec extends Specification {
 
     def namespace = "new-stack"
     def config = new DeployStackConfig()
-    config.services = ["service1": new StackService().with {
+    config.services = ["service1": new ServiceSpec().with {
       networks = []
       taskTemplate = new TaskSpec(null,
                                   new TaskSpecContainerSpec(testImage, null, null, null, null, null, null,
@@ -74,7 +74,7 @@ class DockerStackIntegrationSpec extends Specification {
 
     cleanup:
     performSilently { dockerClient.stackRm(namespace) }
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "update an existing stack"() {
@@ -83,9 +83,9 @@ class DockerStackIntegrationSpec extends Specification {
 
     def namespace = "existing-stack"
     def config = new DeployStackConfig()
-    config.services = ["service2": new StackService().with {
+    config.services = ["service2": new ServiceSpec().with {
       networks = []
-      mode = [replicated: [replicas: 1]]
+      mode = new ServiceSpecMode(new ServiceSpecModeReplicated(1), null, null, null)
       taskTemplate = new TaskSpec(null,
                                   new TaskSpecContainerSpec(testImage, null, null, null, null, null, null,
                                                             null, null, null, null, null, null, null, null, null, null, null, null, null,
@@ -98,7 +98,7 @@ class DockerStackIntegrationSpec extends Specification {
     def originalTasks = dockerClient.stackPs(namespace).content
 
     when:
-    config.services["service2"].mode = [replicated: [replicas: 2]]
+    config.services["service2"].mode = new ServiceSpecMode(new ServiceSpecModeReplicated(2), null, null, null)
     dockerClient.stackDeploy(namespace, config, new DeployStackOptions(sendRegistryAuth: true))
 
     then:
@@ -106,7 +106,7 @@ class DockerStackIntegrationSpec extends Specification {
     def updatedTasks = dockerClient.stackPs(namespace).content
 
     originalTasks.size() == 1
-    originalTasks.first().Slot == 1
+    originalTasks.first().slot == 1
 //        originalTasks.first() == [Version:[Index:12], Slot:1, Status:[State:new, Message:created, ContainerStatus:[:], PortStatus:[:]], DesiredState:running]
 
     updatedTasks.size() == 2
@@ -114,7 +114,7 @@ class DockerStackIntegrationSpec extends Specification {
 
     cleanup:
     performSilently { dockerClient.stackRm(namespace) }
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "list stacks"() {
@@ -123,7 +123,7 @@ class DockerStackIntegrationSpec extends Specification {
 
     def namespace = "some-stack"
     def config = new DeployStackConfig()
-    config.services = ["service1": new StackService().with {
+    config.services = ["service1": new ServiceSpec().with {
       networks = []
       taskTemplate = new TaskSpec(null,
                                   new TaskSpecContainerSpec(testImage, null, null, null, null, null, null,
@@ -143,7 +143,7 @@ class DockerStackIntegrationSpec extends Specification {
 
     cleanup:
     performSilently { dockerClient.stackRm(namespace) }
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "list tasks in a stack"() {
@@ -152,7 +152,7 @@ class DockerStackIntegrationSpec extends Specification {
 
     def namespace = "new-stack"
     def config = new DeployStackConfig()
-    config.services = ["service1": new StackService().with {
+    config.services = ["service1": new ServiceSpec().with {
       networks = []
       taskTemplate = new TaskSpec(null,
                                   new TaskSpecContainerSpec(testImage, null, null, null, null, null, null,
@@ -172,7 +172,7 @@ class DockerStackIntegrationSpec extends Specification {
 
     cleanup:
     performSilently { dockerClient.stackRm(namespace) }
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "list services in a stack"() {
@@ -181,7 +181,7 @@ class DockerStackIntegrationSpec extends Specification {
 
     def namespace = "new-stack"
     def config = new DeployStackConfig()
-    config.services = ["service1": new StackService().with {
+    config.services = ["service1": new ServiceSpec().with {
       networks = []
       taskTemplate = new TaskSpec(null,
                                   new TaskSpecContainerSpec(testImage, null, null, null, null, null, null,
@@ -201,7 +201,7 @@ class DockerStackIntegrationSpec extends Specification {
 
     cleanup:
     performSilently { dockerClient.stackRm(namespace) }
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "remove a stack"() {
@@ -210,7 +210,7 @@ class DockerStackIntegrationSpec extends Specification {
 
     def namespace = "new-stack"
     def config = new DeployStackConfig()
-    config.services = ["service1": new StackService().with {
+    config.services = ["service1": new ServiceSpec().with {
       networks = []
       taskTemplate = new TaskSpec(null,
                                   new TaskSpecContainerSpec(testImage, null, null, null, null, null, null,
@@ -234,27 +234,20 @@ class DockerStackIntegrationSpec extends Specification {
     services.isEmpty()
 
     cleanup:
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def newSwarmConfig() {
-    return [
-        "AdvertiseAddr"  : swarmAdvertiseAddr,
-        "ListenAddr"     : "0.0.0.0:4554",
-        "ForceNewCluster": false,
-        "Spec"           : [
-            "AcceptancePolicy": [
-                "Policies": [
-                    ["Role": "MANAGER", "Autoaccept": true],
-                    ["Role": "WORKER", "Autoaccept": true]
-                ]
-            ],
-            "Orchestration"   : [:],
-            "Raft"            : [:],
-            "Dispatcher"      : [:],
-            "CAConfig"        : [:]
-        ]
-    ]
+    return new SwarmInitRequest(
+        "0.0.0.0:4554",
+        swarmAdvertiseAddr,
+        null,
+        null,
+        null,
+        false,
+        null,
+        null
+    )
   }
 
   def performSilently(Closure action) {

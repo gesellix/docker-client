@@ -1,5 +1,23 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.remote.api.EndpointPortConfig
+import de.gesellix.docker.remote.api.EndpointSpec
+import de.gesellix.docker.remote.api.LocalNodeState
+import de.gesellix.docker.remote.api.NodeSpec
+import de.gesellix.docker.remote.api.Service
+import de.gesellix.docker.remote.api.ServiceSpec
+import de.gesellix.docker.remote.api.ServiceSpecMode
+import de.gesellix.docker.remote.api.ServiceSpecModeReplicated
+import de.gesellix.docker.remote.api.ServiceSpecUpdateConfig
+import de.gesellix.docker.remote.api.SwarmInitRequest
+import de.gesellix.docker.remote.api.SwarmJoinRequest
+import de.gesellix.docker.remote.api.SwarmSpec
+import de.gesellix.docker.remote.api.Task
+import de.gesellix.docker.remote.api.TaskSpec
+import de.gesellix.docker.remote.api.TaskSpecContainerSpec
+import de.gesellix.docker.remote.api.TaskState
+import de.gesellix.docker.remote.api.core.ClientException
+import de.gesellix.docker.remote.api.core.ServerException
 import de.gesellix.docker.testutil.SwarmUtil
 import groovy.util.logging.Slf4j
 import net.jodah.failsafe.Failsafe
@@ -27,7 +45,7 @@ class DockerSwarmIntegrationSpec extends Specification {
     dockerClient = new DockerClientImpl()
 //        dockerClient.config.apiVersion = "v1.24"
     swarmAdvertiseAddr = new SwarmUtil().getAdvertiseAddr()
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def cleanup() {
@@ -35,24 +53,19 @@ class DockerSwarmIntegrationSpec extends Specification {
   }
 
   def ping() {
-    when:
-    def ping = dockerClient.ping()
-
-    then:
-    ping.status.code == 200
-    ping.content == "OK"
+    expect:
+    "OK" == dockerClient.ping().content
   }
 
   def "expect inactive swarm"() {
     expect:
-    dockerClient.info().content.Swarm.LocalNodeState == "inactive"
+    dockerClient.info().content.swarm.localNodeState == LocalNodeState.Inactive
   }
 
   def "list nodes"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    def nodeId = dockerClient.initSwarm(swarmConfig).content
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    def nodeId = dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
 
     when:
     def nodes = dockerClient.nodes().content
@@ -60,186 +73,173 @@ class DockerSwarmIntegrationSpec extends Specification {
     then:
     def firstNode = nodes.first()
     firstNode.ID == nodeId
-    firstNode.ManagerStatus.Leader == true
+    firstNode.managerStatus.leader == true
 
     cleanup:
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "inspect node"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    def nodeId = dockerClient.initSwarm(swarmConfig).content
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    def nodeId = dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
 
     when:
     def node = dockerClient.inspectNode(nodeId).content
 
     then:
     node.ID == nodeId
-    node.ManagerStatus.Leader == true
+    node.managerStatus.leader == true
 
     cleanup:
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "update node"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    def nodeId = dockerClient.initSwarm(swarmConfig).content
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    def nodeId = dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
     def nodeInfo = dockerClient.inspectNode(nodeId).content
-    def oldSpec = nodeInfo.Spec
+    def oldSpec = nodeInfo.spec
 
     when:
-    def response = dockerClient.updateNode(
+    dockerClient.updateNode(
         nodeId,
-        [
-            "version": nodeInfo.Version.Index
-        ],
-        [
-            Role        : "manager",
-            Membership  : "accepted",
-            Availability: "drain"
-        ])
+        nodeInfo.version.index,
+        new NodeSpec(oldSpec.name, oldSpec.labels, NodeSpec.Role.Manager, NodeSpec.Availability.Drain))
 
     then:
-    response.status.code == 200
-    and:
     def swarmInfo = dockerClient.inspectNode(nodeId).content
-    def newSpec = swarmInfo.Spec
-    oldSpec.Availability == "active"
-    newSpec.Availability == "drain"
-    dockerClient.info().content.Swarm.LocalNodeState == "active"
+    def newSpec = swarmInfo.spec
+    oldSpec.availability == NodeSpec.Availability.Active
+    newSpec.availability == NodeSpec.Availability.Drain
+    dockerClient.info().content.swarm.localNodeState == LocalNodeState.Active
 
     cleanup:
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "rm node"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    def nodeId = dockerClient.initSwarm(swarmConfig).content
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    def nodeId = dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
 
     when:
     dockerClient.rmNode(nodeId)
 
     then:
-    def exception = thrown(DockerClientException)
-    exception.message == "java.lang.IllegalStateException: docker node rm failed"
-    exception.detail.content.message.contains("must be demoted")
+    def exception = thrown(ClientException)
+    exception.statusCode == 400
+    exception.toString() =~ ".*node .+ is a cluster manager and is a member of the raft cluster. It must be demoted to worker before removal.*"
 
     cleanup:
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "inspect swarm"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    def nodeId = dockerClient.initSwarm(swarmConfig).content
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    def nodeId = dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
 
     when:
     def response = dockerClient.inspectSwarm()
-    def self = dockerClient.info().content.Swarm.NodeID
+    def self = dockerClient.info().content.swarm.nodeID
 
     then:
     response.content.ID =~ /[0-9a-f]+/
     self == nodeId
 
     cleanup:
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "init swarm"() {
     given:
-    def config = dockerClient.newSwarmConfig()
-    config.AdvertiseAddr = swarmAdvertiseAddr
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    def request = new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)
 
     when:
-    def response = dockerClient.initSwarm(config)
+    def nodeId = dockerClient.initSwarm(request).content
 
     then:
-    response.content =~ /[0-9a-f]+/
+    nodeId =~ /[0-9a-f]+/
 
     cleanup:
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "join swarm"() {
     given:
-    def managerConfig = dockerClient.newSwarmConfig()
-    managerConfig.AdvertiseAddr = swarmAdvertiseAddr
-    dockerClient.initSwarm(managerConfig)
-    def nodeConfig = [
-        "ListenAddr": "0.0.0.0:4711",
-        "RemoteAddr": managerConfig.ListenAddr,
-        "Secret"    : "",
-        "CAHash"    : "",
-        "Manager"   : false
-    ]
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    def managerRequest = new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)
+    dockerClient.initSwarm(managerRequest)
+    def joinRequest = new SwarmJoinRequest(
+        "0.0.0.0:4711",
+        null,
+        null,
+        [managerRequest.listenAddr],
+        null)
 
     when:
-    dockerClient.joinSwarm(nodeConfig)
+    dockerClient.joinSwarm(joinRequest)
 
     then:
-    def exception = thrown(DockerClientException)
-    exception.message == "java.lang.IllegalStateException: docker swarm join failed"
-    exception.detail.content.message.contains("This node is already part of a swarm")
+    def exception = thrown(ServerException)
+    exception.message == "Server error : 503 Service Unavailable"
+    exception.toString().contains("This node is already part of a swarm")
 
     cleanup:
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "leave swarm"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    dockerClient.initSwarm(swarmConfig)
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
 
     when:
-    dockerClient.leaveSwarm([force: false])
+    dockerClient.leaveSwarm(false)
 
     then:
-    def exception = thrown(DockerClientException)
-    exception.message == "java.lang.IllegalStateException: docker swarm leave failed"
-    exception.detail.content.message.contains("Removing the last manager erases all current state of the swarm")
+    def exception = thrown(ServerException)
+    exception.message == "Server error : 503 Service Unavailable"
+    exception.toString().contains("Removing the last manager erases all current state of the swarm")
 
     cleanup:
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "update swarm"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    dockerClient.initSwarm(swarmConfig)
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
     def swarmInfo = dockerClient.inspectSwarm().content
-    Map spec = swarmInfo.Spec
-    spec.Annotations = [
-        Name: "test update"
-    ]
+    SwarmSpec spec = new SwarmSpec(
+        swarmInfo.spec.name,
+        swarmInfo.spec.labels.tap { put("another", "label") },
+        swarmInfo.spec.orchestration,
+        swarmInfo.spec.raft,
+        swarmInfo.spec.dispatcher,
+        swarmInfo.spec.caConfig,
+        swarmInfo.spec.encryptionConfig,
+        swarmInfo.spec.taskDefaults)
 
     when:
-    def response = dockerClient.updateSwarm(
-        [
-            "version": swarmInfo.Version.Index
-        ],
+    dockerClient.updateSwarm(
+        swarmInfo.version.index,
         spec)
 
     then:
-    response.status.code == 200
+    notThrown(Exception)
 
     cleanup:
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "rotate swarm worker token"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    dockerClient.initSwarm(swarmConfig)
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
     def previousToken = dockerClient.getSwarmWorkerToken()
 
     when:
@@ -252,14 +252,13 @@ class DockerSwarmIntegrationSpec extends Specification {
     newToken.startsWith("SWMTKN")
 
     cleanup:
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "rotate swarm manager token"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    dockerClient.initSwarm(swarmConfig)
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
     def previousToken = dockerClient.getSwarmManagerToken()
 
     when:
@@ -272,57 +271,48 @@ class DockerSwarmIntegrationSpec extends Specification {
     newToken.startsWith("SWMTKN")
 
     cleanup:
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "services"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    dockerClient.initSwarm(swarmConfig)
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
 
     when:
     def response = dockerClient.services()
 
     then:
-    response.status.code == 200
     response.content == []
 
     cleanup:
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "create service"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    dockerClient.initSwarm(swarmConfig)
-    def serviceConfig = [
-        "Name"        : "echo-server",
-        "TaskTemplate": [
-            "ContainerSpec": [
-                "Image": "gesellix/echo-server:${TestConstants.CONSTANTS.imageTag}" as String
-            ],
-            "Resources"    : [
-                "Limits"      : [:],
-                "Reservations": [:]
-            ],
-            "RestartPolicy": [:],
-            "Placement"    : [:]
-        ],
-        "Mode"        : [
-            "Replicated": [
-                "Instances": 1
-            ]
-        ],
-        "UpdateConfig": [
-            "Parallelism": 1
-        ],
-        "EndpointSpec": [
-            "ExposedPorts": [
-                ["Protocol": "tcp", "Port": 6379]
-            ]
-        ]]
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
+    def serviceConfig = new ServiceSpec().tap { s ->
+      s.name = "echo-server"
+      s.taskTemplate = new TaskSpec().tap { t ->
+        t.containerSpec = new TaskSpecContainerSpec().tap { c ->
+          c.image = TestConstants.CONSTANTS.imageName
+        }
+      }
+      s.mode = new ServiceSpecMode().tap { m ->
+        m.replicated = new ServiceSpecModeReplicated(1)
+      }
+      s.updateConfig = new ServiceSpecUpdateConfig().tap { u ->
+        u.parallelism = 1
+      }
+      s.endpointSpec = new EndpointSpec().tap { e ->
+        e.ports = [new EndpointPortConfig().tap { p ->
+          p.protocol = EndpointPortConfig.Protocol.Tcp
+          p.publishedPort = 8080
+        }]
+      }
+    }
 
     when:
     def response = dockerClient.createService(serviceConfig)
@@ -330,63 +320,65 @@ class DockerSwarmIntegrationSpec extends Specification {
     then:
     response.content.ID =~ /[0-9a-f]+/
     def echoService = awaitServiceStarted("echo-server")
-    echoService?.Spec?.Name == "echo-server"
+    echoService?.spec?.name == "echo-server"
 
     cleanup:
     performSilently { dockerClient.rmService("echo-server") }
     performSilently { awaitServiceRemoved("echo-server") }
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "rm service"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    dockerClient.initSwarm(swarmConfig)
-    def serviceConfig = [
-        "Name"        : "echo-server",
-        "TaskTemplate": [
-            "ContainerSpec": [
-                "Image": "gesellix/echo-server:${TestConstants.CONSTANTS.imageTag}" as String
-            ]
-        ],
-        "Mode"        : [
-            "Replicated": ["Instances": 1]
-        ],
-        "UpdateConfig": [
-            "Parallelism": 1
-        ]]
-    def serviceId = dockerClient.createService(serviceConfig).content.ID
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
+    def serviceConfig = new ServiceSpec().tap { s ->
+      s.name = "echo-server"
+      s.taskTemplate = new TaskSpec().tap { t ->
+        t.containerSpec = new TaskSpecContainerSpec().tap { c ->
+          c.image = TestConstants.CONSTANTS.imageName
+        }
+      }
+      s.mode = new ServiceSpecMode().tap { m ->
+        m.replicated = new ServiceSpecModeReplicated(1)
+      }
+      s.updateConfig = new ServiceSpecUpdateConfig().tap { u ->
+        u.parallelism = 1
+      }
+    }
+
+    String serviceId = dockerClient.createService(serviceConfig).content.ID
 
     when:
-    def response = dockerClient.rmService(serviceId)
+    dockerClient.rmService(serviceId)
 
     then:
-    response.status.code == 200
+    notThrown(Exception)
 
     cleanup:
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "inspect service"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    dockerClient.initSwarm(swarmConfig)
-    def serviceConfig = [
-        "Name"        : "echo-server",
-        "TaskTemplate": [
-            "ContainerSpec": [
-                "Image": "gesellix/echo-server:${TestConstants.CONSTANTS.imageTag}" as String
-            ]
-        ],
-        "Mode"        : [
-            "Replicated": ["Instances": 1]
-        ],
-        "UpdateConfig": [
-            "Parallelism": 1
-        ]]
-    def serviceId = dockerClient.createService(serviceConfig).content.ID
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
+    def serviceConfig = new ServiceSpec().tap { s ->
+      s.name = "echo-server"
+      s.taskTemplate = new TaskSpec().tap { t ->
+        t.containerSpec = new TaskSpecContainerSpec().tap { c ->
+          c.image = TestConstants.CONSTANTS.imageName
+        }
+      }
+      s.mode = new ServiceSpecMode().tap { m ->
+        m.replicated = new ServiceSpecModeReplicated(1)
+      }
+      s.updateConfig = new ServiceSpecUpdateConfig().tap { u ->
+        u.parallelism = 1
+      }
+    }
+
+    String serviceId = dockerClient.createService(serviceConfig).content.ID
 
     when:
     def response = dockerClient.inspectService(serviceId)
@@ -397,61 +389,76 @@ class DockerSwarmIntegrationSpec extends Specification {
     cleanup:
     performSilently { dockerClient.rmService("echo-server") }
     performSilently { awaitServiceRemoved("echo-server") }
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "update service"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    dockerClient.initSwarm(swarmConfig)
-    def serviceConfig = [
-        "TaskTemplate": [
-            "ContainerSpec": [
-                "Image": "gesellix/echo-server:${TestConstants.CONSTANTS.imageTag}" as String
-            ]
-        ],
-        "Mode"        : [
-            "Replicated": ["Instances": 1]
-        ],
-        "UpdateConfig": [
-            "Parallelism": 1
-        ]]
-    def serviceId = dockerClient.createService(serviceConfig).content.ID
-    def serviceSpec = dockerClient.inspectService(serviceId).content.Spec
-    def serviceVersion = dockerClient.inspectService(serviceId).content.Version.Index
-    serviceSpec.Labels = [TestLabel: "${serviceSpec.Name}-foo".toString()]
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
+    def serviceConfig = new ServiceSpec(
+        "update-service",
+        [BeforeUpdate: "test-label"],
+        new TaskSpec().tap { t ->
+          t.containerSpec = new TaskSpecContainerSpec().tap { c ->
+            c.image = TestConstants.CONSTANTS.imageName
+          }
+        },
+        new ServiceSpecMode().tap { m ->
+          m.replicated = new ServiceSpecModeReplicated(1)
+        },
+        new ServiceSpecUpdateConfig().tap { u ->
+          u.parallelism = 1
+        },
+        null,
+        null,
+        null
+    )
+    String serviceId = dockerClient.createService(serviceConfig).content.ID
+    def inspectService = dockerClient.inspectService(serviceId)
+    def serviceVersion = inspectService.content.version.index
+    def serviceSpec = new ServiceSpec().tap { s ->
+      s.name = inspectService.content.spec.name
+      s.labels = inspectService.content.spec.labels + [TestLabel: "update-service-foo"]
+      s.taskTemplate = new TaskSpec().tap { t ->
+        t.containerSpec = new TaskSpecContainerSpec().tap { c ->
+          c.image = inspectService.content.spec.taskTemplate.containerSpec.image
+        }
+      }
+    }
 
     when:
-    def response = dockerClient.updateService(serviceId, [version: serviceVersion], serviceSpec)
+    def response = dockerClient.updateService("update-service", serviceVersion, serviceSpec)
 
     then:
-    response.status.code == 200
+    notThrown(Exception)
+    (response.content.warnings ?: []).empty
 
     cleanup:
-    performSilently { dockerClient.rmService(serviceSpec.Name) }
-    performSilently { awaitServiceRemoved(serviceSpec.Name) }
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.rmService(serviceSpec.name) }
+    performSilently { awaitServiceRemoved(serviceSpec.name) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "tasks"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    dockerClient.initSwarm(swarmConfig)
-    def serviceConfig = [
-        "Name"        : "echo-server",
-        "TaskTemplate": [
-            "ContainerSpec": [
-                "Image": "gesellix/echo-server:${TestConstants.CONSTANTS.imageTag}" as String
-            ]
-        ],
-        "Mode"        : [
-            "Replicated": ["Instances": 1]
-        ],
-        "UpdateConfig": [
-            "Parallelism": 1
-        ]]
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
+    def serviceConfig = new ServiceSpec().tap { s ->
+      s.name = "echo-server"
+      s.taskTemplate = new TaskSpec().tap { t ->
+        t.containerSpec = new TaskSpecContainerSpec().tap { c ->
+          c.image = TestConstants.CONSTANTS.imageName
+        }
+      }
+      s.mode = new ServiceSpecMode().tap { m ->
+        m.replicated = new ServiceSpecModeReplicated(1)
+      }
+      s.updateConfig = new ServiceSpecUpdateConfig().tap { u ->
+        u.parallelism = 1
+      }
+    }
+
     def serviceId = dockerClient.createService(serviceConfig).content.ID
 
     when:
@@ -460,34 +467,35 @@ class DockerSwarmIntegrationSpec extends Specification {
         { List content -> !content })
 
     then:
-    def firstTask = tasks.first()
-    firstTask.ServiceID == serviceId
+    Task firstTask = tasks.first()
+    firstTask.serviceID == serviceId
     firstTask.ID =~ /[0-9a-f]+/
 
     cleanup:
     performSilently { dockerClient.rmService("echo-server") }
     performSilently { awaitServiceRemoved("echo-server") }
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
   def "inspect task"() {
     given:
-    def swarmConfig = dockerClient.newSwarmConfig()
-    swarmConfig.AdvertiseAddr = swarmAdvertiseAddr
-    dockerClient.initSwarm(swarmConfig)
-    def serviceConfig = [
-        "Name"        : "echo-server",
-        "TaskTemplate": [
-            "ContainerSpec": [
-                "Image": "gesellix/echo-server:${TestConstants.CONSTANTS.imageTag}" as String
-            ]
-        ],
-        "Mode"        : [
-            "Replicated": ["Instances": 1]
-        ],
-        "UpdateConfig": [
-            "Parallelism": 1
-        ]]
+    def swarmConfig = dockerClient.newSwarmInitRequest()
+    dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
+    def serviceConfig = new ServiceSpec().tap { s ->
+      s.name = "echo-server"
+      s.taskTemplate = new TaskSpec().tap { t ->
+        t.containerSpec = new TaskSpecContainerSpec().tap { c ->
+          c.image = TestConstants.CONSTANTS.imageName
+        }
+      }
+      s.mode = new ServiceSpecMode().tap { m ->
+        m.replicated = new ServiceSpecModeReplicated(1)
+      }
+      s.updateConfig = new ServiceSpecUpdateConfig().tap { u ->
+        u.parallelism = 1
+      }
+    }
+
     def serviceId = dockerClient.createService(serviceConfig).content.ID
     Thread.sleep(1000)
     def firstTask = dockerClient.tasks().content.first()
@@ -498,16 +506,16 @@ class DockerSwarmIntegrationSpec extends Specification {
 
     then:
     task.ID == firstTask.ID
-    task.ServiceID == serviceId
-    task.DesiredState == "running"
+    task.serviceID == serviceId
+    task.desiredState == TaskState.Running
 
     cleanup:
     performSilently { dockerClient.rmService("echo-server") }
     performSilently { awaitServiceRemoved("echo-server") }
-    performSilently { dockerClient.leaveSwarm([force: true]) }
+    performSilently { dockerClient.leaveSwarm(true) }
   }
 
-  def getWithRetry(CheckedSupplier callable, Predicate retryIf) {
+  def <R> R getWithRetry(CheckedSupplier<R> callable, Predicate retryIf) {
     RetryPolicy retryPolicy = new RetryPolicy<>()
         .withDelay(Duration.of(100, ChronoUnit.MILLIS))
         .withMaxRetries(3)
@@ -515,8 +523,8 @@ class DockerSwarmIntegrationSpec extends Specification {
     return Failsafe.with(retryPolicy).get(callable)
   }
 
-  def awaitServiceStarted(name) {
-    def theService
+  Service awaitServiceStarted(name) {
+    Service theService
     CountDownLatch latch = new CountDownLatch(1)
     Thread.start {
       while (theService == null) {
@@ -535,12 +543,12 @@ class DockerSwarmIntegrationSpec extends Specification {
 
   def awaitTaskStarted(taskId) {
     def task = dockerClient.inspectTask(taskId).content
-    if (task?.Status?.State != "running") {
+    if (task?.status?.state != TaskState.Running) {
       CountDownLatch latch = new CountDownLatch(1)
       Thread.start {
-        while (task?.Status?.State != "running") {
+        while (task?.status?.state != TaskState.Running) {
           task = dockerClient.inspectTask(taskId).content
-          if (task?.Status?.State == "running") {
+          if (task?.status?.state == TaskState.Running) {
             latch.countDown()
           }
           else {
@@ -572,9 +580,9 @@ class DockerSwarmIntegrationSpec extends Specification {
     }
   }
 
-  def findService(name) {
+  Service findService(name) {
     def services = dockerClient.services().content
-    return services.find { it.Spec.Name == name }
+    return services.find { it.spec.name == name }
   }
 
   def performSilently(Closure action) {

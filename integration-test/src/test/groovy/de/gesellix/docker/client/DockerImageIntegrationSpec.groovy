@@ -1,25 +1,33 @@
 package de.gesellix.docker.client
 
+import com.squareup.moshi.Moshi
 import de.gesellix.docker.builder.BuildContextBuilder
-import de.gesellix.docker.client.image.BuildConfig
-import de.gesellix.docker.client.image.BuildResult
 import de.gesellix.docker.client.testutil.ManifestUtil
 import de.gesellix.docker.client.testutil.TarUtil
 import de.gesellix.docker.registry.DockerRegistry
+import de.gesellix.docker.remote.api.BuildInfo
+import de.gesellix.docker.remote.api.ContainerCreateRequest
+import de.gesellix.docker.remote.api.CreateImageInfo
+import de.gesellix.docker.remote.api.ImageSearchResponseItem
+import de.gesellix.docker.remote.api.PushImageInfo
+import de.gesellix.docker.remote.api.client.BuildInfoExtensionsKt
+import de.gesellix.docker.remote.api.client.CreateImageInfoExtensionsKt
+import de.gesellix.docker.remote.api.core.ClientException
+import de.gesellix.docker.remote.api.core.StreamCallback
 import de.gesellix.docker.testutil.HttpTestServer
 import de.gesellix.docker.testutil.NetworkInterfaces
 import de.gesellix.testutil.ResourceReader
-import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
 
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.CountDownLatch
-import java.util.regex.Pattern
+import java.util.concurrent.TimeUnit
 
 import static de.gesellix.docker.client.TestConstants.CONSTANTS
-import static java.util.concurrent.TimeUnit.SECONDS
 
 @Slf4j
 @Requires({ LocalDocker.available() })
@@ -41,53 +49,107 @@ class DockerImageIntegrationSpec extends Specification {
   }
 
   def ping() {
-    when:
-    def ping = dockerClient.ping()
-
-    then:
-    ping.status.code == 200
-    ping.content == "OK"
+    expect:
+    "OK" == dockerClient.ping().content
   }
 
   def "build image"() {
     given:
-    def dockerfile = "build/build/Dockerfile"
+    def dockerfile
     if (isNativeWindows) {
       dockerfile = "build/build-windows/Dockerfile"
     }
+    else {
+      dockerfile = "build/build/Dockerfile"
+    }
     def inputDirectory = new ResourceReader().getClasspathResourceAsFile(dockerfile, DockerClient).parentFile
 
+    List<BuildInfo> infos = []
+    def latch = new CountDownLatch(1)
+    def callback = new StreamCallback<BuildInfo>() {
+
+      @Override
+      void onNext(BuildInfo element) {
+        log.info(element?.toString())
+        infos.add(element)
+      }
+
+      @Override
+      void onFailed(Exception e) {
+        log.error("Build failed", e)
+        latch.countDown()
+      }
+
+      @Override
+      void onFinished() {
+        latch.countDown()
+      }
+    }
+
     when:
-    def buildResult = dockerClient.build(newBuildContext(inputDirectory))
+    dockerClient.build(
+        callback, Duration.of(1, ChronoUnit.MINUTES),
+        newBuildContext(inputDirectory))
+    latch.await(2, TimeUnit.MINUTES)
 
     then:
-    buildResult.imageId =~ "[0-9a-z]{12}"
+    def imageId = BuildInfoExtensionsKt.getImageId(infos)
+    imageId?.ID =~ "[0-9a-z]{12}"
 
     cleanup:
-    dockerClient.rmi(buildResult.imageId)
+    if (imageId?.ID) {
+      dockerClient.rmi(imageId.getID())
+    }
   }
 
   def "build image with tag"() {
     given:
-    def dockerfile = "build/build/Dockerfile"
+    def dockerfile
     if (isNativeWindows) {
       dockerfile = "build/build-windows/Dockerfile"
     }
+    else {
+      dockerfile = "build/build/Dockerfile"
+    }
     def inputDirectory = new ResourceReader().getClasspathResourceAsFile(dockerfile, DockerClient).parentFile
 
+    List<BuildInfo> infos = []
+    def latch = new CountDownLatch(1)
+    def callback = new StreamCallback<BuildInfo>() {
+
+      @Override
+      void onNext(BuildInfo element) {
+        log.info(element?.toString())
+        infos.add(element)
+      }
+
+      @Override
+      void onFailed(Exception e) {
+        log.error("Build failed", e)
+        latch.countDown()
+      }
+
+      @Override
+      void onFinished() {
+        latch.countDown()
+      }
+    }
+
     when:
-    def buildResult = dockerClient.build(
-        newBuildContext(inputDirectory),
-        new BuildConfig(query: [
-            rm: true,
-            t : 'docker-client/tests:tag'
-        ]))
+    dockerClient.build(
+        callback, Duration.of(1, ChronoUnit.MINUTES),
+        "docker-client/tests:tag",
+        newBuildContext(inputDirectory))
+    latch.await(2, TimeUnit.MINUTES)
 
     then:
-    buildResult.imageId =~ "[0-9a-z]{12}"
+    def imageId = BuildInfoExtensionsKt.getImageId(infos)
+    imageId?.ID =~ "[0-9a-z]{12}"
 
     cleanup:
-    dockerClient.rmi(buildResult.imageId)
+    if (imageId?.ID) {
+      dockerClient.rmi(imageId.getID())
+    }
   }
 
   def "build image with unknown base image"() {
@@ -102,377 +164,195 @@ class DockerImageIntegrationSpec extends Specification {
 //            line.replaceAll("\\{\\{registry}}", "${registry.url()}/")
     }
 
+    List<BuildInfo> infos = []
+    def latch = new CountDownLatch(1)
+    def callback = new StreamCallback<BuildInfo>() {
+
+      @Override
+      void onNext(BuildInfo element) {
+        log.info(element?.toString())
+        infos.add(element)
+      }
+
+      @Override
+      void onFailed(Exception e) {
+        log.error("Build failed", e)
+        latch.countDown()
+      }
+
+      @Override
+      void onFinished() {
+        latch.countDown()
+      }
+    }
+
     when:
-    dockerClient.build(newBuildContext(buildContextDir))
+    dockerClient.build(callback, Duration.of(1, ChronoUnit.MINUTES), newBuildContext(buildContextDir))
+    latch.await(2, TimeUnit.MINUTES)
 
     then:
-    DockerClientException ex = thrown()
-    ex.cause.message == 'docker build failed'
-    ex.detail.content.last().error.contains " missing/image"
-    ex.detail.content.last().errorDetail.message.contains " missing/image"
+    notThrown(Exception)
+    infos.last().error.contains(" missing/image")
   }
 
   def "build image with custom Dockerfile"() {
     given:
-    def dockerfile = "build/custom/Dockerfile"
+    def dockerfile
     if (isNativeWindows) {
       dockerfile = "build/custom-windows/Dockerfile"
     }
+    else {
+      dockerfile = "build/custom/Dockerfile"
+    }
     def inputDirectory = new ResourceReader().getClasspathResourceAsFile(dockerfile, DockerClient).parentFile
+    def moshi = new Moshi.Builder().build()
+
+    List<BuildInfo> infos = []
+    def latch = new CountDownLatch(1)
+    def callback = new StreamCallback<BuildInfo>() {
+
+      @Override
+      void onNext(BuildInfo element) {
+        log.info(element?.toString())
+        infos.add(element)
+      }
+
+      @Override
+      void onFailed(Exception e) {
+        log.error("Build failed", e)
+        latch.countDown()
+      }
+
+      @Override
+      void onFinished() {
+        latch.countDown()
+      }
+    }
 
     when:
-    def buildResult = dockerClient.build(
-        newBuildContext(inputDirectory),
-        new BuildConfig(query: [
-            rm        : true,
-            dockerfile: './Dockerfile.custom',
-            buildargs : [the_arg: "custom-arg"]
-        ]))
+    dockerClient.build(
+        callback, Duration.of(1, ChronoUnit.MINUTES),
+        './Dockerfile.custom',
+        null, null, null, null, true,
+        moshi.adapter(Map).toJson([the_arg: "custom-arg"]),
+        null, null, null, newBuildContext(inputDirectory))
+    latch.await(2, TimeUnit.MINUTES)
 
     then:
-    def history = dockerClient.history(buildResult.imageId).content
+    def imageId = BuildInfoExtensionsKt.getImageId(infos)
+    def history = dockerClient.history(imageId.ID).content
     def mostRecentEntry = history.first()
-    mostRecentEntry.CreatedBy.startsWith("|1 the_arg=custom-arg ")
-    mostRecentEntry.CreatedBy.endsWith("'custom \${the_arg}'")
+    mostRecentEntry.createdBy.startsWith("|1 the_arg=custom-arg ")
+    mostRecentEntry.createdBy.endsWith("'custom \${the_arg}'")
 
     cleanup:
-    dockerClient.rmi(buildResult.imageId)
+    dockerClient.rmi(imageId.ID)
   }
-
-  def "build image with custom stream callback"() {
-    given:
-    def dockerfile = "build/log/Dockerfile"
-    if (isNativeWindows) {
-      dockerfile = "build/log-windows/Dockerfile"
-    }
-    def inputDirectory = new ResourceReader().getClasspathResourceAsFile(dockerfile, DockerClient).parentFile
-
-    when:
-    CountDownLatch latch = new CountDownLatch(1)
-    def events = []
-    BuildResult result = dockerClient.build(
-        newBuildContext(inputDirectory),
-        new BuildConfig(query: [rm: true],
-                        callback: new DockerAsyncCallback() {
-
-                          @Override
-                          onEvent(Object event) {
-                            if (event instanceof String) {
-                              events << new JsonSlurper().parseText(event as String)
-                            }
-                            else {
-                              events << event
-                            }
-                          }
-
-                          @Override
-                          onFinish() {
-                            latch.countDown()
-                          }
-                        }))
-    latch.await(5, SECONDS)
-
-    then:
-    if (isNativeWindows) {
-      events.first().stream =~ "Step 1(/10)? : FROM microsoft/nanoserver\n"
-    }
-    else {
-      events.first().stream =~ "Step 1(/10)? : FROM alpine:edge\n"
-    }
-    String imageId = events.last().stream.trim() - "Successfully built "
-
-    cleanup:
-    result?.response?.taskFuture?.cancel(true)
-    dockerClient.rmi(imageId)
-  }
-
-  def "build image with logs"() {
-    given:
-    def dockerfile = "build/log/Dockerfile"
-    if (isNativeWindows) {
-      dockerfile = "build/log-windows/Dockerfile"
-    }
-    def inputDirectory = new ResourceReader().getClasspathResourceAsFile(dockerfile, DockerClient).parentFile
-
-    when:
-    def result = dockerClient.buildWithLogs(newBuildContext(inputDirectory))
-
-    then:
-    if (isNativeWindows) {
-      result.log.first().stream =~ "Step 1(/10)? : FROM microsoft/nanoserver\n"
-    }
-    else {
-      result.log.first().stream =~ "Step 1(/10)? : FROM alpine:edge\n"
-    }
-    result.log.last().stream.startsWith("Successfully built ")
-    String imageId = result.log.last().stream.trim() - "Successfully built "
-    result.imageId =~ "(sha256:)?$imageId"
-
-    cleanup:
-    dockerClient.rmi(imageId)
-  }
-
-  def "build image async and fail"() {
-    given:
-    def dockerfile = "build/fail/Dockerfile"
-    if (isNativeWindows) {
-      dockerfile = "build/fail-windows/Dockerfile"
-    }
-    def inputDirectory = new ResourceReader().getClasspathResourceAsFile(dockerfile, DockerClient).parentFile
-
-    def toBeMatched = []
-    if (isNativeWindows) {
-      toBeMatched << new EventMatch(pattern: "Step 1(/2)? : FROM mcr.microsoft.com/windows/nanoserver:1809\n?")
-    }
-    else {
-      toBeMatched << new EventMatch(pattern: "Step 1(/2)? : FROM alpine:edge\n?")
-    }
-    toBeMatched << new EventMatch(pattern: "\\s---> \\w+\n?")
-    toBeMatched << new EventMatch(pattern: "Step 2(/2)? : RUN i-will-fail\n?")
-    if (isNativeWindows) {
-      toBeMatched << new EventMatch(matches: EventMatch.EXACT_MATCH, message: EventMatch.GET_ERROR, pattern: "The command 'cmd /S /C i-will-fail' returned a non-zero code: 1")
-    }
-    else {
-      toBeMatched << new EventMatch(matches: EventMatch.EXACT_MATCH, message: EventMatch.GET_ERROR, pattern: "The command '/bin/sh -c i-will-fail' returned a non-zero code: 127")
-    }
-
-    when:
-    CountDownLatch latch = new CountDownLatch(1)
-    def events = []
-    BuildResult result = dockerClient.build(
-        newBuildContext(inputDirectory),
-        new BuildConfig(query: [rm: true],
-                        callback: new DockerAsyncCallback() {
-
-                          @Override
-                          onEvent(Object event) {
-                            if (event instanceof String) {
-                              events << new JsonSlurper().parseText(event as String)
-                            }
-                            else {
-                              events << event
-                            }
-                          }
-
-                          @Override
-                          onFinish() {
-                            latch.countDown()
-                          }
-                        }))
-    latch.await(20, SECONDS)
-
-    then:
-    println "count: ${events.size()}"
-    println events
-    def nonMatched = filterNeedlesInSequence(events, toBeMatched)
-    nonMatched.empty
-    def containerId = getContainerId(events)
-    def imageId = getImageId(events)
-
-    cleanup:
-    result.response.taskFuture.cancel(true)
-    dockerClient.rm(containerId)
-    dockerClient.rmi(imageId)
-  }
-
-// TODO
-//    def "build image async with logs and fail"() {
-//        def buildContext = new ByteArrayInputStream([42] as byte[])
-//        def response = [
-//                ["stream": "Step 1/2 : FROM alpine:edge"],
-//                ["stream": " ---\u003e a1a3cae7a75e"],
-//                ["stream": "Step 2/2 : RUN i-will-fail"],
-//                ["stream": " ---\u003e Running in e01136c552bc"],
-//                ["stream": "\u001b[91m/bin/sh: i-will-fail: not found\n\u001b[0m"],
-//                ["errorDetail": ["code": 127, "message": "The command '/bin/sh -c i-will-fail' returned a non-zero code: 127"],
-//                 "error"      : "The command '/bin/sh -c i-will-fail' returned a non-zero code: 127"]
-//        ].collect { entry ->
-//            "${new JsonBuilder(entry).toString()}"
-//        }
-//
-//        def server = new HttpTestServer()
-//        def serverAddress = server.start('/images/', new ChunkedResponseServer(response))
-//        def port = serverAddress.port
-//        def addresses = listPublicIps()
-//        def fileServerIp = addresses.first()
-//
-//        def headersBuilder = new Headers.Builder()
-//        [
-//                "Content-Type: application/json",
-//                "Date: Fri, 13 Jan 2017 22:09:24 GMT",
-//                "Docker-Experimental: true",
-//                "Server: Docker/1.13.0-rc6 (linux)",
-//                "Transfer-Encoding: chunked"
-//        ].each { line ->
-//            headersBuilder.add(line)
-//        }
-//
-//        when:
-//        dockerClient.buildWithLogs(buildContext, ["rm": true], new Timeout(5, SECONDS))
-//
-//        then:
-//        1 * httpClient.post([path              : "/build",
-//                             query             : ["rm": true],
-//                             body              : buildContext,
-//                             requestContentType: "application/octet-stream",
-//                             async             : true]) >> new EngineResponse(
-//                headers: headersBuilder.build(),
-//                stream: new ByteArrayInputStream(new JsonBuilder(response).toString().bytes))
-//        and:
-//        dockerClient.responseHandler.ensureSuccessfulResponse(*_) >> { arguments ->
-//            assert arguments[1]?.message == "docker build failed"
-//        }
-//
-//        cleanup:
-//        server.stop()
-//    }
-//    static class ChunkedResponseServer implements HttpHandler {
-//
-//        DockerClient delegate
-//        String[] chunks
-//
-//        ChunkedResponseServer(DockerClient delegate, List<String>... chunks) {
-//            this.delegate = delegate
-//            this.chunks = chunks
-//        }
-//
-//        @Override
-//        void handle(HttpExchange httpExchange) {
-//            if (httpExchange.requestMethod == 'POST' && httpExchange.requestURI.path == '/build') {
-//                httpExchange.sendResponseHeaders(200, 0)
-//                chunks.each { String chunk ->
-//                    httpExchange.responseBody.write(chunk.bytes)
-//                }
-//                httpExchange.responseBody.close()
-//            } else {
-//                return delegate.
-//            }
-//        }
-//    }
-
-  static class EventMatch {
-
-    String pattern
-
-    static Closure PATTERN_MATCH = { String msg, String pattern -> msg =~ pattern }
-    static Closure EXACT_MATCH = { String msg, String pattern -> msg == pattern }
-
-    Closure matches = PATTERN_MATCH
-
-    static Closure GET_STREAM = { event -> event.stream }
-    static Closure GET_ERROR = { event -> event.error }
-
-    Closure message = GET_STREAM
-
-    @Override
-    String toString() {
-      return pattern
-    }
-  }
-
-  def filterNeedlesInSequence(List<Map> events, List<EventMatch> needles) {
-    List<EventMatch> toBeMatched = new ArrayList<>(needles)
-    events.each { Map event ->
-      def expected = toBeMatched.first()
-      if (expected.matches(expected.message(event), expected.pattern)) {
-        toBeMatched.remove(expected)
-      }
-    }
-    return toBeMatched
-  }
-
-  def findNeedleInSequence(List<Map> events, EventMatch needle) {
-    return events.find { Map event ->
-      if (needle.matches(needle.message(event), needle.pattern)) {
-        return event
-      }
-    }
-  }
-
-  def getContainerId(List events) {
-    def event = findNeedleInSequence(events, new EventMatch(pattern: "\\s---> Running in (\\w+)\n?"))
-    return getFirstMatchingGroup("\\s---> Running in (\\w+)\n?", event.stream as String)
-  }
-
-  def getImageId(List events) {
-    def event = findNeedleInSequence(events, new EventMatch(pattern: "\\s---> (\\w+)\n?"))
-    return getFirstMatchingGroup("\\s---> (\\w+)\n?", event.stream as String)
-  }
-
-  def getFirstMatchingGroup(String pattern, String input) {
-    def matcher = Pattern.compile(pattern).matcher(input)
-    if (matcher.find()) {
-      return matcher.group(1)
-    }
-    else {
-      return null
-    }
-  }
-
-//    def "buildWithLogs and fail"() {
-//        given:
-//        def inputDirectory = new ResourceReader().getClasspathResourceAsFile('build/fail/Dockerfile', DockerClient).parentFile
-//
-//        when:
-//        dockerClient.buildWithLogs(newBuildContext(inputDirectory))
-//
-//        then:
-//        DockerClientException exc = thrown()
-//        exc.detail.error == 'The command \'/bin/sh -c i-will-fail\' returned a non-zero code: 127'
-//    }
 
   def "tag image"() {
     given:
-    def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+    dockerClient.pull(null, null, CONSTANTS.imageRepo, CONSTANTS.imageTag)
     def imageName = "yet-another-tag"
 
     when:
-    def buildResult = dockerClient.tag(imageId, imageName)
+    dockerClient.tag(CONSTANTS.imageName, imageName)
 
     then:
-    buildResult.status.code == 201
+    notThrown(Exception)
 
     cleanup:
     dockerClient.rmi(imageName)
   }
 
   @Ignore
-  "push image (registry api v2)"() {
+  void "push image (registry api v2)"() {
     given:
     def authDetails = dockerClient.readAuthConfig(null, null)
     def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
-    def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+    dockerClient.pull(null, null, CONSTANTS.imageRepo, CONSTANTS.imageTag)
     def imageName = "gesellix/test:latest"
-    dockerClient.tag(imageId, imageName)
+    dockerClient.tag(CONSTANTS.imageName, imageName)
+
+    List<PushImageInfo> infos = []
+    def timeout = Duration.of(1, ChronoUnit.MINUTES)
+    def latch = new CountDownLatch(1)
+    def callback = new StreamCallback<PushImageInfo>() {
+
+      @Override
+      void onNext(PushImageInfo element) {
+        log.info(element?.toString())
+        infos.add(element)
+      }
+
+      @Override
+      void onFailed(Exception e) {
+        log.error("push failed", e)
+        latch.countDown()
+      }
+
+      @Override
+      void onFinished() {
+        latch.countDown()
+      }
+    }
 
     when:
-    def pushResult = dockerClient.push(imageName, authBase64Encoded)
+    new Thread({
+      dockerClient.push(callback, timeout, imageName, authBase64Encoded)
+    }).start()
+    latch.await(2, TimeUnit.MINUTES)
 
     then:
-    pushResult.status.code == 200
-    and:
-    pushResult.content.last().aux.Digest =~ "sha256:\\w+"
+    !infos.empty
+    infos.find { it.status.contains("digest") || it.status.contains("aux") }.status =~ "sha256:\\w+"
+//    pushResult.content.last().aux.Digest =~ "sha256:\\w+"
 
     cleanup:
     dockerClient.rmi(imageName)
   }
 
   @Ignore
-  "push image with registry (registry api v2)"() {
+  void "push image with registry (registry api v2)"() {
     given:
     def authDetails = dockerClient.readDefaultAuthConfig()
     def authBase64Encoded = dockerClient.encodeAuthConfig(authDetails)
-    def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+    dockerClient.pull(null, null, CONSTANTS.imageRepo, CONSTANTS.imageTag)
     def imageName = "gesellix/test:latest"
-    dockerClient.tag(imageId, imageName)
+    dockerClient.tag(CONSTANTS.imageName, imageName)
+
+    List<PushImageInfo> infos = []
+    def timeout = Duration.of(1, ChronoUnit.MINUTES)
+    def latch = new CountDownLatch(1)
+    def callback = new StreamCallback<PushImageInfo>() {
+
+      @Override
+      void onNext(PushImageInfo element) {
+        log.info(element?.toString())
+        infos.add(element)
+      }
+
+      @Override
+      void onFailed(Exception e) {
+        log.error("push failed", e)
+        latch.countDown()
+      }
+
+      @Override
+      void onFinished() {
+        latch.countDown()
+      }
+    }
 
     when:
-    def pushResult = dockerClient.push(imageName, authBase64Encoded, registry.url())
+    new Thread({
+      dockerClient.push(callback, timeout, imageName, authBase64Encoded, registry.url())
+    }).start()
+    latch.await(2, TimeUnit.MINUTES)
 
     then:
-    pushResult.status.code == 200
-    and:
-    pushResult.content.last().aux.Digest =~ "sha256:\\w+"
+    !infos.empty
+    infos.find { it.status.contains("digest") || it.status.contains("aux") }.status =~ "sha256:\\w+"
+//    pushResult.content.last().aux.Digest =~ "sha256:\\w+"
 
     cleanup:
     dockerClient.rmi(imageName)
@@ -481,17 +361,43 @@ class DockerImageIntegrationSpec extends Specification {
 
   def "push image with undefined authentication"() {
     given:
-    def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+    dockerClient.pull(null, null, CONSTANTS.imageRepo, CONSTANTS.imageTag)
     def imageName = "gesellix/test:latest"
-    dockerClient.tag(imageId, imageName)
+    dockerClient.tag(CONSTANTS.imageName, imageName)
+
+    List<PushImageInfo> infos = []
+    def timeout = Duration.of(1, ChronoUnit.MINUTES)
+    def latch = new CountDownLatch(1)
+    def callback = new StreamCallback<PushImageInfo>() {
+
+      @Override
+      void onNext(PushImageInfo element) {
+        log.info(element?.toString())
+        infos.add(element)
+      }
+
+      @Override
+      void onFailed(Exception e) {
+        log.error("push failed", e)
+        latch.countDown()
+      }
+
+      @Override
+      void onFinished() {
+        latch.countDown()
+      }
+    }
 
     when:
-    def pushResult = dockerClient.push(imageName, null, registry.url())
+    new Thread({
+      dockerClient.push(callback, timeout, imageName, null, registry.url())
+    }).start()
+    latch.await(2, TimeUnit.MINUTES)
 
     then:
-    pushResult.status.code == 200
-    and:
-    pushResult.content.last().aux.Digest =~ "sha256:\\w+"
+    !infos.empty
+    infos.find { it.status.contains("digest") || it.status.contains("aux") }.status =~ "sha256:\\w+"
+//    pushResult.content.last().aux.Digest =~ "sha256:\\w+"
 
     cleanup:
     dockerClient.rmi(imageName)
@@ -500,10 +406,11 @@ class DockerImageIntegrationSpec extends Specification {
 
   def "pull image"() {
     when:
-    def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+    dockerClient.pull(null, null, CONSTANTS.imageRepo, CONSTANTS.imageTag)
 
     then:
-    imageId == CONSTANTS.imageDigest
+    notThrown(Exception)
+//    imageId == CONSTANTS.imageDigest
   }
 
   def "pull image by digest"() {
@@ -511,22 +418,24 @@ class DockerImageIntegrationSpec extends Specification {
     String digest = isNativeWindows ? "gesellix/echo-server@sha256:5521f01c05a79bdae5570955c853ec51474bad3f3f9f6ecf2047414becf4afd2" : "gesellix/echo-server@sha256:04c0275878dc243b2f92193467cb33cdb9ee2262be64b627ed476de73e399244"
 
     when:
-    String imageId = dockerClient.pull(digest)
+    dockerClient.pull(null, null, digest)
 
     then:
-    imageId == CONSTANTS.imageDigest
+    notThrown(Exception)
+//    imageId == CONSTANTS.imageDigest
   }
 
   def "pull image from private registry"() {
     given:
-    dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+    dockerClient.pull(null, null, CONSTANTS.imageRepo, CONSTANTS.imageTag)
     dockerClient.push(CONSTANTS.imageName, "", registry.url())
 
     when:
-    def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag, "", registry.url())
+    dockerClient.pull(null, null, "${registry.url()}/${CONSTANTS.imageRepo}", CONSTANTS.imageTag, "")
 
     then:
-    imageId == CONSTANTS.imageDigest
+    notThrown(Exception)
+//    imageId == CONSTANTS.imageDigest
 
     cleanup:
     dockerClient.rmi("${registry.url()}/${CONSTANTS.imageRepo}:${CONSTANTS.imageTag}")
@@ -534,8 +443,8 @@ class DockerImageIntegrationSpec extends Specification {
 
   def "import image from url"() {
     given:
-    InputStream tarStream = dockerClient.save(CONSTANTS.imageName).stream
-    File destDir = new TarUtil().unTar(tarStream)
+    InputStream savedImage = dockerClient.save([CONSTANTS.imageName]).content
+    File destDir = new TarUtil().unTar(savedImage)
     File rootLayerTar = new ManifestUtil().getRootLayerLocation(destDir)
     URL importUrl = rootLayerTar.toURI().toURL()
     def server = new HttpTestServer()
@@ -543,17 +452,40 @@ class DockerImageIntegrationSpec extends Specification {
     def port = serverAddress.port
     def addresses = new NetworkInterfaces().getInet4Addresses()
 
+    List<CreateImageInfo> infos = []
+    def latch = new CountDownLatch(1)
+    def callback = new StreamCallback<CreateImageInfo>() {
+
+      @Override
+      void onNext(CreateImageInfo element) {
+        log.info(element.toString())
+        infos.add(element)
+      }
+
+      @Override
+      void onFailed(Exception e) {
+        log.error("import from stream failed", e)
+        latch.countDown()
+      }
+
+      @Override
+      void onFinished() {
+        latch.countDown()
+      }
+    }
+
     when:
     // not all interfaces addresses will be valid targets,
     // especially on a machine running a docker host
-    String imageId = tryUntilSuccessful(addresses) { address ->
+    tryUntilSuccessful(addresses) { address ->
       String url = "http://${address}:$port/images/${importUrl.path}"
-      dockerClient.importUrl(url, "import-from-url", "foo")
+      dockerClient.importUrl(callback, Duration.of(1, ChronoUnit.MINUTES), url, "import-from-url", "foo")
     }
+    latch.await(2, TimeUnit.MINUTES)
 
     then:
+    def imageId = CreateImageInfoExtensionsKt.getImageId(infos)
     imageId?.matches(/[\w:]+/)
-//    imageId =~ "\\w+"
 
     cleanup:
     server.stop()
@@ -562,16 +494,42 @@ class DockerImageIntegrationSpec extends Specification {
 
   def "import image from stream"() {
     given:
-    InputStream tarStream = dockerClient.save(CONSTANTS.imageName).stream
-    File destDir = new TarUtil().unTar(tarStream)
+    InputStream savedImage = dockerClient.save([CONSTANTS.imageName]).content
+    File destDir = new TarUtil().unTar(savedImage)
     File rootLayerTar = new ManifestUtil().getRootLayerLocation(destDir)
     def archive = new FileInputStream(rootLayerTar)
 
+    List<CreateImageInfo> infos = []
+    def latch = new CountDownLatch(1)
+    def callback = new StreamCallback<CreateImageInfo>() {
+
+      @Override
+      void onNext(CreateImageInfo element) {
+        log.info(element.toString())
+        infos.add(element)
+      }
+
+      @Override
+      void onFailed(Exception e) {
+        log.error("import from stream failed", e)
+        latch.countDown()
+      }
+
+      @Override
+      void onFinished() {
+        latch.countDown()
+      }
+    }
+
     when:
-    String imageId = dockerClient.importStream(archive, "import-from-url", "foo")
+    dockerClient.importStream(
+        callback, Duration.of(1, ChronoUnit.MINUTES),
+        archive, "import-from-url", "foo")
+    latch.await(2, TimeUnit.MINUTES)
 
     then:
-    imageId =~ "\\w+"
+    def imageId = CreateImageInfoExtensionsKt.getImageId(infos)
+    imageId?.matches(/[\w:]+/)
 
     cleanup:
     dockerClient.rmi(imageId)
@@ -579,59 +537,53 @@ class DockerImageIntegrationSpec extends Specification {
 
   def "inspect image"() {
     given:
-    def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+    dockerClient.pull(null, null, CONSTANTS.imageRepo, CONSTANTS.imageTag)
 
     when:
-    def imageInspection = dockerClient.inspectImage(imageId).content
+    def imageInspection = dockerClient.inspectImage(CONSTANTS.imageName).content
 
     then:
-    imageInspection.Config.Image == isNativeWindows ? "todo" : "sha256:728f7fae29a7bc4c1166cc3206eec3e8271bf3408034051b742251d8bdc07db8"
-    and:
-    imageInspection.Id == CONSTANTS.imageDigest
-    and:
-    imageInspection.Parent =~ ".*"
-    and:
-    imageInspection.Container == isNativeWindows ? "todo" : "7ddb235457b38a125d107ec7d53f95254cbf579069f29a2c731bc9471a153524"
+    imageInspection.id == CONSTANTS.imageDigest
   }
 
   def "history"() {
     given:
-    def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
+    dockerClient.pull(null, null, CONSTANTS.imageRepo, CONSTANTS.imageTag)
 
     when:
-    def history = dockerClient.history(imageId).content
+    def history = dockerClient.history(CONSTANTS.imageName).content
 
     then:
-    List<String> imageIds = history.collect { it.Id }
+    List<String> imageIds = history.collect { it.id }
     imageIds.first() == CONSTANTS.imageDigest
     imageIds.last() =~ ".+"
   }
 
   def "list images"() {
     given:
-    dockerClient.pull(CONSTANTS.imageName)
+    dockerClient.pull(null, null, CONSTANTS.imageName)
 
     when:
     def images = dockerClient.images().content
 
     then:
     def imageById = images.find {
-      it.Id == CONSTANTS.imageDigest
+      it.id == CONSTANTS.imageDigest
     }
-    imageById.Created == CONSTANTS.imageCreated
-    imageById.ParentId =~ ".*"
-    (imageById.RepoTags == null || imageById.RepoTags.contains(CONSTANTS.imageName))
+    imageById.created == CONSTANTS.imageCreated
+    imageById.parentId =~ ".*"
+    (imageById.repoTags == null || imageById.repoTags.contains(CONSTANTS.imageName))
   }
 
   def "list images with intermediate layers"() {
     given:
-    def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
-    def container1Info = dockerClient.createContainer(["Cmd": ["-"], "Image": imageId]).content
-    dockerClient.commit(container1Info.Id, [repo: 'repo1', tag: 'tag1'])
-    dockerClient.rm(container1Info.Id)
-    def container2Info = dockerClient.createContainer(["Cmd": ["-"], "Image": "repo1:tag1"]).content
-    dockerClient.commit(container2Info.Id, [repo: 'repo2', tag: 'tag2'])
-    dockerClient.rm(container2Info.Id)
+    dockerClient.pull(null, null, CONSTANTS.imageRepo, CONSTANTS.imageTag)
+    def container1Info = dockerClient.createContainer(new ContainerCreateRequest().tap { image = CONSTANTS.imageName }).content
+    dockerClient.commit(container1Info.id, [repo: 'repo1', tag: 'tag1'])
+    dockerClient.rm(container1Info.id)
+    def container2Info = dockerClient.createContainer(new ContainerCreateRequest().tap { image = "repo1:tag1" }).content
+    dockerClient.commit(container2Info.id, [repo: 'repo2', tag: 'tag2'])
+    dockerClient.rm(container2Info.id)
     dockerClient.rmi("repo1:tag1")
 
     when:
@@ -639,8 +591,8 @@ class DockerImageIntegrationSpec extends Specification {
     def fullImages = dockerClient.images([all: true]).content
 
     then:
-    def imageIds = images.collect { image -> image.Id }
-    def fullImageIds = fullImages.collect { image -> image.Id }
+    def imageIds = images.collect { image -> image.id }
+    def fullImageIds = fullImages.collect { image -> image.id }
     imageIds != fullImageIds
     and:
     fullImageIds.size() > imageIds.size()
@@ -651,68 +603,94 @@ class DockerImageIntegrationSpec extends Specification {
 
   def "list images filtered"() {
     given:
-    def dockerfile = "build/build/Dockerfile"
+    def dockerfile
     if (isNativeWindows) {
       dockerfile = "build/build-windows/Dockerfile"
     }
+    else {
+      dockerfile = "build/build/Dockerfile"
+    }
     def inputDirectory = new ResourceReader().getClasspathResourceAsFile(dockerfile, DockerClient).parentFile
-    def imageId = dockerClient.build(newBuildContext(inputDirectory)).imageId
-    log.info("buildResult: $imageId")
+
+    List<BuildInfo> infos = []
+    def latch = new CountDownLatch(1)
+    def callback = new StreamCallback<BuildInfo>() {
+
+      @Override
+      void onNext(BuildInfo element) {
+        log.info(element?.toString())
+        infos.add(element)
+      }
+
+      @Override
+      void onFailed(Exception e) {
+        log.error("Build failed", e)
+        latch.countDown()
+      }
+
+      @Override
+      void onFinished() {
+        latch.countDown()
+      }
+    }
+    dockerClient.build(callback, Duration.of(1, ChronoUnit.MINUTES), newBuildContext(inputDirectory))
 
     when:
     Thread.sleep(500)
+    latch.await(2, TimeUnit.MINUTES)
+    def imageId = BuildInfoExtensionsKt.getImageId(infos)
 
     then:
     def images = dockerClient.images([filters: [dangling: ["true"]]]).content
     println "images (1) ${images}"
     def found = images.findAll { image ->
-      image.RepoTags == ["<none>:<none>"] || image.RepoTags == null
+      image.repoTags == ["<none>:<none>"] || image.repoTags == null
     }.find { image ->
-      image.Id =~ imageId
+      image.id =~ imageId.ID
     }
-    def images2 = dockerClient.images([filters: [dangling: ["true"]]]).content
-    println "images (2) ${images2}"
     found
 
     cleanup:
-    dockerClient.rmi(imageId)
+    dockerClient.rmi(imageId.ID)
   }
 
   def "rm image"() {
     given:
-    def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
-    dockerClient.tag(imageId, "an_image_to_be_deleted")
+    dockerClient.pull(null, null, CONSTANTS.imageRepo, CONSTANTS.imageTag)
+    dockerClient.tag(CONSTANTS.imageName, "an_image_to_be_deleted")
 
     when:
     def rmImageResult = dockerClient.rmi("an_image_to_be_deleted")
 
     then:
-    rmImageResult.status.code == 200
+    !rmImageResult.content.empty
   }
 
   def "rm unknown image"() {
     when:
-    def rmImageResult = dockerClient.rmi("an_unknown_image")
+    dockerClient.rmi("an_unknown_image")
 
     then:
-    rmImageResult.status.code == 404
+    def clientException = thrown(ClientException)
+    clientException.statusCode == 404
   }
 
   def "rm image with existing container"() {
     given:
-    def imageId = dockerClient.pull(CONSTANTS.imageRepo, CONSTANTS.imageTag)
-    dockerClient.tag(imageId, "an_image_with_existing_container")
+    dockerClient.pull(null, null, CONSTANTS.imageRepo, CONSTANTS.imageTag)
+    dockerClient.tag(CONSTANTS.imageName, "an_image_with_existing_container")
 
-    def containerConfig = ["Cmd": ["true"]]
-    def tag = "latest"
     def name = "another-example-name"
-    dockerClient.run("an_image_with_existing_container", containerConfig, tag, name)
+    def containerConfig = new ContainerCreateRequest().tap { c ->
+      c.image = "an_image_with_existing_container:latest"
+    }
+    dockerClient.run(containerConfig, name)
 
     when:
     def rmImageResult = dockerClient.rmi("an_image_with_existing_container:latest")
 
     then:
-    rmImageResult.status.code == 200
+    !rmImageResult.content.empty
 
     cleanup:
     dockerClient.stop(name)
@@ -725,15 +703,15 @@ class DockerImageIntegrationSpec extends Specification {
     def searchResult = dockerClient.search("echo-server", 100)
 
     then:
-    ((List) searchResult.content)
+    ((List<ImageSearchResponseItem>) searchResult.content)
         .findAll { it.name.contains("gesellix") }
         .find {
           it.description == "A Testimage used for Docker Client integration tests." &&
-          it.is_automated == false &&
-          it.is_official == false &&
+          it.automated == false &&
+          it.official == false &&
 //            it.is_trusted == true &&
           it.name == CONSTANTS.imageRepo &&
-          it.star_count == 0
+          it.starCount == 0
         }
   }
 

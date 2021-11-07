@@ -1,44 +1,34 @@
 package de.gesellix.docker.client.stack;
 
 import de.gesellix.docker.client.stack.types.StackConfig;
-import de.gesellix.docker.client.stack.types.StackNetwork;
 import de.gesellix.docker.client.stack.types.StackSecret;
-import de.gesellix.docker.client.stack.types.StackService;
-import de.gesellix.docker.client.stack.types.StackVolume;
+import de.gesellix.docker.remote.api.NetworkCreateRequest;
+import de.gesellix.docker.remote.api.ServiceSpec;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class DeployStackConfig {
 
-  private Map<String, StackService> services = new HashMap<>();
-  private Map<String, StackNetwork> networks = new HashMap<>();
-  private Map<String, StackVolume> volumes = new HashMap<>();
+  private Map<String, ServiceSpec> services = new HashMap<>();
+  private Map<String, NetworkCreateRequest> networks = new HashMap<>();
   private Map<String, StackSecret> secrets = new HashMap<>();
   private Map<String, StackConfig> configs = new HashMap<>();
 
-  public Map<String, StackService> getServices() {
+  public Map<String, ServiceSpec> getServices() {
     return services;
   }
 
-  public void setServices(Map<String, StackService> services) {
+  public void setServices(Map<String, ServiceSpec> services) {
     this.services = services;
   }
 
-  public Map<String, StackNetwork> getNetworks() {
+  public Map<String, NetworkCreateRequest> getNetworks() {
     return networks;
   }
 
-  public void setNetworks(Map<String, StackNetwork> networks) {
+  public void setNetworks(Map<String, NetworkCreateRequest> networks) {
     this.networks = networks;
-  }
-
-  public Map<String, StackVolume> getVolumes() {
-    return volumes;
-  }
-
-  public void setVolumes(Map<String, StackVolume> volumes) {
-    this.volumes = volumes;
   }
 
   public Map<String, StackSecret> getSecrets() {
