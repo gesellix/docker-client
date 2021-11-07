@@ -23,6 +23,15 @@ class ManageImageClientTest extends Specification {
         manageAuthentication])
   }
 
+  def "search"() {
+    when:
+    service.search("ubuntu")
+
+    then:
+    1 * httpClient.get([path : "/images/search",
+                        query: [term: "ubuntu", "limit": 25]]) >> [status: [success: true]]
+  }
+
   def "build with defaults"() {
     def buildContext = new ByteArrayInputStream([42] as byte[])
     def authConfigs = ["for-test": new AuthConfig(username: "foo")]

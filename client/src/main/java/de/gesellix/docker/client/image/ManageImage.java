@@ -9,6 +9,10 @@ import java.util.Map;
 
 public interface ManageImage {
 
+  EngineResponse search(String term);
+
+  EngineResponse search(String term, Integer limit);
+
   BuildResult buildWithLogs(InputStream buildContext);
 
   BuildResult buildWithLogs(InputStream buildContext, BuildConfig config);
