@@ -18,8 +18,8 @@ dependencies {
     }
     implementation("com.squareup.okio:okio") {
       version {
-        strictly("[2.5,3)")
-        prefer("2.10.0")
+        strictly("[2.5,4)")
+        prefer("3.0.0")
       }
     }
     listOf(
