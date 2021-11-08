@@ -143,65 +143,6 @@ class DockerClientImpl implements DockerClient {
     setDockerClientConfig(new DockerClientConfig(env))
   }
 
-  /**
-   * @deprecated Please use the prune* commands.
-   * @see ManageContainer#pruneContainers(java.lang.Object)
-   * @see ManageImage#pruneImages(java.util.Map)
-   * @see ManageVolume#pruneVolumes(java.util.Map)
-   */
-  @Deprecated
-  @Override
-  cleanupStorage(Closure shouldKeepContainer, Closure shouldKeepVolume = { true }) {
-    cleanupContainers(shouldKeepContainer)
-    cleanupImages()
-    cleanupVolumes(shouldKeepVolume)
-  }
-
-  /**
-   * @deprecated Please use the prune* commands.
-   * @see ManageContainer#pruneContainers(java.lang.Object)
-   */
-  @Deprecated
-  @Override
-  cleanupContainers(Closure shouldKeepContainer) {
-    def allContainers = ps([filters: [status: ["exited"]]]).content
-    allContainers.findAll { Map container ->
-      !shouldKeepContainer(container)
-    }.each { container ->
-      log.debug("docker rm ${container.Id} (${container.Names.first()})")
-      rm(container.Id)
-    }
-  }
-
-  /**
-   * @deprecated Please use the prune* commands.
-   * @see ManageImage#pruneImages(java.util.Map)
-   */
-  @Deprecated
-  @Override
-  cleanupImages() {
-    images([filters: [dangling: ["true"]]]).content.each { image ->
-      log.debug("docker rmi ${image.Id}")
-      rmi(image.Id as String)
-    }
-  }
-
-  /**
-   * @deprecated Please use the prune* commands.
-   * @see ManageVolume#pruneVolumes(java.util.Map)
-   */
-  @Deprecated
-  @Override
-  cleanupVolumes(Closure shouldKeepVolume) {
-    def allVolumes = volumes([filters: [dangling: ["true"]]]).content.Volumes
-    allVolumes.findAll { Map volume ->
-      !shouldKeepVolume(volume)
-    }.each { volume ->
-      log.debug("docker volume rm ${volume.Name}")
-      rmVolume(volume.Name)
-    }
-  }
-
   @Override
   getSwarmMangerAddress() {
     log.info("docker get swarm manager address")
