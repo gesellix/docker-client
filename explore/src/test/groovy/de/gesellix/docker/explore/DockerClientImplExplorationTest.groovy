@@ -55,20 +55,4 @@ class DockerClientImplExplorationTest extends Specification {
     attached.stream.multiplexStreams == false
     IOUtils.copy(attached.stream as InputStream, System.out)
   }
-
-  @Ignore("only for explorative testing")
-  def "cleanup volumes"() {
-    given:
-    def shouldKeepVolume = { Map volume ->
-      log.warn("volume : ${volume}")
-      def keep = volume.Name.replaceAll("^/", "").matches(".*data.*")
-      if (keep) {
-        log.warn("will keep ${volume}")
-      }
-      return keep
-    }
-
-    expect:
-    dockerClient.cleanupVolumes shouldKeepVolume
-  }
 }

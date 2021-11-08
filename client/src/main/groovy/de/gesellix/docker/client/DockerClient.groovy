@@ -35,44 +35,5 @@ interface DockerClient
             ManageTask,
             ManageVolume {
 
-  /**
-   * @deprecated Please use the prune* commands.
-   * @see ManageContainer#pruneContainers(java.lang.Object)
-   * @see ManageImage#pruneImages(java.util.Map)
-   * @see ManageVolume#pruneVolumes(java.util.Map)
-   */
-  @Deprecated
-  def cleanupStorage(Closure shouldKeepContainer)
-
-  /**
-   * @deprecated Please use the prune* commands.
-   * @see ManageContainer#pruneContainers(java.lang.Object)
-   * @see ManageImage#pruneImages(java.util.Map)
-   * @see ManageVolume#pruneVolumes(java.util.Map)
-   */
-  @Deprecated
-  def cleanupStorage(Closure shouldKeepContainer, Closure shouldKeepVolume)
-
-  /**
-   * @deprecated Please use the prune* commands.
-   * @see ManageImage#pruneImages(java.util.Map)
-   */
-  @Deprecated
-  def cleanupImages()
-
-  /**
-   * @deprecated Please use the prune* commands.
-   * @see ManageContainer#pruneContainers(java.lang.Object)
-   */
-  @Deprecated
-  def cleanupContainers(Closure shouldKeepContainer)
-
-  /**
-   * @deprecated Please use the prune* commands.
-   * @see ManageVolume#pruneVolumes(java.util.Map)
-   */
-  @Deprecated
-  def cleanupVolumes(Closure shouldKeepVolume)
-
   def getSwarmMangerAddress()
 }
