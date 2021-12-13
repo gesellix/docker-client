@@ -9,7 +9,11 @@ RUN cd /app && go get -d \
  && go build \
     -a \
     -ldflags "-s -w -extldflags \"-static\"" \
-    -o /bin/main
+    -o /bin/main main.go \
+ && go build \
+    -a \
+    -ldflags "-s -w -extldflags \"-static\"" \
+    -o /bin/cat cat.go
 
 FROM mcr.microsoft.com/windows/nanoserver:1809
 #FROM mcr.microsoft.com/windows/nanoserver:1903
@@ -25,3 +29,4 @@ ENTRYPOINT [ "/main", "-listen-addr=0.0.0.0:${SERVER_PORT}" ]
 CMD [ ]
 
 COPY --from=build-backend /bin/main /main
+COPY --from=build-backend /bin/cat /cat

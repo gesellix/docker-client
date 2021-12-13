@@ -9,7 +9,11 @@ RUN cd /app && go get -d \
  && go build \
     -a \
     -ldflags '-s -w -extldflags "-static"' \
-    -o /bin/main
+    -o /bin/main main.go \
+ && go build \
+    -a \
+    -ldflags "-s -w -extldflags \"-static\"" \
+    -o /bin/cat cat.go
 
 FROM alpine:3.12
 
@@ -27,3 +31,4 @@ RUN apk --no-cache add ca-certificates \
 USER user
 
 COPY --from=build-backend /bin/main /main
+COPY --from=build-backend /bin/cat /cat
