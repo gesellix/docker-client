@@ -570,9 +570,9 @@ class DockerImageIntegrationSpec extends Specification {
     def imageById = images.find {
       it.id == CONSTANTS.imageDigest
     }
-    imageById.created == CONSTANTS.imageCreated
-    imageById.parentId =~ ".*"
-    (imageById.repoTags == null || imageById.repoTags.contains(CONSTANTS.imageName))
+    imageById?.created == CONSTANTS.imageCreated
+    imageById?.parentId =~ ".*"
+    (imageById?.repoTags == null || imageById.repoTags.contains(CONSTANTS.imageName))
   }
 
   def "list images with intermediate layers"() {
