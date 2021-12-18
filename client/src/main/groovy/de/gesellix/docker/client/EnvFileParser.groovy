@@ -1,4 +1,4 @@
-package de.gesellix.docker.client.stack
+package de.gesellix.docker.client
 
 class EnvFileParser {
 

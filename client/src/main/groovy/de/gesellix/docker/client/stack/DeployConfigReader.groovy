@@ -1,6 +1,7 @@
 package de.gesellix.docker.client.stack
 
 import de.gesellix.docker.client.DockerClient
+import de.gesellix.docker.client.EnvFileParser
 import de.gesellix.docker.client.LocalDocker
 import de.gesellix.docker.client.stack.types.StackConfig
 import de.gesellix.docker.client.stack.types.StackSecret
