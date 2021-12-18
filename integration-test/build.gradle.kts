@@ -72,7 +72,7 @@ dependencies {
   testImplementation("org.spockframework:spock-core:2.0-groovy-3.0")
   testRuntimeOnly("cglib:cglib-nodep:3.3.0")
   testImplementation("org.apache.commons:commons-lang3:3.12.0")
-  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.2.6")
+  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.2.9")
 }
 
 tasks.withType(Test::class) {
