@@ -17,15 +17,15 @@ class TestConstants {
     if (LocalDocker.isNativeWindows()) {
       imageRepo = "gesellix/echo-server"
       imageTag = "os-windows"
-      imageDigest = "sha256:9f33e2a85c7238da1205513c33b4f813176c34dbd3069752500e2f9f12bdde98"
-      imageCreated = 1630412966
+      imageDigest = "sha256:da209cced17458ee509a16965696ed59a1d7566cc3f2f8b16c3a9eec58152590"
+      imageCreated = 1639430610
       volumeTarget = "C:/my-volume"
     }
     else {
       imageRepo = "gesellix/echo-server"
       imageTag = "os-linux"
-      imageDigest = "sha256:9161d20871559b45e5afa19047ed0bfc1a0e2c6dfdd6a9488a2fd388fe28642d"
-      imageCreated = 1630419149
+      imageDigest = "sha256:11458ca6f18f564e260f24cbc10eb686caa4a21dd3e431b58d5fd77079596018"
+      imageCreated = 1639433382
       volumeTarget = "/my-volume"
     }
     imageName = "$imageRepo:$imageTag"
