@@ -23,7 +23,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[4,4.10)")
-          prefer("4.9.2")
+          prefer("4.9.3")
         }
       }
     }
@@ -51,14 +51,14 @@ dependencies {
     ).onEach {
       implementation(it) {
         version {
-          strictly("[1.3,1.7)")
+          strictly("[1.4,1.7)")
           prefer("1.5.31")
         }
       }
     }
   }
   implementation(project(":client"))
-  testImplementation("org.codehaus.groovy:groovy-json:[2.5,)")
+  testImplementation("org.codehaus.groovy:groovy-json:[3,)")
   testImplementation("com.kohlschutter.junixsocket:junixsocket-core:[2.4,)")
   testImplementation("com.kohlschutter.junixsocket:junixsocket-common:[2.4,)")
 
@@ -72,7 +72,7 @@ dependencies {
   testImplementation("org.spockframework:spock-core:2.0-groovy-3.0")
   testRuntimeOnly("cglib:cglib-nodep:3.3.0")
   testImplementation("org.apache.commons:commons-lang3:3.12.0")
-  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.2.9")
+  testRuntimeOnly("ch.qos.logback:logback-classic")
 }
 
 tasks.withType(Test::class) {
