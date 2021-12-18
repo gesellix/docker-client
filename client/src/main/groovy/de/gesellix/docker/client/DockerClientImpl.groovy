@@ -45,7 +45,6 @@ import static java.net.Proxy.NO_PROXY
 @Slf4j
 class DockerClientImpl implements DockerClient {
 
-  DockerResponseHandler responseHandler
   RepositoryTagParser repositoryTagParser
   QueryUtil queryUtil
 
@@ -110,7 +109,6 @@ class DockerClientImpl implements DockerClient {
     this.httpClient = new OkDockerClient(dockerClientConfig, proxy)
     log.info("using docker at '${env.dockerHost}'")
 
-    this.responseHandler = new DockerResponseHandler()
     this.repositoryTagParser = new RepositoryTagParser()
     this.queryUtil = new QueryUtil()
 
@@ -118,7 +116,7 @@ class DockerClientImpl implements DockerClient {
     this.manageAuthentication = new ManageAuthenticationClient(engineApiClient, authConfigReader)
     this.manageImage = new ManageImageClient(engineApiClient, manageAuthentication)
     this.manageDistribution = new ManageDistributionService(engineApiClient)
-    this.manageContainer = new ManageContainerClient(engineApiClient, httpClient, responseHandler)
+    this.manageContainer = new ManageContainerClient(engineApiClient, httpClient)
     this.manageVolume = new ManageVolumeClient(engineApiClient)
     this.manageNetwork = new ManageNetworkClient(engineApiClient)
     this.manageSwarm = new ManageSwarmClient(engineApiClient)

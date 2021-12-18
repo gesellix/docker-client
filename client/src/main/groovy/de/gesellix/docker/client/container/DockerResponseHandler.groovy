@@ -1,5 +1,6 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.container
 
+import de.gesellix.docker.client.DockerClientException
 import de.gesellix.docker.engine.EngineResponse
 import groovy.util.logging.Slf4j
 

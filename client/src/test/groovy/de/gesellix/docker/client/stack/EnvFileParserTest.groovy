@@ -1,5 +1,6 @@
-package de.gesellix.docker.client
+package de.gesellix.docker.client.stack
 
+import de.gesellix.docker.client.DockerClient
 import de.gesellix.testutil.ResourceReader
 import spock.lang.Specification
 
