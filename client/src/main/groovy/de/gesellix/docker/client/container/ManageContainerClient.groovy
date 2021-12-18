@@ -1,6 +1,5 @@
 package de.gesellix.docker.client.container
 
-import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.client.EngineResponseContent
 import de.gesellix.docker.client.repository.RepositoryTagParser
 import de.gesellix.docker.engine.AttachConfig
@@ -43,10 +42,10 @@ class ManageContainerClient implements ManageContainer {
   private ArchiveUtil archiveUtil
   private RepositoryTagParser repositoryTagParser
 
-  ManageContainerClient(EngineApiClient client, EngineClient engineClient, DockerResponseHandler responseHandler) {
+  ManageContainerClient(EngineApiClient client, EngineClient engineClient) {
     this.client = client
     this.engineClient = engineClient
-    this.responseHandler = responseHandler
+    this.responseHandler = new DockerResponseHandler()
     this.repositoryTagParser = new RepositoryTagParser()
     this.queryUtil = new QueryUtil()
     this.archiveUtil = new ArchiveUtil()

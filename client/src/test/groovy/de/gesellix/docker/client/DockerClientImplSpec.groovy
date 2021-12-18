@@ -21,7 +21,6 @@ class DockerClientImplSpec extends Specification {
 
   def setup() {
     dockerClient.httpClient = httpClient
-    dockerClient.responseHandler = Mock(DockerResponseHandler)
 
     dockerClient.manageSystem = Mock(ManageSystem)
     dockerClient.manageNode = Mock(ManageNode)

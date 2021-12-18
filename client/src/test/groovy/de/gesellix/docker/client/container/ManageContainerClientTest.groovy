@@ -1,6 +1,5 @@
 package de.gesellix.docker.client.container
 
-import de.gesellix.docker.client.DockerResponseHandler
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.remote.api.ContainerConfig
 import de.gesellix.docker.remote.api.ContainerCreateRequest
@@ -37,13 +36,11 @@ class ManageContainerClientTest extends Specification {
   ManageContainerClient service
   EngineApiClient client = Mock(EngineApiClient)
   EngineClient httpClient = Mock(EngineClient)
-  DockerResponseHandler responseHandler = Mock(DockerResponseHandler)
 
   def setup() {
     service = Spy(ManageContainerClient, constructorArgs: [
         client,
-        httpClient,
-        responseHandler])
+        httpClient])
   }
 
   def "export container"() {
