@@ -22,13 +22,13 @@ dependencies {
     implementation("com.squareup.okhttp3:mockwebserver") {
       version {
         strictly("[4,5)")
-        prefer("4.9.2")
+        prefer("4.9.3")
       }
     }
     api("com.squareup.okhttp3:okhttp") {
       version {
         strictly("[4,5)")
-        prefer("4.9.2")
+        prefer("4.9.3")
       }
     }
     implementation("com.squareup.okio:okio") {
@@ -46,7 +46,7 @@ dependencies {
     ).onEach {
       implementation(it) {
         version {
-          strictly("[1.3,1.6)")
+          strictly("[1.4,1.7)")
           prefer("1.5.31")
         }
       }
