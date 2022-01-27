@@ -63,7 +63,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
   @Override
   EngineResponseContent<SystemAuthResponse> auth(de.gesellix.docker.remote.api.AuthConfig authDetails) {
     log.info("docker login")
-    def systemAuth = client.systemApi.systemAuth(authDetails)
+    SystemAuthResponse systemAuth = client.systemApi.systemAuth(authDetails)
     return new EngineResponseContent(systemAuth)
   }
 
@@ -97,8 +97,8 @@ class ManageAuthenticationClient implements ManageAuthentication {
     // expect [domain: "...", path: "..."]
     def namedRef = getNamed(ref)
 
-    def indexName = validateIndexName(namedRef.domain as String)
-    def indexInfo = [
+    String indexName = validateIndexName(namedRef.domain as String)
+    Map indexInfo = [
         name    : indexName,
         mirrors : [],
         official: false,
@@ -107,7 +107,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
     return registryElection.resolveAuthConfig(indexInfo.name, indexInfo.official)
   }
 
-  def validateIndexName(String val) {
+  String validateIndexName(String val) {
     if (val == "index.docker.io") {
       val = "docker.io"
     }
@@ -142,7 +142,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
     String domain
     String remainder
 
-    def i = name.indexOf('/')
+    int i = name.indexOf('/')
     if (i == -1 || (!containsAny(name.substring(0, i), ".:") && name.substring(0, i) != 'localhost')) {
       (domain, remainder) = [defaultDomain, name]
     }

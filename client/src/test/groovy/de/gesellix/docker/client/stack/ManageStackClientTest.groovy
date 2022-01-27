@@ -12,8 +12,10 @@ import de.gesellix.docker.client.stack.types.StackSecret
 import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.client.tasks.ManageTask
 import de.gesellix.docker.engine.EngineResponse
+import de.gesellix.docker.remote.api.Config
 import de.gesellix.docker.remote.api.Network
 import de.gesellix.docker.remote.api.NetworkCreateRequest
+import de.gesellix.docker.remote.api.Secret
 import de.gesellix.docker.remote.api.Service
 import de.gesellix.docker.remote.api.ServiceSpec
 import de.gesellix.docker.remote.api.SwarmInfo
@@ -144,27 +146,26 @@ class ManageStackClientTest extends Specification {
     given:
     String namespace = "the-stack"
     String namespaceFilter = "${LabelNamespace}=${namespace}"
-    def network = Mock(Network)
-    network.id >> "network1-id"
+    def service1 = Mock(Service)
+    service1.ID >> "service1-id"
+    def network1 = Mock(Network)
+    network1.id >> "network1-id"
+    def secret1 = Mock(Secret)
+    secret1.ID >> "secret1-id"
+    def config1 = Mock(Config)
+    config1.ID >> "config1-id"
 
     when:
     service.stackRm(namespace)
 
     then:
-    1 * manageService.services([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
-        content: [[ID: "service1-id"]]
-    )
-
+    1 * manageService.services([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponseContent<List<Service>>([service1])
     then:
-    1 * manageNetwork.networks([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponseContent<List<Network>>([network])
+    1 * manageNetwork.networks([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponseContent<List<Network>>([network1])
     then:
-    1 * manageSecret.secrets([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
-        content: [[ID: "secret1-id"]]
-    )
+    1 * manageSecret.secrets([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponseContent<List<Secret>>([secret1])
     then:
-    1 * manageConfig.configs([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse(
-        content: [[ID: "config1-id"]]
-    )
+    1 * manageConfig.configs([filters: [label: [(namespaceFilter): true]]]) >> new EngineResponseContent<List<Config>>([config1])
 
     then:
     1 * manageService.rmService("service1-id")

@@ -3,6 +3,7 @@ package de.gesellix.docker.client.authentication
 import de.gesellix.docker.authentication.AuthConfig
 import de.gesellix.docker.authentication.AuthConfigReader
 import de.gesellix.docker.engine.DockerEnv
+import de.gesellix.docker.remote.api.SystemInfo
 import de.gesellix.docker.remote.api.client.SystemApi
 import groovy.util.logging.Slf4j
 
@@ -37,7 +38,7 @@ class RegistryElection {
     // the default registry URL might be Windows specific.
     String serverAddress = new DockerEnv().indexUrl_v1
     try {
-      def info = systemApi.systemInfo()
+      SystemInfo info = systemApi.systemInfo()
       if (!info?.indexServerAddress) {
         log.warn("Empty registry endpoint from daemon. Using system default: ${serverAddress}")
       }
