@@ -35,7 +35,10 @@ class ManageConfigClient implements ManageConfig {
 
   @Override
   EngineResponseContent<List<Config>> configs(Map query) {
-    def actualQuery = query ?: [:]
+    def actualQuery = [:]
+    if (query) {
+      actualQuery.putAll(query)
+    }
     new QueryUtil().jsonEncodeFilters(actualQuery)
     return configs(actualQuery.filters as String)
   }

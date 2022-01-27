@@ -28,7 +28,10 @@ class ManageNodeClient implements ManageNode {
 
   @Override
   EngineResponseContent<List<Node>> nodes(Map<String, Object> query) {
-    def actualQuery = query ?: [:]
+    def actualQuery = [:]
+    if (query) {
+      actualQuery.putAll(query)
+    }
     new QueryUtil().jsonEncodeFilters(actualQuery)
     return nodes(actualQuery.filters as String)
   }

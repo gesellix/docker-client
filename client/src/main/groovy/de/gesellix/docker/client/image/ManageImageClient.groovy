@@ -125,7 +125,10 @@ class ManageImageClient implements ManageImage {
 
   @Override
   EngineResponseContent<List<ImageSummary>> images(Map<String, Object> query) {
-    def actualQuery = query ?: [:]
+    def actualQuery = [:]
+    if (query) {
+      actualQuery.putAll(query)
+    }
     def defaults = [all: false]
     queryUtil.applyDefaults(actualQuery, defaults)
     queryUtil.jsonEncodeFilters(actualQuery)
@@ -141,7 +144,10 @@ class ManageImageClient implements ManageImage {
 
   @Override
   EngineResponseContent<ImagePruneResponse> pruneImages(Map<String, Object> query) {
-    def actualQuery = query ?: [:]
+    def actualQuery = [:]
+    if (query) {
+      actualQuery.putAll(query)
+    }
     queryUtil.jsonEncodeFilters(actualQuery)
     return pruneImages(actualQuery.filters as String)
   }

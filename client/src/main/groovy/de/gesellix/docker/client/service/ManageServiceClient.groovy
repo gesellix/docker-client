@@ -34,7 +34,10 @@ class ManageServiceClient implements ManageService {
   @Override
   EngineResponseContent<List<Service>> services(Map<String, Object> query) {
     log.info("docker service ls")
-    def actualQuery = query ?: [:]
+    def actualQuery = [:]
+    if (query) {
+      actualQuery.putAll(query)
+    }
     queryUtil.jsonEncodeFilters(actualQuery)
     return services(actualQuery.filters as String, actualQuery.status as Boolean)
   }
