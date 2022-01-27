@@ -102,15 +102,15 @@ class ManageAuthenticationClient implements ManageAuthentication {
     Map indexInfo = [
         name    : indexName,
         mirrors : [],
-        official: false,
+        official: indexName == defaultDomain,
         secure  : false
     ]
     return registryElection.resolveAuthConfig(indexInfo.name, indexInfo.official)
   }
 
   String validateIndexName(String val) {
-    if (val == "index.docker.io") {
-      val = "docker.io"
+    if (val == legacyDefaultDomain) {
+      val = defaultDomain
     }
     if (val.startsWith("-") || val.endsWith("-")) {
       throw new IllegalStateException("Invalid index name ($val). Cannot begin or end with a hyphen.")
