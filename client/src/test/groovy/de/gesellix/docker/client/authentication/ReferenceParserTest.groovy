@@ -37,6 +37,7 @@ class ReferenceParserTest extends Specification {
     "sub-dom1.foo.com/bar/baz/quux"                                                                                                                                             || [domain: "sub-dom1.foo.com", path: "bar/baz/quux"]
     "sub-dom1.foo.com/bar/baz/quux:some-long-tag"                                                                                                                               || [repo: [domain: "sub-dom1.foo.com", path: "bar/baz/quux"], tag: "some-long-tag"]
     "b.gcr.io/test.example.com/my-app:test.example.com"                                                                                                                         || [repo: [domain: "b.gcr.io", path: "test.example.com/my-app"], tag: "test.example.com"]
+    "123456789.dkr.ecr.region.amazonaws.com/my-app:a-tag"                                                                                                                       || [repo: [domain: "123456789.dkr.ecr.region.amazonaws.com", path: "my-app"], tag: "a-tag"]
     // ☃.com in punycode
     "xn--n3h.com:18080/foo"                                                                                                                                                     || [domain: "xn--n3h.com:18080", path: "foo"]
     "xn--n3h.com/myimage:xn--n3h.com"                                                                                                                                           || [repo: [domain: "xn--n3h.com", path: "myimage"], tag: "xn--n3h.com"]
