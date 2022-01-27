@@ -668,11 +668,11 @@ class DockerImageIntegrationSpec extends Specification {
 
   def "rm unknown image"() {
     when:
-    dockerClient.rmi("an_unknown_image")
+    def response = dockerClient.rmi("an_unknown_image")
 
     then:
-    def clientException = thrown(ClientException)
-    clientException.statusCode == 404
+    notThrown(ClientException)
+    response.content == []
   }
 
   def "rm image with existing container"() {
