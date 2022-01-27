@@ -302,7 +302,10 @@ class ManageContainerClient implements ManageContainer {
   void logs(String container, Map<String, Object> query, StreamCallback<Frame> callback, Duration timeout) {
     log.info("docker logs")
 
-    def actualQuery = query ?: [:]
+    def actualQuery = [:]
+    if (query) {
+      actualQuery.putAll(query)
+    }
     def defaults = [
         follow    : true,
         stdout    : true,
@@ -331,7 +334,10 @@ class ManageContainerClient implements ManageContainer {
   @Override
   EngineResponseContent<List<Map<String, Object>>> ps(Map<String, Object> query) {
     log.info("docker ps")
-    Map actualQuery = query ?: [:]
+    def actualQuery = [:]
+    if (query) {
+      actualQuery.putAll(query)
+    }
     Map defaults = [all: true, size: false]
     queryUtil.applyDefaults(actualQuery, defaults)
     queryUtil.jsonEncodeFilters(actualQuery)

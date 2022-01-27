@@ -35,7 +35,10 @@ class ManageSecretClient implements ManageSecret {
 
   @Override
   EngineResponseContent<List<Secret>> secrets(Map query) {
-    def actualQuery = query ?: [:]
+    def actualQuery = [:]
+    if (query) {
+      actualQuery.putAll(query)
+    }
     new QueryUtil().jsonEncodeFilters(actualQuery)
     return secrets(actualQuery.filters as String)
   }

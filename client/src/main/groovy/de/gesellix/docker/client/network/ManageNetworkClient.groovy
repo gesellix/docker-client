@@ -26,7 +26,10 @@ class ManageNetworkClient implements ManageNetwork {
   @Override
   EngineResponseContent<List<Network>> networks(Map<String, Object> query) {
     log.info("docker network ls")
-    def actualQuery = query ?: [:]
+    def actualQuery = [:]
+    if (query) {
+      actualQuery.putAll(query)
+    }
     queryUtil.jsonEncodeFilters(actualQuery)
     return networks(actualQuery.filters as String)
   }
@@ -47,7 +50,10 @@ class ManageNetworkClient implements ManageNetwork {
 
   @Override
   EngineResponseContent<NetworkCreateResponse> createNetwork(String name, Map<String, Object> config = [:]) {
-    def actualConfig = config ?: [:]
+    def actualConfig = [:]
+    if (config) {
+      actualConfig.putAll(config)
+    }
     def defaults = [
         Name          : name,
         CheckDuplicate: true]
@@ -99,7 +105,10 @@ class ManageNetworkClient implements ManageNetwork {
   @Override
   EngineResponseContent<NetworkPruneResponse> pruneNetworks(Map<String, Object> query) {
     log.info("docker network prune")
-    def actualQuery = query ?: [:]
+    def actualQuery = [:]
+    if (query) {
+      actualQuery.putAll(query)
+    }
     queryUtil.jsonEncodeFilters(actualQuery)
     return pruneNetworks(actualQuery.filters as String)
   }

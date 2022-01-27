@@ -17,7 +17,10 @@ class ManageTaskClient implements ManageTask {
 
   @Override
   EngineResponseContent<List<Task>> tasks(Map<String, Object> query) {
-    def actualQuery = query ?: [:]
+    def actualQuery = [:]
+    if (query) {
+      actualQuery.putAll(query)
+    }
     new QueryUtil().jsonEncodeFilters(actualQuery)
     return tasks(actualQuery.filters as String)
   }

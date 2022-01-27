@@ -23,9 +23,12 @@ class ManageVolumeClient implements ManageVolume {
   @Override
   EngineResponseContent<VolumeListResponse> volumes(Map<String, Object> query) {
     log.info("docker volume ls")
-    def actualQuery = query ?: [:]
+    def actualQuery = [:]
+    if (query) {
+      actualQuery.putAll(query)
+    }
     queryUtil.jsonEncodeFilters(actualQuery)
-    return volumes(query.filters as String)
+    return volumes(actualQuery.filters as String)
   }
 
   @Override
@@ -64,7 +67,10 @@ class ManageVolumeClient implements ManageVolume {
   @Override
   EngineResponseContent<VolumePruneResponse> pruneVolumes(Map<String, Object> query) {
     log.info("docker volume prune")
-    def actualQuery = query ?: [:]
+    def actualQuery = [:]
+    if (query) {
+      actualQuery.putAll(query)
+    }
     queryUtil.jsonEncodeFilters(actualQuery)
     return pruneVolumes(actualQuery.filters as String)
   }
