@@ -73,6 +73,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
     return encodeAuthConfig(authConfig)
   }
 
+  @Override
   AuthConfig resolveAuthConfigForImage(String image) {
     if (/^([a-f0-9]{64})$/.matches(image)) {
       throw new IllegalArgumentException("invalid repository name (${image}), cannot specify 64-byte hexadecimal strings")

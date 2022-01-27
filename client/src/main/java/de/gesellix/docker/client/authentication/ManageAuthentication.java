@@ -17,6 +17,8 @@ public interface ManageAuthentication {
 
   AuthConfig readAuthConfig(String hostnameOrNull, File dockerCfgOrNull);
 
+  AuthConfig resolveAuthConfigForImage(String image);
+
   String retrieveEncodedAuthTokenForImage(String image);
 
   String encodeAuthConfig(AuthConfig authConfig);
