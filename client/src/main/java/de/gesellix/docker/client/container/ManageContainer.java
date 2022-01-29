@@ -76,9 +76,9 @@ public interface ManageContainer {
 
   void resizeExec(String exec, Integer height, Integer width);
 
-  EngineResponse<InputStream> export(String container);
+  EngineResponseContent<InputStream> export(String container);
 
-  EngineResponse<ContainerInspectResponse> inspectContainer(String container);
+  EngineResponseContent<ContainerInspectResponse> inspectContainer(String container);
 
   void kill(String container);
 

@@ -220,7 +220,7 @@ class ManageStackClient implements ManageStack {
 
   void pruneServices(String namespace, Collection<String> services) {
     // Descope returns the name without the namespace prefix
-    def descope = { String name ->
+    Closure<String> descope = { String name ->
       return name.substring("${namespace}_".length())
     }
 
@@ -343,7 +343,7 @@ class ManageStackClient implements ManageStack {
     log.info("docker stack services")
 
     String namespaceFilter = "${LabelNamespace}=${namespace}"
-    def actualFilters = filters ?: [:]
+    Map actualFilters = filters ?: [:]
     if (actualFilters.label) {
       actualFilters.label[(namespaceFilter)] = true
     }
@@ -355,7 +355,7 @@ class ManageStackClient implements ManageStack {
     return services
   }
 
-  def getInfoByServiceId(EngineResponse<List<Service>> services) {
+  Map<String, ServiceInfo> getInfoByServiceId(EngineResponse<List<Service>> services) {
     EngineResponse<List<Node>> nodes = manageNode.nodes()
     List<String> activeNodes = nodes.content.findResults { Node node ->
       node.status.state != NodeState.Down ? node.ID : null
@@ -384,7 +384,7 @@ class ManageStackClient implements ManageStack {
       }
     }
 
-    Map infoByServiceId = [:]
+    Map<String, ServiceInfo> infoByServiceId = [:]
     services.content.each { Service service ->
       if (service.spec.mode.replicated && service.spec.mode.replicated.replicas) {
         infoByServiceId[service.ID] = new ServiceInfo(mode: 'replicated', replicas: "${running[service.ID as String] ?: 0}/${service.spec.mode.replicated.replicas}")

@@ -39,7 +39,7 @@ class ManageSecretClient implements ManageSecret {
     if (query) {
       actualQuery.putAll(query)
     }
-    new QueryUtil().jsonEncodeFilters(actualQuery)
+    new QueryUtil().jsonEncodeQueryParameter(actualQuery, "filters")
     return secrets(actualQuery.filters as String)
   }
 

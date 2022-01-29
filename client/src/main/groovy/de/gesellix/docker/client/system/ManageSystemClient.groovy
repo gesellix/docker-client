@@ -23,7 +23,7 @@ class ManageSystemClient implements ManageSystem {
   @Override
   EngineResponseContent<SystemDataUsageResponse> systemDf() {
     log.info("docker system df")
-    def systemDataUsage = client.getSystemApi().systemDataUsage()
+    SystemDataUsageResponse systemDataUsage = client.getSystemApi().systemDataUsage()
     return new EngineResponseContent(systemDataUsage)
   }
 
@@ -36,21 +36,21 @@ class ManageSystemClient implements ManageSystem {
   @Override
   EngineResponseContent<String> ping() {
     log.info("docker ping")
-    def systemPing = client.getSystemApi().systemPing()
+    String systemPing = client.getSystemApi().systemPing()
     return new EngineResponseContent(systemPing)
   }
 
   @Override
   EngineResponseContent<SystemVersion> version() {
     log.info("docker version")
-    def systemVersion = client.getSystemApi().systemVersion()
+    SystemVersion systemVersion = client.getSystemApi().systemVersion()
     return new EngineResponseContent(systemVersion)
   }
 
   @Override
   EngineResponseContent<SystemInfo> info() {
     log.info("docker info")
-    def systemInfo = client.getSystemApi().systemInfo()
+    SystemInfo systemInfo = client.getSystemApi().systemInfo()
     return new EngineResponseContent(systemInfo)
   }
 }

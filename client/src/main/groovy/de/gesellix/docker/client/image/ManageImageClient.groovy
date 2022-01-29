@@ -131,7 +131,7 @@ class ManageImageClient implements ManageImage {
     }
     def defaults = [all: false]
     queryUtil.applyDefaults(actualQuery, defaults)
-    queryUtil.jsonEncodeFilters(actualQuery)
+    queryUtil.jsonEncodeQueryParameter(actualQuery, "filters")
     return images(actualQuery.all as Boolean, actualQuery.filters as String, actualQuery.digests as Boolean)
   }
 
@@ -148,7 +148,7 @@ class ManageImageClient implements ManageImage {
     if (query) {
       actualQuery.putAll(query)
     }
-    queryUtil.jsonEncodeFilters(actualQuery)
+    queryUtil.jsonEncodeQueryParameter(actualQuery, "filters")
     return pruneImages(actualQuery.filters as String)
   }
 

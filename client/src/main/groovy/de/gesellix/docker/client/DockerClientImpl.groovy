@@ -37,7 +37,7 @@ import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.OkDockerClient
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.EngineApiClientImpl
-import de.gesellix.util.QueryUtil
+import de.gesellix.docker.remote.api.Node
 import groovy.util.logging.Slf4j
 
 import static java.net.Proxy.NO_PROXY
@@ -46,7 +46,6 @@ import static java.net.Proxy.NO_PROXY
 class DockerClientImpl implements DockerClient {
 
   RepositoryTagParser repositoryTagParser
-  QueryUtil queryUtil
 
   Proxy proxy
   DockerClientConfig dockerClientConfig
@@ -110,7 +109,6 @@ class DockerClientImpl implements DockerClient {
     log.info("using docker at '${env.dockerHost}'")
 
     this.repositoryTagParser = new RepositoryTagParser()
-    this.queryUtil = new QueryUtil()
 
     this.manageSystem = new ManageSystemClient(engineApiClient)
     this.manageAuthentication = new ManageAuthenticationClient(engineApiClient, authConfigReader)
@@ -149,8 +147,8 @@ class DockerClientImpl implements DockerClient {
   @Override
   String getSwarmMangerAddress() {
     log.info("docker get swarm manager address")
-    def swarmNodeId = info().content.swarm.nodeID
-    def node = inspectNode(swarmNodeId).content
+    String swarmNodeId = info().content.swarm.nodeID
+    Node node = inspectNode(swarmNodeId).content
     return node.managerStatus.addr
   }
 }
