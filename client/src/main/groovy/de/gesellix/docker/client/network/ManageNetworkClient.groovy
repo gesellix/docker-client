@@ -30,7 +30,7 @@ class ManageNetworkClient implements ManageNetwork {
     if (query) {
       actualQuery.putAll(query)
     }
-    queryUtil.jsonEncodeFilters(actualQuery)
+    queryUtil.jsonEncodeQueryParameter(actualQuery, "filters")
     return networks(actualQuery.filters as String)
   }
 
@@ -109,7 +109,7 @@ class ManageNetworkClient implements ManageNetwork {
     if (query) {
       actualQuery.putAll(query)
     }
-    queryUtil.jsonEncodeFilters(actualQuery)
+    queryUtil.jsonEncodeQueryParameter(actualQuery, "filters")
     return pruneNetworks(actualQuery.filters as String)
   }
 

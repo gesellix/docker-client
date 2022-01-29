@@ -26,7 +26,7 @@ class LocalDocker {
 
   static boolean supportsSwarmMode() {
     try {
-      def version = getDockerVersion()
+      DockerVersion version = getDockerVersion()
       return (version.major >= 1 && version.minor >= 12) || version.major >= 17
     }
     catch (Exception e) {
@@ -37,7 +37,7 @@ class LocalDocker {
 
   static boolean supportsSecrets() {
     try {
-      def version = getDockerVersion()
+      DockerVersion version = getDockerVersion()
       return (version.major >= 1 && version.minor >= 13) || version.major >= 17
     }
     catch (Exception e) {
@@ -48,7 +48,7 @@ class LocalDocker {
 
   static boolean supportsConfigs() {
     try {
-      def version = getDockerVersion()
+      DockerVersion version = getDockerVersion()
       return version.major >= 17 && version.minor >= 6
     }
     catch (Exception e) {
@@ -59,7 +59,7 @@ class LocalDocker {
 
   static boolean supportsStack() {
     try {
-      def version = getDockerVersion()
+      DockerVersion version = getDockerVersion()
       return (version.major >= 1 && version.minor >= 13) || version.major >= 17
     }
     catch (Exception e) {
@@ -70,7 +70,7 @@ class LocalDocker {
 
   static DockerVersion getDockerVersion() {
     try {
-      def version = new DockerClientImpl().version().content.version as String
+      String version = new DockerClientImpl().version().content.version
       return parseDockerVersion(version)
     }
     catch (Exception e) {
@@ -81,9 +81,9 @@ class LocalDocker {
 
   static boolean isNativeWindows(DockerClient client = null) {
     try {
-      def dockerClient = (client ?: new DockerClientImpl())
-      def arch = dockerClient.version().content.arch
-      def os = dockerClient.version().content.os
+      DockerClient dockerClient = (client ?: new DockerClientImpl())
+      String arch = dockerClient.version().content.arch
+      String os = dockerClient.version().content.os
       return "$os/$arch".toString() == "windows/amd64"
     }
     catch (Exception e) {
@@ -93,9 +93,9 @@ class LocalDocker {
   }
 
   static boolean isPausable(DockerClient client = null) {
-    def dockerClient = (client ?: new DockerClientImpl())
-    def daemonPlatform = getDaemonPlatform(dockerClient)
-    def daemonIsolation = getDaemonIsolation(dockerClient)
+    DockerClient dockerClient = (client ?: new DockerClientImpl())
+    String daemonPlatform = getDaemonPlatform(dockerClient)
+    SystemInfo.Isolation daemonIsolation = getDaemonIsolation(dockerClient)
     return daemonPlatform != "windows" || daemonIsolation != SystemInfo.Isolation.Process
   }
 
@@ -106,8 +106,8 @@ class LocalDocker {
 
   static String getDaemonPlatform(DockerClient client = null) {
     try {
-      def dockerClient = (client ?: new DockerClientImpl())
-      def osType = dockerClient.info().content.osType
+      DockerClient dockerClient = (client ?: new DockerClientImpl())
+      String osType = dockerClient.info().content.osType
       return osType
     }
     catch (Exception e) {
@@ -118,8 +118,8 @@ class LocalDocker {
 
   static SystemInfo.Isolation getDaemonIsolation(DockerClient client = null) {
     try {
-      def dockerClient = (client ?: new DockerClientImpl())
-      def isolation = dockerClient.info().content.isolation
+      DockerClient dockerClient = (client ?: new DockerClientImpl())
+      SystemInfo.Isolation isolation = dockerClient.info().content.isolation
       return isolation
     }
     catch (Exception e) {
@@ -129,17 +129,17 @@ class LocalDocker {
   }
 
   static boolean isNamedPipe() {
-    def dockerHost = new DockerClientImpl().env.dockerHost
+    String dockerHost = new DockerClientImpl().env.dockerHost
     return dockerHost.startsWith("npipe://")
   }
 
   static boolean isUnixSocket() {
-    def dockerHost = new DockerClientImpl().env.dockerHost
+    String dockerHost = new DockerClientImpl().env.dockerHost
     return dockerHost.startsWith("unix://")
   }
 
   static boolean isTcpSocket() {
-    def dockerHost = new DockerClientImpl().env.dockerHost
+    String dockerHost = new DockerClientImpl().env.dockerHost
     return dockerHost.startsWith("tcp://") || dockerHost.startsWith("http://") || dockerHost.startsWith("https://")
   }
 }

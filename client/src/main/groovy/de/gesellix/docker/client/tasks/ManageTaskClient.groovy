@@ -17,25 +17,25 @@ class ManageTaskClient implements ManageTask {
 
   @Override
   EngineResponseContent<List<Task>> tasks(Map<String, Object> query) {
-    def actualQuery = [:]
+    Map actualQuery = [:]
     if (query) {
       actualQuery.putAll(query)
     }
-    new QueryUtil().jsonEncodeFilters(actualQuery)
+    new QueryUtil().jsonEncodeQueryParameter(actualQuery, "filters")
     return tasks(actualQuery.filters as String)
   }
 
   @Override
   EngineResponseContent<List<Task>> tasks(String filters = null) {
     log.info("docker tasks")
-    def tasks = client.taskApi.taskList(filters)
+    List<Task> tasks = client.taskApi.taskList(filters)
     return new EngineResponseContent<List<Task>>(tasks)
   }
 
   @Override
   EngineResponseContent<Task> inspectTask(String name) {
     log.info("docker task inspect")
-    def taskInspect = client.taskApi.taskInspect(name)
+    Task taskInspect = client.taskApi.taskInspect(name)
     return new EngineResponseContent<Task>(taskInspect)
   }
 }

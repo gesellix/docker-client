@@ -7,6 +7,7 @@ import de.gesellix.docker.remote.api.SwarmInitRequest
 import de.gesellix.docker.remote.api.SwarmJoinRequest
 import de.gesellix.docker.remote.api.SwarmSpec
 import de.gesellix.docker.remote.api.SwarmUnlockRequest
+import de.gesellix.docker.remote.api.UnlockKeyResponse
 import groovy.util.logging.Slf4j
 
 @Slf4j
@@ -37,7 +38,7 @@ class ManageSwarmClient implements ManageSwarm {
   @Override
   EngineResponseContent<String> initSwarm(SwarmInitRequest swarmInitRequest) {
     log.info("docker swarm init")
-    def nodeId = client.swarmApi.swarmInit(swarmInitRequest)
+    String nodeId = client.swarmApi.swarmInit(swarmInitRequest)
     return new EngineResponseContent<String>(nodeId)
 
     /*
@@ -109,14 +110,14 @@ return nil
   @Override
   String getSwarmWorkerToken() {
     log.info("docker swarm join-token worker")
-    def swarm = inspectSwarm().content
+    Swarm swarm = inspectSwarm().content
     return swarm.joinTokens.worker
   }
 
   @Override
   String rotateSwarmWorkerToken() {
     log.info("docker swarm join-token rotate worker token")
-    def swarm = inspectSwarm().content
+    Swarm swarm = inspectSwarm().content
     client.swarmApi.swarmUpdate(swarm.version.index, swarm.spec, true, false, false)
     return getSwarmWorkerToken()
   }
@@ -124,14 +125,14 @@ return nil
   @Override
   String getSwarmManagerToken() {
     log.info("docker swarm join-token manager")
-    def swarm = inspectSwarm().content
+    Swarm swarm = inspectSwarm().content
     return swarm.joinTokens.manager
   }
 
   @Override
   String rotateSwarmManagerToken() {
     log.info("docker swarm join-token rotate manager token")
-    def swarm = inspectSwarm().content
+    Swarm swarm = inspectSwarm().content
     client.swarmApi.swarmUpdate(swarm.version.index, swarm.spec, false, true, false)
     return getSwarmManagerToken()
   }
@@ -139,14 +140,14 @@ return nil
   @Override
   String getSwarmManagerUnlockKey() {
     log.info("docker swarm manager unlock key")
-    def unlockkey = client.swarmApi.swarmUnlockkey()
+    UnlockKeyResponse unlockkey = client.swarmApi.swarmUnlockkey()
     return unlockkey.unlockKey
   }
 
   @Override
   String rotateSwarmManagerUnlockKey() {
     log.info("docker swarm join-token rotate manager unlock key")
-    def swarm = inspectSwarm().content
+    Swarm swarm = inspectSwarm().content
     client.swarmApi.swarmUpdate(swarm.version.index, swarm.spec, false, false, true)
     return getSwarmManagerUnlockKey()
   }
@@ -160,7 +161,7 @@ return nil
   @Override
   EngineResponseContent<Swarm> inspectSwarm() {
     log.info("docker swarm inspect")
-    def swarmInspect = client.swarmApi.swarmInspect()
+    Swarm swarmInspect = client.swarmApi.swarmInspect()
     return new EngineResponseContent<Swarm>(swarmInspect)
   }
 }

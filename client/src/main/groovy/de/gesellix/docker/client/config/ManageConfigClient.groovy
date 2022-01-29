@@ -20,33 +20,33 @@ class ManageConfigClient implements ManageConfig {
   @Override
   EngineResponseContent<IdResponse> createConfig(String name, byte[] configData, Map<String, String> labels = [:]) {
     log.info("docker config create")
-    def configDataBase64 = Base64.encoder.encodeToString(configData)
-    def configConfig = new ConfigSpec(name, labels, configDataBase64, null)
-    def response = client.configApi.configCreate(configConfig)
+    String configDataBase64 = Base64.encoder.encodeToString(configData)
+    ConfigSpec configConfig = new ConfigSpec(name, labels, configDataBase64, null)
+    IdResponse response = client.configApi.configCreate(configConfig)
     return new EngineResponseContent<IdResponse>(response)
   }
 
   @Override
   EngineResponseContent<Config> inspectConfig(String configId) {
     log.info("docker config inspect")
-    def configInspect = client.configApi.configInspect(configId)
+    Config configInspect = client.configApi.configInspect(configId)
     return new EngineResponseContent(configInspect)
   }
 
   @Override
   EngineResponseContent<List<Config>> configs(Map query) {
-    def actualQuery = [:]
+    Map actualQuery = [:]
     if (query) {
       actualQuery.putAll(query)
     }
-    new QueryUtil().jsonEncodeFilters(actualQuery)
+    new QueryUtil().jsonEncodeQueryParameter(actualQuery, "filters")
     return configs(actualQuery.filters as String)
   }
 
   @Override
   EngineResponseContent<List<Config>> configs(String filters = null) {
     log.info("docker config ls")
-    def configs = client.configApi.configList(filters)
+    List<Config> configs = client.configApi.configList(filters)
     return new EngineResponseContent<List<Config>>(configs)
   }
 

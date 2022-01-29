@@ -64,6 +64,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.temporal.ChronoUnit
+import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 import static java.lang.Double.parseDouble
@@ -95,7 +96,7 @@ class DeployConfigReader {
       if (!service.networks) {
         return ["default"]
       }
-      return service.networks.collect { String networkName, serviceNetwork ->
+      return service.networks.collect { String networkName, ServiceNetwork serviceNetwork ->
         networkName
       }
     }.flatten().unique()
@@ -104,9 +105,9 @@ class DeployConfigReader {
     Map<String, NetworkCreateRequest> networkConfigs
     List<String> externalNetworks
     (networkConfigs, externalNetworks) = networks(namespace, serviceNetworkNames, composeConfig.networks ?: [:])
-    def secrets = secrets(namespace, composeConfig.secrets, workingDir)
-    def configs = configs(namespace, composeConfig.configs, workingDir)
-    def services = services(namespace, composeConfig.services, composeConfig.networks, composeConfig.volumes)
+    Map<String, StackSecret> secrets = secrets(namespace, composeConfig.secrets, workingDir)
+    Map<String, StackConfig> configs = configs(namespace, composeConfig.configs, workingDir)
+    Map<String, ServiceSpec> services = services(namespace, composeConfig.services, composeConfig.networks, composeConfig.volumes)
 
     def cfg = new DeployStackConfig()
     cfg.networks = networkConfigs
@@ -122,8 +123,8 @@ class DeployConfigReader {
       Map<String, StackNetwork> networks,
       Map<String, StackVolume> volumes) {
     Map<String, ServiceSpec> serviceSpec = [:]
-    services.each { name, service ->
-      def serviceLabels = service.deploy?.labels?.entries ?: [:]
+    services.each { String name, StackService service ->
+      Map<String, String> serviceLabels = service.deploy?.labels?.entries ?: [:]
       serviceLabels[ManageStackClient.LabelNamespace] = namespace
 
       Map<String, String> containerLabels = service.labels?.entries ?: [:]
@@ -137,7 +138,7 @@ class DeployConfigReader {
       List<String> env = convertEnvironment(service.workingDir, service.envFile, service.environment)
       Collections.sort(env)
 
-      def extraHosts = convertExtraHosts(service.extraHosts)
+      List<String> extraHosts = convertExtraHosts(service.extraHosts)
       Collections.sort(extraHosts)
 
       def serviceConfig = new ServiceSpec()
@@ -199,11 +200,11 @@ class DeployConfigReader {
   }
 
   List<TaskSpecContainerSpecConfigs> prepareServiceConfigs(String namespace, List<Map<String, ServiceConfig>> configs) {
-    configs?.collect { item ->
+    configs?.collect { Map<String, ServiceConfig> item ->
       if (item.size() > 1) {
         throw new RuntimeException("expected a unique config entry")
       }
-      List<TaskSpecContainerSpecConfigs> converted = item.entrySet().collect { entry ->
+      List<TaskSpecContainerSpecConfigs> converted = item.entrySet().collect { Map.Entry<String, ServiceConfig> entry ->
         new TaskSpecContainerSpecConfigs(
             new TaskSpecContainerSpecFile1(
                 entry.value?.target ?: (entry.value?.source ?: entry.key),
@@ -221,11 +222,11 @@ class DeployConfigReader {
   }
 
   List<TaskSpecContainerSpecSecrets> prepareServiceSecrets(String namespace, List<Map<String, ServiceSecret>> secrets) {
-    secrets?.collect { item ->
+    secrets?.collect { Map<String, ServiceSecret> item ->
       if (item.size() > 1) {
         throw new RuntimeException("expected a unique secret entry")
       }
-      List<TaskSpecContainerSpecSecrets> converted = item.entrySet().collect { entry ->
+      List<TaskSpecContainerSpecSecrets> converted = item.entrySet().collect { Map.Entry<String, ServiceSecret> entry ->
         new TaskSpecContainerSpecSecrets(
             new TaskSpecContainerSpecFile(
                 entry.value?.target ?: (entry.value?.source ?: entry.key),
@@ -243,21 +244,21 @@ class DeployConfigReader {
 
   List<String> convertEnvironment(String workingDir, List<String> envFiles, Environment environment) {
     List<String> entries = []
-    envFiles.each { filename ->
+    envFiles.each { String filename ->
       File file = new File(filename)
       if (!file.isAbsolute()) {
         file = new File(workingDir, filename)
       }
       entries.addAll(new EnvFileParser().parse(file))
     }
-    entries.addAll(environment?.entries?.collect { name, value ->
+    entries.addAll(environment?.entries?.collect { String name, String value ->
       return "${name}=${value}" as String
     } ?: [])
     return entries
   }
 
   List<String> convertExtraHosts(ExtraHosts extraHosts) {
-    extraHosts?.entries?.collect { host, ip ->
+    extraHosts?.entries?.collect { String host, String ip ->
       "${host} ${ip}" as String
     } ?: []
   }
@@ -267,17 +268,17 @@ class DeployConfigReader {
       return null
     }
 
-    def parallel = 1
+    long parallel = 1
     if (updateConfig.parallelism) {
       parallel = updateConfig.parallelism
     }
 
-    def delay = 0
+    long delay = 0
     if (updateConfig.delay) {
       delay = parseDuration(updateConfig.delay).toNanos()
     }
 
-    def monitor = 0
+    long monitor = 0
     if (updateConfig.monitor) {
       monitor = parseDuration(updateConfig.monitor).toNanos()
     }
@@ -285,10 +286,14 @@ class DeployConfigReader {
     return new ServiceSpecUpdateConfig(
         parallel,
         delay,
-        updateConfig.failureAction ? ServiceSpecUpdateConfig.FailureAction.values().find { it.value == updateConfig.failureAction } : null,
+        updateConfig.failureAction
+            ? ServiceSpecUpdateConfig.FailureAction.values().find { ServiceSpecUpdateConfig.FailureAction action -> action.value == updateConfig.failureAction }
+            : null,
         monitor,
         new BigDecimal(updateConfig.maxFailureRatio),
-        updateConfig.order ? ServiceSpecUpdateConfig.Order.values().find { it.value == updateConfig.order } : null
+        updateConfig.order
+            ? ServiceSpecUpdateConfig.Order.values().find { ServiceSpecUpdateConfig.Order order -> order.value == updateConfig.order }
+            : null
     )
   }
 
@@ -304,9 +309,9 @@ class DeployConfigReader {
       serviceNetworks = ["default": null as ServiceNetwork]
     }
 
-    def serviceNetworkConfigs = []
+    List<NetworkAttachmentConfig> serviceNetworkConfigs = []
 
-    serviceNetworks.each { networkName, serviceNetwork ->
+    serviceNetworks.each { String networkName, ServiceNetwork serviceNetwork ->
       if (!networkConfigs?.containsKey(networkName) && networkName != "default") {
         throw new IllegalStateException("service ${serviceName} references network ${networkName}, which is not declared")
       }
@@ -332,7 +337,7 @@ class DeployConfigReader {
     return serviceNetworkConfigs
   }
 
-  String getTargetNetworkName(String namespace, String networkName, Map<String, de.gesellix.docker.compose.types.StackNetwork> networkConfigs) {
+  String getTargetNetworkName(String namespace, String networkName, Map<String, StackNetwork> networkConfigs) {
     if (networkConfigs?.containsKey(networkName)) {
       StackNetwork networkConfig = networkConfigs[networkName]
       if (networkConfig?.external?.external) {
@@ -411,35 +416,35 @@ class DeployConfigReader {
       "h" : ChronoUnit.HOURS
   ]
 
-  final def numberWithUnitRegex = /(\d*)\.?(\d*)(\D+)/
-  final def pattern = Pattern.compile(numberWithUnitRegex)
+  final String numberWithUnitRegex = /(\d*)\.?(\d*)(\D+)/
+  final Pattern pattern = Pattern.compile(numberWithUnitRegex)
 
-  def parseDuration(String durationAsString) {
-    def sign = '+'
+  Duration parseDuration(String durationAsString) {
+    String sign = '+'
     if (durationAsString.matches(/[-+].+/)) {
       sign = durationAsString.substring(0, '-'.length())
       durationAsString = durationAsString.substring('-'.length())
     }
-    def matcher = pattern.matcher(durationAsString)
+    Matcher matcher = pattern.matcher(durationAsString)
 
-    def duration = Duration.of(0, ChronoUnit.NANOS)
-    def ok = false
+    Duration duration = Duration.of(0, ChronoUnit.NANOS)
+    boolean ok = false
     while (matcher.find()) {
       if (matcher.groupCount() != 3) {
         throw new IllegalStateException("expected 3 groups, but got ${matcher.groupCount()}")
       }
-      def pre = matcher.group(1) ?: "0"
-      def post = matcher.group(2) ?: "0"
-      def symbol = matcher.group(3)
+      String pre = matcher.group(1) ?: "0"
+      String post = matcher.group(2) ?: "0"
+      String symbol = matcher.group(3)
       if (!symbol) {
         throw new IllegalArgumentException("missing unit in duration '${durationAsString}'")
       }
-      def unit = unitBySymbol[symbol]
+      ChronoUnit unit = unitBySymbol[symbol]
       if (!unit) {
         throw new IllegalArgumentException("unknown unit ${symbol} in duration '${durationAsString}'")
       }
 
-      def scale = Math.pow(10, post.length())
+      double scale = Math.pow(10, post.length())
 
       duration = duration
           .plus(parseInt(pre), unit)
@@ -457,7 +462,7 @@ class DeployConfigReader {
   TaskSpecRestartPolicy restartPolicy(String restart, RestartPolicy restartPolicy) {
     // TODO: log if restart is being ignored
     if (restartPolicy == null) {
-      def policy = parseRestartPolicy(restart)
+      Map<String, String> policy = parseRestartPolicy(restart)
       if (!policy) {
         return null
       }
@@ -506,7 +511,7 @@ class DeployConfigReader {
   }
 
   def parseRestartPolicy(String policy) {
-    def restartPolicy = [
+    Map<String, String> restartPolicy = [
         name: ""
     ]
     if (!policy) {
@@ -531,7 +536,7 @@ class DeployConfigReader {
 
   TaskSpecResources serviceResources(Resources resources) {
     if (resources?.limits || resources?.reservations) {
-      def nanoMultiplier = Math.pow(10, 9)
+      double nanoMultiplier = Math.pow(10, 9)
       return new TaskSpecResources(
           getTaskSpecResourcesLimits(resources?.limits, nanoMultiplier),
           getTaskSpecResourcesReservation(resources?.reservations, nanoMultiplier)
@@ -625,7 +630,7 @@ class DeployConfigReader {
     if (!stackVolumes.containsKey(volumeSpec.source)) {
       throw new IllegalArgumentException("undefined volume: ${volumeSpec.source}")
     }
-    def stackVolume = stackVolumes[volumeSpec.source]
+    StackVolume stackVolume = stackVolumes[volumeSpec.source]
 
     String source = volumeSpec.source
     MountVolumeOptions volumeOptions
@@ -637,7 +642,7 @@ class DeployConfigReader {
       source = stackVolume.external.name
     }
     else {
-      def labels = stackVolume?.labels?.entries ?: [:]
+      Map<String, String> labels = stackVolume?.labels?.entries ?: [:]
       labels[(ManageStackClient.LabelNamespace)] = namespace
       volumeOptions = new MountVolumeOptions(
           volumeSpec.volume?.noCopy ?: false,
@@ -682,7 +687,7 @@ class DeployConfigReader {
 
   MountBindOptions getBindOptions(ServiceVolumeBind bind) {
     if (bind?.propagation) {
-      return new MountBindOptions(MountBindOptions.Propagation.values().find { it.getValue() == bind.propagation }, null)
+      return new MountBindOptions(MountBindOptions.Propagation.values().find { MountBindOptions.Propagation propagation -> propagation.getValue() == bind.propagation }, null)
     }
     else {
       return null
@@ -729,7 +734,7 @@ class DeployConfigReader {
       Map<String, StackNetwork> networks) {
     Map<String, NetworkCreateRequest> networkSpec = [:]
 
-    def externalNetworkNames = []
+    List<String> externalNetworkNames = []
     serviceNetworkNames.each { String internalName ->
       def network = networks[internalName]
       if (!network) {

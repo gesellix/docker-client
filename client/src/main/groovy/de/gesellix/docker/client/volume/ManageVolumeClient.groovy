@@ -23,25 +23,25 @@ class ManageVolumeClient implements ManageVolume {
   @Override
   EngineResponseContent<VolumeListResponse> volumes(Map<String, Object> query) {
     log.info("docker volume ls")
-    def actualQuery = [:]
+    Map actualQuery = [:]
     if (query) {
       actualQuery.putAll(query)
     }
-    queryUtil.jsonEncodeFilters(actualQuery)
+    queryUtil.jsonEncodeQueryParameter(actualQuery, "filters")
     return volumes(actualQuery.filters as String)
   }
 
   @Override
   EngineResponseContent<VolumeListResponse> volumes(String filters = null) {
     log.info("docker volume ls")
-    def volumeList = client.getVolumeApi().volumeList(filters)
+    VolumeListResponse volumeList = client.getVolumeApi().volumeList(filters)
     return new EngineResponseContent(volumeList)
   }
 
   @Override
   EngineResponseContent<Volume> inspectVolume(String name) {
     log.info("docker volume inspect")
-    def volumeInspect = client.getVolumeApi().volumeInspect(name)
+    Volume volumeInspect = client.getVolumeApi().volumeInspect(name)
     return new EngineResponseContent(volumeInspect)
   }
 
@@ -54,7 +54,7 @@ class ManageVolumeClient implements ManageVolume {
   @Override
   EngineResponseContent<Volume> createVolume(VolumeConfig volumeConfig = new VolumeConfig()) {
     log.info("docker volume create")
-    def volume = client.getVolumeApi().volumeCreate(volumeConfig)
+    Volume volume = client.getVolumeApi().volumeCreate(volumeConfig)
     return new EngineResponseContent<Volume>(volume)
   }
 
@@ -67,18 +67,18 @@ class ManageVolumeClient implements ManageVolume {
   @Override
   EngineResponseContent<VolumePruneResponse> pruneVolumes(Map<String, Object> query) {
     log.info("docker volume prune")
-    def actualQuery = [:]
+    Map actualQuery = [:]
     if (query) {
       actualQuery.putAll(query)
     }
-    queryUtil.jsonEncodeFilters(actualQuery)
+    queryUtil.jsonEncodeQueryParameter(actualQuery, "filters")
     return pruneVolumes(actualQuery.filters as String)
   }
 
   @Override
   EngineResponseContent<VolumePruneResponse> pruneVolumes(String filters = null) {
     log.info("docker volume prune")
-    def pruneResponse = client.getVolumeApi().volumePrune(filters)
+    VolumePruneResponse pruneResponse = client.getVolumeApi().volumePrune(filters)
     return new EngineResponseContent<VolumePruneResponse>(pruneResponse)
   }
 }

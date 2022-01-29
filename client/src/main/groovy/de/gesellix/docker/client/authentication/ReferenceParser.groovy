@@ -57,8 +57,8 @@ class ReferenceParser {
       throw new IllegalArgumentException("repository name must have at least one component")
     }
 
-    def referencePattern = Pattern.compile(ReferenceRegexp)
-    def referenceMatcher = referencePattern.matcher(s)
+    Pattern referencePattern = Pattern.compile(ReferenceRegexp)
+    Matcher referenceMatcher = referencePattern.matcher(s)
     if (!referenceMatcher.matches()) {
       if (referencePattern.matches(s.toLowerCase())) {
         throw new IllegalArgumentException("repository name must be lowercase")

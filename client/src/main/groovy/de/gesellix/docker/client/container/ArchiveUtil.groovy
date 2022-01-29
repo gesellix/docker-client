@@ -3,6 +3,8 @@ package de.gesellix.docker.client.container
 import de.gesellix.util.IOUtils
 import groovy.util.logging.Slf4j
 import okio.Okio
+import okio.Sink
+import okio.Source
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 
@@ -15,7 +17,7 @@ class ArchiveUtil {
     TarArchiveEntry entry = stream.nextTarEntry
     log.debug("entry size: ${entry.size}")
 
-    def entryName = entry.name
+    String entryName = entry.name
     if (!filename.endsWith(entryName)) {
       log.warn("entry name '${entryName}' doesn't match expected filename '${filename}'")
     }
@@ -38,7 +40,7 @@ class ArchiveUtil {
     TarArchiveEntry entry = stream.nextTarEntry
     log.debug("entry size: ${entry.size}")
 
-    def entryName = entry.name
+    String entryName = entry.name
     if (!filename.endsWith(entryName)) {
       log.warn("entry name '${entryName}' doesn't match expected filename '${filename}'")
     }
@@ -49,8 +51,8 @@ class ArchiveUtil {
     byte[] content = new byte[(int) entry.size]
     log.debug("going to read ${content.length} bytes")
 
-    def source = Okio.source(stream)
-    def sink = Okio.sink(target)
+    Source source = Okio.source(stream)
+    Sink sink = Okio.sink(target)
     IOUtils.copy(source, sink)
     sink.flush()
     sink.close()

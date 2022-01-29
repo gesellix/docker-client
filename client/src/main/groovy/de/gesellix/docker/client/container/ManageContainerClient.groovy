@@ -58,8 +58,8 @@ class ManageContainerClient implements ManageContainer {
     // When using the TTY setting is enabled in POST /containers/create,
     // the stream is the raw data from the process PTY and client’s stdin.
     // When the TTY is disabled, then the stream is multiplexed to separate stdout and stderr.
-    def container = inspectContainer(containerId)
-    def multiplexStreams = !container.content.config.tty
+    EngineResponseContent<ContainerInspectResponse> container = inspectContainer(containerId)
+    boolean multiplexStreams = !container.content.config.tty
 
     def response = engineClient.post([
         path            : "/containers/${containerId}/attach".toString(),
@@ -105,12 +105,12 @@ class ManageContainerClient implements ManageContainer {
   EngineResponseContent<IdResponse> commit(String container, Map query, Map config = [:]) {
     log.info("docker commit")
 
-    def finalQuery = query ?: [:]
+    Map finalQuery = query ?: [:]
     finalQuery.container = container
 
     config = config ?: [:]
 
-    def imageCommit = client.imageApi.imageCommit(
+    IdResponse imageCommit = client.imageApi.imageCommit(
         container,
         query.repo as String, query.tag as String,
         query.comment as String, query.author as String,
@@ -146,7 +146,7 @@ class ManageContainerClient implements ManageContainer {
   byte[] extractFile(String container, String filename) {
     log.info("extract '${filename}' from '${container}'")
 
-    def response = getArchive(container, filename)
+    EngineResponseContent<InputStream> response = getArchive(container, filename)
     return archiveUtil.extractSingleTarEntry(response.content, filename)
   }
 
@@ -154,7 +154,7 @@ class ManageContainerClient implements ManageContainer {
   EngineResponseContent<InputStream> getArchive(String container, String path) {
     log.info("docker download from ${container}|${path}")
 
-    def archive = client.containerApi.containerArchive(container, path)
+    InputStream archive = client.containerApi.containerArchive(container, path)
     return new EngineResponseContent<InputStream>(archive)
   }
 
@@ -171,15 +171,15 @@ class ManageContainerClient implements ManageContainer {
       throw new IllegalArgumentException("'Image' missing in containerCreateRequest")
     }
     try {
-      def containerCreate = client.containerApi.containerCreate(containerCreateRequest, name)
+      ContainerCreateResponse containerCreate = client.containerApi.containerCreate(containerCreateRequest, name)
       return new EngineResponseContent<ContainerCreateResponse>(containerCreate)
     }
     catch (ClientException exception) {
       if (exception.statusCode == 404) {
-        def repoAndTag = repositoryTagParser.parseRepositoryTag(containerCreateRequest.image)
+        Map<String, String> repoAndTag = repositoryTagParser.parseRepositoryTag(containerCreateRequest.image)
         log.info("'${repoAndTag.repo}:${repoAndTag.tag}' not found locally.")
         client.imageApi.imageCreate(repoAndTag.repo, null, null, repoAndTag.tag, null, authBase64Encoded, null, null, null)
-        def containerCreateWithPulledImage = client.containerApi.containerCreate(containerCreateRequest, name)
+        ContainerCreateResponse containerCreateWithPulledImage = client.containerApi.containerCreate(containerCreateRequest, name)
         return new EngineResponseContent<ContainerCreateResponse>(containerCreateWithPulledImage)
       }
       throw exception
@@ -189,14 +189,14 @@ class ManageContainerClient implements ManageContainer {
   @Override
   EngineResponseContent<List<ContainerChangeResponseItem>> diff(String containerId) {
     log.info("docker diff")
-    def containerChanges = client.containerApi.containerChanges(containerId)
+    List<ContainerChangeResponseItem> containerChanges = client.containerApi.containerChanges(containerId)
     return new EngineResponseContent<List<ContainerChangeResponseItem>>(containerChanges)
   }
 
   @Override
   EngineResponseContent<IdResponse> createExec(String containerId, ExecConfig execConfig) {
     log.info("docker create exec on '${containerId}'")
-    def containerExec = client.execApi.containerExec(containerId, execConfig)
+    IdResponse containerExec = client.execApi.containerExec(containerId, execConfig)
     return new EngineResponseContent<IdResponse>(containerExec)
   }
 
@@ -208,7 +208,7 @@ class ManageContainerClient implements ManageContainer {
     // the stream is the raw data from the process PTY and client’s stdin.
     // When the TTY is disabled, then the stream is multiplexed to separate stdout and stderr.
     def execInspect = client.execApi.execInspect(execId)
-    def multiplexStreams = !execInspect.processConfig.tty
+    boolean multiplexStreams = !execInspect.processConfig.tty
     def response = engineClient.post([
         path              : "/exec/${execId}/start".toString(),
         body              : [Detach: execStartConfig.detach, Tty: execStartConfig.tty],
@@ -235,7 +235,7 @@ class ManageContainerClient implements ManageContainer {
   @Override
   EngineResponseContent<ExecInspectResponse> inspectExec(String execId) {
     log.info("docker inspect exec '${execId}'")
-    def execInspect = client.execApi.execInspect(execId)
+    ExecInspectResponse execInspect = client.execApi.execInspect(execId)
     return new EngineResponseContent<ExecInspectResponse>(execInspect)
   }
 
@@ -260,7 +260,7 @@ class ManageContainerClient implements ManageContainer {
         null,
         null)
 
-    def execCreateResult = createExec(containerId, actualExecConfig)
+    EngineResponseContent<IdResponse> execCreateResult = createExec(containerId, actualExecConfig)
     String execId = execCreateResult.content.id
     def execStartConfig = new ExecStartConfig(
         (execConfig.Detach ?: false) as Boolean,
@@ -281,14 +281,14 @@ class ManageContainerClient implements ManageContainer {
   @Override
   EngineResponseContent<InputStream> export(String container) {
     log.info("docker export $container")
-    def containerExport = client.containerApi.containerExport(container)
+    InputStream containerExport = client.containerApi.containerExport(container)
     return new EngineResponseContent<InputStream>(containerExport)
   }
 
   @Override
-  EngineResponse<ContainerInspectResponse> inspectContainer(String containerId) {
+  EngineResponseContent<ContainerInspectResponse> inspectContainer(String containerId) {
     log.info("docker inspect container")
-    def containerInspect = client.containerApi.containerInspect(containerId, null)
+    ContainerInspectResponse containerInspect = client.containerApi.containerInspect(containerId, null)
     return new EngineResponseContent(containerInspect)
   }
 
@@ -302,11 +302,11 @@ class ManageContainerClient implements ManageContainer {
   void logs(String container, Map<String, Object> query, StreamCallback<Frame> callback, Duration timeout) {
     log.info("docker logs")
 
-    def actualQuery = [:]
+    Map actualQuery = [:]
     if (query) {
       actualQuery.putAll(query)
     }
-    def defaults = [
+    Map defaults = [
         follow    : true,
         stdout    : true,
         stderr    : true,
@@ -334,14 +334,14 @@ class ManageContainerClient implements ManageContainer {
   @Override
   EngineResponseContent<List<Map<String, Object>>> ps(Map<String, Object> query) {
     log.info("docker ps")
-    def actualQuery = [:]
+    Map actualQuery = [:]
     if (query) {
       actualQuery.putAll(query)
     }
     Map defaults = [all: true, size: false]
     queryUtil.applyDefaults(actualQuery, defaults)
-    queryUtil.jsonEncodeFilters(actualQuery)
-    def containerList = client.containerApi.containerList(
+    queryUtil.jsonEncodeQueryParameter(actualQuery, "filters")
+    List<Map> containerList = client.containerApi.containerList(
         actualQuery.all as Boolean,
         actualQuery.limit as Integer,
         actualQuery.size as Boolean,
@@ -352,7 +352,7 @@ class ManageContainerClient implements ManageContainer {
   @Override
   EngineResponseContent<List<Map<String, Object>>> ps(Boolean all = true, Integer limit = null, Boolean size = false, String filters = null) {
     log.info("docker ps")
-    def containerList = client.containerApi.containerList(
+    List<Map> containerList = client.containerApi.containerList(
         all == null ? true : all,
         limit,
         size ?: false,
@@ -369,7 +369,7 @@ class ManageContainerClient implements ManageContainer {
   @Override
   EngineResponseContent<ContainerPruneResponse> pruneContainers(String filters = null) {
     log.info("docker container prune")
-    def containerPrune = client.containerApi.containerPrune(filters)
+    ContainerPruneResponse containerPrune = client.containerApi.containerPrune(filters)
     return new EngineResponseContent<ContainerPruneResponse>(containerPrune)
   }
 
@@ -408,7 +408,7 @@ class ManageContainerClient implements ManageContainer {
       If in detached mode or only stdin is attached:
         - Display the container’s id
 */
-    def createContainerResponse = createContainer(containerCreateRequest, name, authBase64Encoded)
+    EngineResponseContent<ContainerCreateResponse> createContainerResponse = createContainer(containerCreateRequest, name, authBase64Encoded)
     log.debug("create container result: ${createContainerResponse}")
     String containerId = createContainerResponse.content.id
     startContainer(containerId)
@@ -435,14 +435,14 @@ class ManageContainerClient implements ManageContainer {
   @Override
   void stop(String containerIdOrName, Duration timeout = Duration.of(10, ChronoUnit.SECONDS)) {
     log.info("docker stop")
-    def timeoutInSeconds = (timeout ?: Duration.of(10, ChronoUnit.SECONDS)).seconds
+    long timeoutInSeconds = (timeout ?: Duration.of(10, ChronoUnit.SECONDS)).seconds
     client.containerApi.containerStop(containerIdOrName, timeoutInSeconds as int)
   }
 
   @Override
   EngineResponseContent<ContainerTopResponse> top(String containerIdOrName, String psArgs = null) {
     log.info("docker top")
-    def containerTop = client.containerApi.containerTop(containerIdOrName, psArgs ?: null)
+    ContainerTopResponse containerTop = client.containerApi.containerTop(containerIdOrName, psArgs ?: null)
     return new EngineResponseContent<ContainerTopResponse>(containerTop)
   }
 
@@ -455,7 +455,7 @@ class ManageContainerClient implements ManageContainer {
   @Override
   EngineResponseContent<ContainerUpdateResponse> updateContainer(String container, ContainerUpdateRequest containerUpdateRequest) {
     log.info("docker update '${container}'")
-    def containerUpdate = client.containerApi.containerUpdate(container, containerUpdateRequest)
+    ContainerUpdateResponse containerUpdate = client.containerApi.containerUpdate(container, containerUpdateRequest)
     return new EngineResponseContent<ContainerUpdateResponse>(containerUpdate)
   }
 
@@ -480,7 +480,7 @@ class ManageContainerClient implements ManageContainer {
   @Override
   EngineResponseContent<ContainerWaitResponse> wait(String containerIdOrName) {
     log.info("docker wait")
-    def containerWait = client.containerApi.containerWait(containerIdOrName, "not-running")
+    ContainerWaitResponse containerWait = client.containerApi.containerWait(containerIdOrName, "not-running")
     return new EngineResponseContent<ContainerWaitResponse>(containerWait)
   }
 }

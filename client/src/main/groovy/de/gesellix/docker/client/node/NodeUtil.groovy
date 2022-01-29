@@ -11,10 +11,10 @@ class NodeUtil {
   }
 
   def resolveNodeId(nodeFilter) {
-    def ownNodeId = {
+    Closure<String> ownNodeId = {
       manageSystem.info().content.swarm.nodeID
     }
-    def resolve = { String ref ->
+    Closure<String> resolve = { String ref ->
       (ref == "self") ? ownNodeId() : ref
     }
     def resolvedNodeFilter = nodeFilter

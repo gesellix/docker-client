@@ -28,25 +28,25 @@ class ManageNodeClient implements ManageNode {
 
   @Override
   EngineResponseContent<List<Node>> nodes(Map<String, Object> query) {
-    def actualQuery = [:]
+    Map actualQuery = [:]
     if (query) {
       actualQuery.putAll(query)
     }
-    new QueryUtil().jsonEncodeFilters(actualQuery)
+    new QueryUtil().jsonEncodeQueryParameter(actualQuery, "filters")
     return nodes(actualQuery.filters as String)
   }
 
   @Override
   EngineResponseContent<List<Node>> nodes(String filters = null) {
     log.info("docker node ls")
-    def response = client.nodeApi.nodeList(filters)
+    List<Node> response = client.nodeApi.nodeList(filters)
     return new EngineResponseContent<List<Node>>(response)
   }
 
   @Override
   EngineResponseContent<Node> inspectNode(String name) {
     log.info("docker node inspect")
-    def nodeInspect = client.nodeApi.nodeInspect(name)
+    Node nodeInspect = client.nodeApi.nodeInspect(name)
     return new EngineResponseContent<Node>(nodeInspect)
   }
 
@@ -65,8 +65,8 @@ class ManageNodeClient implements ManageNode {
   @Override
   void promoteNodes(String... nodes) {
     log.info("docker node promote")
-    nodes?.each { node ->
-      def nodeInfo = inspectNode(node).content
+    nodes?.each { String node ->
+      Node nodeInfo = inspectNode(node).content
       if (nodeInfo.spec.role == NodeSpec.Role.Manager) {
         log.warn("Node ${node} is already a manager.")
       }
@@ -81,8 +81,8 @@ class ManageNodeClient implements ManageNode {
   @Override
   void demoteNodes(String... nodes) {
     log.info("docker node demote")
-    nodes?.each { node ->
-      def nodeInfo = inspectNode(node).content
+    nodes?.each { String node ->
+      Node nodeInfo = inspectNode(node).content
       if (nodeInfo.spec.role == NodeSpec.Role.Worker) {
         log.warn("Node ${node} is already a worker.")
       }
@@ -97,7 +97,7 @@ class ManageNodeClient implements ManageNode {
   @Override
   EngineResponse<List<Task>> tasksOnNode(String node, Map<String, Object> query = [:]) {
     log.info("docker node ps")
-    def actualQuery = query ?: [:]
+    Map actualQuery = query ?: [:]
     if (!actualQuery.containsKey('filters')) {
       actualQuery.filters = [:]
     }

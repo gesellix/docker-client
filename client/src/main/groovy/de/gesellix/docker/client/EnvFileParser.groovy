@@ -4,7 +4,7 @@ class EnvFileParser {
 
   List<String> parse(File file) {
     List<String> env = []
-    file.eachLine { line ->
+    file.eachLine { String line ->
       if (line.trim() && !line.matches("\\s*#.*")) {
         if (line.contains('=')) {
           env << line.replaceAll("^\\s*", "")

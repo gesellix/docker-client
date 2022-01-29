@@ -129,9 +129,9 @@ class ManageAuthenticationClient implements ManageAuthentication {
     throw new IllegalStateException("reference ${ref} has no name")
   }
 
-  String legacyDefaultDomain = "index.docker.io"
-  String defaultDomain = "docker.io"
-  String officialRepoName = "library"
+  final String legacyDefaultDomain = "index.docker.io"
+  final String defaultDomain = "docker.io"
+  final String officialRepoName = "library"
 
   // splitDockerDomain splits a repository name to domain and remotename string.
   // If no valid domain is found, the default domain is used. Repository name
