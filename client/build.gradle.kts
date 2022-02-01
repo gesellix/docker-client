@@ -78,7 +78,7 @@ dependencies {
   implementation("com.google.re2j:re2j:1.6")
 
   implementation("org.slf4j:slf4j-api:[1.7,)")
-  testImplementation("ch.qos.logback:logback-classic:[1.2,2)!!1.2.9")
+  testImplementation("ch.qos.logback:logback-classic:[1.2,2)!!1.2.10")
 
   implementation("com.squareup.okio:okio:[2,)")
   api("com.squareup.okhttp3:okhttp:[4,5)")
