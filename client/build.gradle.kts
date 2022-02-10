@@ -92,7 +92,7 @@ dependencies {
 
   testImplementation("org.spockframework:spock-core:2.0-groovy-3.0")
   testRuntimeOnly("cglib:cglib-nodep:3.3.0")
-  testImplementation("io.github.joke:spock-mockable:1.4.4")
+  testImplementation("io.github.joke:spock-mockable:1.5.1")
 
   testImplementation("org.apache.commons:commons-lang3:3.12.0")
 }
