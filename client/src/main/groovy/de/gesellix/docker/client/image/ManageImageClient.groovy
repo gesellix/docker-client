@@ -229,12 +229,12 @@ class ManageImageClient implements ManageImage {
   void push(StreamCallback<PushImageInfo> callback, Duration timeout, String imageName, String authBase64Encoded = ".", String registry = "") {
     log.info("docker push '${imageName}'")
 
-    def actualImageName = imageName
+    String actualImageName = imageName
     if (registry) {
       actualImageName = "$registry/$imageName".toString()
       tag(imageName, actualImageName)
     }
-    def repoAndTag = repositoryTagParser.parseRepositoryTag(actualImageName)
+    Map<String, String> repoAndTag = repositoryTagParser.parseRepositoryTag(actualImageName)
 
     client.imageApi.imagePush(repoAndTag.repo as String,
                               authBase64Encoded ?: ".",

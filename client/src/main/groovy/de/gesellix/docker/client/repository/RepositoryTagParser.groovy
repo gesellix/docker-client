@@ -4,7 +4,7 @@ import de.gesellix.docker.client.DockerClientException
 
 class RepositoryTagParser {
 
-  def parseRepositoryTag(name) {
+  Map<String, String> parseRepositoryTag(String name) {
     if (name.endsWith(':')) {
       throw new DockerClientException(new IllegalArgumentException("'$name' should not end with a ':'"))
     }
@@ -14,7 +14,7 @@ class RepositoryTagParser {
     // The tag can be confusing because of a port in a repository name.
     //     Ex: localhost.localdomain:5000/samalba/hipache:latest
 
-    def lastColonIndex = name.lastIndexOf(':')
+    int lastColonIndex = name.lastIndexOf(':')
     if (lastColonIndex < 0) {
       return [
           repo: name,
@@ -22,7 +22,7 @@ class RepositoryTagParser {
       ]
     }
 
-    def tag = name.substring(lastColonIndex + 1)
+    String tag = name.substring(lastColonIndex + 1)
     if (!tag.contains('/')) {
       return [
           repo: name.substring(0, lastColonIndex),
