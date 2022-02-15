@@ -19,7 +19,7 @@ class DockerRegistry {
   }
 
   String getImageTag() {
-    LocalDocker.isNativeWindows() ? "2.7.1-windows" : "2.7.1"
+    LocalDocker.isNativeWindows() ? "2.7.1-windows" : "2.8"
   }
 
   void run() {
