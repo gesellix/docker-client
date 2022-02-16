@@ -69,7 +69,7 @@ dependencies {
   runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.2.10")
 
   testImplementation("de.gesellix:testutil:[2020-10-03T10-08-28,)")
-  testImplementation("org.spockframework:spock-core:2.0-groovy-3.0")
+  testImplementation("org.spockframework:spock-core:2.1-groovy-3.0")
   testRuntimeOnly("cglib:cglib-nodep:3.3.0")
   testImplementation("org.apache.commons:commons-lang3:3.12.0")
   testRuntimeOnly("ch.qos.logback:logback-classic")
