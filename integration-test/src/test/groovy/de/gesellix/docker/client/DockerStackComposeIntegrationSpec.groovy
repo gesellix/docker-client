@@ -80,7 +80,7 @@ class DockerStackComposeIntegrationSpec extends Specification {
             Mount.Type.Volume,
             null, null, null,
             new MountVolumeOptions(
-                null,
+                false,
                 ['com.docker.stack.namespace': namespace],
                 null
             ),
