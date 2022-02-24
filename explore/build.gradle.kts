@@ -13,7 +13,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api") {
       version {
         strictly("[1.7,1.8)")
-        prefer("1.7.32")
+        prefer("1.7.36")
       }
     }
     implementation("com.squareup.okio:okio") {
@@ -32,7 +32,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[1.4,1.7)")
-          prefer("1.5.31")
+          prefer("1.6.10")
         }
       }
     }
@@ -52,7 +52,7 @@ dependencies {
   implementation("org.codehaus.groovy:groovy")
   testImplementation("org.apache.commons:commons-compress:1.21")
 
-  implementation("org.slf4j:slf4j-api")
+  implementation("org.slf4j:slf4j-api:[1.7,)")
   runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.2.10")
 
   testImplementation("org.spockframework:spock-core:2.1-groovy-3.0")

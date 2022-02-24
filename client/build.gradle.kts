@@ -16,7 +16,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api") {
       version {
         strictly("[1.7,1.8)")
-        prefer("1.7.32")
+        prefer("1.7.36")
       }
     }
     implementation("com.squareup.okhttp3:mockwebserver") {
@@ -47,7 +47,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[1.4,1.7)")
-          prefer("1.5.31")
+          prefer("1.6.10")
         }
       }
     }
@@ -62,6 +62,12 @@ dependencies {
         }
       }
     }
+    implementation("com.squareup.moshi:moshi") {
+      version {
+        strictly("[1.12.0,)")
+        prefer("1.13.0")
+      }
+    }
   }
 
   // TODO consider changing this from api to implementation.
@@ -74,7 +80,7 @@ dependencies {
   implementation("org.codehaus.groovy:groovy:[2.5,)")
   implementation("org.codehaus.groovy:groovy-json:[2.5,)")
 
-  api("com.squareup.moshi:moshi:[1.12.0,2)")
+  api("com.squareup.moshi:moshi:1.13.0")
   implementation("com.google.re2j:re2j:1.6")
 
   implementation("org.slf4j:slf4j-api:[1.7,)")
