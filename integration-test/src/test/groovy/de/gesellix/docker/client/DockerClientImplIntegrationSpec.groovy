@@ -55,18 +55,17 @@ class DockerClientImplIntegrationSpec extends Specification {
     info.httpsProxy in ["", "http.docker.internal:3128", "docker.for.mac.http.internal:3129", "gateway.docker.internal:3129"]
     info.ID =~ "\\w[\\w-]+"
     info.indexServerAddress == "https://index.docker.io/v1/"
-    info.ipv4Forwarding == true
+    info.ipv4Forwarding
     info.labels == null || info.labels == []
     info.loggingDriver == "json-file"
     info.memTotal > 0
     info.memoryLimit != nativeWindows
-    info.noProxy == "" || info.noProxy == "*.local, 169.254/16"
-    info.oomKillDisable == !nativeWindows
+    info.noProxy == "" || info.noProxy == "hubproxy.docker.internal" || info.noProxy == "*.local, 169.254/16"
 
     def officialRegistry = info.registryConfig.indexConfigs['docker.io']
     officialRegistry.name == "docker.io"
-    officialRegistry.official == true
-    officialRegistry.secure == true
+    officialRegistry.official
+    officialRegistry.secure
 
     info.registryConfig.insecureRegistryCIDRs == ["127.0.0.0/8"]
     info.systemTime =~ "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2,}.(\\d{3,}Z)?"
