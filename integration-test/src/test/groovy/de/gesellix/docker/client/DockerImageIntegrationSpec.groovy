@@ -40,7 +40,7 @@ class DockerImageIntegrationSpec extends Specification {
 
   def setupSpec() {
     dockerClient = new DockerClientImpl()
-    registry = new DockerRegistry(dockerClient)
+    registry = new DockerRegistry()
     registry.run()
   }
 
