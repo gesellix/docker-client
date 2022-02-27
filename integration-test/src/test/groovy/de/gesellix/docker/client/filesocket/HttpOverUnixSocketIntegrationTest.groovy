@@ -56,14 +56,15 @@ class HttpOverUnixSocketIntegrationTest extends Specification {
 
     when:
     def ping = httpClient.get([path: "/_ping"])
-    def source = Okio.source(ping.stream)
-    def content = ping.content ?: Okio.buffer(source).readUtf8()
+    def content = ping.content ?: Okio.buffer(Okio.source(ping.stream)).readUtf8()
 
     then:
     content == "OK"
 
     cleanup:
     testserver?.stop()
-    IOUtils.closeQuietly(source)
+    if (ping.stream) {
+      IOUtils.closeQuietly(Okio.source(ping.stream))
+    }
   }
 }
