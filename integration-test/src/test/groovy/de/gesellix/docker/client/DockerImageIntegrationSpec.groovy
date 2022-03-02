@@ -543,7 +543,7 @@ class DockerImageIntegrationSpec extends Specification {
     def imageInspection = dockerClient.inspectImage(CONSTANTS.imageName).content
 
     then:
-    imageInspection.id == CONSTANTS.imageDigest
+    imageInspection.repoDigests.find { it.startsWith(CONSTANTS.imageRepo) }
   }
 
   def "history"() {
