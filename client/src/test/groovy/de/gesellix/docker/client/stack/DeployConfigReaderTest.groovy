@@ -1,6 +1,7 @@
 package de.gesellix.docker.client.stack
 
 import de.gesellix.docker.client.DockerClient
+import de.gesellix.docker.client.DockerClientImpl
 import de.gesellix.docker.client.stack.types.StackConfig
 import de.gesellix.docker.client.stack.types.StackSecret
 import de.gesellix.docker.compose.types.Command
@@ -30,6 +31,7 @@ import de.gesellix.docker.remote.api.EndpointSpec
 import de.gesellix.docker.remote.api.HealthConfig
 import de.gesellix.docker.remote.api.IPAM
 import de.gesellix.docker.remote.api.Limit
+import de.gesellix.docker.remote.api.LocalNodeState
 import de.gesellix.docker.remote.api.Mount
 import de.gesellix.docker.remote.api.MountBindOptions
 import de.gesellix.docker.remote.api.MountVolumeOptions
@@ -663,5 +665,28 @@ class DeployConfigReaderTest extends Specification {
         "MY_OTHER_ENV=ANOTHER Value",
         "key1=value1"
     ]
+  }
+
+  def "issue-276"() {
+    given:
+    def config1 = new de.gesellix.docker.compose.types.StackConfig()
+    def config1File = getClass().getResource('/configs/issue-267.yaml').file
+    def config1FileDirectory = new File(config1File).parent
+    config1.file = 'issue-267.yaml'
+
+    reader.dockerClient = new DockerClientImpl()
+    if (reader.dockerClient.info().content.swarm.localNodeState == LocalNodeState.Inactive) {
+      reader.dockerClient.initSwarm()
+    }
+//    reader.dockerClient.createNetwork("ingress-routing")
+
+    when:
+    def result = reader.loadCompose(
+        "name-space",
+        new FileInputStream(config1File),
+        config1FileDirectory, System.getenv())
+
+    then:
+    !result.networks?.isEmpty()
   }
 }
