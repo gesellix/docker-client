@@ -414,11 +414,8 @@ class DockerImageIntegrationSpec extends Specification {
   }
 
   def "pull image by digest"() {
-    given:
-    String digest = isNativeWindows ? "gesellix/echo-server@sha256:5521f01c05a79bdae5570955c853ec51474bad3f3f9f6ecf2047414becf4afd2" : "gesellix/echo-server@sha256:04c0275878dc243b2f92193467cb33cdb9ee2262be64b627ed476de73e399244"
-
     when:
-    dockerClient.pull(null, null, digest)
+    dockerClient.pull(null, null, CONSTANTS.imageDigest)
 
     then:
     notThrown(Exception)
@@ -555,7 +552,7 @@ class DockerImageIntegrationSpec extends Specification {
 
     then:
     List<String> imageIds = history.collect { it.id }
-    imageIds.first() == CONSTANTS.imageDigest
+    imageIds.first() == CONSTANTS.imageId
     imageIds.last() =~ ".+"
   }
 
@@ -568,7 +565,7 @@ class DockerImageIntegrationSpec extends Specification {
 
     then:
     def imageById = images.find {
-      it.id == CONSTANTS.imageDigest
+      it.id == CONSTANTS.imageId
     }
     imageById?.created == CONSTANTS.imageCreated
     imageById?.parentId =~ ".*"
