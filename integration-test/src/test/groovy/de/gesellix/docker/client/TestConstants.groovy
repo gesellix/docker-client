@@ -6,6 +6,7 @@ class TestConstants {
   final String imageTag
   final String imageName
   final String imageDigest
+  final String imageId
   final int imageCreated
   final String volumeTarget
 
@@ -17,15 +18,17 @@ class TestConstants {
     if (LocalDocker.isNativeWindows()) {
       imageRepo = "gesellix/echo-server"
       imageTag = "os-windows"
-      imageDigest = "sha256:7a9afe60edd3affcafb76769e73f1bfc5c020cf6d30ba65a9cc5823b3dd40981"
-      imageCreated = 1646088128
+      imageDigest = "gesellix/echo-server@sha256:e050aff7118d4b03762035a12e348445b3bea02a9966b84aa2d6c9759a9128e1"
+      imageId = "sha256:8e0ebadb075bdf6fa010527da9af8fb66e4149a57a3867d6c54b1963fbff416d"
+      imageCreated = 1648543890
       volumeTarget = "C:/my-volume"
     }
     else {
       imageRepo = "gesellix/echo-server"
       imageTag = "os-linux"
-      imageDigest = "sha256:e1071a8bb352a348c84c52dc129dc6fefce9c727e1446c1eb066e71d2a77ef08"
-      imageCreated = 1646256712
+      imageDigest = "gesellix/echo-server@sha256:0c82ad1c87b9662383e3876d8d462cbdeadb078707c9a3bce548a4fababf19fe"
+      imageId = "sha256:19b711b0cdc5f372fc3cdf3bfa7b68ebcbc10cae82f0925cca615919efd7c541"
+      imageCreated = 1648543735
       volumeTarget = "/my-volume"
     }
     imageName = "$imageRepo:$imageTag"
