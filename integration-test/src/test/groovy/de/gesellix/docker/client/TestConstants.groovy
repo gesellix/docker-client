@@ -16,21 +16,19 @@ class TestConstants {
 
   TestConstants() {
     if (LocalDocker.isNativeWindows()) {
-      imageRepo = "gesellix/echo-server"
-      imageTag = "os-windows"
       imageDigest = "gesellix/echo-server@sha256:e050aff7118d4b03762035a12e348445b3bea02a9966b84aa2d6c9759a9128e1"
       imageId = "sha256:8e0ebadb075bdf6fa010527da9af8fb66e4149a57a3867d6c54b1963fbff416d"
       imageCreated = 1648543890
       volumeTarget = "C:/my-volume"
     }
     else {
-      imageRepo = "gesellix/echo-server"
-      imageTag = "os-linux"
       imageDigest = "gesellix/echo-server@sha256:0c82ad1c87b9662383e3876d8d462cbdeadb078707c9a3bce548a4fababf19fe"
-      imageId = "sha256:19b711b0cdc5f372fc3cdf3bfa7b68ebcbc10cae82f0925cca615919efd7c541"
-      imageCreated = 1648543735
+      imageId = "sha256:a07dead7f020c6f0602181f2ca3920634df1cf11cf8de5ca443e25ea4d334a61"
+      imageCreated = 1649449755
       volumeTarget = "/my-volume"
     }
+    imageRepo = "gesellix/echo-server"
+    imageTag = "2022-04-08T22-27-00"
     imageName = "$imageRepo:$imageTag"
 
     if (System.getenv("GITHUB_ACTOR")) {
