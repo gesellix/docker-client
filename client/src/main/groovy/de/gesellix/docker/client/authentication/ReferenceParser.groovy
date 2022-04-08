@@ -4,7 +4,7 @@ import com.google.re2j.Matcher
 import com.google.re2j.Pattern
 import groovy.util.logging.Slf4j
 
-/** Grammar (https://github.com/docker/distribution/reference/reference.go)
+/** Grammar (https://github.com/distribution/distribution/blob/main/reference/reference.go)
  *
  * reference                       := name [ ":" tag ] [ "@" digest ]
  * name                            := [domain '/'] path-component ['/' path-component]*
