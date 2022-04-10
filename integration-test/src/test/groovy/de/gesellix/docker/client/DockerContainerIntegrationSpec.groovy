@@ -26,6 +26,7 @@ import okio.ByteString
 import okio.Okio
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
+import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
 
@@ -893,6 +894,7 @@ class DockerContainerIntegrationSpec extends Specification {
     dockerClient.rm(containerId)
   }
 
+  @Ignore("Currently not supported, partially broken")
   def "attach (interactive)"() {
     given:
     dockerClient.pull(null, null, CONSTANTS.imageRepo, CONSTANTS.imageTag)
