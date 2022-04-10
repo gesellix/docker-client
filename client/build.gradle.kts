@@ -46,8 +46,8 @@ dependencies {
     ).onEach {
       implementation(it) {
         version {
-          strictly("[1.4,1.7)")
-          prefer("1.6.10")
+          strictly("[1.5,1.7)")
+          prefer("1.6.20")
         }
       }
     }
@@ -58,7 +58,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[3,)")
-          prefer("3.0.9")
+          prefer("3.0.10")
         }
       }
     }
@@ -77,17 +77,17 @@ dependencies {
   api("de.gesellix:docker-engine:2022-04-09T23-24-00")
   api("de.gesellix:docker-compose:2022-04-10T17-45-00")
 
-  implementation("org.codehaus.groovy:groovy:[2.5,)")
-  implementation("org.codehaus.groovy:groovy-json:[2.5,)")
+  implementation("org.codehaus.groovy:groovy:3.0.10")
+  implementation("org.codehaus.groovy:groovy-json:3.0.10")
 
   api("com.squareup.moshi:moshi:1.13.0")
   implementation("com.google.re2j:re2j:1.6")
 
-  implementation("org.slf4j:slf4j-api:[1.7,)")
-  testImplementation("ch.qos.logback:logback-classic:[1.2,2)!!1.2.10")
+  implementation("org.slf4j:slf4j-api:1.7.36")
+  testImplementation("ch.qos.logback:logback-classic:[1.2,2)!!1.2.11")
 
-  implementation("com.squareup.okio:okio:[2,)")
-  api("com.squareup.okhttp3:okhttp:[4,5)")
+  implementation("com.squareup.okio:okio:3.0.0")
+  api("com.squareup.okhttp3:okhttp:4.9.3")
   testImplementation("com.squareup.okhttp3:mockwebserver:[4,5)")
 
   implementation("org.apache.commons:commons-compress:1.21")
