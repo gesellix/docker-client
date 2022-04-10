@@ -1,0 +1,32 @@
+---
+version: 3.9
+services:
+  xmdb:
+    image: xmdb
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "6012:5432"
+    networks: [xmnet-zh]
+    volumes: [/opt/containers/xm/zh:/var/lib/postgresql/data]
+    deploy:
+      replicas: 1
+  xmapp:
+    depends_on: [xmdb]
+    image: xmapp
+    ports: ["9012:8080"]
+    networks: [xmnet-zh, ingress]
+    deploy:
+      replicas: 1
+      labels:
+        ingress.host: zh.xm.local
+        ingress.port: 8080
+networks:
+  xmnet-zh:
+  ingress:
+    external: true
+#  ingress-routing:
+#    external: true
+...
