@@ -31,8 +31,8 @@ dependencies {
     ).onEach {
       implementation(it) {
         version {
-          strictly("[1.4,1.7)")
-          prefer("1.6.10")
+          strictly("[1.5,1.7)")
+          prefer("1.6.20")
         }
       }
     }
@@ -43,21 +43,21 @@ dependencies {
       implementation(it) {
         version {
           strictly("[3,)")
-          prefer("3.0.9")
+          prefer("3.0.10")
         }
       }
     }
   }
   implementation(project(":client"))
-  implementation("org.codehaus.groovy:groovy")
+  implementation("org.codehaus.groovy:groovy:3.0.10")
   testImplementation("org.apache.commons:commons-compress:1.21")
 
-  implementation("org.slf4j:slf4j-api:[1.7,)")
-  runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.2.10")
+  implementation("org.slf4j:slf4j-api:1.7.36")
+  runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.2.11")
 
   testImplementation("org.spockframework:spock-core:2.1-groovy-3.0")
   testRuntimeOnly("cglib:cglib-nodep:3.3.0")
-  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.2.10")
+  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.2.11")
 }
 
 tasks.withType(Test::class) {
