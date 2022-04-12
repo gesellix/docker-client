@@ -1,7 +1,7 @@
 package de.gesellix.docker.client.authentication;
 
 import de.gesellix.docker.authentication.AuthConfig;
-import de.gesellix.docker.engine.EngineResponse;
+import de.gesellix.docker.client.EngineResponseContent;
 import de.gesellix.docker.remote.api.SystemAuthResponse;
 
 import java.io.File;
@@ -25,5 +25,5 @@ public interface ManageAuthentication {
 
   String encodeAuthConfigs(Map<String, AuthConfig> authConfigs);
 
-  EngineResponse<SystemAuthResponse> auth(de.gesellix.docker.remote.api.AuthConfig authDetails);
+  EngineResponseContent<SystemAuthResponse> auth(de.gesellix.docker.remote.api.AuthConfig authDetails);
 }

@@ -1,6 +1,6 @@
 package de.gesellix.docker.client.swarm;
 
-import de.gesellix.docker.engine.EngineResponse;
+import de.gesellix.docker.client.EngineResponseContent;
 import de.gesellix.docker.remote.api.Swarm;
 import de.gesellix.docker.remote.api.SwarmInitRequest;
 import de.gesellix.docker.remote.api.SwarmJoinRequest;
@@ -10,13 +10,13 @@ public interface ManageSwarm {
 
   SwarmInitRequest newSwarmInitRequest();
 
-  EngineResponse<String> initSwarm();
+  EngineResponseContent<String> initSwarm();
 
-  EngineResponse<String> initSwarm(SwarmInitRequest swarmInitRequest);
+  EngineResponseContent<String> initSwarm(SwarmInitRequest swarmInitRequest);
 
   void joinSwarm(SwarmJoinRequest swarmJoinRequest);
 
-  EngineResponse<Swarm> inspectSwarm();
+  EngineResponseContent<Swarm> inspectSwarm();
 
   String getSwarmWorkerToken();
 

@@ -1,6 +1,6 @@
 package de.gesellix.docker.client.stack;
 
-import de.gesellix.docker.engine.EngineResponse;
+import de.gesellix.docker.client.EngineResponseContent;
 import de.gesellix.docker.remote.api.Service;
 import de.gesellix.docker.remote.api.Task;
 
@@ -17,13 +17,13 @@ public interface ManageStack {
 
   Collection<Stack> lsStacks();
 
-  EngineResponse<List<Task>> stackPs(String namespace);
+  EngineResponseContent<List<Task>> stackPs(String namespace);
 
-  EngineResponse<List<Task>> stackPs(String namespace, Map filters);
+  EngineResponseContent<List<Task>> stackPs(String namespace, Map filters);
 
   void stackRm(String namespace);
 
-  EngineResponse<List<Service>> stackServices(String namespace);
+  EngineResponseContent<List<Service>> stackServices(String namespace);
 
-  EngineResponse<List<Service>> stackServices(String namespace, Map filters);
+  EngineResponseContent<List<Service>> stackServices(String namespace, Map filters);
 }

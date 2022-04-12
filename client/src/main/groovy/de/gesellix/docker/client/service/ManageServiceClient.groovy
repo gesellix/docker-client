@@ -3,7 +3,6 @@ package de.gesellix.docker.client.service
 import de.gesellix.docker.client.EngineResponseContent
 import de.gesellix.docker.client.node.NodeUtil
 import de.gesellix.docker.client.tasks.ManageTask
-import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.Service
 import de.gesellix.docker.remote.api.ServiceCreateResponse
@@ -50,7 +49,7 @@ class ManageServiceClient implements ManageService {
   }
 
   @Override
-  EngineResponse<ServiceCreateResponse> createService(ServiceSpec serviceSpec, String encodedRegistryAuth = null) {
+  EngineResponseContent<ServiceCreateResponse> createService(ServiceSpec serviceSpec, String encodedRegistryAuth = null) {
     log.info("docker service create")
     def serviceCreate = client.serviceApi.serviceCreate(serviceSpec, encodedRegistryAuth)
     return new EngineResponseContent<ServiceCreateResponse>(serviceCreate)
@@ -105,7 +104,7 @@ class ManageServiceClient implements ManageService {
   }
 
   @Override
-  EngineResponse<List<Task>> tasksOfService(String service, Map<String, Object> query = [:]) {
+  EngineResponseContent<List<Task>> tasksOfService(String service, Map<String, Object> query = [:]) {
     log.info("docker service ps")
     Map actualQuery = query ?: [:]
     if (!actualQuery.containsKey('filters')) {

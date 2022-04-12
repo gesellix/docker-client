@@ -1,6 +1,6 @@
 package de.gesellix.docker.client.service;
 
-import de.gesellix.docker.engine.EngineResponse;
+import de.gesellix.docker.client.EngineResponseContent;
 import de.gesellix.docker.remote.api.Service;
 import de.gesellix.docker.remote.api.ServiceCreateResponse;
 import de.gesellix.docker.remote.api.ServiceSpec;
@@ -12,37 +12,37 @@ import java.util.Map;
 
 public interface ManageService {
 
-  EngineResponse<ServiceCreateResponse> createService(ServiceSpec serviceSpec);
+  EngineResponseContent<ServiceCreateResponse> createService(ServiceSpec serviceSpec);
 
-  EngineResponse<ServiceCreateResponse> createService(ServiceSpec serviceSpec, String encodedRegistryAuth);
+  EngineResponseContent<ServiceCreateResponse> createService(ServiceSpec serviceSpec, String encodedRegistryAuth);
 
-  EngineResponse<Service> inspectService(String name);
+  EngineResponseContent<Service> inspectService(String name);
 
-  EngineResponse<List<Service>> services(Map<String, Object> query);
+  EngineResponseContent<List<Service>> services(Map<String, Object> query);
 
-  EngineResponse<List<Service>> services();
+  EngineResponseContent<List<Service>> services();
 
-  EngineResponse<List<Service>> services(String filters);
+  EngineResponseContent<List<Service>> services(String filters);
 
-  EngineResponse<List<Service>> services(String filters, Boolean status);
+  EngineResponseContent<List<Service>> services(String filters, Boolean status);
 
-  EngineResponse<List<Task>> tasksOfService(String service);
+  EngineResponseContent<List<Task>> tasksOfService(String service);
 
-  EngineResponse<List<Task>> tasksOfService(String service, Map<String, Object> query);
+  EngineResponseContent<List<Task>> tasksOfService(String service, Map<String, Object> query);
 
   void rmService(String name);
 
-  EngineResponse<ServiceUpdateResponse> scaleService(String name, int replicas);
+  EngineResponseContent<ServiceUpdateResponse> scaleService(String name, int replicas);
 
-  EngineResponse<ServiceUpdateResponse> updateService(String name, int version, String rollback);
+  EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, String rollback);
 
-  EngineResponse<ServiceUpdateResponse> updateService(String name, int version, String rollback, String registryAuthFrom);
+  EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, String rollback, String registryAuthFrom);
 
-  EngineResponse<ServiceUpdateResponse> updateService(String name, int version, String rollback, String registryAuthFrom, String encodedRegistryAuth);
+  EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, String rollback, String registryAuthFrom, String encodedRegistryAuth);
 
-  EngineResponse<ServiceUpdateResponse> updateService(String name, int version, ServiceSpec serviceSpec);
+  EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, ServiceSpec serviceSpec);
 
-  EngineResponse<ServiceUpdateResponse> updateService(String name, int version, ServiceSpec serviceSpec, String registryAuthFrom);
+  EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, ServiceSpec serviceSpec, String registryAuthFrom);
 
-  EngineResponse<ServiceUpdateResponse> updateService(String name, int version, ServiceSpec serviceSpec, String registryAuthFrom, String encodedRegistryAuth);
+  EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, ServiceSpec serviceSpec, String registryAuthFrom, String encodedRegistryAuth);
 }

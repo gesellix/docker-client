@@ -1,6 +1,6 @@
 package de.gesellix.docker.client.tasks;
 
-import de.gesellix.docker.engine.EngineResponse;
+import de.gesellix.docker.client.EngineResponseContent;
 import de.gesellix.docker.remote.api.Task;
 
 import java.util.List;
@@ -13,11 +13,11 @@ public interface ManageTask {
    * @deprecated use {@link #tasks(String)}
    */
   @Deprecated
-  EngineResponse<List<Task>> tasks(Map<String, Object> query);
+  EngineResponseContent<List<Task>> tasks(Map<String, Object> query);
 
-  EngineResponse<List<Task>> tasks();
+  EngineResponseContent<List<Task>> tasks();
 
-  EngineResponse<List<Task>> tasks(String filters);
+  EngineResponseContent<List<Task>> tasks(String filters);
 
-  EngineResponse<Task> inspectTask(String name);
+  EngineResponseContent<Task> inspectTask(String name);
 }
