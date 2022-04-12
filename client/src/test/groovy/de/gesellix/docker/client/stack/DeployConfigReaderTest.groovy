@@ -1,6 +1,7 @@
 package de.gesellix.docker.client.stack
 
 import de.gesellix.docker.client.DockerClient
+import de.gesellix.docker.client.EngineResponseContent
 import de.gesellix.docker.client.stack.types.StackConfig
 import de.gesellix.docker.client.stack.types.StackSecret
 import de.gesellix.docker.compose.types.Command
@@ -24,7 +25,6 @@ import de.gesellix.docker.compose.types.ServiceVolumeBind
 import de.gesellix.docker.compose.types.ServiceVolumeVolume
 import de.gesellix.docker.compose.types.StackNetwork
 import de.gesellix.docker.compose.types.StackVolume
-import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.docker.remote.api.EndpointPortConfig
 import de.gesellix.docker.remote.api.EndpointSpec
 import de.gesellix.docker.remote.api.HealthConfig
@@ -34,11 +34,13 @@ import de.gesellix.docker.remote.api.Mount
 import de.gesellix.docker.remote.api.MountBindOptions
 import de.gesellix.docker.remote.api.MountVolumeOptions
 import de.gesellix.docker.remote.api.MountVolumeOptionsDriverConfig
+import de.gesellix.docker.remote.api.Network
 import de.gesellix.docker.remote.api.NetworkAttachmentConfig
 import de.gesellix.docker.remote.api.NetworkCreateRequest
 import de.gesellix.docker.remote.api.ResourceObject
 import de.gesellix.docker.remote.api.ServiceSpecMode
 import de.gesellix.docker.remote.api.ServiceSpecModeReplicated
+import de.gesellix.docker.remote.api.SystemVersion
 import de.gesellix.docker.remote.api.TaskSpecContainerSpecConfigs
 import de.gesellix.docker.remote.api.TaskSpecContainerSpecFile
 import de.gesellix.docker.remote.api.TaskSpecContainerSpecFile1
@@ -164,7 +166,7 @@ class DeployConfigReaderTest extends Specification {
 
   def "converts networks"() {
     given:
-    reader.dockerClient.version() >> new EngineResponse(content: [:])
+    reader.dockerClient.version() >> new EngineResponseContent<SystemVersion>(new SystemVersion())
     def normalNet = new StackNetwork(
         driver: "overlay",
         driverOpts: new DriverOpts(["opt": "value"]),
@@ -202,7 +204,7 @@ class DeployConfigReaderTest extends Specification {
     )
 
     then:
-    1 * reader.dockerClient.inspectNetwork("special") >> [content: [scope: "swarm"]]
+    1 * reader.dockerClient.inspectNetwork("special") >> new EngineResponseContent<Network>(new Network().tap { scope = "swarm" })
 
     externals == ["special"]
     networks.keySet().sort() == ["default", "normal", "attachablenet"].sort()
@@ -587,8 +589,8 @@ class DeployConfigReaderTest extends Specification {
 
   def "test ConvertServiceNetworksOnlyDefault"() {
     given:
-    reader.dockerClient.version() >> new EngineResponse(content: [:])
-    Map<String, de.gesellix.docker.compose.types.StackNetwork> networkConfigs = [:]
+    reader.dockerClient.version() >> new EngineResponseContent(new SystemVersion())
+    Map<String, StackNetwork> networkConfigs = [:]
     when:
     def result = reader.convertServiceNetworks(
         null,
@@ -603,14 +605,14 @@ class DeployConfigReaderTest extends Specification {
 
   def "test ConvertServiceNetworks"() {
     given:
-    reader.dockerClient.version() >> new EngineResponse(content: [:])
-    Map<String, de.gesellix.docker.compose.types.StackNetwork> networkConfigs = [
-        "front": new de.gesellix.docker.compose.types.StackNetwork(
+    reader.dockerClient.version() >> new EngineResponseContent(new SystemVersion())
+    Map<String, StackNetwork> networkConfigs = [
+        "front": new StackNetwork(
             external: new External(
                 external: true,
                 name: "fronttier"
             )),
-        "back" : new de.gesellix.docker.compose.types.StackNetwork(),
+        "back" : new StackNetwork(),
     ]
     Map<String, ServiceNetwork> networks = [
         "front": new ServiceNetwork(aliases: ["something"]),
@@ -631,9 +633,9 @@ class DeployConfigReaderTest extends Specification {
 
   def "test ConvertServiceNetworksCustomDefault"() {
     given:
-    reader.dockerClient.version() >> new EngineResponse(content: [:])
-    Map<String, de.gesellix.docker.compose.types.StackNetwork> networkConfigs = [
-        "default": new de.gesellix.docker.compose.types.StackNetwork(
+    reader.dockerClient.version() >> new EngineResponseContent(new SystemVersion())
+    Map<String, StackNetwork> networkConfigs = [
+        "default": new StackNetwork(
             external: new External(
                 external: true,
                 name: "custom"

@@ -1,8 +1,8 @@
 package de.gesellix.docker.client.service
 
+import de.gesellix.docker.client.EngineResponseContent
 import de.gesellix.docker.client.node.NodeUtil
 import de.gesellix.docker.client.tasks.ManageTask
-import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.ObjectVersion
 import de.gesellix.docker.remote.api.Service
@@ -127,7 +127,7 @@ class ManageServiceClientTest extends Specification {
     given:
     def filters = [service: ["service-name"]]
     def query = [filters: filters]
-    def expectedResponse = new EngineResponse()
+    def expectedResponse = new EngineResponseContent([])
 
     when:
     def result = service.tasksOfService("service-name", query)

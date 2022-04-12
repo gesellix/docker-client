@@ -2,7 +2,6 @@ package de.gesellix.docker.client.node
 
 import de.gesellix.docker.client.EngineResponseContent
 import de.gesellix.docker.client.tasks.ManageTask
-import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.Node
 import de.gesellix.docker.remote.api.NodeSpec
@@ -95,7 +94,7 @@ class ManageNodeClient implements ManageNode {
   }
 
   @Override
-  EngineResponse<List<Task>> tasksOnNode(String node, Map<String, Object> query = [:]) {
+  EngineResponseContent<List<Task>> tasksOnNode(String node, Map<String, Object> query = [:]) {
     log.info("docker node ps")
     Map actualQuery = query ?: [:]
     if (!actualQuery.containsKey('filters')) {

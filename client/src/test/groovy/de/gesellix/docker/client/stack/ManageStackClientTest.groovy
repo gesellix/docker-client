@@ -11,8 +11,8 @@ import de.gesellix.docker.client.stack.types.StackConfig
 import de.gesellix.docker.client.stack.types.StackSecret
 import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.client.tasks.ManageTask
-import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.docker.remote.api.Config
+import de.gesellix.docker.remote.api.IdResponse
 import de.gesellix.docker.remote.api.Network
 import de.gesellix.docker.remote.api.NetworkCreateRequest
 import de.gesellix.docker.remote.api.Secret
@@ -62,12 +62,10 @@ class ManageStackClientTest extends Specification {
     Collection<Stack> stacks = service.lsStacks()
 
     then:
-    1 * manageService.services([filters: [label: [(LabelNamespace): true]]]) >> new EngineResponse(
-        content: [
-            service1,
-            service2,
-            service3
-        ]
+    1 * manageService.services([filters: [label: [(LabelNamespace): true]]]) >> new EngineResponseContent([
+        service1,
+        service2,
+        service3]
     )
     and:
     stacks as List == [
@@ -80,7 +78,7 @@ class ManageStackClientTest extends Specification {
     given:
     String namespace = "the-stack"
     String namespaceFilter = "${LabelNamespace}=${namespace}"
-    def expectedResponse = new EngineResponse()
+    def expectedResponse = new EngineResponseContent([])
 
     when:
     def tasks = service.stackPs(namespace)
@@ -95,7 +93,7 @@ class ManageStackClientTest extends Specification {
     given:
     String namespace = "the-stack"
     String namespaceFilter = "${LabelNamespace}=${namespace}"
-    def expectedResponse = new EngineResponse()
+    def expectedResponse = new EngineResponseContent([])
 
     when:
     def tasks = service.stackPs(namespace, [label: [foo: true]])
@@ -113,7 +111,7 @@ class ManageStackClientTest extends Specification {
     given:
     String namespace = "the-stack"
     String namespaceFilter = "${LabelNamespace}=${namespace}"
-    def expectedResponse = new EngineResponse()
+    def expectedResponse = new EngineResponseContent([])
 
     when:
     def services = service.stackServices(namespace)
@@ -128,7 +126,7 @@ class ManageStackClientTest extends Specification {
     given:
     String namespace = "the-stack"
     String namespaceFilter = "${LabelNamespace}=${namespace}"
-    def expectedResponse = new EngineResponse()
+    def expectedResponse = new EngineResponseContent([])
 
     when:
     def services = service.stackServices(namespace, [label: [bar: true]])
@@ -192,9 +190,9 @@ class ManageStackClientTest extends Specification {
     then:
     1 * manageSystem.info() >> new EngineResponseContent<SystemInfo>(systemInfo)
     1 * manageNetwork.networks([
-        filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse()
+        filters: [label: [(namespaceFilter): true]]]) >> new EngineResponseContent([])
     1 * manageService.services([
-        filters: ['label': [(namespaceFilter): true]]]) >> new EngineResponse()
+        filters: ['label': [(namespaceFilter): true]]]) >> new EngineResponseContent([])
   }
 
   def "deploy a stack"() {
@@ -227,7 +225,7 @@ class ManageStackClientTest extends Specification {
 
     and:
     1 * manageNetwork.networks([
-        filters: [label: [(namespaceFilter): true]]]) >> new EngineResponse()
+        filters: [label: [(namespaceFilter): true]]]) >> new EngineResponseContent([])
     1 * manageNetwork.createNetwork({ NetworkCreateRequest r ->
       r.name == "the-stack_network1"
           && r.getIPAM() == null
@@ -240,24 +238,20 @@ class ManageStackClientTest extends Specification {
     })
 
     and:
-    1 * manageSecret.secrets([filters: [name: ["secret-name-1"]]]) >> new EngineResponse(
-        content: []
-    )
-    1 * manageSecret.createSecret("secret-name-1", 'secret'.bytes, [(LabelNamespace): namespace]) >> new EngineResponse(
-        content: []
+    1 * manageSecret.secrets([filters: [name: ["secret-name-1"]]]) >> new EngineResponseContent([])
+    1 * manageSecret.createSecret("secret-name-1", 'secret'.bytes, [(LabelNamespace): namespace]) >> new EngineResponseContent(
+        new IdResponse("secret-id")
     )
 
     and:
-    1 * manageConfig.configs([filters: [name: ["config-name-1"]]]) >> new EngineResponse(
-        content: []
-    )
-    1 * manageConfig.createConfig("config-name-1", 'config'.bytes, [(LabelNamespace): namespace]) >> new EngineResponse(
-        content: []
+    1 * manageConfig.configs([filters: [name: ["config-name-1"]]]) >> new EngineResponseContent([])
+    1 * manageConfig.createConfig("config-name-1", 'config'.bytes, [(LabelNamespace): namespace]) >> new EngineResponseContent(
+        new IdResponse("config-id")
     )
 
     and:
     1 * manageService.services([
-        filters: ['label': [(namespaceFilter): true]]]) >> new EngineResponse()
+        filters: ['label': [(namespaceFilter): true]]]) >> new EngineResponseContent([])
     1 * manageService.createService(serviceSpec, null)
   }
 }

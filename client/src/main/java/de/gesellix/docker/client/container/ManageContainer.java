@@ -42,37 +42,37 @@ public interface ManageContainer {
 
   WebSocket attachWebsocket(String container, Map<String, Object> query, WebSocketListener listener);
 
-  EngineResponse<IdResponse> commit(String container, Map query);
+  EngineResponseContent<IdResponse> commit(String container, Map query);
 
-  EngineResponse<IdResponse> commit(String container, Map query, Map config);
+  EngineResponseContent<IdResponse> commit(String container, Map query, Map config);
 
-  EngineResponse<Map<String, Object>> getArchiveStats(String container, String path);
+  EngineResponseContent<Map<String, Object>> getArchiveStats(String container, String path);
 
   byte[] extractFile(String container, String filename);
 
-  EngineResponse<InputStream> getArchive(String container, String path);
+  EngineResponseContent<InputStream> getArchive(String container, String path);
 
   void putArchive(String container, String path, InputStream archive);
 
-  EngineResponse<ContainerCreateResponse> createContainer(ContainerCreateRequest containerCreateRequest);
+  EngineResponseContent<ContainerCreateResponse> createContainer(ContainerCreateRequest containerCreateRequest);
 
-  EngineResponse<ContainerCreateResponse> createContainer(ContainerCreateRequest containerCreateRequest, String name);
+  EngineResponseContent<ContainerCreateResponse> createContainer(ContainerCreateRequest containerCreateRequest, String name);
 
-  EngineResponse<ContainerCreateResponse> createContainer(ContainerCreateRequest containerCreateRequest, String name, String authBase64Encoded);
+  EngineResponseContent<ContainerCreateResponse> createContainer(ContainerCreateRequest containerCreateRequest, String name, String authBase64Encoded);
 
-  EngineResponse<List<ContainerChangeResponseItem>> diff(String container);
+  EngineResponseContent<List<ContainerChangeResponseItem>> diff(String container);
 
-  EngineResponse<IdResponse> createExec(String container, ExecConfig execConfig);
+  EngineResponseContent<IdResponse> createExec(String container, ExecConfig execConfig);
 
   void startExec(String execId, ExecStartConfig execStartConfig, AttachConfig attachConfig);
 
   void startExec(String execId, ExecStartConfig execStartConfig, StreamCallback<Frame> callback, Duration timeout);
 
-  EngineResponse<ExecInspectResponse> inspectExec(String execId);
+  EngineResponseContent<ExecInspectResponse> inspectExec(String execId);
 
-  EngineResponse<IdResponse> exec(String container, List<String> command, StreamCallback<Frame> callback, Duration timeout);
+  EngineResponseContent<IdResponse> exec(String container, List<String> command, StreamCallback<Frame> callback, Duration timeout);
 
-  EngineResponse<IdResponse> exec(String container, List<String> command, StreamCallback<Frame> callback, Duration timeout, Map<String, Object> execConfig);
+  EngineResponseContent<IdResponse> exec(String container, List<String> command, StreamCallback<Frame> callback, Duration timeout, Map<String, Object> execConfig);
 
   void resizeExec(String exec, Integer height, Integer width);
 
@@ -84,23 +84,23 @@ public interface ManageContainer {
 
   void logs(String container, Map<String, Object> query, StreamCallback<Frame> callback, Duration timeout);
 
-  EngineResponse<List<Map<String, Object>>> ps(Map<String, Object> query);
+  EngineResponseContent<List<Map<String, Object>>> ps(Map<String, Object> query);
 
-  EngineResponse<List<Map<String, Object>>> ps();
+  EngineResponseContent<List<Map<String, Object>>> ps();
 
-  EngineResponse<List<Map<String, Object>>> ps(Boolean all);
+  EngineResponseContent<List<Map<String, Object>>> ps(Boolean all);
 
-  EngineResponse<List<Map<String, Object>>> ps(Boolean all, Integer limit);
+  EngineResponseContent<List<Map<String, Object>>> ps(Boolean all, Integer limit);
 
-  EngineResponse<List<Map<String, Object>>> ps(Boolean all, Integer limit, Boolean size);
+  EngineResponseContent<List<Map<String, Object>>> ps(Boolean all, Integer limit, Boolean size);
 
-  EngineResponse<List<Map<String, Object>>> ps(Boolean all, Integer limit, Boolean size, String filters);
+  EngineResponseContent<List<Map<String, Object>>> ps(Boolean all, Integer limit, Boolean size, String filters);
 
   void pause(String container);
 
-  EngineResponse<ContainerPruneResponse> pruneContainers();
+  EngineResponseContent<ContainerPruneResponse> pruneContainers();
 
-  EngineResponse<ContainerPruneResponse> pruneContainers(String filters);
+  EngineResponseContent<ContainerPruneResponse> pruneContainers(String filters);
 
   void rename(String container, String newName);
 
@@ -126,13 +126,13 @@ public interface ManageContainer {
 
   void stop(String containerIdOrName, Duration timeout);
 
-  EngineResponse<ContainerTopResponse> top(String containerIdOrName);
+  EngineResponseContent<ContainerTopResponse> top(String containerIdOrName);
 
-  EngineResponse<ContainerTopResponse> top(String containerIdOrName, String psArgs);
+  EngineResponseContent<ContainerTopResponse> top(String containerIdOrName, String psArgs);
 
   void unpause(String container);
 
-  EngineResponse<ContainerUpdateResponse> updateContainer(String container, ContainerUpdateRequest containerUpdateRequest);
+  EngineResponseContent<ContainerUpdateResponse> updateContainer(String container, ContainerUpdateRequest containerUpdateRequest);
 
-  EngineResponse<ContainerWaitResponse> wait(String containerIdOrName);
+  EngineResponseContent<ContainerWaitResponse> wait(String containerIdOrName);
 }

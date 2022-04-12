@@ -1,5 +1,6 @@
 package de.gesellix.docker.client.stack
 
+import de.gesellix.docker.client.EngineResponseContent
 import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.client.config.ManageConfig
 import de.gesellix.docker.client.network.ManageNetwork
@@ -10,7 +11,6 @@ import de.gesellix.docker.client.stack.types.StackConfig
 import de.gesellix.docker.client.stack.types.StackSecret
 import de.gesellix.docker.client.system.ManageSystem
 import de.gesellix.docker.client.tasks.ManageTask
-import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.docker.remote.api.Config
 import de.gesellix.docker.remote.api.ConfigSpec
 import de.gesellix.docker.remote.api.Network
@@ -66,7 +66,7 @@ class ManageStackClient implements ManageStack {
 
     Map<String, Stack> stacksByName = [:]
 
-    EngineResponse services = manageService.services([filters: [label: [(LabelNamespace): true]]])
+    EngineResponseContent<List<Service>> services = manageService.services([filters: [label: [(LabelNamespace): true]]])
     services.content?.each { Service service ->
       String stackName = service.spec.labels[(LabelNamespace)]
       if (!stacksByName[(stackName)]) {
@@ -128,7 +128,7 @@ class ManageStackClient implements ManageStack {
   }
 
   void createNetworks(String namespace, Map<String, NetworkCreateRequest> networks) {
-    EngineResponse<List<Network>> existingNetworks = manageNetwork.networks([
+    EngineResponseContent<List<Network>> existingNetworks = manageNetwork.networks([
         filters: [
             label: [("${LabelNamespace}=${namespace}" as String): true]]])
     List<String> existingNetworkNames = []
@@ -159,10 +159,10 @@ class ManageStackClient implements ManageStack {
       }
       secret.labels[(LabelNamespace)] = namespace
 
-      EngineResponse response
+      String secretId
       if (knownSecrets.empty) {
         log.info("create secret ${secret.name}: $secret")
-        response = manageSecret.createSecret(secret.name, secret.data, secret.labels)
+        secretId = manageSecret.createSecret(secret.name, secret.data, secret.labels).content.id
       }
       else {
         if (knownSecrets.size() != 1) {
@@ -170,7 +170,8 @@ class ManageStackClient implements ManageStack {
         }
         def knownSecret = knownSecrets.first()
         log.info("update secret ${secret.name}: $secret")
-        response = manageSecret.updateSecret(
+        secretId = knownSecret.ID
+        manageSecret.updateSecret(
             knownSecret.ID,
             knownSecret.version.index,
             new SecretSpec(
@@ -180,7 +181,7 @@ class ManageStackClient implements ManageStack {
                 secret.driver,
                 secret.templating))
       }
-      return [(secret.name): response.content.id]
+      return [(secret.name): secretId]
     }
   }
 
@@ -194,10 +195,10 @@ class ManageStackClient implements ManageStack {
       }
       config.labels[(LabelNamespace)] = namespace
 
-      EngineResponse response
+      String configId
       if (knownConfigs.empty) {
         log.info("create config ${config.name}: $config")
-        response = manageConfig.createConfig(config.name, config.data, config.labels)
+        configId = manageConfig.createConfig(config.name, config.data, config.labels).content.id
       }
       else {
         if (knownConfigs.size() != 1) {
@@ -205,7 +206,8 @@ class ManageStackClient implements ManageStack {
         }
         Config knownConfig = knownConfigs.first()
         log.info("update config ${config.name}: $config")
-        response = manageConfig.updateConfig(
+        configId = knownConfig.ID
+        manageConfig.updateConfig(
             knownConfig.ID,
             knownConfig.version.index,
             new ConfigSpec(
@@ -214,7 +216,7 @@ class ManageStackClient implements ManageStack {
                 new String(config.data),
                 config.templating))
       }
-      return [(config.name): response.content.id]
+      return [(config.name): configId]
     }
   }
 
@@ -224,7 +226,7 @@ class ManageStackClient implements ManageStack {
       return name.substring("${namespace}_".length())
     }
 
-    EngineResponse<List<Service>> oldServices = stackServices(namespace)
+    EngineResponseContent<List<Service>> oldServices = stackServices(namespace)
     Collection<Service> pruneServices = oldServices.content.findResults { Service service ->
       return services.contains(descope(service.spec.name)) ? null : service
     }
@@ -236,7 +238,7 @@ class ManageStackClient implements ManageStack {
 
   void createOrUpdateServices(String namespace, Map<String, ServiceSpec> services, boolean sendRegistryAuth) {
     Map<String, Service> existingServicesByName = [:]
-    EngineResponse<List<Service>> existingServices = stackServices(namespace)
+    EngineResponseContent<List<Service>> existingServices = stackServices(namespace)
     existingServices.content.each { Service service ->
       existingServicesByName[service.spec.name] = service
     }
@@ -264,7 +266,7 @@ class ManageStackClient implements ManageStack {
         if (sendRegistryAuth) {
           updateOptions.EncodedRegistryAuth = encodedAuth
         }
-        EngineResponse<ServiceUpdateResponse> response = manageService.updateService(
+        EngineResponseContent<ServiceUpdateResponse> response = manageService.updateService(
             service.ID,
             service.version.index,
             serviceSpec,
@@ -281,7 +283,7 @@ class ManageStackClient implements ManageStack {
         if (sendRegistryAuth) {
           createOptions.EncodedRegistryAuth = encodedAuth
         }
-        EngineResponse<ServiceCreateResponse> response = manageService.createService(serviceSpec, sendRegistryAuth ? encodedAuth : null)
+        EngineResponseContent<ServiceCreateResponse> response = manageService.createService(serviceSpec, sendRegistryAuth ? encodedAuth : null)
       }
     }
   }
@@ -297,7 +299,7 @@ class ManageStackClient implements ManageStack {
   }
 
   @Override
-  EngineResponse<List<Task>> stackPs(String namespace, Map filters = [:]) {
+  EngineResponseContent<List<Task>> stackPs(String namespace, Map filters = [:]) {
     log.info("docker stack ps")
 
     String namespaceFilter = "${LabelNamespace}=${namespace}"
@@ -309,7 +311,7 @@ class ManageStackClient implements ManageStack {
     else {
       actualFilters['label'] = [(namespaceFilter): true]
     }
-    EngineResponse<List<Task>> tasks = manageTask.tasks([filters: actualFilters])
+    EngineResponseContent<List<Task>> tasks = manageTask.tasks([filters: actualFilters])
     return tasks
   }
 
@@ -319,10 +321,10 @@ class ManageStackClient implements ManageStack {
 
     String namespaceFilter = "${LabelNamespace}=${namespace}"
 
-    EngineResponse<List<Service>> services = manageService.services([filters: [label: [(namespaceFilter): true]]])
-    EngineResponse<List<Network>> networks = manageNetwork.networks([filters: [label: [(namespaceFilter): true]]])
-    EngineResponse<List<Secret>> secrets = manageSecret.secrets([filters: [label: [(namespaceFilter): true]]])
-    EngineResponse<List<Config>> configs = manageConfig.configs([filters: [label: [(namespaceFilter): true]]])
+    EngineResponseContent<List<Service>> services = manageService.services([filters: [label: [(namespaceFilter): true]]])
+    EngineResponseContent<List<Network>> networks = manageNetwork.networks([filters: [label: [(namespaceFilter): true]]])
+    EngineResponseContent<List<Secret>> secrets = manageSecret.secrets([filters: [label: [(namespaceFilter): true]]])
+    EngineResponseContent<List<Config>> configs = manageConfig.configs([filters: [label: [(namespaceFilter): true]]])
 
     services.content.each { Service service ->
       manageService.rmService(service.ID)
@@ -339,7 +341,7 @@ class ManageStackClient implements ManageStack {
   }
 
   @Override
-  EngineResponse<List<Service>> stackServices(String namespace, Map filters = [:]) {
+  EngineResponseContent<List<Service>> stackServices(String namespace, Map filters = [:]) {
     log.info("docker stack services")
 
     String namespaceFilter = "${LabelNamespace}=${namespace}"
@@ -350,13 +352,13 @@ class ManageStackClient implements ManageStack {
     else {
       actualFilters['label'] = [(namespaceFilter): true]
     }
-    EngineResponse<List<Service>> services = manageService.services([filters: actualFilters])
+    EngineResponseContent<List<Service>> services = manageService.services([filters: actualFilters])
 //    def infoByServiceId = getInfoByServiceId(services)
     return services
   }
 
-  Map<String, ServiceInfo> getInfoByServiceId(EngineResponse<List<Service>> services) {
-    EngineResponse<List<Node>> nodes = manageNode.nodes()
+  Map<String, ServiceInfo> getInfoByServiceId(EngineResponseContent<List<Service>> services) {
+    EngineResponseContent<List<Node>> nodes = manageNode.nodes()
     List<String> activeNodes = nodes.content.findResults { Node node ->
       node.status.state != NodeState.Down ? node.ID : null
     }
@@ -368,7 +370,7 @@ class ManageStackClient implements ManageStack {
     services.content.each { Service service ->
       serviceFilter.service[(service.ID as String)] = true
     }
-    EngineResponse<List<Task>> tasks = manageTask.tasks([filters: serviceFilter])
+    EngineResponseContent<List<Task>> tasks = manageTask.tasks([filters: serviceFilter])
     tasks.content.each { Task task ->
       if (task.desiredState != TaskState.Shutdown) {
         if (!tasksNoShutdown[task.serviceID]) {
