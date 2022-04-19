@@ -34,6 +34,10 @@ class DockerStackComposeIntegrationSpec extends Specification {
     Thread.sleep(1000)
   }
 
+  // Service currently fails with:
+  // "failed during hnsCallRawResponse: hnsCall failed in Win32: The parameter is incorrect. (0x57)"
+  // This one might be related to https://github.com/moby/moby/issues/40621
+  @Requires({ !LocalDocker.isNativeWindows() })
   def "deploy a new stack with compose file"() {
     given:
     def swarmConfig = dockerClient.newSwarmInitRequest()
