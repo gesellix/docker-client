@@ -16,9 +16,9 @@ class TestConstants {
 
   TestConstants() {
     if (LocalDocker.isNativeWindows()) {
-      imageDigest = "gesellix/echo-server@sha256:e050aff7118d4b03762035a12e348445b3bea02a9966b84aa2d6c9759a9128e1"
-      imageId = "sha256:8e0ebadb075bdf6fa010527da9af8fb66e4149a57a3867d6c54b1963fbff416d"
-      imageCreated = 1648543890
+      imageDigest = "gesellix/echo-server@sha256:53d94aa81d0bb50e79a080b50d18efb4bc042a7eb7ad12f6c1b9091dda11b731"
+      imageId = "sha256:f74494ddddd6f19207a4606e243480faafa52d974207c0bb74b8c71195354cbc"
+      imageCreated = 1649450241
       volumeTarget = "C:/my-volume"
     }
     else {
