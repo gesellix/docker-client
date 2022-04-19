@@ -22,7 +22,7 @@ class TestConstants {
       volumeTarget = "C:/my-volume"
     }
     else {
-      imageDigest = "gesellix/echo-server@sha256:0c82ad1c87b9662383e3876d8d462cbdeadb078707c9a3bce548a4fababf19fe"
+      imageDigest = "gesellix/echo-server@sha256:53d94aa81d0bb50e79a080b50d18efb4bc042a7eb7ad12f6c1b9091dda11b731"
       imageId = "sha256:a07dead7f020c6f0602181f2ca3920634df1cf11cf8de5ca443e25ea4d334a61"
       imageCreated = 1649449755
       volumeTarget = "/my-volume"
