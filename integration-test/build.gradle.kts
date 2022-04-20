@@ -10,6 +10,11 @@ java {
 
 dependencies {
   constraints {
+    implementation("de.gesellix:docker-engine") {
+      version {
+        strictly("[2022-02-01T01-01-01,)")
+      }
+    }
     implementation("de.gesellix:docker-remote-api-model-1-41") {
       version {
         strictly("[2022-02-01T01-01-01,)")
