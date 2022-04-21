@@ -78,7 +78,7 @@ dependencies {
   testImplementation("org.slf4j:slf4j-api:[1.7,)")
   runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.2.11")
 
-  testImplementation("de.gesellix:docker-registry:2022-04-10T17-15-00")
+  testImplementation("de.gesellix:docker-registry:2022-04-20T22-48-00")
   testImplementation("de.gesellix:testutil:[2020-10-03T10-08-28,)")
   testImplementation("org.spockframework:spock-core:2.1-groovy-3.0")
   testRuntimeOnly("cglib:cglib-nodep:3.3.0")
