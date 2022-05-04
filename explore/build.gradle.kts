@@ -18,7 +18,7 @@ dependencies {
     }
     implementation("com.squareup.okio:okio") {
       version {
-        strictly("[2.5,4)")
+        strictly("[3,4)")
       }
     }
     listOf(

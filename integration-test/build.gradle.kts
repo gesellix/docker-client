@@ -44,7 +44,7 @@ dependencies {
     }
     implementation("com.squareup.okio:okio") {
       version {
-        strictly("[2,4)")
+        strictly("[3,4)")
       }
     }
     implementation("com.squareup.moshi:moshi") {
