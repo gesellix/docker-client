@@ -46,10 +46,15 @@ dependencies {
         prefer("4.9.3")
       }
     }
-    implementation("com.squareup.okio:okio") {
-      version {
-        strictly("[2.5,4)")
-        prefer("3.1.0")
+    listOf(
+      "com.squareup.okio:okio",
+      "com.squareup.okio:okio-jvm"
+    ).onEach {
+      implementation(it) {
+        version {
+          strictly("[3,4)")
+          prefer("3.1.0")
+        }
       }
     }
     listOf(
@@ -101,7 +106,7 @@ dependencies {
   implementation("org.slf4j:slf4j-api:1.7.36")
   testImplementation("ch.qos.logback:logback-classic:[1.2,2)!!1.2.11")
 
-  implementation("com.squareup.okio:okio:3.1.0")
+  implementation("com.squareup.okio:okio-jvm:3.1.0")
   api("com.squareup.okhttp3:okhttp:4.9.3")
   testImplementation("com.squareup.okhttp3:mockwebserver:[4,5)")
 
