@@ -27,7 +27,7 @@ jobs:
         if: matrix.os == 'macos-latest'
         uses: ./.github/actions/docker-install-macos
       - name: Login to Docker Hub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
