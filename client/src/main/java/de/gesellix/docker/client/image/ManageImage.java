@@ -4,8 +4,8 @@ import de.gesellix.docker.client.EngineResponseContent;
 import de.gesellix.docker.remote.api.BuildInfo;
 import de.gesellix.docker.remote.api.CreateImageInfo;
 import de.gesellix.docker.remote.api.HistoryResponseItem;
-import de.gesellix.docker.remote.api.Image;
 import de.gesellix.docker.remote.api.ImageDeleteResponseItem;
+import de.gesellix.docker.remote.api.ImageInspect;
 import de.gesellix.docker.remote.api.ImagePruneResponse;
 import de.gesellix.docker.remote.api.ImageSearchResponseItem;
 import de.gesellix.docker.remote.api.ImageSummary;
@@ -46,7 +46,7 @@ public interface ManageImage {
 
   EngineResponseContent<List<HistoryResponseItem>> history(String image);
 
-  EngineResponseContent<Image> inspectImage(String image);
+  EngineResponseContent<ImageInspect> inspectImage(String image);
 
   void load(InputStream imagesTarball);
 

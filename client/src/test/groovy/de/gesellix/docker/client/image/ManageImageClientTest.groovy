@@ -3,14 +3,14 @@ package de.gesellix.docker.client.image
 import de.gesellix.docker.authentication.AuthConfig
 import de.gesellix.docker.client.authentication.ManageAuthentication
 import de.gesellix.docker.remote.api.EngineApiClient
-import de.gesellix.docker.remote.api.Image
+import de.gesellix.docker.remote.api.ImageInspect
 import de.gesellix.docker.remote.api.ImagePruneResponse
 import de.gesellix.docker.remote.api.ImageSummary
 import de.gesellix.docker.remote.api.client.ImageApi
 import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
-@Mockable([ImageApi, Image, ImageSummary, ImagePruneResponse])
+@Mockable([ImageApi, ImageInspect, ImageSummary, ImagePruneResponse])
 class ManageImageClientTest extends Specification {
 
   ManageImageClient service
@@ -227,7 +227,7 @@ class ManageImageClientTest extends Specification {
     given:
     def imageApi = Mock(ImageApi)
     client.imageApi >> imageApi
-    def image = Mock(Image)
+    def image = Mock(ImageInspect)
 
     when:
     def inspectImage = service.inspectImage("an-image")
