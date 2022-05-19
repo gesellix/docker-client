@@ -27,10 +27,12 @@ import de.gesellix.docker.remote.api.Task
 import de.gesellix.docker.remote.api.TaskSpecContainerSpecConfigs
 import de.gesellix.docker.remote.api.TaskSpecContainerSpecSecrets
 import de.gesellix.docker.remote.api.TaskState
-import groovy.util.logging.Slf4j
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-@Slf4j
 class ManageStackClient implements ManageStack {
+
+  private final Logger log = LoggerFactory.getLogger(ManageStackClient)
 
   private ManageService manageService
   private ManageTask manageTask

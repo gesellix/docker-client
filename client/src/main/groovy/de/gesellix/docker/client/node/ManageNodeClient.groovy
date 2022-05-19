@@ -7,10 +7,12 @@ import de.gesellix.docker.remote.api.Node
 import de.gesellix.docker.remote.api.NodeSpec
 import de.gesellix.docker.remote.api.Task
 import de.gesellix.util.QueryUtil
-import groovy.util.logging.Slf4j
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-@Slf4j
 class ManageNodeClient implements ManageNode {
+
+  private final Logger log = LoggerFactory.getLogger(ManageNodeClient)
 
   private EngineApiClient client
   private ManageTask manageTask

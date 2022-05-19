@@ -2,7 +2,8 @@ package de.gesellix.docker.client.authentication
 
 import com.google.re2j.Matcher
 import com.google.re2j.Pattern
-import groovy.util.logging.Slf4j
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /** Grammar (https://github.com/distribution/distribution/blob/main/reference/reference.go)
  *
@@ -25,8 +26,9 @@ import groovy.util.logging.Slf4j
  * identifier                      := /[a-f0-9]{64}/
  * short-identifier                := /[a-f0-9]{6,64}/
  */
-@Slf4j
 class ReferenceParser {
+
+  private final Logger log = LoggerFactory.getLogger(ReferenceParser)
 
   String domainComponentRegexp = "(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])"
 

@@ -7,10 +7,12 @@ import de.gesellix.docker.authentication.CredsStore
 import de.gesellix.docker.client.EngineResponseContent
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.SystemAuthResponse
-import groovy.util.logging.Slf4j
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-@Slf4j
 class ManageAuthenticationClient implements ManageAuthentication {
+
+  private final Logger log = LoggerFactory.getLogger(ManageAuthenticationClient)
 
   AuthConfigReader authConfigReader
   EngineApiClient client

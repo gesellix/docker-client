@@ -34,7 +34,7 @@ class DockerNetworkIntegrationSpec extends Specification {
     !dockerClient.networks().content.find { it.name == "test-net" }
 
     when:
-    dockerClient.createNetwork('test-net')
+    dockerClient.createNetwork("test-net")
 
     then:
     dockerClient.networks().content.find { it.name == "test-net" }

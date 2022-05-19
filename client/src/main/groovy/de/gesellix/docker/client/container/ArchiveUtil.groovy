@@ -1,15 +1,17 @@
 package de.gesellix.docker.client.container
 
 import de.gesellix.util.IOUtils
-import groovy.util.logging.Slf4j
 import okio.Okio
 import okio.Sink
 import okio.Source
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-@Slf4j
 class ArchiveUtil {
+
+  private final Logger log = LoggerFactory.getLogger(ArchiveUtil)
 
   byte[] extractSingleTarEntry(InputStream tarContent, String filename) {
     def stream = new TarArchiveInputStream(new BufferedInputStream(tarContent))

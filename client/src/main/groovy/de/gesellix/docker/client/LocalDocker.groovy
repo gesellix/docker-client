@@ -2,12 +2,14 @@ package de.gesellix.docker.client
 
 import de.gesellix.docker.engine.DockerVersion
 import de.gesellix.docker.remote.api.SystemInfo
-import groovy.util.logging.Slf4j
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import static de.gesellix.docker.engine.DockerVersion.parseDockerVersion
 
-@Slf4j
 class LocalDocker {
+
+  private final static Logger log = LoggerFactory.getLogger(LocalDocker)
 
   static void main(String[] args) {
 //    println(available() ? "connection success" : "failed to connect")

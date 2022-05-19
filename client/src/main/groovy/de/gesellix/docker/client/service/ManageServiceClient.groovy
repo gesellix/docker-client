@@ -10,10 +10,12 @@ import de.gesellix.docker.remote.api.ServiceSpec
 import de.gesellix.docker.remote.api.ServiceUpdateResponse
 import de.gesellix.docker.remote.api.Task
 import de.gesellix.util.QueryUtil
-import groovy.util.logging.Slf4j
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-@Slf4j
 class ManageServiceClient implements ManageService {
+
+  private final Logger log = LoggerFactory.getLogger(ManageServiceClient)
 
   private EngineApiClient client
   private QueryUtil queryUtil

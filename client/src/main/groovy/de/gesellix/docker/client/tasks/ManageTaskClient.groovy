@@ -4,10 +4,12 @@ import de.gesellix.docker.client.EngineResponseContent
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.Task
 import de.gesellix.util.QueryUtil
-import groovy.util.logging.Slf4j
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-@Slf4j
 class ManageTaskClient implements ManageTask {
+
+  private final Logger log = LoggerFactory.getLogger(ManageTaskClient)
 
   private EngineApiClient client
 

@@ -38,12 +38,14 @@ import de.gesellix.docker.engine.OkDockerClient
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.EngineApiClientImpl
 import de.gesellix.docker.remote.api.Node
-import groovy.util.logging.Slf4j
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import static java.net.Proxy.NO_PROXY
 
-@Slf4j
 class DockerClientImpl implements DockerClient {
+
+  private final Logger log = LoggerFactory.getLogger(DockerClientImpl)
 
   RepositoryTagParser repositoryTagParser
 

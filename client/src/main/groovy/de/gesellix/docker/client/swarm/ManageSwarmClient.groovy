@@ -8,10 +8,12 @@ import de.gesellix.docker.remote.api.SwarmJoinRequest
 import de.gesellix.docker.remote.api.SwarmSpec
 import de.gesellix.docker.remote.api.SwarmUnlockRequest
 import de.gesellix.docker.remote.api.UnlockKeyResponse
-import groovy.util.logging.Slf4j
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-@Slf4j
 class ManageSwarmClient implements ManageSwarm {
+
+  private final Logger log = LoggerFactory.getLogger(ManageSwarmClient)
 
   private EngineApiClient client
 

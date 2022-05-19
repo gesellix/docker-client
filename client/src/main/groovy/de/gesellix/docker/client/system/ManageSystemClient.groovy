@@ -7,12 +7,14 @@ import de.gesellix.docker.remote.api.SystemDataUsageResponse
 import de.gesellix.docker.remote.api.SystemInfo
 import de.gesellix.docker.remote.api.SystemVersion
 import de.gesellix.docker.remote.api.core.StreamCallback
-import groovy.util.logging.Slf4j
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import java.time.Duration
 
-@Slf4j
 class ManageSystemClient implements ManageSystem {
+
+  private final Logger log = LoggerFactory.getLogger(ManageSystemClient)
 
   private EngineApiClient client
 

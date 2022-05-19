@@ -2,10 +2,12 @@ package de.gesellix.docker.client.container
 
 import de.gesellix.docker.client.DockerClientException
 import de.gesellix.docker.engine.EngineResponse
-import groovy.util.logging.Slf4j
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-@Slf4j
 class DockerResponseHandler {
+
+  private final Logger log = LoggerFactory.getLogger(DockerResponseHandler)
 
   def ensureSuccessfulResponse(EngineResponse response, Throwable context) {
     if (!response || !response.status?.success || hasError(response)) {

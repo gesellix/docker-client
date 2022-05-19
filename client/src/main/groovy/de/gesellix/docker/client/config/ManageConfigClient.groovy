@@ -6,10 +6,12 @@ import de.gesellix.docker.remote.api.ConfigSpec
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.IdResponse
 import de.gesellix.util.QueryUtil
-import groovy.util.logging.Slf4j
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-@Slf4j
 class ManageConfigClient implements ManageConfig {
+
+  private final Logger log = LoggerFactory.getLogger(ManageConfigClient)
 
   private EngineApiClient client
 

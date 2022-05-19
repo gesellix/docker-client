@@ -57,7 +57,8 @@ import de.gesellix.docker.remote.api.TaskSpecPlacementPreferences
 import de.gesellix.docker.remote.api.TaskSpecPlacementSpread
 import de.gesellix.docker.remote.api.TaskSpecResources
 import de.gesellix.docker.remote.api.TaskSpecRestartPolicy
-import groovy.util.logging.Slf4j
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import java.nio.file.Files
 import java.nio.file.Path
@@ -71,8 +72,9 @@ import static java.lang.Double.parseDouble
 import static java.lang.Integer.parseInt
 import static java.lang.Long.parseLong
 
-@Slf4j
 class DeployConfigReader {
+
+  private final Logger log = LoggerFactory.getLogger(DeployConfigReader)
 
   DockerClient dockerClient
 

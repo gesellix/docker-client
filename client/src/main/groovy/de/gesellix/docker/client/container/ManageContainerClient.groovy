@@ -25,15 +25,17 @@ import de.gesellix.docker.remote.api.core.ClientException
 import de.gesellix.docker.remote.api.core.Frame
 import de.gesellix.docker.remote.api.core.StreamCallback
 import de.gesellix.util.QueryUtil
-import groovy.util.logging.Slf4j
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 
-@Slf4j
 class ManageContainerClient implements ManageContainer {
+
+  private final Logger log = LoggerFactory.getLogger(ManageContainerClient)
 
   private EngineApiClient client
   private EngineClient engineClient

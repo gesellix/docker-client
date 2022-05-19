@@ -10,10 +10,12 @@ import de.gesellix.docker.remote.api.NetworkCreateResponse
 import de.gesellix.docker.remote.api.NetworkDisconnectRequest
 import de.gesellix.docker.remote.api.NetworkPruneResponse
 import de.gesellix.util.QueryUtil
-import groovy.util.logging.Slf4j
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-@Slf4j
 class ManageNetworkClient implements ManageNetwork {
+
+  private final Logger log = LoggerFactory.getLogger(ManageNetworkClient)
 
   private EngineApiClient client
   private QueryUtil queryUtil
@@ -44,17 +46,17 @@ class ManageNetworkClient implements ManageNetwork {
   @Override
   EngineResponseContent<Network> inspectNetwork(String name) {
     log.info("docker network inspect")
-    def network = client.getNetworkApi().networkInspect(name, null, null)
+    Network network = client.getNetworkApi().networkInspect(name, null, null)
     return new EngineResponseContent<Network>(network)
   }
 
   @Override
   EngineResponseContent<NetworkCreateResponse> createNetwork(String name, Map<String, Object> config = [:]) {
-    def actualConfig = [:]
+    Map actualConfig = [:]
     if (config) {
       actualConfig.putAll(config)
     }
-    def defaults = [
+    Map defaults = [
         Name          : name,
         CheckDuplicate: true]
     queryUtil.applyDefaults(actualConfig, defaults)
@@ -79,7 +81,13 @@ class ManageNetworkClient implements ManageNetwork {
   @Override
   EngineResponseContent<NetworkCreateResponse> createNetwork(NetworkCreateRequest networkCreateRequest) {
     log.info("docker network create")
-    // TODO set defaults
+//    if (networkCreateRequest.name == null) {
+//      throw new IllegalArgumentException("Name is null")
+//    }
+    // TODO set defaults?
+//    if (networkCreateRequest.checkDuplicate == null) {
+//      networkCreateRequest.checkDuplicate = true
+//    }
     def networkCreate = client.getNetworkApi().networkCreate(networkCreateRequest)
     return new EngineResponseContent<NetworkCreateResponse>(networkCreate)
   }
