@@ -94,7 +94,7 @@ class DockerImageIntegrationSpec extends Specification {
 
     then:
     def imageId = BuildInfoExtensionsKt.getImageId(infos)
-    imageId?.ID =~ "[0-9a-z]{12}"
+    imageId?.ID =~ "[\\da-z]{12}"
 
     cleanup:
     if (imageId?.ID) {
@@ -144,7 +144,7 @@ class DockerImageIntegrationSpec extends Specification {
 
     then:
     def imageId = BuildInfoExtensionsKt.getImageId(infos)
-    imageId?.ID =~ "[0-9a-z]{12}"
+    imageId?.ID =~ "[\\da-z]{12}"
 
     cleanup:
     if (imageId?.ID) {
