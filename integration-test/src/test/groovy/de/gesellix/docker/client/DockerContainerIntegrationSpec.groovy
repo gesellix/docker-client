@@ -536,7 +536,7 @@ class DockerContainerIntegrationSpec extends Specification {
     def execCreateResult = dockerClient.createExec(containerId, execConfig).content
 
     then:
-    execCreateResult?.id =~ "[0-9a-f]+"
+    execCreateResult?.id =~ "[\\da-f]+"
 
     cleanup:
     dockerClient.stop(name)
