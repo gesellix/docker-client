@@ -26,7 +26,7 @@ import okio.ByteString
 import okio.Okio
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
-import spock.lang.Ignore
+import spock.lang.IgnoreIf
 import spock.lang.Requires
 import spock.lang.Specification
 
@@ -601,6 +601,8 @@ class DockerContainerIntegrationSpec extends Specification {
     dockerClient.rm(name)
   }
 
+  // TODO Currently not supported, partially broken/unreliable
+  @IgnoreIf({ Boolean.parseBoolean(System.getenv("CI")) })
   def "exec (interactive)"() {
     given:
     String name = "attach-exec"
@@ -894,7 +896,8 @@ class DockerContainerIntegrationSpec extends Specification {
     dockerClient.rm(containerId)
   }
 
-  @Ignore("Currently not supported, partially broken")
+  // TODO Currently not supported, partially broken/unreliable
+  @IgnoreIf({ Boolean.parseBoolean(System.getenv("CI")) })
   def "attach (interactive)"() {
     given:
     dockerClient.pull(null, null, CONSTANTS.imageRepo, CONSTANTS.imageTag)
