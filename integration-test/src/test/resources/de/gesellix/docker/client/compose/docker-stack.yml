@@ -1,4 +1,5 @@
-version: "3.5"
+---
+version: "3.9"
 services:
   service:
     image: gesellix/echo-server:${IMAGE_VERSION}
@@ -42,3 +43,4 @@ configs:
 secrets:
   my-secret:
     file: ./mysecret.key
+...

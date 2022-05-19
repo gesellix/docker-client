@@ -147,7 +147,7 @@ class ReferenceParser {
   }
 
   // why not DigestRegex from above?!
-  String DigestRegexp2 = "[a-zA-Z0-9-_+.]+:[a-fA-F0-9]+"
+  String DigestRegexp2 = "[a-zA-Z\\d-_+.]+:[a-fA-F\\d]+"
   String DigestRegexpAnchored = "^${DigestRegexp2}\$"
 
   void ValidateDigest(String s) {
