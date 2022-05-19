@@ -3,7 +3,7 @@ package de.gesellix.docker.client.volume
 import de.gesellix.docker.client.EngineResponseContent
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.Volume
-import de.gesellix.docker.remote.api.VolumeConfig
+import de.gesellix.docker.remote.api.VolumeCreateOptions
 import de.gesellix.docker.remote.api.VolumeListResponse
 import de.gesellix.docker.remote.api.VolumePruneResponse
 import de.gesellix.util.QueryUtil
@@ -48,11 +48,11 @@ class ManageVolumeClient implements ManageVolume {
   @Override
   EngineResponseContent<Volume> createVolume(Map<String, Object> config) {
     log.info("docker volume create")
-    return createVolume(new VolumeConfig(config?.Name as String, config?.Driver as String, config?.DriverOpts as Map, config?.Labels as Map))
+    return createVolume(new VolumeCreateOptions(config?.Name as String, config?.Driver as String, config?.DriverOpts as Map, config?.Labels as Map))
   }
 
   @Override
-  EngineResponseContent<Volume> createVolume(VolumeConfig volumeConfig = new VolumeConfig()) {
+  EngineResponseContent<Volume> createVolume(VolumeCreateOptions volumeConfig = new VolumeCreateOptions()) {
     log.info("docker volume create")
     Volume volume = client.getVolumeApi().volumeCreate(volumeConfig)
     return new EngineResponseContent<Volume>(volume)

@@ -2,7 +2,7 @@ package de.gesellix.docker.client.volume;
 
 import de.gesellix.docker.client.EngineResponseContent;
 import de.gesellix.docker.remote.api.Volume;
-import de.gesellix.docker.remote.api.VolumeConfig;
+import de.gesellix.docker.remote.api.VolumeCreateOptions;
 import de.gesellix.docker.remote.api.VolumeListResponse;
 import de.gesellix.docker.remote.api.VolumePruneResponse;
 
@@ -11,15 +11,15 @@ import java.util.Map;
 public interface ManageVolume {
 
   /**
-   * @see #createVolume(VolumeConfig)
-   * @deprecated use {@link #createVolume(VolumeConfig)}
+   * @see #createVolume(VolumeCreateOptions)
+   * @deprecated use {@link #createVolume(VolumeCreateOptions)}
    */
   @Deprecated
   EngineResponseContent<Volume> createVolume(Map<String, Object> config);
 
   EngineResponseContent<Volume> createVolume();
 
-  EngineResponseContent<Volume> createVolume(VolumeConfig volumeConfig);
+  EngineResponseContent<Volume> createVolume(VolumeCreateOptions volumeCreateOptions);
 
   EngineResponseContent<Volume> inspectVolume(String name);
 

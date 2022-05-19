@@ -7,8 +7,8 @@ import de.gesellix.docker.remote.api.BuildInfo
 import de.gesellix.docker.remote.api.CreateImageInfo
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.HistoryResponseItem
-import de.gesellix.docker.remote.api.Image
 import de.gesellix.docker.remote.api.ImageDeleteResponseItem
+import de.gesellix.docker.remote.api.ImageInspect
 import de.gesellix.docker.remote.api.ImagePruneResponse
 import de.gesellix.docker.remote.api.ImageSearchResponseItem
 import de.gesellix.docker.remote.api.ImageSummary
@@ -111,10 +111,10 @@ class ManageImageClient implements ManageImage {
   }
 
   @Override
-  EngineResponseContent<Image> inspectImage(String imageId) {
+  EngineResponseContent<ImageInspect> inspectImage(String imageId) {
     log.info("docker inspect image")
     def imageInspect = client.imageApi.imageInspect(imageId)
-    return new EngineResponseContent<Image>(imageInspect)
+    return new EngineResponseContent<ImageInspect>(imageInspect)
   }
 
   @Override

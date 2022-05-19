@@ -3,7 +3,7 @@ package de.gesellix.docker.client.volume
 import com.squareup.moshi.Moshi
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.Volume
-import de.gesellix.docker.remote.api.VolumeConfig
+import de.gesellix.docker.remote.api.VolumeCreateOptions
 import de.gesellix.docker.remote.api.VolumeListResponse
 import de.gesellix.docker.remote.api.VolumePruneResponse
 import de.gesellix.docker.remote.api.client.VolumeApi
@@ -81,7 +81,7 @@ class ManageVolumeClientTest extends Specification {
         DriverOpts: [:]])
 
     then:
-    1 * volumeApi.volumeCreate(new VolumeConfig("my-fancy-volume", "local", [:], null)) >> volumeResponse
+    1 * volumeApi.volumeCreate(new VolumeCreateOptions("my-fancy-volume", "local", [:], null)) >> volumeResponse
     volume.content == volumeResponse
   }
 
@@ -90,7 +90,7 @@ class ManageVolumeClientTest extends Specification {
     def volumeApi = Mock(VolumeApi)
     client.volumeApi >> volumeApi
     def volumeResponse = Mock(Volume)
-    def volumeConfig = new VolumeConfig("my-volume", "local", [:], [:])
+    def volumeConfig = new VolumeCreateOptions("my-volume", "local", [:], [:])
 
     when:
     def volume = service.createVolume(volumeConfig)
