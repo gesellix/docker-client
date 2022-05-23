@@ -380,6 +380,7 @@ class DeployConfigReader {
     Integer retries = null
     Long timeout = null
     Long interval = null
+    Long startPeriod = null
 
     if (healthcheck.disable) {
       if (healthcheck.test?.parts) {
@@ -397,13 +398,16 @@ class DeployConfigReader {
     if (healthcheck.retries) {
       retries = new Float(healthcheck.retries).intValue()
     }
+    if (healthcheck.startPeriod) {
+      startPeriod = parseDuration(healthcheck.startPeriod).toNanos()
+    }
 
     return new HealthConfig(
         healthcheck.test.parts,
         interval ?: 0,
         timeout ?: 0,
         retries,
-        null
+        startPeriod
     )
   }
 
