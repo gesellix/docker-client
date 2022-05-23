@@ -556,8 +556,8 @@ class DeployConfigReaderTest extends Specification {
         retries: 10
     )) == new HealthConfig(
         ["EXEC", "touch", "/foo"],
-        Duration.of(2, ChronoUnit.MILLIS).toNanos().intValue(),
-        Duration.of(30, ChronoUnit.SECONDS).toNanos().intValue(),
+        Duration.of(2, ChronoUnit.MILLIS).toNanos().longValue(),
+        Duration.of(30, ChronoUnit.SECONDS).toNanos().longValue(),
         10,
         null
     )
