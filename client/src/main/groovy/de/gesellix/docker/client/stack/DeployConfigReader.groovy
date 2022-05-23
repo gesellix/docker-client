@@ -400,8 +400,8 @@ class DeployConfigReader {
 
     return new HealthConfig(
         healthcheck.test.parts,
-        interval?.intValue() ?: 0,
-        timeout?.intValue() ?: 0,
+        interval ?: 0,
+        timeout ?: 0,
         retries,
         null
     )
