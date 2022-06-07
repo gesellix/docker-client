@@ -118,7 +118,7 @@ dependencies {
 
   testImplementation("org.spockframework:spock-core:2.1-groovy-3.0")
   testRuntimeOnly("cglib:cglib-nodep:3.3.0")
-  testImplementation("io.github.joke:spock-mockable:1.5.3")
+  testImplementation("io.github.joke:spock-mockable:1.5.5")
 
   testImplementation("org.apache.commons:commons-lang3:3.12.0")
 }
