@@ -48,7 +48,7 @@ dependencies {
     }
   }
   implementation(project(":client"))
-  implementation("org.codehaus.groovy:groovy:3.0.10")
+  implementation("org.codehaus.groovy:groovy:3.0.11")
   testImplementation("org.apache.commons:commons-compress:1.21")
 
   implementation("org.slf4j:slf4j-api:1.7.36")
