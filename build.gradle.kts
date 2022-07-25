@@ -8,7 +8,7 @@ plugins {
 
 val dependencyVersions = listOf(
   "net.bytebuddy:byte-buddy:1.12.12",
-  "org.codehaus.groovy:groovy:3.0.11",
+  "org.codehaus.groovy:groovy:3.0.12",
   "org.jetbrains:annotations:23.0.0"
 )
 
