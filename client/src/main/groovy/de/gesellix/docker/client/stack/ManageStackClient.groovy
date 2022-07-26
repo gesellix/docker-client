@@ -24,8 +24,8 @@ import de.gesellix.docker.remote.api.ServiceCreateResponse
 import de.gesellix.docker.remote.api.ServiceSpec
 import de.gesellix.docker.remote.api.ServiceUpdateResponse
 import de.gesellix.docker.remote.api.Task
-import de.gesellix.docker.remote.api.TaskSpecContainerSpecConfigs
-import de.gesellix.docker.remote.api.TaskSpecContainerSpecSecrets
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecConfigsInner
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecSecretsInner
 import de.gesellix.docker.remote.api.TaskState
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -96,12 +96,12 @@ class ManageStackClient implements ManageStack {
     Map<String, String> changedConfigs = createConfigs(namespace, config.configs)
 
     config.services.each { Map.Entry<String, ServiceSpec> service ->
-      List<TaskSpecContainerSpecSecrets> containerSpecSecrets = service.value.taskTemplate?.containerSpec?.secrets
+      List<TaskSpecContainerSpecSecretsInner> containerSpecSecrets = service.value.taskTemplate?.containerSpec?.secrets
       if (containerSpecSecrets) {
         changedSecrets.each { String name, String secretId ->
-          int index = containerSpecSecrets.findIndexOf { TaskSpecContainerSpecSecrets spec -> spec.secretName == name }
+          int index = containerSpecSecrets.findIndexOf { TaskSpecContainerSpecSecretsInner spec -> spec.secretName == name }
           if (index >= 0) {
-            containerSpecSecrets.set(index, new TaskSpecContainerSpecSecrets(
+            containerSpecSecrets.set(index, new TaskSpecContainerSpecSecretsInner(
                 containerSpecSecrets.get(index).file,
                 secretId,
                 name
@@ -110,12 +110,12 @@ class ManageStackClient implements ManageStack {
         }
       }
 
-      List<TaskSpecContainerSpecConfigs> containerSpecConfigs = service.value.taskTemplate?.containerSpec?.configs
+      List<TaskSpecContainerSpecConfigsInner> containerSpecConfigs = service.value.taskTemplate?.containerSpec?.configs
       if (containerSpecConfigs) {
         changedConfigs.each { String name, String configId ->
-          int index = containerSpecConfigs.findIndexOf { TaskSpecContainerSpecConfigs spec -> spec.configName == name }
+          int index = containerSpecConfigs.findIndexOf { TaskSpecContainerSpecConfigsInner spec -> spec.configName == name }
           if (index >= 0) {
-            containerSpecConfigs.set(index, new TaskSpecContainerSpecConfigs(
+            containerSpecConfigs.set(index, new TaskSpecContainerSpecConfigsInner(
                 containerSpecConfigs.get(index).file,
                 containerSpecConfigs.get(index).runtime,
                 configId,

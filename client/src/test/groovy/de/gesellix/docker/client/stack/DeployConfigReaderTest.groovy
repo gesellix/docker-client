@@ -41,10 +41,10 @@ import de.gesellix.docker.remote.api.ResourceObject
 import de.gesellix.docker.remote.api.ServiceSpecMode
 import de.gesellix.docker.remote.api.ServiceSpecModeReplicated
 import de.gesellix.docker.remote.api.SystemVersion
-import de.gesellix.docker.remote.api.TaskSpecContainerSpecConfigs
-import de.gesellix.docker.remote.api.TaskSpecContainerSpecFile
-import de.gesellix.docker.remote.api.TaskSpecContainerSpecFile1
-import de.gesellix.docker.remote.api.TaskSpecContainerSpecSecrets
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecConfigsInner
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecConfigsInnerFile
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecSecretsInner
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecSecretsInnerFile
 import de.gesellix.docker.remote.api.TaskSpecResources
 import de.gesellix.docker.remote.api.TaskSpecRestartPolicy
 import spock.lang.Ignore
@@ -107,8 +107,8 @@ class DeployConfigReaderTest extends Specification {
 
     then:
     result == [
-        new TaskSpecContainerSpecConfigs(
-            new TaskSpecContainerSpecFile1("config-target", "0", "0", 292),
+        new TaskSpecContainerSpecConfigsInner(
+            new TaskSpecContainerSpecConfigsInnerFile("config-target", "0", "0", 292),
             null,
             "<WILL_BE_PROVIDED_DURING_DEPLOY>",
             "name.space_config-1"
@@ -156,8 +156,8 @@ class DeployConfigReaderTest extends Specification {
 
     then:
     result == [
-        new TaskSpecContainerSpecSecrets(
-            new TaskSpecContainerSpecFile("secret-target", "0", "0", 292),
+        new TaskSpecContainerSpecSecretsInner(
+            new TaskSpecContainerSpecSecretsInnerFile("secret-target", "0", "0", 292),
             "<WILL_BE_PROVIDED_DURING_DEPLOY>",
             "name.space_secret-1"
         )
