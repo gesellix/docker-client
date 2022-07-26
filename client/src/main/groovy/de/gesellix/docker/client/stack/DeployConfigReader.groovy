@@ -642,7 +642,7 @@ class DeployConfigReader {
     MountVolumeOptions volumeOptions
     if (stackVolume?.external?.name) {
       volumeOptions = new MountVolumeOptions(
-          volumeSpec.volume?.noCopy ?: false,
+          volumeSpec.volume?.nocopy ?: false,
           null,
           null)
       source = stackVolume.external.name
@@ -651,7 +651,7 @@ class DeployConfigReader {
       Map<String, String> labels = stackVolume?.labels?.entries ?: [:]
       labels[(ManageStackClient.LabelNamespace)] = namespace
       volumeOptions = new MountVolumeOptions(
-          volumeSpec.volume?.noCopy ?: false,
+          volumeSpec.volume?.nocopy ?: false,
           labels,
           getMountVolumeOptionsDriverConfig(stackVolume)
       )
