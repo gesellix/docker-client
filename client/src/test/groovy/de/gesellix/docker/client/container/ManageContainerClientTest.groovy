@@ -104,7 +104,7 @@ class ManageContainerClientTest extends Specification {
     def result = service.wait("a-container")
 
     then:
-    1 * containerApi.containerWait("a-container", "not-running") >> response
+    1 * containerApi.containerWait("a-container", ContainerApi.ConditionContainerWait.NotMinusRunning) >> response
     result.content == response
   }
 

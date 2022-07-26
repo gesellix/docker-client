@@ -4,6 +4,7 @@ import de.gesellix.docker.client.EngineResponseContent
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.IdResponse
 import de.gesellix.docker.remote.api.Secret
+import de.gesellix.docker.remote.api.SecretCreateRequest
 import de.gesellix.docker.remote.api.SecretSpec
 import de.gesellix.util.QueryUtil
 import org.slf4j.Logger
@@ -23,7 +24,7 @@ class ManageSecretClient implements ManageSecret {
   EngineResponseContent<IdResponse> createSecret(String name, byte[] secretData, Map<String, String> labels = [:]) {
     log.info("docker secret create")
     def secretDataBase64 = Base64.encoder.encodeToString(secretData)
-    def secretConfig = new SecretSpec(name, labels, secretDataBase64, null, null)
+    def secretConfig = new SecretCreateRequest(name, labels, secretDataBase64, null, null)
     def secretCreate = client.secretApi.secretCreate(secretConfig)
     return new EngineResponseContent<IdResponse>(secretCreate)
   }

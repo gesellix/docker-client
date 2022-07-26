@@ -5,10 +5,11 @@ import de.gesellix.docker.remote.api.EndpointSpec
 import de.gesellix.docker.remote.api.LocalNodeState
 import de.gesellix.docker.remote.api.NodeSpec
 import de.gesellix.docker.remote.api.Service
-import de.gesellix.docker.remote.api.ServiceSpec
+import de.gesellix.docker.remote.api.ServiceCreateRequest
 import de.gesellix.docker.remote.api.ServiceSpecMode
 import de.gesellix.docker.remote.api.ServiceSpecModeReplicated
 import de.gesellix.docker.remote.api.ServiceSpecUpdateConfig
+import de.gesellix.docker.remote.api.ServiceUpdateRequest
 import de.gesellix.docker.remote.api.SwarmInitRequest
 import de.gesellix.docker.remote.api.SwarmJoinRequest
 import de.gesellix.docker.remote.api.SwarmSpec
@@ -293,7 +294,7 @@ class DockerSwarmIntegrationSpec extends Specification {
     given:
     def swarmConfig = dockerClient.newSwarmInitRequest()
     dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
-    def serviceConfig = new ServiceSpec().tap { s ->
+    def serviceConfig = new ServiceCreateRequest().tap { s ->
       s.name = "echo-server"
       s.taskTemplate = new TaskSpec().tap { t ->
         t.containerSpec = new TaskSpecContainerSpec().tap { c ->
@@ -332,7 +333,7 @@ class DockerSwarmIntegrationSpec extends Specification {
     given:
     def swarmConfig = dockerClient.newSwarmInitRequest()
     dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
-    def serviceConfig = new ServiceSpec().tap { s ->
+    def serviceConfig = new ServiceCreateRequest().tap { s ->
       s.name = "echo-server"
       s.taskTemplate = new TaskSpec().tap { t ->
         t.containerSpec = new TaskSpecContainerSpec().tap { c ->
@@ -363,7 +364,7 @@ class DockerSwarmIntegrationSpec extends Specification {
     given:
     def swarmConfig = dockerClient.newSwarmInitRequest()
     dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
-    def serviceConfig = new ServiceSpec().tap { s ->
+    def serviceConfig = new ServiceCreateRequest().tap { s ->
       s.name = "echo-server"
       s.taskTemplate = new TaskSpec().tap { t ->
         t.containerSpec = new TaskSpecContainerSpec().tap { c ->
@@ -396,7 +397,7 @@ class DockerSwarmIntegrationSpec extends Specification {
     given:
     def swarmConfig = dockerClient.newSwarmInitRequest()
     dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
-    def serviceConfig = new ServiceSpec(
+    def serviceConfig = new ServiceCreateRequest(
         "update-service",
         [BeforeUpdate: "test-label"],
         new TaskSpec().tap { t ->
@@ -417,7 +418,7 @@ class DockerSwarmIntegrationSpec extends Specification {
     String serviceId = dockerClient.createService(serviceConfig).content.ID
     def inspectService = dockerClient.inspectService(serviceId)
     def serviceVersion = inspectService.content.version.index
-    def serviceSpec = new ServiceSpec().tap { s ->
+    def serviceSpec = new ServiceUpdateRequest().tap { s ->
       s.name = inspectService.content.spec.name
       s.labels = inspectService.content.spec.labels + [TestLabel: "update-service-foo"]
       s.taskTemplate = new TaskSpec().tap { t ->
@@ -444,7 +445,7 @@ class DockerSwarmIntegrationSpec extends Specification {
     given:
     def swarmConfig = dockerClient.newSwarmInitRequest()
     dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
-    def serviceConfig = new ServiceSpec().tap { s ->
+    def serviceConfig = new ServiceCreateRequest().tap { s ->
       s.name = "echo-server"
       s.taskTemplate = new TaskSpec().tap { t ->
         t.containerSpec = new TaskSpecContainerSpec().tap { c ->
@@ -481,7 +482,7 @@ class DockerSwarmIntegrationSpec extends Specification {
     given:
     def swarmConfig = dockerClient.newSwarmInitRequest()
     dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null)).content
-    def serviceConfig = new ServiceSpec().tap { s ->
+    def serviceConfig = new ServiceCreateRequest().tap { s ->
       s.name = "echo-server"
       s.taskTemplate = new TaskSpec().tap { t ->
         t.containerSpec = new TaskSpecContainerSpec().tap { c ->

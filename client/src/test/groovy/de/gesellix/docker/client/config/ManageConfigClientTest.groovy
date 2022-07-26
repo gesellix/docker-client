@@ -1,6 +1,7 @@
 package de.gesellix.docker.client.config
 
 import de.gesellix.docker.remote.api.Config
+import de.gesellix.docker.remote.api.ConfigCreateRequest
 import de.gesellix.docker.remote.api.ConfigSpec
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.IdResponse
@@ -26,7 +27,7 @@ class ManageConfigClientTest extends Specification {
 
     def plainData = "config-content"
     def base64Data = "Y29uZmlnLWNvbnRlbnQ="
-    def configSpec = new ConfigSpec("a-config", [:], base64Data, null)
+    def configSpec = new ConfigCreateRequest("a-config", [:], base64Data, null)
 
     when:
     def createConfig = service.createConfig("a-config", plainData.bytes)

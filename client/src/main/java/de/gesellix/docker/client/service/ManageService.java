@@ -2,8 +2,9 @@ package de.gesellix.docker.client.service;
 
 import de.gesellix.docker.client.EngineResponseContent;
 import de.gesellix.docker.remote.api.Service;
+import de.gesellix.docker.remote.api.ServiceCreateRequest;
 import de.gesellix.docker.remote.api.ServiceCreateResponse;
-import de.gesellix.docker.remote.api.ServiceSpec;
+import de.gesellix.docker.remote.api.ServiceUpdateRequest;
 import de.gesellix.docker.remote.api.ServiceUpdateResponse;
 import de.gesellix.docker.remote.api.Task;
 
@@ -12,9 +13,9 @@ import java.util.Map;
 
 public interface ManageService {
 
-  EngineResponseContent<ServiceCreateResponse> createService(ServiceSpec serviceSpec);
+  EngineResponseContent<ServiceCreateResponse> createService(ServiceCreateRequest serviceSpec);
 
-  EngineResponseContent<ServiceCreateResponse> createService(ServiceSpec serviceSpec, String encodedRegistryAuth);
+  EngineResponseContent<ServiceCreateResponse> createService(ServiceCreateRequest serviceSpec, String encodedRegistryAuth);
 
   EngineResponseContent<Service> inspectService(String name);
 
@@ -40,9 +41,9 @@ public interface ManageService {
 
   EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, String rollback, String registryAuthFrom, String encodedRegistryAuth);
 
-  EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, ServiceSpec serviceSpec);
+  EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, ServiceUpdateRequest serviceSpec);
 
-  EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, ServiceSpec serviceSpec, String registryAuthFrom);
+  EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, ServiceUpdateRequest serviceSpec, String registryAuthFrom);
 
-  EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, ServiceSpec serviceSpec, String registryAuthFrom, String encodedRegistryAuth);
+  EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, ServiceUpdateRequest serviceSpec, String registryAuthFrom, String encodedRegistryAuth);
 }

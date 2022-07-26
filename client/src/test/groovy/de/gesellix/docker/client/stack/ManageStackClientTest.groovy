@@ -17,6 +17,7 @@ import de.gesellix.docker.remote.api.Network
 import de.gesellix.docker.remote.api.NetworkCreateRequest
 import de.gesellix.docker.remote.api.Secret
 import de.gesellix.docker.remote.api.Service
+import de.gesellix.docker.remote.api.ServiceCreateRequest
 import de.gesellix.docker.remote.api.ServiceSpec
 import de.gesellix.docker.remote.api.SwarmInfo
 import de.gesellix.docker.remote.api.SystemInfo
@@ -212,6 +213,11 @@ class ManageStackClientTest extends Specification {
     )
     config.secrets["secret1"] = new StackSecret(name: "secret-name-1", data: 'secret'.bytes)
     config.configs["config1"] = new StackConfig(name: "config-name-1", data: 'config'.bytes)
+    def serviceCreateRequest = new ServiceCreateRequest().tap {
+      name = "${namespace}_service1"
+      labels = [(LabelNamespace): namespace]
+      taskTemplate = serviceSpec.taskTemplate
+    }
     def swarmInfo = Mock(SwarmInfo)
     swarmInfo.controlAvailable >> true
     def systemInfo = Mock(SystemInfo)
@@ -252,6 +258,6 @@ class ManageStackClientTest extends Specification {
     and:
     1 * manageService.services([
         filters: ['label': [(namespaceFilter): true]]]) >> new EngineResponseContent([])
-    1 * manageService.createService(serviceSpec, null)
+    1 * manageService.createService(serviceCreateRequest, null)
   }
 }

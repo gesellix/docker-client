@@ -20,8 +20,10 @@ import de.gesellix.docker.remote.api.NodeState
 import de.gesellix.docker.remote.api.Secret
 import de.gesellix.docker.remote.api.SecretSpec
 import de.gesellix.docker.remote.api.Service
+import de.gesellix.docker.remote.api.ServiceCreateRequest
 import de.gesellix.docker.remote.api.ServiceCreateResponse
 import de.gesellix.docker.remote.api.ServiceSpec
+import de.gesellix.docker.remote.api.ServiceUpdateRequest
 import de.gesellix.docker.remote.api.ServiceUpdateResponse
 import de.gesellix.docker.remote.api.Task
 import de.gesellix.docker.remote.api.TaskSpecContainerSpecConfigsInner
@@ -268,10 +270,19 @@ class ManageStackClient implements ManageStack {
         if (sendRegistryAuth) {
           updateOptions.EncodedRegistryAuth = encodedAuth
         }
+        def updateRequest = new ServiceUpdateRequest(
+            serviceSpec.name,
+            serviceSpec.labels,
+            serviceSpec.taskTemplate,
+            serviceSpec.mode,
+            serviceSpec.updateConfig,
+            serviceSpec.rollbackConfig,
+            serviceSpec.networks,
+            serviceSpec.endpointSpec)
         EngineResponseContent<ServiceUpdateResponse> response = manageService.updateService(
             service.ID,
             service.version.index,
-            serviceSpec,
+            updateRequest,
             null,
             sendRegistryAuth ? encodedAuth : null)
         response.content.warnings.each { String warning ->
@@ -285,7 +296,16 @@ class ManageStackClient implements ManageStack {
         if (sendRegistryAuth) {
           createOptions.EncodedRegistryAuth = encodedAuth
         }
-        EngineResponseContent<ServiceCreateResponse> response = manageService.createService(serviceSpec, sendRegistryAuth ? encodedAuth : null)
+        def createRequest = new ServiceCreateRequest(
+            serviceSpec.name,
+            serviceSpec.labels,
+            serviceSpec.taskTemplate,
+            serviceSpec.mode,
+            serviceSpec.updateConfig,
+            serviceSpec.rollbackConfig,
+            serviceSpec.networks,
+            serviceSpec.endpointSpec)
+        EngineResponseContent<ServiceCreateResponse> response = manageService.createService(createRequest, sendRegistryAuth ? encodedAuth : null)
       }
     }
   }
@@ -378,13 +398,13 @@ class ManageStackClient implements ManageStack {
         if (!tasksNoShutdown[task.serviceID]) {
           tasksNoShutdown[task.serviceID] = 0
         }
-        tasksNoShutdown[task.serviceID]++
+        tasksNoShutdown[task.serviceID] = tasksNoShutdown[task.serviceID] + 1
       }
       if (activeNodes.contains(task.nodeID) && task.status.state == TaskState.Running) {
         if (!running[task.serviceID]) {
           running[task.serviceID] = 0
         }
-        running[task.serviceID]++
+        running[task.serviceID] = running[task.serviceID] + 1
       }
     }
 

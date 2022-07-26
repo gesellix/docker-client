@@ -6,16 +6,18 @@ import de.gesellix.docker.client.tasks.ManageTask
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.ObjectVersion
 import de.gesellix.docker.remote.api.Service
+import de.gesellix.docker.remote.api.ServiceCreateRequest
 import de.gesellix.docker.remote.api.ServiceCreateResponse
 import de.gesellix.docker.remote.api.ServiceSpec
 import de.gesellix.docker.remote.api.ServiceSpecMode
 import de.gesellix.docker.remote.api.ServiceSpecModeReplicated
+import de.gesellix.docker.remote.api.ServiceUpdateRequest
 import de.gesellix.docker.remote.api.ServiceUpdateResponse
 import de.gesellix.docker.remote.api.client.ServiceApi
 import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
-@Mockable([ServiceApi, Service, ServiceSpec, ServiceCreateResponse, ServiceUpdateResponse, ServiceSpecMode, ServiceSpecModeReplicated])
+@Mockable([ServiceApi, Service, ServiceSpec, ServiceCreateRequest, ServiceCreateResponse, ServiceUpdateRequest, ServiceUpdateResponse, ServiceSpecMode, ServiceSpecModeReplicated])
 class ManageServiceClientTest extends Specification {
 
   EngineApiClient client = Mock(EngineApiClient)
@@ -47,7 +49,7 @@ class ManageServiceClientTest extends Specification {
     given:
     def serviceApi = Mock(ServiceApi)
     client.serviceApi >> serviceApi
-    def serviceSpec = Mock(ServiceSpec)
+    def serviceSpec = Mock(ServiceCreateRequest)
     def encodedAuth = "base64"
     def createResponse = Mock(ServiceCreateResponse)
 
@@ -89,14 +91,14 @@ class ManageServiceClientTest extends Specification {
     given:
     def serviceApi = Mock(ServiceApi)
     client.serviceApi >> serviceApi
-    def serviceSpec = Mock(ServiceSpec)
+    def serviceSpec = Mock(ServiceUpdateRequest)
     def updateResponse = Mock(ServiceUpdateResponse)
 
     when:
     def responseContent = service.updateService("service-name", 42, serviceSpec, null, null)
 
     then:
-    1 * serviceApi.serviceUpdate("service-name", 42, serviceSpec, "spec", null, null) >> updateResponse
+    1 * serviceApi.serviceUpdate("service-name", 42, serviceSpec, ServiceApi.RegistryAuthFromServiceUpdate.Spec, null, null) >> updateResponse
     responseContent.content == updateResponse
   }
 
@@ -109,6 +111,11 @@ class ManageServiceClientTest extends Specification {
     def originalMode = Mock(ServiceSpecMode, { it.replicated >> originalReplicated })
     def originalSpec = Mock(ServiceSpec, { it.mode >> originalMode })
     def inspected = Mock(Service, { it.spec >> originalSpec; it.version >> new ObjectVersion(5) })
+    def updateRequest = new ServiceUpdateRequest(
+        null, null, null,
+        originalMode,
+        null, null, null, null
+    )
     def updateResponse = Mock(ServiceUpdateResponse)
 
     when:
@@ -118,7 +125,7 @@ class ManageServiceClientTest extends Specification {
     1 * serviceApi.serviceInspect("service-id", null) >> inspected
     then:
     1 * originalReplicated.setReplicas(42)
-    1 * serviceApi.serviceUpdate("service-id", 5, originalSpec, "spec", null, null) >> updateResponse
+    1 * serviceApi.serviceUpdate("service-id", 5, updateRequest, ServiceApi.RegistryAuthFromServiceUpdate.Spec, null, null) >> updateResponse
     and:
     responseContent.content == updateResponse
   }
