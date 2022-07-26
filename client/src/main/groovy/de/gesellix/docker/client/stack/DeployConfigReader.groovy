@@ -47,14 +47,14 @@ import de.gesellix.docker.remote.api.ServiceSpecModeReplicated
 import de.gesellix.docker.remote.api.ServiceSpecUpdateConfig
 import de.gesellix.docker.remote.api.TaskSpec
 import de.gesellix.docker.remote.api.TaskSpecContainerSpec
-import de.gesellix.docker.remote.api.TaskSpecContainerSpecConfigs
-import de.gesellix.docker.remote.api.TaskSpecContainerSpecFile
-import de.gesellix.docker.remote.api.TaskSpecContainerSpecFile1
-import de.gesellix.docker.remote.api.TaskSpecContainerSpecSecrets
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecConfigsInner
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecConfigsInnerFile
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecSecretsInner
+import de.gesellix.docker.remote.api.TaskSpecContainerSpecSecretsInnerFile
 import de.gesellix.docker.remote.api.TaskSpecLogDriver
 import de.gesellix.docker.remote.api.TaskSpecPlacement
-import de.gesellix.docker.remote.api.TaskSpecPlacementPreferences
-import de.gesellix.docker.remote.api.TaskSpecPlacementSpread
+import de.gesellix.docker.remote.api.TaskSpecPlacementPreferencesInner
+import de.gesellix.docker.remote.api.TaskSpecPlacementPreferencesInnerSpread
 import de.gesellix.docker.remote.api.TaskSpecResources
 import de.gesellix.docker.remote.api.TaskSpecRestartPolicy
 import org.slf4j.Logger
@@ -201,14 +201,14 @@ class DeployConfigReader {
     return serviceSpec
   }
 
-  List<TaskSpecContainerSpecConfigs> prepareServiceConfigs(String namespace, List<Map<String, ServiceConfig>> configs) {
+  List<TaskSpecContainerSpecConfigsInner> prepareServiceConfigs(String namespace, List<Map<String, ServiceConfig>> configs) {
     configs?.collect { Map<String, ServiceConfig> item ->
       if (item.size() > 1) {
         throw new RuntimeException("expected a unique config entry")
       }
-      List<TaskSpecContainerSpecConfigs> converted = item.entrySet().collect { Map.Entry<String, ServiceConfig> entry ->
-        new TaskSpecContainerSpecConfigs(
-            new TaskSpecContainerSpecFile1(
+      List<TaskSpecContainerSpecConfigsInner> converted = item.entrySet().collect { Map.Entry<String, ServiceConfig> entry ->
+        new TaskSpecContainerSpecConfigsInner(
+            new TaskSpecContainerSpecConfigsInnerFile(
                 entry.value?.target ?: (entry.value?.source ?: entry.key),
                 entry.value?.uid ?: "0",
                 entry.value?.gid ?: "0",
@@ -223,14 +223,14 @@ class DeployConfigReader {
     } ?: []
   }
 
-  List<TaskSpecContainerSpecSecrets> prepareServiceSecrets(String namespace, List<Map<String, ServiceSecret>> secrets) {
+  List<TaskSpecContainerSpecSecretsInner> prepareServiceSecrets(String namespace, List<Map<String, ServiceSecret>> secrets) {
     secrets?.collect { Map<String, ServiceSecret> item ->
       if (item.size() > 1) {
         throw new RuntimeException("expected a unique secret entry")
       }
-      List<TaskSpecContainerSpecSecrets> converted = item.entrySet().collect { Map.Entry<String, ServiceSecret> entry ->
-        new TaskSpecContainerSpecSecrets(
-            new TaskSpecContainerSpecFile(
+      List<TaskSpecContainerSpecSecretsInner> converted = item.entrySet().collect { Map.Entry<String, ServiceSecret> entry ->
+        new TaskSpecContainerSpecSecretsInner(
+            new TaskSpecContainerSpecSecretsInnerFile(
                 entry.value?.target ?: (entry.value?.source ?: entry.key),
                 entry.value?.uid ?: "0",
                 entry.value?.gid ?: "0",
@@ -889,13 +889,13 @@ class DeployConfigReader {
     return configSpec
   }
 
-  List<TaskSpecPlacementPreferences> placementPreferences(List<PlacementPreferences> preferences) {
+  List<TaskSpecPlacementPreferencesInner> placementPreferences(List<PlacementPreferences> preferences) {
     log.info("placementPreferences: ${preferences}")
     if (preferences == null) {
       return null
     }
-    def spread = new TaskSpecPlacementSpread(preferences[0].spread)
+    def spread = new TaskSpecPlacementPreferencesInnerSpread(preferences[0].spread)
     log.info("spread: ${spread}")
-    return [new TaskSpecPlacementPreferences(spread)]
+    return [new TaskSpecPlacementPreferencesInner(spread)]
   }
 }
