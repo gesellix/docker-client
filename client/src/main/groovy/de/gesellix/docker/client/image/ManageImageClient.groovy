@@ -13,6 +13,7 @@ import de.gesellix.docker.remote.api.ImagePruneResponse
 import de.gesellix.docker.remote.api.ImageSearchResponseItem
 import de.gesellix.docker.remote.api.ImageSummary
 import de.gesellix.docker.remote.api.PushImageInfo
+import de.gesellix.docker.remote.api.client.ImageApi
 import de.gesellix.docker.remote.api.core.StreamCallback
 import de.gesellix.util.QueryUtil
 import org.slf4j.Logger
@@ -88,6 +89,9 @@ class ManageImageClient implements ManageImage {
       encodedRegistryConfig = manageAuthentication.encodeAuthConfigs(manageAuthentication.getAllAuthConfigs())
     }
 
+    def contentTypeImageBuild = contentType
+        ? ImageApi.ContentTypeImageBuild.valueOf(contentType)
+        : ImageApi.ContentTypeImageBuild.ApplicationSlashXMinusTar
     client.imageApi.imageBuild(dockerfile,
                                tag, null, null, quiet, nocache, null, pull,
                                rm == null ? true : rm, null,
@@ -97,7 +101,7 @@ class ManageImageClient implements ManageImage {
                                null,
                                labels,
                                null,
-                               contentType ?: "application/x-tar",
+                               contentTypeImageBuild,
                                encodedRegistryConfig,
                                null, null,
                                null,

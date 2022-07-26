@@ -2,6 +2,7 @@ package de.gesellix.docker.client.config
 
 import de.gesellix.docker.client.EngineResponseContent
 import de.gesellix.docker.remote.api.Config
+import de.gesellix.docker.remote.api.ConfigCreateRequest
 import de.gesellix.docker.remote.api.ConfigSpec
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.IdResponse
@@ -23,7 +24,7 @@ class ManageConfigClient implements ManageConfig {
   EngineResponseContent<IdResponse> createConfig(String name, byte[] configData, Map<String, String> labels = [:]) {
     log.info("docker config create")
     String configDataBase64 = Base64.encoder.encodeToString(configData)
-    ConfigSpec configConfig = new ConfigSpec(name, labels, configDataBase64, null)
+    ConfigCreateRequest configConfig = new ConfigCreateRequest(name, labels, configDataBase64, null)
     IdResponse response = client.configApi.configCreate(configConfig)
     return new EngineResponseContent<IdResponse>(response)
   }

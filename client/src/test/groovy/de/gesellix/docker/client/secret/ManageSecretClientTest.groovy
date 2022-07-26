@@ -3,6 +3,7 @@ package de.gesellix.docker.client.secret
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.IdResponse
 import de.gesellix.docker.remote.api.Secret
+import de.gesellix.docker.remote.api.SecretCreateRequest
 import de.gesellix.docker.remote.api.SecretSpec
 import de.gesellix.docker.remote.api.client.SecretApi
 import io.github.joke.spockmockable.Mockable
@@ -26,7 +27,7 @@ class ManageSecretClientTest extends Specification {
 
     def plainData = "secret-content"
     def base64Data = "c2VjcmV0LWNvbnRlbnQ="
-    def secretSpec = new SecretSpec("a-secret", [:], base64Data, null, null)
+    def secretSpec = new SecretCreateRequest("a-secret", [:], base64Data, null, null)
 
     when:
     def createSecret = service.createSecret(secretSpec.name, plainData.bytes)

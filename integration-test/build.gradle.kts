@@ -22,7 +22,7 @@ dependencies {
     }
     implementation("de.gesellix:docker-remote-api-model-1-41") {
       version {
-        strictly("[2022-02-01T01-01-01,)")
+        strictly("[2022-07-25T19-52-00,)")
       }
     }
     implementation("org.slf4j:slf4j-api") {

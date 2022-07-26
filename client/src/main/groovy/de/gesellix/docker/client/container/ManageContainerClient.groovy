@@ -21,6 +21,7 @@ import de.gesellix.docker.remote.api.ExecInspectResponse
 import de.gesellix.docker.remote.api.ExecStartConfig
 import de.gesellix.docker.remote.api.HealthConfig
 import de.gesellix.docker.remote.api.IdResponse
+import de.gesellix.docker.remote.api.client.ContainerApi
 import de.gesellix.docker.remote.api.core.ClientException
 import de.gesellix.docker.remote.api.core.Frame
 import de.gesellix.docker.remote.api.core.StreamCallback
@@ -482,7 +483,9 @@ class ManageContainerClient implements ManageContainer {
   @Override
   EngineResponseContent<ContainerWaitResponse> wait(String containerIdOrName) {
     log.info("docker wait")
-    ContainerWaitResponse containerWait = client.containerApi.containerWait(containerIdOrName, "not-running")
+    ContainerWaitResponse containerWait = client.containerApi.containerWait(
+        containerIdOrName,
+        ContainerApi.ConditionContainerWait.NotMinusRunning)
     return new EngineResponseContent<ContainerWaitResponse>(containerWait)
   }
 }

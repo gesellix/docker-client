@@ -5,10 +5,12 @@ import de.gesellix.docker.client.node.NodeUtil
 import de.gesellix.docker.client.tasks.ManageTask
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.Service
+import de.gesellix.docker.remote.api.ServiceCreateRequest
 import de.gesellix.docker.remote.api.ServiceCreateResponse
-import de.gesellix.docker.remote.api.ServiceSpec
+import de.gesellix.docker.remote.api.ServiceUpdateRequest
 import de.gesellix.docker.remote.api.ServiceUpdateResponse
 import de.gesellix.docker.remote.api.Task
+import de.gesellix.docker.remote.api.client.ServiceApi
 import de.gesellix.util.QueryUtil
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -51,7 +53,7 @@ class ManageServiceClient implements ManageService {
   }
 
   @Override
-  EngineResponseContent<ServiceCreateResponse> createService(ServiceSpec serviceSpec, String encodedRegistryAuth = null) {
+  EngineResponseContent<ServiceCreateResponse> createService(ServiceCreateRequest serviceSpec, String encodedRegistryAuth = null) {
     log.info("docker service create")
     def serviceCreate = client.serviceApi.serviceCreate(serviceSpec, encodedRegistryAuth)
     return new EngineResponseContent<ServiceCreateResponse>(serviceCreate)
@@ -80,16 +82,22 @@ class ManageServiceClient implements ManageService {
 //    }
 
   @Override
-  EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, ServiceSpec serviceSpec, String registryAuthFrom = null, String encodedRegistryAuth = null) {
+  EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, ServiceUpdateRequest serviceSpec, String registryAuthFrom = null, String encodedRegistryAuth = null) {
     log.info("docker service update $name@$version")
-    def serviceUpdate = client.serviceApi.serviceUpdate(name, version, serviceSpec, registryAuthFrom ?: "spec", null, encodedRegistryAuth)
+    def authFrom = registryAuthFrom
+        ? ServiceApi.RegistryAuthFromServiceUpdate.valueOf(registryAuthFrom)
+        : ServiceApi.RegistryAuthFromServiceUpdate.Spec
+    def serviceUpdate = client.serviceApi.serviceUpdate(name, version, serviceSpec, authFrom, null, encodedRegistryAuth)
     return new EngineResponseContent<ServiceUpdateResponse>(serviceUpdate)
   }
 
   @Override
   EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, String rollback, String registryAuthFrom = null, String encodedRegistryAuth = null) {
     log.info("docker service update $name@$version")
-    def serviceUpdate = client.serviceApi.serviceUpdate(name, version, null, registryAuthFrom, rollback, encodedRegistryAuth)
+    def authFrom = registryAuthFrom
+        ? ServiceApi.RegistryAuthFromServiceUpdate.valueOf(registryAuthFrom)
+        : ServiceApi.RegistryAuthFromServiceUpdate.Spec
+    def serviceUpdate = client.serviceApi.serviceUpdate(name, version, null, authFrom, rollback, encodedRegistryAuth)
     return new EngineResponseContent<ServiceUpdateResponse>(serviceUpdate)
   }
 
@@ -102,7 +110,12 @@ class ManageServiceClient implements ManageService {
       throw new IllegalStateException("scale can only be used with replicated mode")
     }
     mode.replicated.replicas = replicas
-    return updateService(name, service.version.index, service.spec)
+    def serviceUpdateRequest = new ServiceUpdateRequest(
+        null, null, null,
+        mode,
+        null, null,
+        null, null)
+    return updateService(name, service.version.index, serviceUpdateRequest)
   }
 
   @Override

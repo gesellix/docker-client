@@ -51,7 +51,7 @@ class ManageImageClientTest extends Specification {
     1 * manageAuthentication.encodeAuthConfigs(authConfigs) >> "base-64-encoded"
     1 * imageApi.imageBuild(null, null, null, null, null, null, null, null, true, null,
                             null, null, null, null, null, null, null, null, null, null, null,
-                            "application/x-tar", "base-64-encoded", null, null, null, buildContext,
+                            ImageApi.ContentTypeImageBuild.ApplicationSlashXMinusTar, "base-64-encoded", null, null, null, buildContext,
                             null, null)
   }
 

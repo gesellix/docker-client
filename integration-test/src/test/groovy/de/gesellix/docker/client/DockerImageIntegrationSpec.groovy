@@ -361,8 +361,8 @@ class DockerImageIntegrationSpec extends Specification {
 
   def "push image with undefined authentication"() {
     given:
-    dockerClient.pull(null, null, CONSTANTS.imageRepo, CONSTANTS.imageTag)
     def imageName = "gesellix/test:latest"
+    dockerClient.pull(null, null, CONSTANTS.imageRepo, CONSTANTS.imageTag)
     dockerClient.tag(CONSTANTS.imageName, imageName)
 
     List<PushImageInfo> infos = []
