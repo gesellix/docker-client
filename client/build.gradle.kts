@@ -94,7 +94,7 @@ dependencies {
   // The change would require to move api.core client classes like `ClientException` to another module.
   api("de.gesellix:docker-remote-api-client:2022-07-26T12-47-00")
   api("de.gesellix:docker-remote-api-model-1-41:2022-07-25T19-52-00")
-  api("de.gesellix:docker-engine:2022-07-25T21-05-00")
+  api("de.gesellix:docker-engine:2022-07-28T20-10-00")
   api("de.gesellix:docker-compose:2022-07-28T16-10-00")
 
   implementation("org.codehaus.groovy:groovy:3.0.12")
