@@ -116,7 +116,7 @@ dependencies {
 
   testImplementation("de.gesellix:testutil:[2021-08-05T22-09-32,)")
 
-  testImplementation("org.spockframework:spock-core:2.1-groovy-3.0")
+  testImplementation("org.spockframework:spock-core:2.2-groovy-4.0")
   testRuntimeOnly("cglib:cglib-nodep:3.3.0")
   testImplementation("io.github.joke:spock-mockable:1.5.6")
 
