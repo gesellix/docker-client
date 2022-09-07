@@ -100,7 +100,7 @@ dependencies {
   implementation("org.codehaus.groovy:groovy:3.0.12")
   implementation("org.codehaus.groovy:groovy-json:3.0.12")
 
-  api("com.squareup.moshi:moshi:1.13.0")
+  api("com.squareup.moshi:moshi:1.14.0")
   implementation("com.google.re2j:re2j:1.7")
 
   implementation("org.slf4j:slf4j-api:1.7.36")
