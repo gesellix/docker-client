@@ -51,7 +51,7 @@ dependencies {
   implementation("org.codehaus.groovy:groovy:3.0.12")
   testImplementation("org.apache.commons:commons-compress:1.21")
 
-  implementation("org.slf4j:slf4j-api:1.7.36")
+  implementation("org.slf4j:slf4j-api:2.0.1")
   runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.2.11")
 
   testImplementation("org.spockframework:spock-core:2.1-groovy-3.0")
