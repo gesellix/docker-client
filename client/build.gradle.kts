@@ -98,7 +98,7 @@ dependencies {
   api("de.gesellix:docker-compose:2022-07-28T16-10-00")
 
   implementation("org.codehaus.groovy:groovy:3.0.12")
-  implementation("org.codehaus.groovy:groovy-json:3.0.12")
+  implementation("org.codehaus.groovy:groovy-json:3.0.13")
 
   api("com.squareup.moshi:moshi:1.14.0")
   implementation("com.google.re2j:re2j:1.7")
