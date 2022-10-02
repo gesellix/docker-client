@@ -12,8 +12,8 @@ dependencies {
   constraints {
     implementation("org.slf4j:slf4j-api") {
       version {
-        strictly("[1.7,1.8)")
-        prefer("1.7.36")
+        strictly("[1.7,3)")
+        prefer("2.0.3")
       }
     }
     implementation("com.squareup.okio:okio") {
@@ -42,21 +42,21 @@ dependencies {
       implementation(it) {
         version {
           strictly("[3,)")
-          prefer("3.0.12")
+          prefer("3.0.13")
         }
       }
     }
   }
   implementation(project(":client"))
-  implementation("org.codehaus.groovy:groovy:3.0.12")
+  implementation("org.codehaus.groovy:groovy:3.0.13")
   testImplementation("org.apache.commons:commons-compress:1.21")
 
-  implementation("org.slf4j:slf4j-api:1.7.36")
-  runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.2.11")
+  implementation("org.slf4j:slf4j-api:2.0.3")
+  runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.1")
 
-  testImplementation("org.spockframework:spock-core:2.1-groovy-3.0")
-  testRuntimeOnly("cglib:cglib-nodep:3.3.0")
-  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.2.11")
+  testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
+  testRuntimeOnly("net.bytebuddy:byte-buddy:1.12.17")
+  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.1")
 }
 
 tasks.withType(Test::class) {
