@@ -23,22 +23,22 @@ class ManageSecretClient implements ManageSecret {
   @Override
   EngineResponseContent<IdResponse> createSecret(String name, byte[] secretData, Map<String, String> labels = [:]) {
     log.info("docker secret create")
-    def secretDataBase64 = Base64.encoder.encodeToString(secretData)
-    def secretConfig = new SecretCreateRequest(name, labels, secretDataBase64, null, null)
-    def secretCreate = client.secretApi.secretCreate(secretConfig)
+    String secretDataBase64 = Base64.encoder.encodeToString(secretData)
+    SecretCreateRequest secretConfig = new SecretCreateRequest(name, labels, secretDataBase64, null, null)
+    IdResponse secretCreate = client.secretApi.secretCreate(secretConfig)
     return new EngineResponseContent<IdResponse>(secretCreate)
   }
 
   @Override
   EngineResponseContent<Secret> inspectSecret(String secretId) {
     log.info("docker secret inspect")
-    def secretInspect = client.secretApi.secretInspect(secretId)
+    Secret secretInspect = client.secretApi.secretInspect(secretId)
     return new EngineResponseContent<Secret>(secretInspect)
   }
 
   @Override
-  EngineResponseContent<List<Secret>> secrets(Map query) {
-    def actualQuery = [:]
+  EngineResponseContent<List<Secret>> secrets(Map<String, Object> query) {
+    Map<String, Object> actualQuery = new HashMap<String, Object>()
     if (query) {
       actualQuery.putAll(query)
     }
@@ -49,7 +49,7 @@ class ManageSecretClient implements ManageSecret {
   @Override
   EngineResponseContent<List<Secret>> secrets(String filters = null) {
     log.info("docker secret ls")
-    def secrets = client.secretApi.secretList(filters)
+    List<Secret> secrets = client.secretApi.secretList(filters)
     return new EngineResponseContent<List<Secret>>(secrets)
   }
 

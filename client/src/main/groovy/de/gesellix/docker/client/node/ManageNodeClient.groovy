@@ -29,7 +29,7 @@ class ManageNodeClient implements ManageNode {
 
   @Override
   EngineResponseContent<List<Node>> nodes(Map<String, Object> query) {
-    Map actualQuery = [:]
+    Map<String, Object> actualQuery = new HashMap<String, Object>()
     if (query) {
       actualQuery.putAll(query)
     }
@@ -72,7 +72,7 @@ class ManageNodeClient implements ManageNode {
         log.warn("Node ${node} is already a manager.")
       }
       else {
-        def nodeSpec = new NodeSpec(nodeInfo.spec.name, nodeInfo.spec.labels, NodeSpec.Role.Manager, nodeInfo.spec.availability)
+        NodeSpec nodeSpec = new NodeSpec(nodeInfo.spec.name, nodeInfo.spec.labels, NodeSpec.Role.Manager, nodeInfo.spec.availability)
         updateNode(nodeInfo.ID, nodeInfo.version.index, nodeSpec)
         log.info("Node ${node} promoted to a manager in the swarm.")
       }
@@ -88,7 +88,7 @@ class ManageNodeClient implements ManageNode {
         log.warn("Node ${node} is already a worker.")
       }
       else {
-        def nodeSpec = new NodeSpec(nodeInfo.spec.name, nodeInfo.spec.labels, NodeSpec.Role.Worker, nodeInfo.spec.availability)
+        NodeSpec nodeSpec = new NodeSpec(nodeInfo.spec.name, nodeInfo.spec.labels, NodeSpec.Role.Worker, nodeInfo.spec.availability)
         updateNode(nodeInfo.ID, nodeInfo.version.index, nodeSpec)
         log.info("Manager ${node} demoted in the swarm.")
       }
@@ -98,9 +98,9 @@ class ManageNodeClient implements ManageNode {
   @Override
   EngineResponseContent<List<Task>> tasksOnNode(String node, Map<String, Object> query = [:]) {
     log.info("docker node ps")
-    Map actualQuery = query ?: [:]
+    Map<String, Object> actualQuery = query ?: new HashMap<String, Object>()
     if (!actualQuery.containsKey('filters')) {
-      actualQuery.filters = [:]
+      actualQuery.filters = new HashMap()
     }
     actualQuery.filters['node'] = nodeUtil.resolveNodeId(node)
     return manageTask.tasks(actualQuery)

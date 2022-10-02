@@ -64,7 +64,7 @@ class ManageContainerClient implements ManageContainer {
     EngineResponseContent<ContainerInspectResponse> container = inspectContainer(containerId)
     boolean multiplexStreams = !container.content.config.tty
 
-    def response = engineClient.post([
+    EngineResponse response = engineClient.post([
         path            : "/containers/${containerId}/attach".toString(),
         query           : query,
         attach          : callback,
@@ -210,9 +210,9 @@ class ManageContainerClient implements ManageContainer {
     // When using the TTY setting is enabled in POST /containers/create,
     // the stream is the raw data from the process PTY and client’s stdin.
     // When the TTY is disabled, then the stream is multiplexed to separate stdout and stderr.
-    def execInspect = client.execApi.execInspect(execId)
+    ExecInspectResponse execInspect = client.execApi.execInspect(execId)
     boolean multiplexStreams = !execInspect.processConfig.tty
-    def response = engineClient.post([
+    EngineResponse response = engineClient.post([
         path              : "/exec/${execId}/start".toString(),
         body              : [Detach: execStartConfig.detach, Tty: execStartConfig.tty],
         requestContentType: "application/json",
@@ -251,7 +251,7 @@ class ManageContainerClient implements ManageContainer {
                                              "Tty"        : false]) {
     log.info("docker exec '${containerId}' '${command}'")
 
-    def actualExecConfig = new ExecConfig(
+    ExecConfig actualExecConfig = new ExecConfig(
         (execConfig.AttachStdin ?: false) as Boolean,
         true,
         true,
@@ -265,7 +265,7 @@ class ManageContainerClient implements ManageContainer {
 
     EngineResponseContent<IdResponse> execCreateResult = createExec(containerId, actualExecConfig)
     String execId = execCreateResult.content.id
-    def execStartConfig = new ExecStartConfig(
+    ExecStartConfig execStartConfig = new ExecStartConfig(
         (execConfig.Detach ?: false) as Boolean,
         actualExecConfig.tty)
     startExec(execId, execStartConfig, callback, timeout)

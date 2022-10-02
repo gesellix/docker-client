@@ -14,7 +14,7 @@ class ArchiveUtil {
   private final Logger log = LoggerFactory.getLogger(ArchiveUtil)
 
   byte[] extractSingleTarEntry(InputStream tarContent, String filename) {
-    def stream = new TarArchiveInputStream(new BufferedInputStream(tarContent))
+    TarArchiveInputStream stream = new TarArchiveInputStream(new BufferedInputStream(tarContent))
 
     TarArchiveEntry entry = stream.nextTarEntry
     log.debug("entry size: ${entry.size}")
@@ -37,7 +37,7 @@ class ArchiveUtil {
   }
 
   int copySingleTarEntry(InputStream tarContent, String filename, OutputStream target) {
-    def stream = new TarArchiveInputStream(new BufferedInputStream(tarContent))
+    TarArchiveInputStream stream = new TarArchiveInputStream(new BufferedInputStream(tarContent))
 
     TarArchiveEntry entry = stream.nextTarEntry
     log.debug("entry size: ${entry.size}")

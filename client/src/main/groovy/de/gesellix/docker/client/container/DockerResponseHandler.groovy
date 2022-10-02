@@ -16,7 +16,7 @@ class DockerResponseHandler {
     }
   }
 
-  def logError(response) {
+  void logError(EngineResponse response) {
     if (response?.content instanceof String) {
       log.error("request failed: '${response?.content}'")
     }
@@ -25,34 +25,34 @@ class DockerResponseHandler {
     }
   }
 
-  def hasError(response) {
-    return getErrors(response).size()
+  boolean hasError(EngineResponse response) {
+    return getErrors(response).size() > 0
   }
 
-  def getErrors(response) {
+  List getErrors(EngineResponse response) {
     if (!response?.content) {
-      return []
+      return Collections.emptyList()
     }
 
-    def content = response.content
     if (!response.mimeType || response.mimeType == "application/json") {
-      def foundErrors = []
-      if (content instanceof List) {
-        foundErrors.addAll content.findAll { it.error }
+      List foundErrors = new ArrayList()
+      if (response.content instanceof List) {
+        foundErrors.addAll(response.content.findAll { it.error })
       }
-      else if (content instanceof Map) {
-        if (content.error) {
-          foundErrors << content.error
+      else if (response.content instanceof Map) {
+        if (response.content.error) {
+          foundErrors << response.content.error
         }
-        else if (content.message) {
-          foundErrors << content.message
+        else if (response.content.message) {
+          foundErrors << response.content.message
         }
       }
       else {
-        log.debug("won't search for errors in ${content.getClass()}")
+        log.debug("won't search for errors in ${response.content?.getClass()}")
       }
       return foundErrors
     }
-    return []
+
+    return Collections.emptyList()
   }
 }

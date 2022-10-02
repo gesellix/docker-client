@@ -100,12 +100,12 @@ class DockerClientImpl implements DockerClient {
     apply(dockerClientConfig, proxy)
   }
 
-  def apply(DockerClientConfig dockerClientConfig, Proxy proxy = NO_PROXY) {
+  void apply(DockerClientConfig dockerClientConfig, Proxy proxy = NO_PROXY) {
     this.dockerClientConfig = dockerClientConfig
     this.env = dockerClientConfig.env
     this.proxy = proxy
 
-    def authConfigReader = new AuthConfigReader(env)
+    AuthConfigReader authConfigReader = new AuthConfigReader(env)
     this.engineApiClient = new EngineApiClientImpl(dockerClientConfig, proxy)
     this.httpClient = new OkDockerClient(dockerClientConfig, proxy)
     log.info("using docker at '${env.dockerHost}'")

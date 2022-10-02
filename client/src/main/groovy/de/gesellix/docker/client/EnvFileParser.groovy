@@ -3,7 +3,7 @@ package de.gesellix.docker.client
 class EnvFileParser {
 
   List<String> parse(File file) {
-    List<String> env = []
+    List<String> env = new ArrayList<>()
     file.eachLine { String line ->
       if (line.trim() && !line.matches("\\s*#.*")) {
         if (line.contains('=')) {

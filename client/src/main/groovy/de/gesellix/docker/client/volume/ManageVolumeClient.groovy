@@ -25,7 +25,7 @@ class ManageVolumeClient implements ManageVolume {
   @Override
   EngineResponseContent<VolumeListResponse> volumes(Map<String, Object> query) {
     log.info("docker volume ls")
-    Map actualQuery = [:]
+    Map<String, Object> actualQuery = new HashMap<String, Object>()
     if (query) {
       actualQuery.putAll(query)
     }
@@ -69,7 +69,7 @@ class ManageVolumeClient implements ManageVolume {
   @Override
   EngineResponseContent<VolumePruneResponse> pruneVolumes(Map<String, Object> query) {
     log.info("docker volume prune")
-    Map actualQuery = [:]
+    Map<String, Object> actualQuery = new HashMap<String, Object>()
     if (query) {
       actualQuery.putAll(query)
     }
