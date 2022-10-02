@@ -30,14 +30,14 @@ dependencies {
     }
     implementation("org.slf4j:slf4j-api") {
       version {
-        strictly("[1.7,1.8)")
-        prefer("1.7.36")
+        strictly("[1.7,3)")
+        prefer("2.0.3")
       }
     }
     implementation("com.squareup.okhttp3:mockwebserver") {
       version {
         strictly("[4,5)")
-        prefer("4.9.3")
+        prefer("4.10.0")
       }
     }
     api("com.squareup.okhttp3:okhttp") {
@@ -78,16 +78,21 @@ dependencies {
       implementation(it) {
         version {
           strictly("[3,)")
-          prefer("3.0.12")
+          prefer("3.0.13")
         }
       }
     }
-    implementation("com.squareup.moshi:moshi") {
-      version {
-        strictly("[1.12.0,)")
-        prefer("1.14.0")
+    listOf(
+      "com.squareup.moshi:moshi",
+      "com.squareup.moshi:moshi-kotlin"
+    ).onEach{
+        implementation(it) {
+          version {
+            strictly("[1.12.0,)")
+            prefer("1.14.0")
+          }
+        }
       }
-    }
   }
 
   // TODO consider changing this from api to implementation.
@@ -97,14 +102,14 @@ dependencies {
   api("de.gesellix:docker-engine:2022-07-28T20-10-00")
   api("de.gesellix:docker-compose:2022-07-28T16-10-00")
 
-  implementation("org.codehaus.groovy:groovy:3.0.12")
-  implementation("org.codehaus.groovy:groovy-json:3.0.12")
+  implementation("org.codehaus.groovy:groovy:3.0.13")
+  implementation("org.codehaus.groovy:groovy-json:3.0.13")
 
   api("com.squareup.moshi:moshi:1.14.0")
   implementation("com.google.re2j:re2j:1.7")
 
-  implementation("org.slf4j:slf4j-api:1.7.36")
-  testImplementation("ch.qos.logback:logback-classic:[1.2,2)!!1.2.11")
+  implementation("org.slf4j:slf4j-api:2.0.3")
+  testImplementation("ch.qos.logback:logback-classic:[1.2,2)!!1.3.1")
 
   implementation("com.squareup.okio:okio-jvm:3.2.0")
   api("com.squareup.okhttp3:okhttp:4.10.0")
@@ -116,8 +121,10 @@ dependencies {
 
   testImplementation("de.gesellix:testutil:[2021-08-05T22-09-32,)")
 
-  testImplementation("org.spockframework:spock-core:2.1-groovy-3.0")
-  testRuntimeOnly("cglib:cglib-nodep:3.3.0")
+  testImplementation("org.junit.platform:junit-platform-launcher:1.9.1")
+  testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
+  testRuntimeOnly("net.bytebuddy:byte-buddy:1.12.17")
+  testRuntimeOnly("org.objenesis:objenesis:3.3")
   testImplementation("io.github.joke:spock-mockable:1.5.6")
 
   testImplementation("org.apache.commons:commons-lang3:3.12.0")
