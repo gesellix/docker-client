@@ -12,17 +12,17 @@ dependencies {
   constraints {
     implementation("de.gesellix:docker-engine") {
       version {
-        strictly("[2022-02-01T01-01-01,)")
+        strictly("[2022-09-01T01-01-01,)")
       }
     }
     implementation("de.gesellix:docker-filesocket") {
       version {
-        strictly("[2022-02-01T01-01-01,)")
+        strictly("[2022-09-01T01-01-01,)")
       }
     }
     implementation("de.gesellix:docker-remote-api-model-1-41") {
       version {
-        strictly("[2022-07-25T19-52-00,)")
+        strictly("[2022-09-01T01-01-01,)")
       }
     }
     implementation("org.slf4j:slf4j-api") {
@@ -37,7 +37,7 @@ dependencies {
     ).onEach {
       implementation(it) {
         version {
-          strictly("[4,4.10)")
+          strictly("[4,5)")
           prefer("4.10.0")
         }
       }
