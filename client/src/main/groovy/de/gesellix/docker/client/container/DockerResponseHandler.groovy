@@ -9,7 +9,7 @@ class DockerResponseHandler {
 
   private final Logger log = LoggerFactory.getLogger(DockerResponseHandler)
 
-  def ensureSuccessfulResponse(EngineResponse response, Throwable context) {
+  void ensureSuccessfulResponse(EngineResponse response, Throwable context) {
     if (!response || !response.status?.success || hasError(response)) {
       logError(response)
       throw new DockerClientException(context, response)

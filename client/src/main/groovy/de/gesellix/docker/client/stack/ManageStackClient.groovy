@@ -18,6 +18,7 @@ import de.gesellix.docker.remote.api.NetworkCreateRequest
 import de.gesellix.docker.remote.api.Node
 import de.gesellix.docker.remote.api.NodeState
 import de.gesellix.docker.remote.api.Secret
+import de.gesellix.docker.remote.api.SecretCreateRequest
 import de.gesellix.docker.remote.api.SecretSpec
 import de.gesellix.docker.remote.api.Service
 import de.gesellix.docker.remote.api.ServiceCreateRequest
@@ -270,7 +271,7 @@ class ManageStackClient implements ManageStack {
         if (sendRegistryAuth) {
           updateOptions.EncodedRegistryAuth = encodedAuth
         }
-        def updateRequest = new ServiceUpdateRequest(
+        ServiceUpdateRequest updateRequest = new ServiceUpdateRequest(
             serviceSpec.name,
             serviceSpec.labels,
             serviceSpec.taskTemplate,
@@ -296,7 +297,7 @@ class ManageStackClient implements ManageStack {
         if (sendRegistryAuth) {
           createOptions.EncodedRegistryAuth = encodedAuth
         }
-        def createRequest = new ServiceCreateRequest(
+        SecretCreateRequest createRequest = new ServiceCreateRequest(
             serviceSpec.name,
             serviceSpec.labels,
             serviceSpec.taskTemplate,
