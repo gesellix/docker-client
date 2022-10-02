@@ -125,7 +125,7 @@ dependencies {
   testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.12.17")
   testRuntimeOnly("org.objenesis:objenesis:3.3")
-  testImplementation("io.github.joke:spock-mockable:1.5.6")
+  testImplementation("io.github.joke:spock-mockable:1.5.7")
 
   testImplementation("org.apache.commons:commons-lang3:3.12.0")
 }
