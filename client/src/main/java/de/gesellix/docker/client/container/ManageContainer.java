@@ -16,6 +16,7 @@ import de.gesellix.docker.remote.api.ExecConfig;
 import de.gesellix.docker.remote.api.ExecInspectResponse;
 import de.gesellix.docker.remote.api.ExecStartConfig;
 import de.gesellix.docker.remote.api.IdResponse;
+import de.gesellix.docker.remote.api.client.ContainerApi;
 import de.gesellix.docker.remote.api.core.Frame;
 import de.gesellix.docker.remote.api.core.StreamCallback;
 import okhttp3.WebSocket;
@@ -135,4 +136,6 @@ public interface ManageContainer {
   EngineResponseContent<ContainerUpdateResponse> updateContainer(String container, ContainerUpdateRequest containerUpdateRequest);
 
   EngineResponseContent<ContainerWaitResponse> wait(String containerIdOrName);
+
+  EngineResponseContent<ContainerWaitResponse> wait(String containerIdOrName, ContainerApi.ConditionContainerWait condition);
 }

@@ -481,11 +481,11 @@ class ManageContainerClient implements ManageContainer {
    "next-exit" condition before issuing a ContainerStart request.
    */
   @Override
-  EngineResponseContent<ContainerWaitResponse> wait(String containerIdOrName) {
+  EngineResponseContent<ContainerWaitResponse> wait(String containerIdOrName, ContainerApi.ConditionContainerWait condition = null) {
     log.info("docker wait")
     ContainerWaitResponse containerWait = client.containerApi.containerWait(
         containerIdOrName,
-        ContainerApi.ConditionContainerWait.NotMinusRunning)
+        (ContainerApi.ConditionContainerWait) condition)
     return new EngineResponseContent<ContainerWaitResponse>(containerWait)
   }
 }
