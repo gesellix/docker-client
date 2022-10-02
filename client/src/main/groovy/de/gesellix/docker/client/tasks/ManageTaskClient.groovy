@@ -19,7 +19,7 @@ class ManageTaskClient implements ManageTask {
 
   @Override
   EngineResponseContent<List<Task>> tasks(Map<String, Object> query) {
-    Map actualQuery = [:]
+    Map<String, Object> actualQuery = new HashMap<String, Object>()
     if (query) {
       actualQuery.putAll(query)
     }

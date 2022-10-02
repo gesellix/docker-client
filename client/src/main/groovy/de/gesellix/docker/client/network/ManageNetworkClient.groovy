@@ -28,7 +28,7 @@ class ManageNetworkClient implements ManageNetwork {
   @Override
   EngineResponseContent<List<Network>> networks(Map<String, Object> query) {
     log.info("docker network ls")
-    def actualQuery = [:]
+    Map<String, Object> actualQuery = new HashMap<String, Object>()
     if (query) {
       actualQuery.putAll(query)
     }
@@ -39,7 +39,7 @@ class ManageNetworkClient implements ManageNetwork {
   @Override
   EngineResponseContent<List<Network>> networks(String filters = null) {
     log.info("docker network ls")
-    def networks = client.getNetworkApi().networkList(filters)
+    List<Network> networks = client.getNetworkApi().networkList(filters)
     return new EngineResponseContent<List<Network>>(networks)
   }
 
@@ -61,7 +61,7 @@ class ManageNetworkClient implements ManageNetwork {
         CheckDuplicate: true]
     queryUtil.applyDefaults(actualConfig, defaults)
 
-    def request = new NetworkCreateRequest(
+    NetworkCreateRequest request = new NetworkCreateRequest(
         actualConfig.Name as String,
         actualConfig.CheckDuplicate as Boolean,
         actualConfig.Driver as String,
@@ -88,7 +88,7 @@ class ManageNetworkClient implements ManageNetwork {
 //    if (networkCreateRequest.checkDuplicate == null) {
 //      networkCreateRequest.checkDuplicate = true
 //    }
-    def networkCreate = client.getNetworkApi().networkCreate(networkCreateRequest)
+    NetworkCreateResponse networkCreate = client.getNetworkApi().networkCreate(networkCreateRequest)
     return new EngineResponseContent<NetworkCreateResponse>(networkCreate)
   }
 
@@ -113,7 +113,7 @@ class ManageNetworkClient implements ManageNetwork {
   @Override
   EngineResponseContent<NetworkPruneResponse> pruneNetworks(Map<String, Object> query) {
     log.info("docker network prune")
-    def actualQuery = [:]
+    Map<String, Object> actualQuery = new HashMap<String, Object>()
     if (query) {
       actualQuery.putAll(query)
     }
@@ -124,7 +124,7 @@ class ManageNetworkClient implements ManageNetwork {
   @Override
   EngineResponseContent<NetworkPruneResponse> pruneNetworks(String filters = null) {
     log.info("docker network prune")
-    def networkPrune = client.getNetworkApi().networkPrune(filters)
+    NetworkPruneResponse networkPrune = client.getNetworkApi().networkPrune(filters)
     return new EngineResponseContent<NetworkPruneResponse>(networkPrune)
   }
 }

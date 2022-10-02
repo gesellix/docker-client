@@ -29,6 +29,7 @@ import de.gesellix.docker.remote.api.EndpointPortConfig
 import de.gesellix.docker.remote.api.EndpointSpec
 import de.gesellix.docker.remote.api.HealthConfig
 import de.gesellix.docker.remote.api.IPAM
+import de.gesellix.docker.remote.api.IPAMConfig
 import de.gesellix.docker.remote.api.Limit
 import de.gesellix.docker.remote.api.Mount
 import de.gesellix.docker.remote.api.MountBindOptions
@@ -219,7 +220,9 @@ class DeployConfigReaderTest extends Specification {
     networks["normal"] == new NetworkCreateRequest(
         "normal", true, "overlay",
         false, false, null,
-        new IPAM("driver", [[subnet: '10.0.0.0']], null),
+        new IPAM("driver",
+                 [new IPAMConfig().tap { subnet = '10.0.0.0' }],
+                 null),
         null, [opt: "value"],
         [
             (ManageStackClient.LabelNamespace): "name-space",

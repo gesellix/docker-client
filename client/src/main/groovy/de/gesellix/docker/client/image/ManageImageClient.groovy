@@ -40,7 +40,7 @@ class ManageImageClient implements ManageImage {
   @Override
   EngineResponseContent<List<ImageSearchResponseItem>> search(String term, Integer limit = 25) {
     log.info("docker search")
-    def imageSearch = client.imageApi.imageSearch(term, limit, null)
+    List<ImageSearchResponseItem> imageSearch = client.imageApi.imageSearch(term, limit, null)
     return new EngineResponseContent<List<ImageSearchResponseItem>>(imageSearch)
   }
 
@@ -89,7 +89,7 @@ class ManageImageClient implements ManageImage {
       encodedRegistryConfig = manageAuthentication.encodeAuthConfigs(manageAuthentication.getAllAuthConfigs())
     }
 
-    def contentTypeImageBuild = contentType
+    ImageApi.ContentTypeImageBuild contentTypeImageBuild = contentType
         ? ImageApi.ContentTypeImageBuild.valueOf(contentType)
         : ImageApi.ContentTypeImageBuild.ApplicationSlashXMinusTar
     client.imageApi.imageBuild(dockerfile,
@@ -112,14 +112,14 @@ class ManageImageClient implements ManageImage {
   @Override
   EngineResponseContent<List<HistoryResponseItem>> history(String imageId) {
     log.info("docker history")
-    def imageHistory = client.imageApi.imageHistory(imageId)
+    List<HistoryResponseItem> imageHistory = client.imageApi.imageHistory(imageId)
     return new EngineResponseContent<List<HistoryResponseItem>>(imageHistory)
   }
 
   @Override
   EngineResponseContent<ImageInspect> inspectImage(String imageId) {
     log.info("docker inspect image")
-    def imageInspect = client.imageApi.imageInspect(imageId)
+    ImageInspect imageInspect = client.imageApi.imageInspect(imageId)
     return new EngineResponseContent<ImageInspect>(imageInspect)
   }
 
@@ -131,11 +131,11 @@ class ManageImageClient implements ManageImage {
 
   @Override
   EngineResponseContent<List<ImageSummary>> images(Map<String, Object> query) {
-    def actualQuery = [:]
+    Map<String, Object> actualQuery = new HashMap<String, Object>()
     if (query) {
       actualQuery.putAll(query)
     }
-    def defaults = [all: false]
+    Map<String, Object> defaults = [all: false]
     queryUtil.applyDefaults(actualQuery, defaults)
     queryUtil.jsonEncodeQueryParameter(actualQuery, "filters")
     return images(actualQuery.all as Boolean, actualQuery.filters as String, actualQuery.digests as Boolean)
@@ -144,13 +144,13 @@ class ManageImageClient implements ManageImage {
   @Override
   EngineResponseContent<List<ImageSummary>> images(Boolean all = false, String filters = null, Boolean digests = null) {
     log.info("docker images")
-    def imageList = client.imageApi.imageList(all, filters, digests)
+    List<ImageSummary> imageList = client.imageApi.imageList(all, filters, digests)
     return new EngineResponseContent<List<ImageSummary>>(imageList)
   }
 
   @Override
   EngineResponseContent<ImagePruneResponse> pruneImages(Map<String, Object> query) {
-    def actualQuery = [:]
+    Map<String, Object> actualQuery = new HashMap<String, Object>()
     if (query) {
       actualQuery.putAll(query)
     }
@@ -161,7 +161,7 @@ class ManageImageClient implements ManageImage {
   @Override
   EngineResponseContent<ImagePruneResponse> pruneImages(String filters = null) {
     log.info("docker image prune")
-    def imagePrune = client.imageApi.imagePrune(filters)
+    ImagePruneResponse imagePrune = client.imageApi.imagePrune(filters)
     return new EngineResponseContent<ImagePruneResponse>(imagePrune)
   }
 
@@ -252,39 +252,39 @@ class ManageImageClient implements ManageImage {
   @Override
   EngineResponseContent<List<ImageDeleteResponseItem>> rmi(String imageId) {
     log.info("docker rmi")
-    def imageDelete = client.imageApi.imageDelete(imageId, null, null)
+    List<ImageDeleteResponseItem> imageDelete = client.imageApi.imageDelete(imageId, null, null)
     return new EngineResponseContent<List<ImageDeleteResponseItem>>(imageDelete)
   }
 
   @Override
   EngineResponseContent<InputStream> save(List<String> images) {
     log.info("docker save")
-    def savedImages = client.imageApi.imageGetAll(images)
+    InputStream savedImages = client.imageApi.imageGetAll(images)
     return new EngineResponseContent<InputStream>(savedImages)
   }
 
   @Override
   void tag(String imageId, String repository) {
     log.info("docker tag")
-    def repoAndTag = repositoryTagParser.parseRepositoryTag(repository)
+    Map<String, String> repoAndTag = repositoryTagParser.parseRepositoryTag(repository)
     client.imageApi.imageTag(imageId, repoAndTag.repo, repoAndTag.tag)
   }
 
   @Override
   String findImageId(String imageName, String tag = "") {
-    def isDigest = imageName.contains '@'
-    def images = images((isDigest) ? [digests: '1'] : [:]).content
+    boolean isDigest = imageName.contains '@'
+    List<ImageSummary> images = images((isDigest) ? [digests: '1'] : [:]).content
 //        println new JsonBuilder(images).toString()
     def imageIdsByRepoDigest = images.collectEntries { image ->
       image.repoDigests?.collectEntries { String repoDigest ->
-        def idByDigest = [:]
+        Map<String, Object> idByDigest = new HashMap<String, Object>()
         idByDigest[repoDigest] = (String) image.id
         idByDigest
       } ?: [:]
     }
     def imageIdsByName = images.collectEntries { image ->
       image.repoTags?.collectEntries { String repoTag ->
-        def idByName = [:]
+        Map<String, Object> idByName = new HashMap<String, Object>()
         idByName[repoTag] = (String) image.id
         idByName
       } ?: [:]
@@ -298,7 +298,7 @@ class ManageImageClient implements ManageImage {
       return imageName
     }
     else {
-      def canonicalImageName = "$imageName:${tag ?: 'latest'}".toString()
+      String canonicalImageName = "$imageName:${tag ?: 'latest'}"
       if (imageIdsByName[canonicalImageName]) {
         return imageIdsByName[canonicalImageName]
       }

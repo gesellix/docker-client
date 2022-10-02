@@ -38,7 +38,7 @@ class ManageConfigClient implements ManageConfig {
 
   @Override
   EngineResponseContent<List<Config>> configs(Map query) {
-    Map actualQuery = [:]
+    Map<String, Object> actualQuery = new HashMap<String, Object>()
     if (query) {
       actualQuery.putAll(query)
     }

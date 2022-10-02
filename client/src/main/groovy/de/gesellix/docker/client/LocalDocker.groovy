@@ -2,6 +2,7 @@ package de.gesellix.docker.client
 
 import de.gesellix.docker.engine.DockerVersion
 import de.gesellix.docker.remote.api.SystemInfo
+import de.gesellix.docker.remote.api.SystemVersion
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -84,9 +85,9 @@ class LocalDocker {
   static boolean isNativeWindows(DockerClient client = null) {
     try {
       DockerClient dockerClient = (client ?: new DockerClientImpl())
-      def version = dockerClient.version()
-      String arch = version.content.arch
-      String os = version.content.os
+      SystemVersion version = dockerClient.version().content
+      String arch = version.arch
+      String os = version.os
       return "$os/$arch".toString() == "windows/amd64"
     }
     catch (Exception e) {

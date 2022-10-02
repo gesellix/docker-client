@@ -32,6 +32,7 @@ import de.gesellix.docker.remote.api.EndpointPortConfig
 import de.gesellix.docker.remote.api.EndpointSpec
 import de.gesellix.docker.remote.api.HealthConfig
 import de.gesellix.docker.remote.api.IPAM
+import de.gesellix.docker.remote.api.IPAMConfig
 import de.gesellix.docker.remote.api.Limit
 import de.gesellix.docker.remote.api.Mount
 import de.gesellix.docker.remote.api.MountBindOptions
@@ -111,7 +112,7 @@ class DeployConfigReader {
     Map<String, StackConfig> configs = configs(namespace, composeConfig.configs, workingDir)
     Map<String, ServiceSpec> services = services(namespace, composeConfig.services, composeConfig.networks, composeConfig.volumes)
 
-    def cfg = new DeployStackConfig()
+    DeployStackConfig cfg = new DeployStackConfig()
     cfg.networks = networkConfigs
     cfg.secrets = secrets
     cfg.configs = configs
@@ -143,7 +144,7 @@ class DeployConfigReader {
       List<String> extraHosts = convertExtraHosts(service.extraHosts)
       Collections.sort(extraHosts)
 
-      def serviceConfig = new ServiceSpec()
+      ServiceSpec serviceConfig = new ServiceSpec()
       serviceConfig.name = ("${namespace}_${name}" as String)
       serviceConfig.labels = serviceLabels
       serviceConfig.endpointSpec = serviceEndpoints(service.deploy?.endpointMode, service.ports)
@@ -516,7 +517,7 @@ class DeployConfigReader {
     }
   }
 
-  def parseRestartPolicy(String policy) {
+  Map<String, String> parseRestartPolicy(String policy) {
     Map<String, String> restartPolicy = [
         name: ""
     ]
@@ -524,7 +525,7 @@ class DeployConfigReader {
       return restartPolicy
     }
 
-    def parts = policy.split(':')
+    String[] parts = policy.split(':')
     if (parts.length > 2) {
       throw new IllegalArgumentException("invalid restart policy format: '${policy}")
     }
@@ -701,7 +702,7 @@ class DeployConfigReader {
   }
 
   EndpointSpec serviceEndpoints(String endpointMode, PortConfigs portConfigs) {
-    def endpointSpec = new EndpointSpec(
+    EndpointSpec endpointSpec = new EndpointSpec(
         endpointMode ? EndpointSpec.Mode.values().find { it.value == endpointMode } : EndpointSpec.Mode.Vip,
         portConfigs.portConfigs.collect { portConfig ->
           new EndpointPortConfig(
@@ -742,7 +743,7 @@ class DeployConfigReader {
 
     List<String> externalNetworkNames = []
     serviceNetworkNames.each { String internalName ->
-      def network = networks[internalName]
+      StackNetwork network = networks[internalName]
       if (!network) {
         networkSpec[internalName] = new NetworkCreateRequest(
             internalName,
@@ -788,10 +789,12 @@ class DeployConfigReader {
     if (!network.ipam?.driver && !network.ipam?.config) {
       return null
     }
-    def ipamConfig = []
+    List<IPAMConfig> ipamConfig = []
     if (network.ipam?.config) {
       network.ipam.config.each { IpamConfig config ->
-        ipamConfig << [subnet: config.subnet]
+        ipamConfig << new IPAMConfig().tap {
+          subnet = config.subnet
+        }
       }
     }
     return new IPAM(
@@ -818,7 +821,7 @@ class DeployConfigReader {
     return !(networkName in blacklist || isContainerNetwork(networkName))
   }
 
-  def validateExternalNetworks(List<String> externalNetworks) {
+  void validateExternalNetworks(List<String> externalNetworks) {
     boolean isWindows = LocalDocker.isNativeWindows(dockerClient)
     externalNetworks.findAll { name ->
       // Networks that are not user defined always exist on all nodes as
@@ -848,7 +851,7 @@ class DeployConfigReader {
         Path filePath = Paths.get(workingDir, secret.file)
         byte[] data = Files.readAllBytes(filePath)
 
-        def labels = new HashMap<String, String>()
+        Map<String, String> labels = new HashMap<String, String>()
         if (secret.labels?.entries) {
           labels.putAll(secret.labels.entries)
         }
@@ -872,7 +875,7 @@ class DeployConfigReader {
         Path filePath = Paths.get(workingDir, config.file)
         byte[] data = Files.readAllBytes(filePath)
 
-        def labels = new HashMap<String, String>()
+        Map<String, String> labels = new HashMap<String, String>()
         if (config.labels?.entries) {
           labels.putAll(config.labels.entries)
         }
@@ -894,7 +897,7 @@ class DeployConfigReader {
     if (preferences == null) {
       return null
     }
-    def spread = new TaskSpecPlacementPreferencesInnerSpread(preferences[0].spread)
+    TaskSpecPlacementPreferencesInnerSpread spread = new TaskSpecPlacementPreferencesInnerSpread(preferences[0].spread)
     log.info("spread: ${spread}")
     return [new TaskSpecPlacementPreferencesInner(spread)]
   }

@@ -29,9 +29,9 @@ class ManageAuthenticationClient implements ManageAuthentication {
 
   @Override
   Map<String, AuthConfig> getAllAuthConfigs(File dockerCfg = null) {
-    Map parsedDockerCfg = authConfigReader.readDockerConfigFile(dockerCfg)
+    Map<String, Object> parsedDockerCfg = authConfigReader.readDockerConfigFile(dockerCfg)
     if (!parsedDockerCfg) {
-      return [:]
+      return new HashMap<String, AuthConfig>()
     }
 
     CredsStore credsStore = authConfigReader.getCredentialsStore(parsedDockerCfg)
@@ -95,10 +95,10 @@ class ManageAuthenticationClient implements ManageAuthentication {
       throw new IllegalArgumentException("invalid reference format: repository name must be lowercase")
     }
 
-    def ref = new ReferenceParser().parse(domain + "/" + remainder)
+    Map<String, Object> ref = new ReferenceParser().parse(domain + "/" + remainder)
 
     // expect [domain: "...", path: "..."]
-    def namedRef = getNamed(ref)
+    Map<String, Object> namedRef = getNamed(ref)
 
     String indexName = validateIndexName(namedRef.domain as String)
     Map indexInfo = [
@@ -121,7 +121,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
   }
 
   // A named repository has both domain and path components.
-  def getNamed(Map ref) {
+  Map<String, Object> getNamed(Map<String, Object> ref) {
     if (ref.domain) {
       return ref
     }

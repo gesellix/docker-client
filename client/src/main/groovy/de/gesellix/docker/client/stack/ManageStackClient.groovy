@@ -159,7 +159,7 @@ class ManageStackClient implements ManageStack {
       log.debug("known: $knownSecrets")
 
       if (!secret.labels) {
-        secret.labels = [:]
+        secret.labels = new HashMap<String, Object>()
       }
       secret.labels[(LabelNamespace)] = namespace
 
@@ -172,7 +172,7 @@ class ManageStackClient implements ManageStack {
         if (knownSecrets.size() != 1) {
           throw new IllegalStateException("ambiguous secret name '${secret.name}'")
         }
-        def knownSecret = knownSecrets.first()
+        Secret knownSecret = knownSecrets.first()
         log.info("update secret ${secret.name}: $secret")
         secretId = knownSecret.ID
         manageSecret.updateSecret(
@@ -195,7 +195,7 @@ class ManageStackClient implements ManageStack {
       log.debug("known: $knownConfigs")
 
       if (!config.labels) {
-        config.labels = [:]
+        config.labels = new HashMap<String, Object>()
       }
       config.labels[(LabelNamespace)] = namespace
 
@@ -241,7 +241,7 @@ class ManageStackClient implements ManageStack {
   }
 
   void createOrUpdateServices(String namespace, Map<String, ServiceSpec> services, boolean sendRegistryAuth) {
-    Map<String, Service> existingServicesByName = [:]
+    Map<String, Service> existingServicesByName = new HashMap<String, Object>()
     EngineResponseContent<List<Service>> existingServices = stackServices(namespace)
     existingServices.content.each { Service service ->
       existingServicesByName[service.spec.name] = service
@@ -251,7 +251,7 @@ class ManageStackClient implements ManageStack {
       String name = "${namespace}_${internalName}"
       serviceSpec.name = serviceSpec.name ?: name
       if (!serviceSpec.labels) {
-        serviceSpec.labels = [:]
+        serviceSpec.labels = new HashMap<String, Object>()
       }
       serviceSpec.labels[(LabelNamespace)] = namespace
 
@@ -266,7 +266,7 @@ class ManageStackClient implements ManageStack {
       if (service) {
         log.info("Updating service ${name} (id ${service.ID}): ${serviceSpec}")
 
-        Map updateOptions = [:]
+        Map updateOptions = new HashMap<String, Object>()
         if (sendRegistryAuth) {
           updateOptions.EncodedRegistryAuth = encodedAuth
         }
@@ -292,7 +292,7 @@ class ManageStackClient implements ManageStack {
       else {
         log.info("Creating service ${name}: ${serviceSpec}")
 
-        Map<String, Object> createOptions = [:]
+        Map<String, Object> createOptions = new HashMap<String, Object>()
         if (sendRegistryAuth) {
           createOptions.EncodedRegistryAuth = encodedAuth
         }
@@ -326,7 +326,7 @@ class ManageStackClient implements ManageStack {
 
     String namespaceFilter = "${LabelNamespace}=${namespace}"
 
-    Map actualFilters = filters ?: [:]
+    Map<String, Object> actualFilters = filters ?: new HashMap<String, Object>()
     if (actualFilters.label) {
       actualFilters.label[(namespaceFilter)] = true
     }
@@ -367,7 +367,7 @@ class ManageStackClient implements ManageStack {
     log.info("docker stack services")
 
     String namespaceFilter = "${LabelNamespace}=${namespace}"
-    Map actualFilters = filters ?: [:]
+    Map<String, Object> actualFilters = filters ?: new HashMap<String, Object>()
     if (actualFilters.label) {
       actualFilters.label[(namespaceFilter)] = true
     }
@@ -385,8 +385,8 @@ class ManageStackClient implements ManageStack {
       node.status.state != NodeState.Down ? node.ID : null
     }
 
-    Map<String, Integer> running = [:]
-    Map<String, Integer> tasksNoShutdown = [:]
+    Map<String, Integer> running = new HashMap<String, Integer>()
+    Map<String, Integer> tasksNoShutdown = new HashMap<String, Integer>()
 
     Map serviceFilter = [service: [:]]
     services.content.each { Service service ->
