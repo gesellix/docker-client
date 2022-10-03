@@ -1,6 +1,5 @@
 package de.gesellix.docker.client.repository
 
-import de.gesellix.docker.client.DockerClientException
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -38,7 +37,7 @@ class RepositoryTagParserTest extends Specification {
     parser.parseRepositoryTag("scratch:")
 
     then:
-    def exc = thrown(DockerClientException)
-    exc.cause.message == "'scratch:' should not end with a ':'"
+    def exc = thrown(IllegalArgumentException)
+    exc.message == "'scratch:' should not end with a ':'"
   }
 }

@@ -1,12 +1,10 @@
 package de.gesellix.docker.client.repository;
 
-import de.gesellix.docker.client.DockerClientException;
-
 public class RepositoryTagParser {
 
   public RepositoryAndTag parseRepositoryTag(String name) {
     if (name.endsWith(":")) {
-      throw new DockerClientException(new IllegalArgumentException(String.format("'%s' should not end with a ':'", name)));
+      throw new IllegalArgumentException(String.format("'%s' should not end with a ':'", name));
     }
 
     // see https://github.com/docker/docker/blob/master/pkg/parsers/parsers.go#L72:

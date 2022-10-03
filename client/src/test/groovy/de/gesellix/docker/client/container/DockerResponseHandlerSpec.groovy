@@ -1,6 +1,5 @@
 package de.gesellix.docker.client.container
 
-import de.gesellix.docker.client.DockerClientException
 import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.docker.engine.EngineResponseStatus
 import spock.lang.Specification
@@ -17,8 +16,8 @@ class DockerResponseHandlerSpec extends Specification {
     when:
     responseHandler.ensureSuccessfulResponse(response, testException)
     then:
-    DockerClientException thrown = thrown()
-    thrown.cause.message == testException.message
+    Exception thrown = thrown()
+    thrown == testException
     where:
     response << [
         null,
