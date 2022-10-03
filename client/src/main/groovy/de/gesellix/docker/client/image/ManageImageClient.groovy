@@ -130,10 +130,15 @@ class ManageImageClient implements ManageImage {
     client.imageApi.imageLoad(null, imagesTarball)
   }
 
+  /**
+   * @see #images(Boolean, String, Boolean)
+   * @deprecated use {@link #images(Boolean, String, Boolean)}
+   */
+  @Deprecated
   @Override
   EngineResponseContent<List<ImageSummary>> images(Map<String, Object> query) {
     Map<String, Object> actualQuery = new HashMap<String, Object>()
-    if (query) {
+    if (query != null) {
       actualQuery.putAll(query)
     }
     Map<String, Object> defaults = [all: false]
@@ -149,10 +154,15 @@ class ManageImageClient implements ManageImage {
     return new EngineResponseContent<List<ImageSummary>>(imageList)
   }
 
+  /**
+   * @see #pruneImages(String)
+   * @deprecated use {@link #pruneImages(String)}
+   */
+  @Deprecated
   @Override
   EngineResponseContent<ImagePruneResponse> pruneImages(Map<String, Object> query) {
     Map<String, Object> actualQuery = new HashMap<String, Object>()
-    if (query) {
+    if (query != null) {
       actualQuery.putAll(query)
     }
     queryUtil.jsonEncodeQueryParameter(actualQuery, "filters")

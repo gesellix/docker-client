@@ -24,6 +24,11 @@ public class ManageVolumeClient implements ManageVolume {
     this.queryUtil = new QueryUtil();
   }
 
+  /**
+   * @see #volumes(String)
+   * @deprecated use {@link #volumes(String)}
+   */
+  @Deprecated
   @Override
   public EngineResponseContent<VolumeListResponse> volumes(Map<String, Object> query) {
     log.info("docker volume ls");
@@ -55,6 +60,11 @@ public class ManageVolumeClient implements ManageVolume {
     return new EngineResponseContent<>(volumeInspect);
   }
 
+  /**
+   * @see #createVolume(VolumeCreateOptions)
+   * @deprecated use {@link #createVolume(VolumeCreateOptions)}
+   */
+  @Deprecated
   @Override
   public EngineResponseContent<Volume> createVolume(Map<String, Object> config) {
     log.info("docker volume create");
@@ -83,6 +93,11 @@ public class ManageVolumeClient implements ManageVolume {
     client.getVolumeApi().volumeDelete(name, null);
   }
 
+  /**
+   * @see #pruneVolumes(String)
+   * @deprecated use {@link #pruneVolumes(String)}
+   */
+  @Deprecated
   @Override
   public EngineResponseContent<VolumePruneResponse> pruneVolumes(Map<String, Object> query) {
     log.info("docker volume prune");

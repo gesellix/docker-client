@@ -45,6 +45,11 @@ public class ManageSecretClient implements ManageSecret {
     return new EngineResponseContent<>(secretInspect);
   }
 
+  /**
+   * @see #secrets(String)
+   * @deprecated use {@link #secrets(String)}
+   */
+  @Deprecated
   @Override
   public EngineResponseContent<List<Secret>> secrets(Map<String, Object> query) {
     Map<String, Object> actualQuery = new HashMap<>();

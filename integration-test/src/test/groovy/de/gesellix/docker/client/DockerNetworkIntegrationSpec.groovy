@@ -1,5 +1,7 @@
 package de.gesellix.docker.client
 
+import de.gesellix.docker.remote.api.IPAM
+import de.gesellix.docker.remote.api.NetworkCreateRequest
 import de.gesellix.docker.remote.api.SwarmInitRequest
 import de.gesellix.docker.testutil.SwarmUtil
 import groovy.util.logging.Slf4j
@@ -57,12 +59,11 @@ class DockerNetworkIntegrationSpec extends Specification {
     ))
 
     when:
-    dockerClient.createNetwork('test-net', [
-        Driver: "overlay",
-        "IPAM": [
-            "Driver": "default"
-        ]
-    ])
+    dockerClient.createNetwork(new NetworkCreateRequest(
+        "test-net", true, "overlay",
+        null, null, null,
+        new IPAM("default", null, null),
+        null, null, null))
 
     then:
     dockerClient.networks().content.find { it.name == "test-net" }

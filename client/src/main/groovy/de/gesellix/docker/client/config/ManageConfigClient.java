@@ -45,6 +45,11 @@ public class ManageConfigClient implements ManageConfig {
     return new EngineResponseContent<>(configInspect);
   }
 
+  /**
+   * @see #configs(String)
+   * @deprecated use {@link #configs(String)}
+   */
+  @Deprecated
   @Override
   public EngineResponseContent<List<Config>> configs(Map<String, Object> query) {
     Map<String, Object> actualQuery = new HashMap<>();

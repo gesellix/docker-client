@@ -27,10 +27,15 @@ class ManageNodeClient implements ManageNode {
     this.nodeUtil = nodeUtil
   }
 
+  /**
+   * @see #nodes(String)
+   * @deprecated use {@link #nodes(String)}
+   */
+  @Deprecated
   @Override
   EngineResponseContent<List<Node>> nodes(Map<String, Object> query) {
     Map<String, Object> actualQuery = new HashMap<String, Object>()
-    if (query) {
+    if (query != null) {
       actualQuery.putAll(query)
     }
     new QueryUtil().jsonEncodeQueryParameter(actualQuery, "filters")

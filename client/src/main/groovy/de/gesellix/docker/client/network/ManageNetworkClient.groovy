@@ -25,15 +25,20 @@ class ManageNetworkClient implements ManageNetwork {
     this.queryUtil = new QueryUtil()
   }
 
+  /**
+   * @see #networks(String)
+   * @deprecated use {@link #networks(String)}
+   */
+  @Deprecated
   @Override
   EngineResponseContent<List<Network>> networks(Map<String, Object> query) {
     log.info("docker network ls")
     Map<String, Object> actualQuery = new HashMap<String, Object>()
-    if (query) {
+    if (query != null) {
       actualQuery.putAll(query)
     }
     queryUtil.jsonEncodeQueryParameter(actualQuery, "filters")
-    return networks(actualQuery.filters as String)
+    return networks(actualQuery.get("filters") as String)
   }
 
   @Override
@@ -50,20 +55,21 @@ class ManageNetworkClient implements ManageNetwork {
     return new EngineResponseContent<Network>(network)
   }
 
+  /**
+   * @see #createNetwork(NetworkCreateRequest)
+   * @deprecated use {@link #createNetwork(NetworkCreateRequest)}
+   */
+  @Deprecated
   @Override
-  EngineResponseContent<NetworkCreateResponse> createNetwork(String name, Map<String, Object> config = [:]) {
+  EngineResponseContent<NetworkCreateResponse> createNetwork(String name, Map<String, Object> config) {
     Map actualConfig = [:]
-    if (config) {
+    if (config != null) {
       actualConfig.putAll(config)
     }
-    Map defaults = [
-        Name          : name,
-        CheckDuplicate: true]
-    queryUtil.applyDefaults(actualConfig, defaults)
 
     NetworkCreateRequest request = new NetworkCreateRequest(
-        actualConfig.Name as String,
-        actualConfig.CheckDuplicate as Boolean,
+        name,
+        true,
         actualConfig.Driver as String,
         actualConfig.Internal as Boolean,
         actualConfig.Attachable as Boolean,
@@ -75,6 +81,22 @@ class ManageNetworkClient implements ManageNetwork {
         actualConfig.EnableIPv6 as Boolean,
         actualConfig.Options as Map,
         actualConfig.Labels as Map)
+    return createNetwork(request)
+  }
+
+  @Override
+  EngineResponseContent<NetworkCreateResponse> createNetwork(String name) {
+    NetworkCreateRequest request = new NetworkCreateRequest(
+        name,
+        true,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null)
     return createNetwork(request)
   }
 
@@ -110,15 +132,20 @@ class ManageNetworkClient implements ManageNetwork {
     client.getNetworkApi().networkDelete(name)
   }
 
+  /**
+   * @see #pruneNetworks(String)
+   * @deprecated use {@link #pruneNetworks(String)}
+   */
+  @Deprecated
   @Override
   EngineResponseContent<NetworkPruneResponse> pruneNetworks(Map<String, Object> query) {
     log.info("docker network prune")
     Map<String, Object> actualQuery = new HashMap<String, Object>()
-    if (query) {
+    if (query != null) {
       actualQuery.putAll(query)
     }
     queryUtil.jsonEncodeQueryParameter(actualQuery, "filters")
-    return pruneNetworks(actualQuery.filters as String)
+    return pruneNetworks(actualQuery.get("filters") as String)
   }
 
   @Override

@@ -20,6 +20,11 @@ public class ManageTaskClient implements ManageTask {
     this.client = client;
   }
 
+  /**
+   * @see #tasks(String)
+   * @deprecated use {@link #tasks(String)}
+   */
+  @Deprecated
   @Override
   public EngineResponseContent<List<Task>> tasks(Map<String, Object> query) {
     Map<String, Object> actualQuery = new HashMap<>();
