@@ -39,11 +39,13 @@ class ManageServiceClient implements ManageService {
   EngineResponseContent<List<Service>> services(Map<String, Object> query) {
     log.info("docker service ls")
     Map<String, Object> actualQuery = new HashMap<String, Object>()
-    if (query) {
+    if (query != null) {
       actualQuery.putAll(query)
     }
     queryUtil.jsonEncodeQueryParameter(actualQuery, "filters")
-    return services(actualQuery.filters as String, actualQuery.status as Boolean)
+    return services(
+        (String) actualQuery.get("filters"),
+        (Boolean) actualQuery.get("status"))
   }
 
   @Override
@@ -84,7 +86,7 @@ class ManageServiceClient implements ManageService {
 
   @Override
   EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, ServiceUpdateRequest serviceSpec, String registryAuthFrom = null, String encodedRegistryAuth = null) {
-    log.info("docker service update $name@$version")
+    log.info("docker service update {}@{}", name, version)
     ServiceApi.RegistryAuthFromServiceUpdate authFrom = registryAuthFrom
         ? ServiceApi.RegistryAuthFromServiceUpdate.valueOf(registryAuthFrom)
         : ServiceApi.RegistryAuthFromServiceUpdate.Spec
@@ -94,7 +96,7 @@ class ManageServiceClient implements ManageService {
 
   @Override
   EngineResponseContent<ServiceUpdateResponse> updateService(String name, int version, String rollback, String registryAuthFrom = null, String encodedRegistryAuth = null) {
-    log.info("docker service update $name@$version")
+    log.info("docker service update {}@{}", name, version)
     ServiceApi.RegistryAuthFromServiceUpdate authFrom = registryAuthFrom
         ? ServiceApi.RegistryAuthFromServiceUpdate.valueOf(registryAuthFrom)
         : ServiceApi.RegistryAuthFromServiceUpdate.Spec
@@ -107,7 +109,7 @@ class ManageServiceClient implements ManageService {
     log.info("docker service scale")
     Service service = inspectService(name).content
     ServiceSpecMode mode = service.spec.mode
-    if (!mode.replicated) {
+    if (mode.replicated == null) {
       throw new IllegalStateException("scale can only be used with replicated mode")
     }
     mode.replicated.replicas = replicas
@@ -120,16 +122,18 @@ class ManageServiceClient implements ManageService {
   }
 
   @Override
-  EngineResponseContent<List<Task>> tasksOfService(String service, Map<String, Object> query = [:]) {
+  EngineResponseContent<List<Task>> tasksOfService(String service, Map<String, Object> query = new HashMap<>()) {
     log.info("docker service ps")
-    Map<String, Object> actualQuery = query ?: [:]
-    if (!actualQuery.containsKey('filters')) {
-      actualQuery.filters = [:]
+    Map<String, Object> actualQuery = query ?: new HashMap<>()
+    if (!actualQuery.containsKey("filters")) {
+      actualQuery.put("filters", new HashMap<>())
     }
-    actualQuery.filters['service'] = [service]
-    if (actualQuery.filters?.node) {
-      actualQuery.filters.node = nodeUtil.resolveNodeId(query.filters.node)
+    Map<String, Object> filters = (Map<String, Object>) actualQuery.get("filters")
+    filters.put("service", [service])
+    if (filters.get("node") != null) {
+      filters.put("node", nodeUtil.resolveNodeId(filters.get("node")))
     }
-    return manageTask.tasks(actualQuery)
+    new QueryUtil().jsonEncodeQueryParameter(actualQuery, "filters");
+    return manageTask.tasks((String) actualQuery.get("filters"))
   }
 }

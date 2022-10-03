@@ -140,7 +140,7 @@ class ManageServiceClientTest extends Specification {
     def result = service.tasksOfService("service-name", query)
 
     then:
-    1 * manageTask.tasks([filters: [service: ["service-name"]]]) >> expectedResponse
+    1 * manageTask.tasks('{"service":["service-name"]}') >> expectedResponse
     result == expectedResponse
   }
 }

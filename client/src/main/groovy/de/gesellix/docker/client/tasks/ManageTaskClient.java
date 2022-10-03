@@ -31,7 +31,6 @@ public class ManageTaskClient implements ManageTask {
     if (query != null) {
       actualQuery.putAll(query);
     }
-
     new QueryUtil().jsonEncodeQueryParameter(actualQuery, "filters");
     return tasks((String) actualQuery.get("filters"));
   }

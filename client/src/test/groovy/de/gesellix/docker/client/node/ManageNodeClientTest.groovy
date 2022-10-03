@@ -122,8 +122,7 @@ class ManageNodeClientTest extends Specification {
   def "list tasks on node 'self' with query"() {
     given:
     def originalQuery = [filters: [param: "value"]]
-    def modifiedQuery = [filters: [param: "value",
-                                   node : "node-id"]]
+    def modifiedQuery = '{"param":"value","node":"node-id"}'
 
     when:
     service.tasksOnNode("self", originalQuery)

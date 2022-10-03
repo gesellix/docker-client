@@ -144,7 +144,10 @@ class ManageImageClient implements ManageImage {
     Map<String, Object> defaults = [all: false]
     queryUtil.applyDefaults(actualQuery, defaults)
     queryUtil.jsonEncodeQueryParameter(actualQuery, "filters")
-    return images(actualQuery.all as Boolean, actualQuery.filters as String, actualQuery.digests as Boolean)
+    return images(
+        (Boolean) actualQuery.get("all"),
+        (String) actualQuery.get("filters"),
+        (Boolean) actualQuery.get("digests"))
   }
 
   @Override
@@ -179,7 +182,7 @@ class ManageImageClient implements ManageImage {
   @Override
   void pull(StreamCallback<CreateImageInfo> callback, Duration timeout,
             String imageName, String tag = "", String authBase64Encoded = ".") {
-    log.info("docker pull '${imageName}:${tag}'")
+    log.info("docker pull '{}:{}'", imageName, tag)
 
     client.imageApi.imageCreate(
         imageName,
@@ -200,7 +203,7 @@ class ManageImageClient implements ManageImage {
   @Override
   void importUrl(StreamCallback<CreateImageInfo> callback, Duration timeout,
                  String url, String repository = "", String tag = "") {
-    log.info("docker import '${url}' into ${repository}:${tag}")
+    log.info("docker import '{}' into {}:{}", url, repository, tag)
 
     client.imageApi.imageCreate(
         null,
