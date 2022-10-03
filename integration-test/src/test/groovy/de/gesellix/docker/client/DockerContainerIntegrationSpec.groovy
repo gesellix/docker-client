@@ -703,7 +703,9 @@ class DockerContainerIntegrationSpec extends Specification {
     def tarContent = dockerClient.getArchive(containerId, "/gattaca.txt").content
 
     then:
-    def fileContent = new ArchiveUtil().extractSingleTarEntry(tarContent as InputStream, "file.txt")
+    def output = new ByteArrayOutputStream()
+    def bytesRead = new ArchiveUtil().copySingleTarEntry(tarContent, "file.txt", output)
+    def fileContent = output.toByteArray()
     and:
     new String(fileContent) =~ "The wind\r?\ncaught it.\r?\n"
 

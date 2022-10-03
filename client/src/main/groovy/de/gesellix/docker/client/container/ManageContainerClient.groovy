@@ -151,7 +151,12 @@ class ManageContainerClient implements ManageContainer {
     log.info("extract '${filename}' from '${container}'")
 
     EngineResponseContent<InputStream> response = getArchive(container, filename)
-    return archiveUtil.extractSingleTarEntry(response.content, filename)
+
+    // TODO make this one a parameter so that the caller has a chance to reduce memory overhead
+    def output = new ByteArrayOutputStream()
+    def bytesRead = archiveUtil.copySingleTarEntry(response.content, filename, output)
+    log.info("read ${bytesRead} bytes")
+    return output.toByteArray()
   }
 
   @Override
