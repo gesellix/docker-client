@@ -52,11 +52,11 @@ dependencies {
   testImplementation("org.apache.commons:commons-compress:1.21")
 
   implementation("org.slf4j:slf4j-api:2.0.3")
-  runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.1")
+  runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.3")
 
   testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.12.17")
-  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.1")
+  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.3")
 }
 
 tasks.withType(Test::class) {

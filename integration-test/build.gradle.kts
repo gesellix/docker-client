@@ -81,14 +81,14 @@ dependencies {
   testImplementation("org.apache.commons:commons-compress:1.21")
 
   testImplementation("org.slf4j:slf4j-api:[1.7,)")
-  runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.1")
+  runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.3")
 
   testImplementation("de.gesellix:docker-registry:2022-10-01T21-12-00")
   testImplementation("de.gesellix:testutil:[2020-10-03T10-08-28,)")
   testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.12.17")
   testImplementation("org.apache.commons:commons-lang3:3.12.0")
-  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.2.11")
+  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.3")
 }
 
 tasks.withType(Test::class) {
