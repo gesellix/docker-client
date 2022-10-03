@@ -2,6 +2,7 @@ package de.gesellix.docker.client.image
 
 import de.gesellix.docker.client.EngineResponseContent
 import de.gesellix.docker.client.authentication.ManageAuthentication
+import de.gesellix.docker.client.repository.RepositoryAndTag
 import de.gesellix.docker.client.repository.RepositoryTagParser
 import de.gesellix.docker.remote.api.BuildInfo
 import de.gesellix.docker.remote.api.CreateImageInfo
@@ -240,7 +241,7 @@ class ManageImageClient implements ManageImage {
       actualImageName = "$registry/$imageName".toString()
       tag(imageName, actualImageName)
     }
-    Map<String, String> repoAndTag = repositoryTagParser.parseRepositoryTag(actualImageName)
+    RepositoryAndTag repoAndTag = repositoryTagParser.parseRepositoryTag(actualImageName)
 
     client.imageApi.imagePush(repoAndTag.repo as String,
                               authBase64Encoded ?: ".",
@@ -266,7 +267,7 @@ class ManageImageClient implements ManageImage {
   @Override
   void tag(String imageId, String repository) {
     log.info("docker tag")
-    Map<String, String> repoAndTag = repositoryTagParser.parseRepositoryTag(repository)
+    RepositoryAndTag repoAndTag = repositoryTagParser.parseRepositoryTag(repository)
     client.imageApi.imageTag(imageId, repoAndTag.repo, repoAndTag.tag)
   }
 

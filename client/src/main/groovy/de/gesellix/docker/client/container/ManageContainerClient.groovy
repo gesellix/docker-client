@@ -1,6 +1,7 @@
 package de.gesellix.docker.client.container
 
 import de.gesellix.docker.client.EngineResponseContent
+import de.gesellix.docker.client.repository.RepositoryAndTag
 import de.gesellix.docker.client.repository.RepositoryTagParser
 import de.gesellix.docker.engine.AttachConfig
 import de.gesellix.docker.engine.EngineClient
@@ -179,7 +180,7 @@ class ManageContainerClient implements ManageContainer {
     }
     catch (ClientException exception) {
       if (exception.statusCode == 404) {
-        Map<String, String> repoAndTag = repositoryTagParser.parseRepositoryTag(containerCreateRequest.image)
+        RepositoryAndTag repoAndTag = repositoryTagParser.parseRepositoryTag(containerCreateRequest.image)
         log.info("'${repoAndTag.repo}:${repoAndTag.tag}' not found locally.")
         client.imageApi.imageCreate(repoAndTag.repo, null, null, repoAndTag.tag, null, authBase64Encoded, null, null, null)
         ContainerCreateResponse containerCreateWithPulledImage = client.containerApi.containerCreate(containerCreateRequest, name)
