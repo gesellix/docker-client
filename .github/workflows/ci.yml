@@ -41,10 +41,11 @@ jobs:
         run: ./gradlew checkDockerClient --info --stacktrace
       - name: clean build
         run: ./gradlew clean build --info --stacktrace
-      - name: Publish Test Report
+      - name: Upload Test Results
+        # see publish-test-results.yml for workflow that publishes test results without security issues for forks
+        uses: actions/upload-artifact@v3
         if: ${{ always() }}
-        uses: scacap/action-surefire-report@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          report_paths: '**/build/test-results/test/TEST-*.xml'
+          name: test-results
+          path: '**/build/test-results/test/TEST-*.xml'
 ...
