@@ -1,0 +1,50 @@
+name: Publish Test results
+
+# WARNING:
+# workflow_run provides read-write repo token and access to secrets.
+# Do *not* merge changes to this file without the proper review.
+# We should only be running trusted code here.
+# See https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+# Docs: https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_run
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+
+jobs:
+  # Job based on https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+  publish-test-results:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      # Unfortunately, the official actions/download-artifact action is very limited in scope.
+      # Can't use it yet in this context, https://github.com/actions/download-artifact/issues/60
+      - name: Download artifact
+        uses: actions/github-script@v6
+        with:
+          script: |
+            var artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: ${{ github.event.workflow_run.id }},
+            });
+            var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "test-results"
+            })[0];
+            var download = await github.rest.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+            var fs = require('fs');
+            fs.writeFileSync('${{github.workspace}}/test-results.zip', Buffer.from(download.data));
+      - run: unzip test-results.zip
+      - name: Publish Test Results
+        uses: scacap/action-surefire-report@v1
+        with:
+          commit: ${{ github.event.workflow_run.head_commit.id }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: '**/build/test-results/test/TEST-*.xml'
