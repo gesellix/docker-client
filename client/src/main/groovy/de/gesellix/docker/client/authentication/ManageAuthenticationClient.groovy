@@ -5,6 +5,7 @@ import de.gesellix.docker.authentication.AuthConfig
 import de.gesellix.docker.authentication.AuthConfigReader
 import de.gesellix.docker.authentication.CredsStore
 import de.gesellix.docker.client.EngineResponseContent
+import de.gesellix.docker.engine.DockerConfigReader
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.SystemAuthResponse
 import org.slf4j.Logger
@@ -14,6 +15,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
 
   private final Logger log = LoggerFactory.getLogger(ManageAuthenticationClient)
 
+  DockerConfigReader dockerConfigReader
   AuthConfigReader authConfigReader
   EngineApiClient client
 
@@ -21,15 +23,16 @@ class ManageAuthenticationClient implements ManageAuthentication {
 
   private Moshi moshi = new Moshi.Builder().build()
 
-  ManageAuthenticationClient(EngineApiClient client, AuthConfigReader authConfigReader) {
+  ManageAuthenticationClient(EngineApiClient client, AuthConfigReader authConfigReader, DockerConfigReader dockerConfigReader) {
     this.client = client
     this.authConfigReader = authConfigReader
+    this.dockerConfigReader = dockerConfigReader
     this.registryElection = new RegistryElection(client.getSystemApi(), authConfigReader)
   }
 
   @Override
   Map<String, AuthConfig> getAllAuthConfigs(File dockerCfg = null) {
-    Map<String, Object> parsedDockerCfg = authConfigReader.readDockerConfigFile(dockerCfg)
+    Map<String, Object> parsedDockerCfg = dockerConfigReader.readDockerConfigFile(dockerCfg)
     if (!parsedDockerCfg) {
       return new HashMap<String, AuthConfig>()
     }
@@ -87,8 +90,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
     String remoteName
     if (remainder.contains(':')) {
       remoteName = remainder.substring(0, remainder.indexOf(':'))
-    }
-    else {
+    } else {
       remoteName = remainder
     }
     if (remoteName.toLowerCase() != remoteName) {
@@ -124,8 +126,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
   Map<String, Object> getNamed(Map<String, Object> ref) {
     if (ref.domain) {
       return ref
-    }
-    else if (ref.repo && ref.repo.domain) {
+    } else if (ref.repo && ref.repo.domain) {
       return ref.repo
     }
     throw new IllegalStateException("reference ${ref} has no name")
@@ -148,8 +149,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
     int i = name.indexOf('/')
     if (i == -1 || (!containsAny(name.substring(0, i), ".:") && name.substring(0, i) != 'localhost')) {
       (domain, remainder) = [defaultDomain, name]
-    }
-    else {
+    } else {
       (domain, remainder) = [name.substring(0, i), name.substring(i + 1)]
     }
     if (domain == legacyDefaultDomain) {

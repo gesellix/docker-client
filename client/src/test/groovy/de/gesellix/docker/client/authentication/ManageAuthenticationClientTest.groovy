@@ -5,6 +5,7 @@ import com.squareup.moshi.Types
 import de.gesellix.docker.authentication.AuthConfig
 import de.gesellix.docker.authentication.AuthConfigReader
 import de.gesellix.docker.client.DockerClient
+import de.gesellix.docker.engine.DockerConfigReader
 import de.gesellix.docker.engine.DockerEnv
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.SystemAuthResponse
@@ -27,25 +28,40 @@ class ManageAuthenticationClientTest extends Specification {
   Moshi moshi = new Moshi.Builder().build()
 
   def setup() {
+    def dockerConfigReader = Mock(DockerConfigReader)
     env = Mock(DockerEnv)
-    service = new ManageAuthenticationClient(Mock(EngineApiClient), new AuthConfigReader(env))
+    env.getDockerConfigReader() >> dockerConfigReader
+    service = new ManageAuthenticationClient(Mock(EngineApiClient), new AuthConfigReader(env), dockerConfigReader)
     service.authConfigReader = Spy(AuthConfigReader, constructorArgs: [env])
   }
 
   def "read authConfig (new format)"() {
     given:
+    env.indexUrl_v1 >> 'https://index.docker.io/v1/'
     String oldDockerConfig = System.clearProperty("docker.config")
     File expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/config.json', DockerClient)
-    env.indexUrl_v1 >> 'https://index.docker.io/v1/'
+    env.getDockerConfigReader().getDockerConfigFile() >> expectedConfigFile
+    env.getDockerConfigReader().readDockerConfigFile(expectedConfigFile) >> [
+        auths: [
+            "https://index.docker.io/v1/": [
+                auth : "Z2VzZWxsaXg6LXlldC1hbm90aGVyLXBhc3N3b3JkLQ",
+                email: "tobias@gesellix.de"
+            ],
+            "quay.io"                    : [
+                auth : "Z2VzZWxsaXg6LWEtcGFzc3dvcmQtZm9yLXF1YXkt",
+                email: "tobias@gesellix.de"
+            ]
+        ]
+    ]
 
     when:
     def result = service.readAuthConfig(null, expectedConfigFile)
 
     then:
     result == new AuthConfig(username: "gesellix",
-                             password: "-yet-another-password-",
-                             email: "tobias@gesellix.de",
-                             serveraddress: "https://index.docker.io/v1/")
+        password: "-yet-another-password-",
+        email: "tobias@gesellix.de",
+        serveraddress: "https://index.docker.io/v1/")
 
     cleanup:
     if (oldDockerConfig) {
@@ -55,18 +71,29 @@ class ManageAuthenticationClientTest extends Specification {
 
   def "read authConfig (legacy format)"() {
     given:
+    env.indexUrl_v1 >> 'https://index.docker.io/v1/'
     String oldDockerConfig = System.clearProperty("docker.config")
     File expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/dockercfg', DockerClient)
-    env.indexUrl_v1 >> 'https://index.docker.io/v1/'
+    env.getDockerConfigReader().getDockerConfigFile() >> expectedConfigFile
+    env.getDockerConfigReader().readDockerConfigFile(expectedConfigFile) >> [
+        "https://index.docker.io/v1/": [
+            auth : "Z2VzZWxsaXg6LXlldC1hbm90aGVyLXBhc3N3b3JkLQ==",
+            email: "tobias@gesellix.de"
+        ],
+        "quay.io"                    : [
+            auth : "Z2VzZWxsaXg6LWEtcGFzc3dvcmQtZm9yLXF1YXkt",
+            email: "tobias@gesellix.de"
+        ]
+    ]
 
     when:
     def result = service.readAuthConfig(null, expectedConfigFile)
 
     then:
     result == new AuthConfig(username: "gesellix",
-                             password: "-yet-another-password-",
-                             email: "tobias@gesellix.de",
-                             serveraddress: "https://index.docker.io/v1/")
+        password: "-yet-another-password-",
+        email: "tobias@gesellix.de",
+        serveraddress: "https://index.docker.io/v1/")
 
     cleanup:
     if (oldDockerConfig) {
@@ -164,6 +191,19 @@ class ManageAuthenticationClientTest extends Specification {
     given:
     env.indexUrl_v1 >> 'https://index.docker.io/v1/'
     File dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/config.json', DockerClient)
+    env.getDockerConfigReader().getDockerConfigFile() >> dockerCfg
+    env.getDockerConfigReader().readDockerConfigFile(dockerCfg) >> [
+        auths: [
+            "https://index.docker.io/v1/": [
+                auth : "Z2VzZWxsaXg6LXlldC1hbm90aGVyLXBhc3N3b3JkLQ",
+                email: "tobias@gesellix.de"
+            ],
+            "quay.io"                    : [
+                auth : "Z2VzZWxsaXg6LWEtcGFzc3dvcmQtZm9yLXF1YXkt",
+                email: "tobias@gesellix.de"
+            ]
+        ]
+    ]
 
     when:
     def authDetails = service.readAuthConfig(null, dockerCfg)
@@ -181,6 +221,19 @@ class ManageAuthenticationClientTest extends Specification {
   def "read auth config for quay.io"() {
     given:
     File dockerCfg = new ResourceReader().getClasspathResourceAsFile('/auth/config.json', DockerClient)
+    env.getDockerConfigReader().getDockerConfigFile() >> dockerCfg
+    env.getDockerConfigReader().readDockerConfigFile(dockerCfg) >> [
+        auths: [
+            "https://index.docker.io/v1/": [
+                auth : "Z2VzZWxsaXg6LXlldC1hbm90aGVyLXBhc3N3b3JkLQ",
+                email: "tobias@gesellix.de"
+            ],
+            "quay.io"                    : [
+                auth : "Z2VzZWxsaXg6LWEtcGFzc3dvcmQtZm9yLXF1YXkt",
+                email: "tobias@gesellix.de"
+            ]
+        ]
+    ]
 
     when:
     def authDetails = service.readAuthConfig("quay.io", dockerCfg)
@@ -248,6 +301,19 @@ class ManageAuthenticationClientTest extends Specification {
     File expectedConfigFile = new ResourceReader().getClasspathResourceAsFile('/auth/config.json', DockerClient)
     env.indexUrl_v1 >> 'https://index.docker.io/v1/'
     env.getDockerConfigFile() >> expectedConfigFile
+    env.getDockerConfigReader().getDockerConfigFile() >> expectedConfigFile
+    env.getDockerConfigReader().readDockerConfigFile(expectedConfigFile) >> [
+        auths: [
+            "https://index.docker.io/v1/": [
+                auth : "Z2VzZWxsaXg6LXlldC1hbm90aGVyLXBhc3N3b3JkLQ",
+                email: "tobias@gesellix.de"
+            ],
+            "quay.io"                    : [
+                auth : "Z2VzZWxsaXg6LWEtcGFzc3dvcmQtZm9yLXF1YXkt",
+                email: "tobias@gesellix.de"
+            ]
+        ]
+    ]
 
     when:
     def result = service.readDefaultAuthConfig()
@@ -255,9 +321,9 @@ class ManageAuthenticationClientTest extends Specification {
     then:
     1 * service.authConfigReader.readAuthConfig(null, expectedConfigFile)
     result == new AuthConfig(username: "gesellix",
-                             password: "-yet-another-password-",
-                             email: "tobias@gesellix.de",
-                             serveraddress: "https://index.docker.io/v1/")
+        password: "-yet-another-password-",
+        email: "tobias@gesellix.de",
+        serveraddress: "https://index.docker.io/v1/")
 
     cleanup:
     if (oldDockerConfig) {

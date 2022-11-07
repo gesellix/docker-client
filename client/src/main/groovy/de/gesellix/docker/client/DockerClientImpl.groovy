@@ -113,7 +113,7 @@ class DockerClientImpl implements DockerClient {
     this.repositoryTagParser = new RepositoryTagParser()
 
     this.manageSystem = new ManageSystemClient(engineApiClient)
-    this.manageAuthentication = new ManageAuthenticationClient(engineApiClient, authConfigReader)
+    this.manageAuthentication = new ManageAuthenticationClient(engineApiClient, authConfigReader, env.dockerConfigReader)
     this.manageImage = new ManageImageClient(engineApiClient, manageAuthentication)
     this.manageDistribution = new ManageDistributionService(engineApiClient)
     this.manageContainer = new ManageContainerClient(engineApiClient, httpClient)
