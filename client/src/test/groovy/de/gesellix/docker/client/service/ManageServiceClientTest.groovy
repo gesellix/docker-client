@@ -14,10 +14,8 @@ import de.gesellix.docker.remote.api.ServiceSpecModeReplicated
 import de.gesellix.docker.remote.api.ServiceUpdateRequest
 import de.gesellix.docker.remote.api.ServiceUpdateResponse
 import de.gesellix.docker.remote.api.client.ServiceApi
-import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
-@Mockable([ServiceApi, Service, ServiceSpec, ServiceCreateRequest, ServiceCreateResponse, ServiceUpdateRequest, ServiceUpdateResponse, ServiceSpecMode, ServiceSpecModeReplicated])
 class ManageServiceClientTest extends Specification {
 
   EngineApiClient client = Mock(EngineApiClient)

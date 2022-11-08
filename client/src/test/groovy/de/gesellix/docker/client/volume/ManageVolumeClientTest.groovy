@@ -7,10 +7,8 @@ import de.gesellix.docker.remote.api.VolumeCreateOptions
 import de.gesellix.docker.remote.api.VolumeListResponse
 import de.gesellix.docker.remote.api.VolumePruneResponse
 import de.gesellix.docker.remote.api.client.VolumeApi
-import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
-@Mockable([VolumeApi, VolumeListResponse, Volume, VolumePruneResponse])
 class ManageVolumeClientTest extends Specification {
 
   EngineApiClient client = Mock(EngineApiClient)

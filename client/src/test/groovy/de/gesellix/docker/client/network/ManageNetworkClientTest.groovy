@@ -9,10 +9,8 @@ import de.gesellix.docker.remote.api.NetworkCreateResponse
 import de.gesellix.docker.remote.api.NetworkDisconnectRequest
 import de.gesellix.docker.remote.api.NetworkPruneResponse
 import de.gesellix.docker.remote.api.client.NetworkApi
-import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
-@Mockable([NetworkApi, Network, NetworkCreateResponse, NetworkPruneResponse])
 class ManageNetworkClientTest extends Specification {
 
   EngineApiClient client = Mock(EngineApiClient)

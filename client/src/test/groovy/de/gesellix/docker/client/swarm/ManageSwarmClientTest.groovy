@@ -10,10 +10,8 @@ import de.gesellix.docker.remote.api.SwarmSpec
 import de.gesellix.docker.remote.api.SwarmUnlockRequest
 import de.gesellix.docker.remote.api.UnlockKeyResponse
 import de.gesellix.docker.remote.api.client.SwarmApi
-import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
-@Mockable([SwarmApi, Swarm, SwarmInitRequest, SwarmJoinRequest, SwarmSpec, JoinTokens, ObjectVersion, UnlockKeyResponse])
 class ManageSwarmClientTest extends Specification {
 
   EngineApiClient client = Mock(EngineApiClient)

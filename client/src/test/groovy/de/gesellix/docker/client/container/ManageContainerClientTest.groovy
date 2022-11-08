@@ -16,21 +16,16 @@ import de.gesellix.docker.remote.api.ExecInspectResponse
 import de.gesellix.docker.remote.api.ExecStartConfig
 import de.gesellix.docker.remote.api.HealthConfig
 import de.gesellix.docker.remote.api.IdResponse
-import de.gesellix.docker.remote.api.ProcessConfig
 import de.gesellix.docker.remote.api.client.ContainerApi
 import de.gesellix.docker.remote.api.client.ExecApi
 import de.gesellix.docker.remote.api.client.ImageApi
 import de.gesellix.docker.remote.api.core.StreamCallback
-import io.github.joke.spockmockable.Mockable
 import spock.lang.Ignore
 import spock.lang.Specification
 
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 
-@Mockable([
-    ContainerApi, ContainerCreateRequest, ContainerCreateResponse, ContainerInspectResponse, ContainerConfig, ContainerWaitResponse, ContainerTopResponse, ContainerPruneResponse, ContainerUpdateRequest, ContainerUpdateResponse,
-    ExecApi, ExecConfig, IdResponse, ExecInspectResponse, ProcessConfig])
 class ManageContainerClientTest extends Specification {
 
   ManageContainerClient service

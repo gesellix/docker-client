@@ -6,10 +6,8 @@ import de.gesellix.docker.remote.api.Secret
 import de.gesellix.docker.remote.api.SecretCreateRequest
 import de.gesellix.docker.remote.api.SecretSpec
 import de.gesellix.docker.remote.api.client.SecretApi
-import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
-@Mockable([SecretApi, Secret])
 class ManageSecretClientTest extends Specification {
 
   EngineApiClient client = Mock(EngineApiClient)

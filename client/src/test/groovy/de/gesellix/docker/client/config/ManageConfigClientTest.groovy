@@ -6,10 +6,8 @@ import de.gesellix.docker.remote.api.ConfigSpec
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.IdResponse
 import de.gesellix.docker.remote.api.client.ConfigApi
-import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
-@Mockable([ConfigApi, Config])
 class ManageConfigClientTest extends Specification {
 
   EngineApiClient client = Mock(EngineApiClient)

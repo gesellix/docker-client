@@ -6,13 +6,11 @@ import de.gesellix.docker.remote.api.SystemInfo
 import de.gesellix.docker.remote.api.SystemVersion
 import de.gesellix.docker.remote.api.client.SystemApi
 import de.gesellix.docker.remote.api.core.StreamCallback
-import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 
-@Mockable([SystemApi, SystemDataUsageResponse, SystemInfo, SystemVersion])
 class ManageSystemClientTest extends Specification {
 
   EngineApiClient client = Mock(EngineApiClient)

@@ -6,10 +6,8 @@ import de.gesellix.docker.remote.api.Node
 import de.gesellix.docker.remote.api.NodeSpec
 import de.gesellix.docker.remote.api.ObjectVersion
 import de.gesellix.docker.remote.api.client.NodeApi
-import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
-@Mockable([NodeApi, Node])
 class ManageNodeClientTest extends Specification {
 
   EngineApiClient client = Mock(EngineApiClient)

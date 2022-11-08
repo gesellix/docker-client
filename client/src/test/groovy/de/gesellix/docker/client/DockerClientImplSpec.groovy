@@ -10,10 +10,8 @@ import de.gesellix.docker.remote.api.ManagerStatus
 import de.gesellix.docker.remote.api.Node
 import de.gesellix.docker.remote.api.SwarmInfo
 import de.gesellix.docker.remote.api.SystemInfo
-import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
-@Mockable([SystemInfo, SwarmInfo])
 class DockerClientImplSpec extends Specification {
 
   DockerClientImpl dockerClient = new DockerClientImpl()

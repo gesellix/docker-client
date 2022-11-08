@@ -3,10 +3,8 @@ package de.gesellix.docker.client.tasks
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.Task
 import de.gesellix.docker.remote.api.client.TaskApi
-import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
-@Mockable([TaskApi, Task])
 class ManageTaskClientTest extends Specification {
 
   EngineApiClient client = Mock(EngineApiClient)
