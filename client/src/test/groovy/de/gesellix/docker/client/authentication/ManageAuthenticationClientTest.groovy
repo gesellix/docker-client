@@ -11,7 +11,6 @@ import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.SystemAuthResponse
 import de.gesellix.docker.remote.api.client.SystemApi
 import de.gesellix.testutil.ResourceReader
-import io.github.joke.spockmockable.Mockable
 import spock.lang.Requires
 import spock.lang.Specification
 
@@ -19,7 +18,6 @@ import java.lang.reflect.Type
 
 import static de.gesellix.docker.authentication.AuthConfig.EMPTY_AUTH_CONFIG
 
-@Mockable([SystemApi, SystemAuthResponse])
 class ManageAuthenticationClientTest extends Specification {
 
   DockerEnv env

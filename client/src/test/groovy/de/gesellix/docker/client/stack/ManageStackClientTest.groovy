@@ -22,12 +22,10 @@ import de.gesellix.docker.remote.api.ServiceSpec
 import de.gesellix.docker.remote.api.SwarmInfo
 import de.gesellix.docker.remote.api.SystemInfo
 import de.gesellix.docker.remote.api.TaskSpec
-import io.github.joke.spockmockable.Mockable
 import spock.lang.Specification
 
 import static de.gesellix.docker.client.stack.ManageStackClient.LabelNamespace
 
-@Mockable([SystemInfo, SwarmInfo, Network, Service, ServiceSpec])
 class ManageStackClientTest extends Specification {
 
   ManageService manageService = Mock(ManageService)
