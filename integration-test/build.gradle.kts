@@ -4,31 +4,32 @@ plugins {
 }
 
 java {
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(8))
+  }
 }
 
 dependencies {
   constraints {
     implementation("de.gesellix:docker-engine") {
       version {
-        strictly("[2022-09-01T01-01-01,)")
+        strictly("[2022-12-01T01-01-01,)")
       }
     }
     implementation("de.gesellix:docker-filesocket") {
       version {
-        strictly("[2022-09-01T01-01-01,)")
+        strictly("[2022-12-01T01-01-01,)")
       }
     }
     implementation("de.gesellix:docker-remote-api-model-1-41") {
       version {
-        strictly("[2022-09-01T01-01-01,)")
+        strictly("[2022-12-01T01-01-01,)")
       }
     }
     implementation("org.slf4j:slf4j-api") {
       version {
         strictly("[1.7,3)")
-        prefer("2.0.3")
+        prefer("2.0.5")
       }
     }
     listOf(
@@ -67,7 +68,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[1.5,1.8)")
-          prefer("1.6.21")
+          prefer("1.7.22")
         }
       }
     }
@@ -84,15 +85,21 @@ dependencies {
   runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.3")
 
   testImplementation("de.gesellix:docker-registry:2022-10-01T21-12-00")
-  testImplementation("de.gesellix:testutil:[2020-10-03T10-08-28,)")
+  testImplementation("de.gesellix:testutil:[2022-12-01T01-01-01,)")
   testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.12.19")
   testImplementation("org.apache.commons:commons-lang3:3.12.0")
   testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.3")
 }
 
-tasks.withType(Test::class) {
-  useJUnitPlatform()
+tasks{
+  withType<JavaCompile> {
+    options.encoding = "UTF-8"
+  }
+
+  withType<Test> {
+    useJUnitPlatform()
+  }
 }
 
 tasks.check.get().shouldRunAfter(project(":client").tasks.check)

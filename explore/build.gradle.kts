@@ -4,8 +4,9 @@ plugins {
 }
 
 java {
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(8))
+  }
 }
 
 dependencies {
@@ -13,7 +14,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api") {
       version {
         strictly("[1.7,3)")
-        prefer("2.0.3")
+        prefer("2.0.5")
       }
     }
     implementation("com.squareup.okio:okio") {
@@ -31,7 +32,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[1.5,1.8)")
-          prefer("1.6.21")
+          prefer("1.7.22")
         }
       }
     }
@@ -59,6 +60,11 @@ dependencies {
   testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.3")
 }
 
-tasks.withType(Test::class) {
-  useJUnitPlatform()
+tasks {
+  withType<JavaCompile> {
+    options.encoding = "UTF-8"
+  }
+  withType<Test> {
+    useJUnitPlatform()
+  }
 }

@@ -31,7 +31,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api") {
       version {
         strictly("[1.7,3)")
-        prefer("2.0.3")
+        prefer("2.0.5")
       }
     }
     implementation("com.squareup.okhttp3:mockwebserver") {
@@ -67,7 +67,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[1.5,1.8)")
-          prefer("1.6.21")
+          prefer("1.7.22")
         }
       }
     }
@@ -85,14 +85,14 @@ dependencies {
     listOf(
       "com.squareup.moshi:moshi",
       "com.squareup.moshi:moshi-kotlin"
-    ).onEach{
-        implementation(it) {
-          version {
-            strictly("[1.12.0,)")
-            prefer("1.14.0")
-          }
+    ).onEach {
+      implementation(it) {
+        version {
+          strictly("[1.12.0,)")
+          prefer("1.14.0")
         }
       }
+    }
   }
 
   // TODO consider changing this from api to implementation.
@@ -131,12 +131,17 @@ dependencies {
 }
 
 java {
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(8))
+  }
 }
 
 tasks {
-  withType(Test::class.java) {
+  withType<JavaCompile> {
+    options.encoding = "UTF-8"
+  }
+
+  withType<Test> {
     useJUnitPlatform()
 
     // minimal way of providing a special environment variable for the EnvFileParserTest
