@@ -12,7 +12,7 @@ val dependencyVersions = listOf(
   "net.bytebuddy:byte-buddy-agent:1.12.19",
   "org.apache.commons:commons-compress:1.22",
   "org.codehaus.groovy:groovy:3.0.13",
-  "org.jetbrains:annotations:23.0.0",
+  "org.jetbrains:annotations:23.1.0",
   "org.junit:junit-bom:5.9.1",
 )
 
