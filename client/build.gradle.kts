@@ -31,7 +31,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api") {
       version {
         strictly("[1.7,3)")
-        prefer("2.0.5")
+        prefer("2.0.6")
       }
     }
     implementation("com.squareup.okhttp3:mockwebserver") {
@@ -109,7 +109,7 @@ dependencies {
   implementation("com.google.re2j:re2j:1.7")
 
   implementation("org.slf4j:slf4j-api:2.0.6")
-  testImplementation("ch.qos.logback:logback-classic:[1.2,2)!!1.3.3")
+  testImplementation("ch.qos.logback:logback-classic:[1.2,2)!!1.3.5")
 
   implementation("com.squareup.okio:okio-jvm:3.2.0")
   api("com.squareup.okhttp3:okhttp:4.10.0")
