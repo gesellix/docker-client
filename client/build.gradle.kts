@@ -15,17 +15,17 @@ dependencies {
   constraints {
     implementation("de.gesellix:docker-engine") {
       version {
-        strictly("[2022-02-01T01-01-01,)")
+        strictly("[2022-12-01T01-01-01,)")
       }
     }
     implementation("de.gesellix:docker-filesocket") {
       version {
-        strictly("[2022-02-01T01-01-01,)")
+        strictly("[2022-12-01T01-01-01,)")
       }
     }
     implementation("de.gesellix:docker-remote-api-model-1-41") {
       version {
-        strictly("[2022-02-01T01-01-01,)")
+        strictly("[2022-12-01T01-01-01,)")
       }
     }
     implementation("org.slf4j:slf4j-api") {
@@ -53,7 +53,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[3,4)")
-          prefer("3.2.0")
+          prefer("3.3.0")
         }
       }
     }
@@ -66,8 +66,8 @@ dependencies {
     ).onEach {
       implementation(it) {
         version {
-          strictly("[1.5,1.8)")
-          prefer("1.7.22")
+          strictly("[1.5,1.9)")
+          prefer("1.8.0")
         }
       }
     }
@@ -119,7 +119,7 @@ dependencies {
 
   implementation("org.bouncycastle:bcpkix-jdk15on:1.70")
 
-  testImplementation("de.gesellix:testutil:[2021-08-05T22-09-32,)")
+  testImplementation("de.gesellix:testutil:[2022-12-01T01-01-01,)")
 
   testImplementation("org.junit.platform:junit-platform-launcher:1.9.2")
   testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
