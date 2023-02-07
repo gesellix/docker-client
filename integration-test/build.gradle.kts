@@ -61,6 +61,7 @@ dependencies {
     listOf(
       "org.jetbrains.kotlin:kotlin-reflect",
       "org.jetbrains.kotlin:kotlin-stdlib",
+      "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
       "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
       "org.jetbrains.kotlin:kotlin-stdlib-common",
       "org.jetbrains.kotlin:kotlin-test"
