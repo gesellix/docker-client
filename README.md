@@ -1,4 +1,4 @@
-[![Build Status](https://img.shields.io/github/workflow/status/gesellix/docker-client/Publish?style=for-the-badge)](https://github.com/gesellix/docker-client/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/gesellix/docker-client/cd.yml?branch=main&style=for-the-badge)](https://github.com/gesellix/docker-client/actions)
 [![Maven Central](https://img.shields.io/maven-central/v/de.gesellix/docker-client.svg?style=for-the-badge&maxAge=86400)](https://search.maven.org/search?q=g:de.gesellix%20AND%20a:docker-client)
 [![API Coverage](https://img.shields.io/static/v1?label=API%20Coverage%20(v1.31)&message=104%2F122%20endpoints&color=blue&style=for-the-badge)](https://github.com/gesellix/docker-client/blob/master/supported-api.md)
 
