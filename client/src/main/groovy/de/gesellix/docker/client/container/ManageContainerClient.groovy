@@ -34,6 +34,9 @@ import org.slf4j.LoggerFactory
 
 import java.time.Duration
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.function.Predicate
 
 class ManageContainerClient implements ManageContainer {
 
@@ -338,6 +341,41 @@ class ManageContainerClient implements ManageContainer {
                                       actualQuery.timestamps as Boolean,
                                       actualQuery.tail as String,
                                       callback, timeout.toMillis())
+  }
+
+  @Override
+  void waitForLogEvent(String container, Map<String, Object> query, Predicate<Frame> matcher, Duration timeout) {
+    CountDownLatch latch = new CountDownLatch(1)
+    def frameHandler = new StreamCallback<Frame>() {
+
+      @Override
+      void onNext(Frame element) {
+        log.info(element?.toString())
+        if (matcher.test(element)) {
+          latch.countDown()
+        }
+      }
+
+      @Override
+      void onFailed(Exception e) {
+        log.error("Logs failed", e)
+        latch.countDown()
+      }
+
+      @Override
+      void onFinished() {
+        latch.countDown()
+      }
+    }
+
+    new Thread({
+      query.tail = 1 // "all"
+      logs(container, query, frameHandler, timeout)
+    }).start()
+    def success = latch.await(timeout.toMillis(), TimeUnit.MILLISECONDS)
+    if (!success) {
+      log.warn("Timeout reached after {} while waiting for the expected log message", timeout)
+    }
   }
 
   @Override

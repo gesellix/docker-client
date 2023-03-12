@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 public interface ManageContainer {
 
@@ -84,6 +85,8 @@ public interface ManageContainer {
   void kill(String container);
 
   void logs(String container, Map<String, Object> query, StreamCallback<Frame> callback, Duration timeout);
+
+  void waitForLogEvent(String container, Map<String, Object> query, Predicate<Frame> matcher, Duration timeout);
 
   EngineResponseContent<List<Map<String, Object>>> ps(Map<String, Object> query);
 

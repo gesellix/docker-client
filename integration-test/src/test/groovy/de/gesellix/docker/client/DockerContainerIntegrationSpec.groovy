@@ -35,6 +35,7 @@ import java.time.temporal.ChronoUnit
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Predicate
 
 import static de.gesellix.docker.client.TestConstants.CONSTANTS
 import static de.gesellix.docker.websocket.WebsocketStatusCode.NORMAL_CLOSURE
@@ -841,6 +842,34 @@ class DockerContainerIntegrationSpec extends Specification {
     logs.any {
       it.streamType == Frame.StreamType.STDOUT && it.payloadAsString.contains("Listening and serving HTTP")
     }
+
+    cleanup:
+    dockerClient.stop(containerId)
+    dockerClient.wait(containerId)
+    dockerClient.rm(containerId)
+  }
+
+  def "waitForLogEvent"() {
+    given:
+    def matcherMatched = false
+    Predicate<Frame> matcher = new Predicate<Frame>() {
+
+      @Override
+      boolean test(Frame frame) {
+        def matches = frame.streamType == Frame.StreamType.STDOUT && frame.payloadAsString.contains("Listening and serving HTTP")
+        matcherMatched = matcherMatched || matches
+        return matches
+      }
+    }
+    def containerConfig = new ContainerCreateRequest().tap { c -> c.image = CONSTANTS.imageName }
+    def containerStatus = dockerClient.run(containerConfig, "logs-example")
+    String containerId = containerStatus.content.id
+
+    when:
+    dockerClient.waitForLogEvent(containerId, [tail: 0], matcher, Duration.of(5, ChronoUnit.SECONDS))
+
+    then:
+    matcherMatched
 
     cleanup:
     dockerClient.stop(containerId)
