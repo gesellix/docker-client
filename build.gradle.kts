@@ -2,7 +2,7 @@ plugins {
   id("maven-publish")
   id("com.github.ben-manes.versions") version "0.46.0"
   id("net.ossindex.audit") version "0.4.11"
-  id("io.freefair.maven-central.validate-poms") version "6.6.3"
+  id("io.freefair.maven-central.validate-poms") version "8.0.1"
   id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
 }
 
