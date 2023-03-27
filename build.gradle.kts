@@ -69,4 +69,4 @@ nexusPublishing {
   }
 }
 
-project.apply("debug.gradle.kts")
+//project.apply("debug.gradle.kts")

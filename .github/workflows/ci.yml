@@ -37,8 +37,8 @@ jobs:
         run: docker info
       - name: java version
         run: java -version
-      - name: Debug
-        run: ./gradlew checkDockerClient --info --stacktrace
+#      - name: Debug
+#        run: ./gradlew checkDockerClient --info --stacktrace
       - name: clean build
         run: ./gradlew clean build --info --stacktrace
       - name: Upload Test Results
