@@ -856,6 +856,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
       @Override
       boolean test(Frame frame) {
+        log.info(frame?.toString())
         def matches = frame.streamType == Frame.StreamType.STDOUT && frame.payloadAsString.contains("Listening and serving HTTP")
         matcherMatched = matcherMatched || matches
         return matches

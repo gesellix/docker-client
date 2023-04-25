@@ -350,7 +350,6 @@ class ManageContainerClient implements ManageContainer {
 
       @Override
       void onNext(Frame element) {
-        log.info(element?.toString())
         if (matcher.test(element)) {
           latch.countDown()
         }
