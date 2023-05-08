@@ -27,7 +27,7 @@ class ManageAuthenticationClient implements ManageAuthentication {
     this.client = client
     this.authConfigReader = authConfigReader
     this.dockerConfigReader = dockerConfigReader
-    this.registryElection = new RegistryElection(client.getSystemApi(), authConfigReader)
+    this.registryElection = new RegistryElection(authConfigReader)
   }
 
   @Override
