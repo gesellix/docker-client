@@ -32,25 +32,28 @@ public class RegistryElection {
     return authConfigReader.readAuthConfig(configKey, null);
   }
 
-  // ElectAuthServer returns the default registry to use (by asking the daemon)
+  // ElectAuthServer returns the default registry to use
   public String electAuthServer() {
+    final String defaultServerAddress = new DockerEnv().getIndexUrl_v1();
+    return defaultServerAddress;
+
+    // deprecated/obsolete: see https://github.com/docker/cli/pull/2819 for details
+    //
     // The daemon `/info` endpoint informs us of the default registry being
     // used. This is essential in cross-platforms environment, where for
     // example a Linux client might be interacting with a Windows daemon, hence
     // the default registry URL might be Windows specific.
-    final String defaultServerAddress = new DockerEnv().getIndexUrl_v1();
-    try {
-      SystemInfo info = systemApi.systemInfo();
-      if (info == null || info.getIndexServerAddress() == null || info.getIndexServerAddress().isEmpty()) {
-        log.warn("Empty registry endpoint from daemon. Using system default: " + defaultServerAddress);
-      }
-      else {
-        return info.getIndexServerAddress();
-      }
-    }
-    catch (Exception e) {
-      log.warn("Failed to get default registry endpoint from daemon. Using system default: " + defaultServerAddress, e);
-    }
-    return defaultServerAddress;
+//    try {
+//      SystemInfo info = systemApi.systemInfo();
+//      if (info == null || info.getIndexServerAddress() == null || info.getIndexServerAddress().isEmpty()) {
+//        log.warn("Empty registry endpoint from daemon. Using system default: " + defaultServerAddress);
+//        return defaultServerAddress;
+//      } else {
+//        return info.getIndexServerAddress();
+//      }
+//    } catch (Exception e) {
+//      log.warn("Failed to get default registry endpoint from daemon. Using system default: " + defaultServerAddress, e);
+//      return defaultServerAddress;
+//    }
   }
 }
