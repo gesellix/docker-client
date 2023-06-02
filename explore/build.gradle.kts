@@ -57,7 +57,7 @@ dependencies {
   runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.6")
 
   testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
-  testRuntimeOnly("net.bytebuddy:byte-buddy:1.14.4")
+  testRuntimeOnly("net.bytebuddy:byte-buddy:1.14.5")
   testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.5")
 }
 
