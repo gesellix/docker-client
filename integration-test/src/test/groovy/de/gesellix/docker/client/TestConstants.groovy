@@ -15,21 +15,21 @@ class TestConstants {
   static TestConstants CONSTANTS = new TestConstants()
 
   TestConstants() {
-    // docker inspect --format "{{ json .Created }}, Id: {{ json .Id }}, Digests: {{ json .RepoDigests }}" gesellix/echo-server:2022-07-31T15-12-00
+    // docker inspect --format "{{ json .Created }}, Id: {{ json .Id }}, Digests: {{ json .RepoDigests }}" gesellix/echo-server:2023-07-02T12-00-00
     if (LocalDocker.isNativeWindows()) {
-      imageDigest = "gesellix/echo-server@sha256:48903444262b826d823baa05797b505ffb697da81f20c064ba82440a517b2e7f"
-      imageId = "sha256:3d19bec02ff270c0fd3e24d684f8f7caed31f534009aa8c902a8afb14a7c7414"
-      imageCreated = 1659273344
+      imageDigest = "gesellix/echo-server@sha256:b1bc3f701f99f827b6d5ab674dec266e6c4bad596d34b5cec6d5011b760477fd"
+      imageId = "sha256:6d623c7eb0e997b059b859eb0b642cee64d26b7e19973434bf9b21b679819a1e"
+      imageCreated = 1688292307
       volumeTarget = "C:/my-volume"
     }
     else {
-      imageDigest = "gesellix/echo-server@sha256:48903444262b826d823baa05797b505ffb697da81f20c064ba82440a517b2e7f"
-      imageId = "sha256:36e30971b6ee8b944097373e1cce5f51ec2924fd8de4d40c6fc94308acdf9002"
-      imageCreated = 1659273215
+      imageDigest = "gesellix/echo-server@sha256:b1bc3f701f99f827b6d5ab674dec266e6c4bad596d34b5cec6d5011b760477fd"
+      imageId = "sha256:c1addd5b4650fb92f02484236b5d4621b3021b364eaa1f73fcf7961631bc8a49"
+      imageCreated = 1688292215
       volumeTarget = "/my-volume"
     }
     imageRepo = "gesellix/echo-server"
-    imageTag = "2022-07-31T15-12-00"
+    imageTag = "2023-07-02T12-00-00"
     imageName = "$imageRepo:$imageTag"
 
     if (System.getenv("GITHUB_ACTOR")) {
