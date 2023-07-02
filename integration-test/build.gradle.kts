@@ -69,7 +69,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[1.6,1.9)")
-          prefer("1.8.21")
+          prefer("1.8.22")
         }
       }
     }
@@ -83,14 +83,14 @@ dependencies {
   testImplementation("org.apache.commons:commons-compress:1.23.0")
 
   testImplementation("org.slf4j:slf4j-api:[1.7,)")
-  runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.6")
+  runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.8")
 
   testImplementation("de.gesellix:docker-registry:2023-05-01T14-06-00")
-  testImplementation("de.gesellix:testutil:[2022-12-01T01-01-01,)")
+  testImplementation("de.gesellix:testutil:[2023-07-01T01-01-01,)")
   testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.14.5")
   testImplementation("org.apache.commons:commons-lang3:3.12.0")
-  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.5")
+  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.8")
 }
 
 tasks{

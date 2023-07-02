@@ -68,7 +68,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[1.6,1.9)")
-          prefer("1.8.21")
+          prefer("1.8.22")
         }
       }
     }
@@ -79,7 +79,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[3,)")
-          prefer("3.0.17")
+          prefer("3.0.18")
         }
       }
     }
@@ -90,7 +90,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[1.12.0,)")
-          prefer("1.14.0")
+          prefer("1.15.0")
         }
       }
     }
@@ -110,7 +110,7 @@ dependencies {
   implementation("com.google.re2j:re2j:1.7")
 
   implementation("org.slf4j:slf4j-api:2.0.7")
-  testImplementation("ch.qos.logback:logback-classic:[1.2,2)!!1.3.6")
+  testImplementation("ch.qos.logback:logback-classic:[1.2,2)!!1.3.8")
 
   implementation("com.squareup.okio:okio-jvm:3.3.0")
   api("com.squareup.okhttp3:okhttp:4.11.0")
@@ -120,7 +120,7 @@ dependencies {
 
   implementation("org.bouncycastle:bcpkix-jdk15on:1.70")
 
-  testImplementation("de.gesellix:testutil:[2022-12-01T01-01-01,)")
+  testImplementation("de.gesellix:testutil:[2023-07-01T01-01-01,)")
 
   testImplementation("org.junit.platform:junit-platform-launcher:1.9.3")
   testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")

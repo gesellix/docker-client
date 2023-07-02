@@ -33,7 +33,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[1.6,1.9)")
-          prefer("1.8.21")
+          prefer("1.8.22")
         }
       }
     }
@@ -44,7 +44,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[3,)")
-          prefer("3.0.17")
+          prefer("3.0.18")
         }
       }
     }
@@ -54,11 +54,11 @@ dependencies {
   testImplementation("org.apache.commons:commons-compress:1.23.0")
 
   implementation("org.slf4j:slf4j-api:2.0.7")
-  runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.6")
+  runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.8")
 
   testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.14.5")
-  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.5")
+  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.8")
 }
 
 tasks {
