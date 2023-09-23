@@ -75,7 +75,10 @@ class DockerContainerIntegrationSpec extends Specification {
     }, null, archive)
 
     def imageId = CreateImageInfoExtensionsKt.getImageId(infos)
-    String container = dockerClient.createContainer(new ContainerCreateRequest().tap { image = imageId; cmd = ["-"] }).content.id
+    String container = dockerClient.createContainer(new ContainerCreateRequest().tap {
+      image = imageId;
+      cmd = ["-"]
+    }).content.id
 
     when:
     def response = dockerClient.export(container)
@@ -163,21 +166,36 @@ class DockerContainerIntegrationSpec extends Specification {
           : ["/bin/sh"]
     }
     String containerId = dockerClient.run(containerConfig).content.id
+    Thread.sleep(1000)
     dockerClient.stop(containerId)
     dockerClient.wait(containerId)
-    Thread.sleep(1000)
+
+    def awaitChange = { String container ->
+      CountDownLatch latch = new CountDownLatch(1)
+      Thread.start {
+        while (true) {
+          def changes = dockerClient.diff(container).content
+          log.info("changes: ${changes}")
+          def aChange = changes.find {
+            it.path?.endsWith("/change.txt")
+          }
+          if (aChange != null && aChange.kind >= 0) {
+            latch.countDown()
+            return
+          } else {
+            Thread.sleep(1000)
+          }
+        }
+      }
+      def success = latch.await(5, SECONDS)
+      return success
+    }
 
     when:
-    def changes = dockerClient.diff(containerId).content
+    def changesFound = awaitChange(containerId)
 
     then:
-    log.info("changes: ${changes}")
-    def aChange = changes.find {
-      it.path?.endsWith("/change.txt")
-    }
-    aChange != null
-    and:
-    aChange?.kind >= 0
+    changesFound
 
     cleanup:
     dockerClient.rm(containerId)
@@ -418,8 +436,7 @@ class DockerContainerIntegrationSpec extends Specification {
       // About the 3221225786 status code: https://stackoverflow.com/a/25444766/372019
       // See "2.3.1 NTSTATUS Values": https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
       result.content.statusCode == 3221225786
-    }
-    else {
+    } else {
       result.content.statusCode >= 0
     }
 
@@ -711,7 +728,10 @@ class DockerContainerIntegrationSpec extends Specification {
     new String(fileContent) =~ "The wind\r?\ncaught it.\r?\n"
 
     cleanup:
-    try { tarContent?.close() } catch (Exception ignored) {}
+    try {
+      tarContent?.close()
+    } catch (Exception ignored) {
+    }
     dockerClient.stop(containerId)
     dockerClient.wait(containerId)
     dockerClient.rm(containerId)
@@ -747,8 +767,7 @@ class DockerContainerIntegrationSpec extends Specification {
     then:
     if (isNativeWindows) {
       top.titles == ["Name", "PID", "CPU", "Private Working Set"]
-    }
-    else {
+    } else {
       def reducedTitleSet = LocalDocker.getDockerVersion().major >= 1 && LocalDocker.getDockerVersion().minor >= 13
       top.titles == (reducedTitleSet ? ["PID", "USER", "TIME", "COMMAND"] : ["UID", "PID", "PPID", "C", "STIME", "TTY", "TIME", "CMD"])
     }
@@ -907,9 +926,10 @@ class DockerContainerIntegrationSpec extends Specification {
 
     when:
     new Thread({
-      dockerClient.attach(containerId, null, true, true,
-                          false, true, true,
-                          callback, Duration.of(10, ChronoUnit.SECONDS))
+      dockerClient.attach(
+          containerId, null, true, true,
+          false, true, true,
+          callback, Duration.of(10, ChronoUnit.SECONDS))
     }).start()
     latch.await(15, SECONDS)
 
@@ -975,14 +995,13 @@ class DockerContainerIntegrationSpec extends Specification {
       if (stdout.toString() == expectedOutput) {
         log.info("[attach (interactive)] consumed (complete: ${stdout.toString() == expectedOutput})\n${stdout.toString()}")
         onSourceConsumed.countDown()
-      }
-      else {
+      } else {
         log.info("[attach (interactive)] consumed (complete: ${stdout.toString() == expectedOutput})\n${stdout.toString()}")
       }
     }
     dockerClient.attach(containerId,
-                        [logs: 1, stream: 1, stdin: 1, stdout: 1, stderr: 1],
-                        attachConfig)
+        [logs: 1, stream: 1, stdin: 1, stdout: 1, stderr: 1],
+        attachConfig)
 
     when:
     stdin.write("$content\n".bytes)
@@ -1080,8 +1099,8 @@ class DockerContainerIntegrationSpec extends Specification {
 
     when:
     WebSocket wsCall = tcpClient.attachWebsocket(containerId,
-                                                 [stream: 1, stdin: 1, stdout: 1, stderr: 1],
-                                                 listener)
+        [stream: 1, stdin: 1, stdout: 1, stderr: 1],
+        listener)
 
     openConnection.await(500, MILLISECONDS)
     receiveMessage.await(500, MILLISECONDS)
