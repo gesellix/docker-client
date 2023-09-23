@@ -641,7 +641,7 @@ class DockerImageIntegrationSpec extends Specification {
     def images = dockerClient.images([filters: [dangling: ["true"]]]).content
     println "images (1) ${images}"
     def found = images.findAll { image ->
-      image.repoTags == ["<none>:<none>"] || image.repoTags == null
+      image.repoTags == ["<none>:<none>"] || image.repoTags == [] || image.repoTags == null
     }.find { image ->
       image.id =~ imageId.ID
     }
