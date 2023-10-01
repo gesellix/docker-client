@@ -7,8 +7,27 @@ on:
 #      - published
 
 jobs:
-  release:
+  event-file:
+    # https://github.com/marketplace/actions/publish-test-results#support-fork-repositories-and-dependabot-branches
+    name: "Event File"
     runs-on: ubuntu-latest
+    steps:
+      - name: Upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: event-file
+          path: ${{ github.event_path }}
+  release:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+        #          - windows-latest
+        #          - macos-latest
+        java:
+          - 8
+    #          - 17
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -18,8 +37,11 @@ jobs:
         uses: actions/setup-java@v3.13.0
         with:
           distribution: 'zulu'
-          java-version: 8
-          cache: 'gradle'
+          java-version: ${{ matrix.java }}
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+#      - name: Install Docker on macOS
+#        uses: douglascamata/setup-docker-macos-action@v1-alpha
       - name: Set artifact version
         run: |
           echo "RELEASE_VERSION=$(echo '${{ github.event.release.tag_name }}' | sed -e s/^v//)" >> $GITHUB_ENV
@@ -32,10 +54,12 @@ jobs:
           SONATYPE_STAGING_PROFILE_ID: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-      - name: Publish Test Report
-        if: ${{ always() }}
-        uses: scacap/action-surefire-report@v1
+      - name: Upload Test Results
+        # see publish-test-results.yml for workflow that publishes test results without security issues for forks
+        # https://github.com/marketplace/actions/publish-test-results#support-fork-repositories-and-dependabot-branches
+        if: always()
+        uses: actions/upload-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          report_paths: '**/build/test-results/test/TEST-*.xml'
+          name: Test Results (Java ${{ matrix.java }} on ${{ matrix.os }})
+          path: '**/build/test-results/test/TEST-*.xml'
 ...

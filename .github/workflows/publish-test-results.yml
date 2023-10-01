@@ -10,41 +10,42 @@ on:
   workflow_run:
     workflows:
       - CI
+      - Publish
+      - Release
     types:
       - completed
+permissions: {}
 
 jobs:
-  # Job based on https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+  # Job based on
+  # - https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+  # - https://github.com/marketplace/actions/publish-test-results#support-fork-repositories-and-dependabot-branches
   publish-test-results:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: github.event.workflow_run.conclusion != 'skipped'
+
+    permissions:
+      checks: write
+      # needed unless run with comment_mode: off
+      pull-requests: write
+      # only needed for private repository
+      #contents: read
+      # only needed for private repository
+      #issues: read
+      # required by download step to access artifacts API
+      actions: read
+
     steps:
-      # Unfortunately, the official actions/download-artifact action is very limited in scope.
-      # Can't use it yet in this context, https://github.com/actions/download-artifact/issues/60
-      - name: Download artifact
-        uses: actions/github-script@v6
+      - name: Download and Extract Artifacts
+        uses: dawidd6/action-download-artifact@268677152d06ba59fcec7a7f0b5d961b6ccd7e1e
         with:
-          script: |
-            var artifacts = await github.rest.actions.listWorkflowRunArtifacts({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               run_id: ${{ github.event.workflow_run.id }},
-            });
-            var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
-              return artifact.name == "test-results"
-            })[0];
-            var download = await github.rest.actions.downloadArtifact({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               artifact_id: matchArtifact.id,
-               archive_format: 'zip',
-            });
-            var fs = require('fs');
-            fs.writeFileSync('${{github.workspace}}/test-results.zip', Buffer.from(download.data));
-      - run: unzip test-results.zip
+          run_id: ${{ github.event.workflow_run.id }}
+          path: artifacts
       - name: Publish Test Results
-        uses: scacap/action-surefire-report@v1
+        uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          commit: ${{ github.event.workflow_run.head_commit.id }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          report_paths: '**/build/test-results/test/TEST-*.xml'
+          commit: ${{ github.event.workflow_run.head_sha }}
+          event_file: artifacts/event-file/event.json
+          event_name: ${{ github.event.workflow_run.event }}
+          files: "artifacts/**/build/test-results/test/TEST-*.xml"
+...
