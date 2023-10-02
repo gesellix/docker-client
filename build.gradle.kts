@@ -7,7 +7,7 @@ plugins {
 }
 
 val dependencyVersions = listOf(
-  "com.squareup.okio:okio-jvm:3.5.0",
+  "com.squareup.okio:okio-jvm:3.6.0",
   "net.bytebuddy:byte-buddy:1.14.8",
   "net.bytebuddy:byte-buddy-agent:1.14.8",
   "org.apache.commons:commons-compress:1.24.0",
