@@ -53,7 +53,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[3,4)")
-          prefer("3.5.0")
+          prefer("3.6.0")
         }
       }
     }
@@ -68,7 +68,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[1.6,1.10)")
-          prefer("1.9.0")
+          prefer("1.9.10")
         }
       }
     }
@@ -110,7 +110,7 @@ dependencies {
   implementation("com.google.re2j:re2j:1.7")
 
   implementation("org.slf4j:slf4j-api:2.0.9")
-  testImplementation("ch.qos.logback:logback-classic:[1.2,2)!!1.3.8")
+  testImplementation("ch.qos.logback:logback-classic:[1.2,2)!!1.3.11")
 
   implementation("com.squareup.okio:okio:3.6.0")
   api("com.squareup.okhttp3:okhttp:4.11.0")
