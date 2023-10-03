@@ -382,12 +382,13 @@ class DeployConfigReader {
     Long timeout = null
     Long interval = null
     Long startPeriod = null
+    Long startInterval = null
 
     if (healthcheck.disable) {
       if (healthcheck.test?.parts) {
         throw new IllegalArgumentException("test and disable can't be set at the same time")
       }
-      return new HealthConfig(["NONE"], null, null, null, null)
+      return new HealthConfig(["NONE"], null, null, null, null, null)
     }
 
     if (healthcheck.timeout) {
@@ -402,13 +403,18 @@ class DeployConfigReader {
     if (healthcheck.startPeriod) {
       startPeriod = parseDuration(healthcheck.startPeriod).toNanos()
     }
+    // TODO add this one
+//    if (healthcheck.startInterval) {
+//      startInterval = parseDuration(healthcheck.startInterval).toNanos()
+//    }
 
     return new HealthConfig(
         healthcheck.test.parts,
         interval ?: 0,
         timeout ?: 0,
         retries,
-        startPeriod
+        startPeriod,
+        startInterval
     )
   }
 

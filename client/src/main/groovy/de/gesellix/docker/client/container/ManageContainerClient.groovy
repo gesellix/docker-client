@@ -6,7 +6,6 @@ import de.gesellix.docker.client.repository.RepositoryTagParser
 import de.gesellix.docker.engine.AttachConfig
 import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.engine.EngineResponse
-import de.gesellix.docker.remote.api.ContainerChangeResponseItem
 import de.gesellix.docker.remote.api.ContainerConfig
 import de.gesellix.docker.remote.api.ContainerCreateRequest
 import de.gesellix.docker.remote.api.ContainerCreateResponse
@@ -20,6 +19,7 @@ import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.ExecConfig
 import de.gesellix.docker.remote.api.ExecInspectResponse
 import de.gesellix.docker.remote.api.ExecStartConfig
+import de.gesellix.docker.remote.api.FilesystemChange
 import de.gesellix.docker.remote.api.HealthConfig
 import de.gesellix.docker.remote.api.IdResponse
 import de.gesellix.docker.remote.api.client.ContainerApi
@@ -199,10 +199,10 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponseContent<List<ContainerChangeResponseItem>> diff(String containerId) {
+  EngineResponseContent<List<FilesystemChange>> diff(String containerId) {
     log.info("docker diff")
-    List<ContainerChangeResponseItem> containerChanges = client.containerApi.containerChanges(containerId)
-    return new EngineResponseContent<List<ContainerChangeResponseItem>>(containerChanges)
+    List<FilesystemChange> containerChanges = client.containerApi.containerChanges(containerId)
+    return new EngineResponseContent<List<FilesystemChange>>(containerChanges)
   }
 
   @Override
@@ -265,6 +265,7 @@ class ManageContainerClient implements ManageContainer {
         true,
         true,
         null,
+        null,
         (execConfig.Tty ?: false) as Boolean,
         null,
         command,
@@ -276,7 +277,8 @@ class ManageContainerClient implements ManageContainer {
     String execId = execCreateResult.content.id
     ExecStartConfig execStartConfig = new ExecStartConfig(
         (execConfig.Detach ?: false) as Boolean,
-        actualExecConfig.tty)
+        actualExecConfig.tty,
+        null)
     startExec(execId, execStartConfig, callback, timeout)
     return execCreateResult
   }
@@ -333,14 +335,14 @@ class ManageContainerClient implements ManageContainer {
 //    def multiplexStreams = !inspectContainer(container).content.config.tty
 
     client.containerApi.containerLogs(container,
-                                      actualQuery.follow as Boolean,
-                                      actualQuery.stdout as Boolean,
-                                      actualQuery.stderr as Boolean,
-                                      actualQuery.since as Integer,
-                                      actualQuery.until as Integer,
-                                      actualQuery.timestamps as Boolean,
-                                      actualQuery.tail as String,
-                                      callback, timeout.toMillis())
+        actualQuery.follow as Boolean,
+        actualQuery.stdout as Boolean,
+        actualQuery.stderr as Boolean,
+        actualQuery.since as Integer,
+        actualQuery.until as Integer,
+        actualQuery.timestamps as Boolean,
+        actualQuery.tail as String,
+        callback, timeout.toMillis())
   }
 
   @Override

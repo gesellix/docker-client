@@ -3,6 +3,7 @@ package de.gesellix.docker.client
 import de.gesellix.docker.client.container.ArchiveUtil
 import de.gesellix.docker.client.testutil.TeeOutputStream
 import de.gesellix.docker.engine.AttachConfig
+import de.gesellix.docker.remote.api.ChangeType
 import de.gesellix.docker.remote.api.ContainerCreateRequest
 import de.gesellix.docker.remote.api.ContainerUpdateRequest
 import de.gesellix.docker.remote.api.CreateImageInfo
@@ -179,7 +180,7 @@ class DockerContainerIntegrationSpec extends Specification {
           def aChange = changes.find {
             it.path?.endsWith("/change.txt")
           }
-          if (aChange != null && aChange.kind >= 0) {
+          if (aChange != null && aChange.kind in ChangeType.values()) {
             latch.countDown()
             return
           } else {
@@ -547,6 +548,7 @@ class DockerContainerIntegrationSpec extends Specification {
         null,
         null,
         null,
+        null,
         ['echo "hello exec!"'],
         null,
         null,
@@ -572,6 +574,7 @@ class DockerContainerIntegrationSpec extends Specification {
         false,
         true,
         true,
+        null,
         null,
         false,
         null,
@@ -606,7 +609,7 @@ class DockerContainerIntegrationSpec extends Specification {
     }
 
     when:
-    def execStartConfig = new ExecStartConfig(false, false)
+    def execStartConfig = new ExecStartConfig(false, false, null)
     dockerClient.startExec(execId, execStartConfig, callback, Duration.of(5, ChronoUnit.SECONDS))
     latch.await(10, SECONDS)
 
@@ -640,6 +643,7 @@ class DockerContainerIntegrationSpec extends Specification {
         true,
         true,
         true,
+        null,
         null,
         true,
         null,
@@ -676,7 +680,7 @@ class DockerContainerIntegrationSpec extends Specification {
     }
 
     when:
-    def execStartConfig = new ExecStartConfig(false, true)
+    def execStartConfig = new ExecStartConfig(false, true, null)
     dockerClient.startExec(execId, execStartConfig, attachConfig)
 //    dockerClient.startExec(execId, execStartConfig, callback, Duration.of(1, ChronoUnit.MINUTES))
     onSinkClosed.await(5, SECONDS)

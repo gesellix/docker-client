@@ -213,7 +213,7 @@ class ManageContainerClientTest extends Specification {
     given:
     def execApi = Mock(ExecApi)
     client.execApi >> execApi
-    def execStartConfig = new ExecStartConfig(true, false)
+    def execStartConfig = new ExecStartConfig(true, false, null)
     def callback = Mock(StreamCallback)
 
     when:
@@ -251,12 +251,12 @@ class ManageContainerClientTest extends Specification {
     then:
     1 * execApi.containerExec("container-id",
                               new ExecConfig(false, true, true,
-                                             null, false,
+                                             null, null, false,
                                              null, ["command", "line"],
                                              null, null, null)) >> idResponse
     then:
     1 * execApi.execStart("exec-id",
-                          new ExecStartConfig(false, false),
+                          new ExecStartConfig(false, false, null),
                           callback, 1000)
     and:
     exec.content == idResponse
