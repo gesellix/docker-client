@@ -3,7 +3,6 @@ package de.gesellix.docker.client.container;
 import de.gesellix.docker.client.EngineResponseContent;
 import de.gesellix.docker.engine.AttachConfig;
 import de.gesellix.docker.engine.EngineResponse;
-import de.gesellix.docker.remote.api.ContainerChangeResponseItem;
 import de.gesellix.docker.remote.api.ContainerCreateRequest;
 import de.gesellix.docker.remote.api.ContainerCreateResponse;
 import de.gesellix.docker.remote.api.ContainerInspectResponse;
@@ -15,6 +14,7 @@ import de.gesellix.docker.remote.api.ContainerWaitResponse;
 import de.gesellix.docker.remote.api.ExecConfig;
 import de.gesellix.docker.remote.api.ExecInspectResponse;
 import de.gesellix.docker.remote.api.ExecStartConfig;
+import de.gesellix.docker.remote.api.FilesystemChange;
 import de.gesellix.docker.remote.api.IdResponse;
 import de.gesellix.docker.remote.api.client.ContainerApi;
 import de.gesellix.docker.remote.api.core.Frame;
@@ -62,7 +62,7 @@ public interface ManageContainer {
 
   EngineResponseContent<ContainerCreateResponse> createContainer(ContainerCreateRequest containerCreateRequest, String name, String authBase64Encoded);
 
-  EngineResponseContent<List<ContainerChangeResponseItem>> diff(String container);
+  EngineResponseContent<List<FilesystemChange>> diff(String container);
 
   EngineResponseContent<IdResponse> createExec(String container, ExecConfig execConfig);
 

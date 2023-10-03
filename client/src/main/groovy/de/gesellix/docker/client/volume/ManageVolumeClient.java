@@ -1,6 +1,7 @@
 package de.gesellix.docker.client.volume;
 
 import de.gesellix.docker.client.EngineResponseContent;
+import de.gesellix.docker.remote.api.ClusterVolumeSpec;
 import de.gesellix.docker.remote.api.EngineApiClient;
 import de.gesellix.docker.remote.api.Volume;
 import de.gesellix.docker.remote.api.VolumeCreateOptions;
@@ -72,7 +73,8 @@ public class ManageVolumeClient implements ManageVolume {
         config == null ? null : (String) config.get("Name"),
         config == null ? null : (String) config.get("Driver"),
         config == null ? null : (Map) config.get("DriverOpts"),
-        config == null ? null : (Map) config.get("Labels")));
+        config == null ? null : (Map) config.get("Labels"),
+        config == null ? null : (ClusterVolumeSpec) config.get("ClusterVolumeSpec")));
   }
 
   @Override

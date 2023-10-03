@@ -562,6 +562,7 @@ class DeployConfigReaderTest extends Specification {
         Duration.of(2, ChronoUnit.MILLIS).toNanos().longValue(),
         Duration.of(30, ChronoUnit.SECONDS).toNanos().longValue(),
         10,
+        null,
         null
     )
   }
@@ -572,6 +573,7 @@ class DeployConfigReaderTest extends Specification {
         disable: true
     )) == new HealthConfig(
         ["NONE"],
+        null,
         null,
         null,
         null,

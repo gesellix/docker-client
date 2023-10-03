@@ -13,17 +13,17 @@ dependencies {
   constraints {
     implementation("de.gesellix:docker-engine") {
       version {
-        strictly("[2023-07-01T01-01-01,)")
+        strictly("[2023-10-01T01-01-01,)")
       }
     }
     implementation("de.gesellix:docker-filesocket") {
       version {
-        strictly("[2023-07-01T01-01-01,)")
+        strictly("[2023-09-30T01-01-01,)")
       }
     }
     implementation("de.gesellix:docker-remote-api-model-1-41") {
       version {
-        strictly("[2023-07-01T01-01-01,)")
+        strictly("[2023-10-01T01-01-01,)")
       }
     }
     implementation("org.slf4j:slf4j-api") {
@@ -86,7 +86,7 @@ dependencies {
   runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.8")
 
   testImplementation("de.gesellix:docker-registry:2023-10-02T08-55-00")
-  testImplementation("de.gesellix:testutil:[2023-07-01T01-01-01,)")
+  testImplementation("de.gesellix:testutil:[2023-09-01T01-01-01,)")
   testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.14.8")
   testImplementation("org.apache.commons:commons-lang3:3.13.0")

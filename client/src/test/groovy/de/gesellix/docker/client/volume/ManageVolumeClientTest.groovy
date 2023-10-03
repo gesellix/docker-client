@@ -79,7 +79,7 @@ class ManageVolumeClientTest extends Specification {
         DriverOpts: [:]])
 
     then:
-    1 * volumeApi.volumeCreate(new VolumeCreateOptions("my-fancy-volume", "local", [:], null)) >> volumeResponse
+    1 * volumeApi.volumeCreate(new VolumeCreateOptions("my-fancy-volume", "local", [:], null, null)) >> volumeResponse
     volume.content == volumeResponse
   }
 
@@ -88,7 +88,7 @@ class ManageVolumeClientTest extends Specification {
     def volumeApi = Mock(VolumeApi)
     client.volumeApi >> volumeApi
     def volumeResponse = Mock(Volume)
-    def volumeConfig = new VolumeCreateOptions("my-volume", "local", [:], [:])
+    def volumeConfig = new VolumeCreateOptions("my-volume", "local", [:], [:], null)
 
     when:
     def volume = service.createVolume(volumeConfig)
