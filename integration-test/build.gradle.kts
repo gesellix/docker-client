@@ -88,7 +88,7 @@ dependencies {
   testImplementation("de.gesellix:docker-registry:2023-10-03T20-58-00")
   testImplementation("de.gesellix:testutil:[2023-09-01T01-01-01,)")
   testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
-  testRuntimeOnly("net.bytebuddy:byte-buddy:1.14.8")
+  testRuntimeOnly("net.bytebuddy:byte-buddy:1.14.9")
   testImplementation("org.apache.commons:commons-lang3:3.13.0")
   testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.8")
 }
