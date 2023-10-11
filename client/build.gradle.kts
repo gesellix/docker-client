@@ -73,13 +73,13 @@ dependencies {
       }
     }
     listOf(
-      "org.codehaus.groovy:groovy",
-      "org.codehaus.groovy:groovy-json"
+      "org.apache.groovy:groovy",
+      "org.apache.groovy:groovy-json"
     ).onEach {
       implementation(it) {
         version {
-          strictly("[3,)")
-          prefer("3.0.19")
+          strictly("[4,)")
+          prefer("4.0.15")
         }
       }
     }
@@ -103,8 +103,8 @@ dependencies {
   api("de.gesellix:docker-engine:2023-10-03T21-35-00")
   api("de.gesellix:docker-compose:2023-09-23T20-42-00")
 
-  implementation("org.codehaus.groovy:groovy:3.0.19")
-  implementation("org.codehaus.groovy:groovy-json:3.0.19")
+  implementation("org.apache.groovy:groovy:4.0.15")
+  implementation("org.apache.groovy:groovy-json:4.0.15")
 
   api("com.squareup.moshi:moshi:1.15.0")
   implementation("com.google.re2j:re2j:1.7")
@@ -123,7 +123,7 @@ dependencies {
   testImplementation("de.gesellix:testutil:[2023-09-01T01-01-01,)")
 
   testImplementation("org.junit.platform:junit-platform-launcher:1.10.0")
-  testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
+  testImplementation("org.spockframework:spock-core:2.3-groovy-4.0")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.14.9")
   testRuntimeOnly("org.objenesis:objenesis:3.3")
   testImplementation("io.github.joke:spock-mockable:2.3.0")
