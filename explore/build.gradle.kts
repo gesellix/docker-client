@@ -38,6 +38,17 @@ dependencies {
       }
     }
     listOf(
+        "org.codehaus.groovy:groovy",
+        "org.codehaus.groovy:groovy-json"
+    ).onEach {
+      implementation(it) {
+        version {
+          strictly("[3,4)")
+          prefer("3.0.19")
+        }
+      }
+    }
+    listOf(
       "org.apache.groovy:groovy",
       "org.apache.groovy:groovy-json"
     ).onEach {
@@ -49,13 +60,16 @@ dependencies {
       }
     }
   }
-  implementation(project(":client"))
+//  implementation(project(":client"))
+  implementation(project(":client-groovy4"))
+//  implementation("org.codehaus.groovy:groovy:[3,4)")
   implementation("org.apache.groovy:groovy:4.0.15")
   testImplementation("org.apache.commons:commons-compress:1.24.0")
 
   implementation("org.slf4j:slf4j-api:2.0.9")
   runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.11")
 
+//  testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
   testImplementation("org.spockframework:spock-core:2.3-groovy-4.0")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.14.9")
   testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.11")

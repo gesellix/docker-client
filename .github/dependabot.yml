@@ -19,4 +19,5 @@ updates:
       # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#groups
       groovy:
         patterns:
+          - "org.codehaus.groovy:*"
           - "org.apache.groovy:*"
