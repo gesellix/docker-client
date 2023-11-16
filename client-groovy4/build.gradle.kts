@@ -122,7 +122,7 @@ dependencies {
 
   testImplementation("de.gesellix:testutil:[2023-09-01T01-01-01,)")
 
-  testImplementation("org.junit.platform:junit-platform-launcher:1.10.0")
+  testImplementation("org.junit.platform:junit-platform-launcher:1.10.1")
   testImplementation("org.spockframework:spock-core:2.3-groovy-4.0")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.14.9")
   testRuntimeOnly("org.objenesis:objenesis:3.3")
