@@ -64,7 +64,7 @@ dependencies {
   implementation(project(":client-groovy4"))
 //  implementation("org.codehaus.groovy:groovy:[3,4)")
   implementation("org.apache.groovy:groovy:4.0.15")
-  testImplementation("org.apache.commons:commons-compress:1.24.0")
+  testImplementation("org.apache.commons:commons-compress:1.25.0")
 
   implementation("org.slf4j:slf4j-api:2.0.9")
   runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.11")
