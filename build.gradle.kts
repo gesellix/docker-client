@@ -14,7 +14,7 @@ val dependencyVersions = listOf(
   "org.codehaus.groovy:groovy:3.0.19",
   "org.apache.groovy:groovy:4.0.15",
   "org.jetbrains:annotations:24.1.0",
-  "org.junit:junit-bom:5.10.0",
+  "org.junit:junit-bom:5.10.1",
 )
 
 val dependencyVersionsByGroup = mapOf<String, String>()
