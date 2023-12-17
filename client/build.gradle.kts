@@ -37,7 +37,7 @@ dependencies {
     implementation("com.squareup.okhttp3:mockwebserver") {
       version {
         strictly("[4,5)")
-        prefer("4.11.0")
+        prefer("4.12.0")
       }
     }
     api("com.squareup.okhttp3:okhttp") {
