@@ -112,7 +112,7 @@ dependencies {
   implementation("org.slf4j:slf4j-api:2.0.9")
   testImplementation("ch.qos.logback:logback-classic:[1.2,2)!!1.3.11")
 
-  implementation("com.squareup.okio:okio:3.6.0")
+  implementation("com.squareup.okio:okio:3.7.0")
   api("com.squareup.okhttp3:okhttp:4.12.0")
   testImplementation("com.squareup.okhttp3:mockwebserver:[4,5)")
 
