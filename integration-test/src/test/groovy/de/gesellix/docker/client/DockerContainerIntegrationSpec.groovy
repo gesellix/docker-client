@@ -246,7 +246,7 @@ class DockerContainerIntegrationSpec extends Specification {
     then:
     ClientException ex = thrown()
     ex.statusCode == 404
-    ex.toString() =~ /.*manifest for gesellix\/testimage:unknown not found.*/
+    ex.toString() =~ /.* (docker.io\/)?gesellix\/testimage:unknown:? not found.*/
   }
 
   def expectManifestNotFound(def content) {
