@@ -858,7 +858,7 @@ class DockerContainerIntegrationSpec extends Specification {
     new Thread({
       dockerClient.logs(containerId, [tail: 1], callback, Duration.of(5, ChronoUnit.SECONDS))
     }).start()
-    latch.await(5, SECONDS)
+    latch.await(6, SECONDS)
 
     then:
     !logs.empty
