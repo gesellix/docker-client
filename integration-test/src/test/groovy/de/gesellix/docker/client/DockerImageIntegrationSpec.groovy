@@ -192,7 +192,7 @@ class DockerImageIntegrationSpec extends Specification {
 
     then:
     notThrown(Exception)
-    infos.last().error.contains(" missing/image")
+    infos.last().error.matches(".*(docker.io/)?missing/image.*")
   }
 
   def "build image with custom Dockerfile"() {
@@ -396,7 +396,7 @@ class DockerImageIntegrationSpec extends Specification {
 
     then:
     !infos.empty
-    infos.find { it.status.contains("digest") || it.status.contains("aux") }.status =~ "sha256:\\w+"
+    infos.find { it.status?.contains("digest") || it.status?.contains("aux") }.status =~ "sha256:\\w+"
 //    pushResult.content.last().aux.Digest =~ "sha256:\\w+"
 
     cleanup:
