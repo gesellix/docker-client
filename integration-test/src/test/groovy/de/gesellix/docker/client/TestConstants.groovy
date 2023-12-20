@@ -23,7 +23,10 @@ class TestConstants {
       volumeTarget = "C:/my-volume"
     } else {
       imageDigest = "gesellix/echo-server@sha256:838c203a87cc711eb182d6f8fed10fe6894cdc70fe3dedd0dc1e6111987836b5"
-      imageId = "sha256:838c203a87cc711eb182d6f8fed10fe6894cdc70fe3dedd0dc1e6111987836b5"
+      // this one works on GitHub
+      imageId = "sha256:e21dc436422d70d0f586953fc7c17ea6513f832a4dff1f7c432c5a1e2d985cbd"
+      // this one works for containerd
+//      imageId = "sha256:838c203a87cc711eb182d6f8fed10fe6894cdc70fe3dedd0dc1e6111987836b5"
       imageCreated = 1702975999
       volumeTarget = "/my-volume"
     }
