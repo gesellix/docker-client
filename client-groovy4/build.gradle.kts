@@ -103,8 +103,8 @@ dependencies {
   api("de.gesellix:docker-engine:2023-12-19T15-35-00")
   api("de.gesellix:docker-compose:2023-12-19T09-55-00")
 
-  implementation("org.apache.groovy:groovy:4.0.16")
-  implementation("org.apache.groovy:groovy-json:4.0.16")
+  implementation("org.apache.groovy:groovy:4.0.17")
+  implementation("org.apache.groovy:groovy-json:4.0.17")
 
   api("com.squareup.moshi:moshi:1.15.0")
   implementation("com.google.re2j:re2j:1.7")
