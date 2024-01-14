@@ -49,7 +49,7 @@ dependencies {
     listOf(
         "com.squareup.okio:okio",
         "com.squareup.okio:okio-jvm"
-    ).onEach {
+    ).forEach {
       implementation(it) {
         version {
           strictly("[3,4)")
@@ -64,7 +64,7 @@ dependencies {
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
         "org.jetbrains.kotlin:kotlin-stdlib-common",
         "org.jetbrains.kotlin:kotlin-test"
-    ).onEach {
+    ).forEach {
       implementation(it) {
         version {
           strictly("[1.6,1.10)")
@@ -75,7 +75,7 @@ dependencies {
     listOf(
         "org.codehaus.groovy:groovy",
         "org.codehaus.groovy:groovy-json"
-    ).onEach {
+    ).forEach {
       implementation(it) {
         version {
           strictly("[3,4)")
@@ -86,7 +86,7 @@ dependencies {
     listOf(
         "com.squareup.moshi:moshi",
         "com.squareup.moshi:moshi-kotlin"
-    ).onEach {
+    ).forEach {
       implementation(it) {
         version {
           strictly("[1.12.0,)")

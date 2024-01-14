@@ -29,13 +29,13 @@ dependencies {
     implementation("org.slf4j:slf4j-api") {
       version {
         strictly("[1.7,3)")
-        prefer("2.0.9")
+        prefer("2.0.11")
       }
     }
     listOf(
       "com.squareup.okhttp3:mockwebserver",
       "com.squareup.okhttp3:okhttp"
-    ).onEach {
+    ).forEach {
       implementation(it) {
         version {
           strictly("[4,5)")
@@ -65,11 +65,11 @@ dependencies {
       "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
       "org.jetbrains.kotlin:kotlin-stdlib-common",
       "org.jetbrains.kotlin:kotlin-test"
-    ).onEach {
+    ).forEach {
       implementation(it) {
         version {
           strictly("[1.6,1.10)")
-          prefer("1.9.21")
+          prefer("1.9.22")
         }
       }
     }
@@ -84,7 +84,7 @@ dependencies {
   testImplementation("org.apache.commons:commons-compress:1.25.0")
 
   testImplementation("org.slf4j:slf4j-api:[1.7,)")
-  runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.8")
+  runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.14")
 
   testImplementation("de.gesellix:docker-registry:2023-11-30T21-24-00")
   testImplementation("de.gesellix:testutil:[2023-09-01T01-01-01,)")
@@ -92,7 +92,7 @@ dependencies {
 //  testImplementation("org.spockframework:spock-core:2.3-groovy-4.0")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.14.11")
   testImplementation("org.apache.commons:commons-lang3:3.14.0")
-  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.8")
+  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.14")
 }
 
 tasks{
