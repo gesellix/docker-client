@@ -120,7 +120,7 @@ dependencies {
 
 //  implementation("org.bouncycastle:bcpkix-jdk18on:1.76")
 
-  testImplementation("de.gesellix:testutil:[2023-09-01T01-01-01,)")
+  testImplementation("de.gesellix:testutil:[2024-01-01T01-01-01,)")
 
   testImplementation("org.junit.platform:junit-platform-launcher:1.10.1")
   testImplementation("org.spockframework:spock-core:2.3-groovy-4.0")
