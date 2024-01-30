@@ -106,7 +106,7 @@ dependencies {
   implementation("org.apache.groovy:groovy:4.0.18")
   implementation("org.apache.groovy:groovy-json:4.0.18")
 
-  api("com.squareup.moshi:moshi:1.15.0")
+  api("com.squareup.moshi:moshi:1.15.1")
   implementation("com.google.re2j:re2j:1.7")
 
   implementation("org.slf4j:slf4j-api:2.0.11")
