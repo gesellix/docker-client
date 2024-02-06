@@ -346,8 +346,7 @@ class DeployConfigReader {
       if (networkConfig?.external?.external) {
         if (networkConfig?.external?.name) {
           return networkConfig.external.name
-        }
-        else {
+        } else {
           return networkName
         }
       }
@@ -403,10 +402,9 @@ class DeployConfigReader {
     if (healthcheck.startPeriod) {
       startPeriod = parseDuration(healthcheck.startPeriod).toNanos()
     }
-    // TODO add this one
-//    if (healthcheck.startInterval) {
-//      startInterval = parseDuration(healthcheck.startInterval).toNanos()
-//    }
+    if (healthcheck.startInterval) {
+      startInterval = parseDuration(healthcheck.startInterval).toNanos()
+    }
 
     return new HealthConfig(
         healthcheck.test.parts,
@@ -504,8 +502,7 @@ class DeployConfigReader {
         default:
           throw new IllegalArgumentException("unknown restart policy: ${restart}")
       }
-    }
-    else {
+    } else {
       Long delay = null
       if (restartPolicy.delay) {
         delay = parseDuration(restartPolicy.delay).toNanos()
@@ -564,8 +561,7 @@ class DeployConfigReader {
         if (limits.nanoCpus.contains('/')) {
           // TODO
           throw new UnsupportedOperationException("not supported, yet")
-        }
-        else {
+        } else {
           return new Limit(
               (parseDouble(limits.nanoCpus) * nanoMultiplier).longValue(),
               parseLong(limits.memory),
@@ -588,8 +584,7 @@ class DeployConfigReader {
         if (reservations.nanoCpus.contains('/')) {
           // TODO
           throw new UnsupportedOperationException("not supported, yet")
-        }
-        else {
+        } else {
           return new ResourceObject(
               (parseDouble(reservations.nanoCpus) * nanoMultiplier).longValue(),
               parseLong(reservations.memory),
@@ -653,8 +648,7 @@ class DeployConfigReader {
           null,
           null)
       source = stackVolume.external.name
-    }
-    else {
+    } else {
       Map<String, String> labels = stackVolume?.labels?.entries ?: [:]
       labels[(ManageStackClient.LabelNamespace)] = namespace
       volumeOptions = new MountVolumeOptions(
@@ -701,8 +695,7 @@ class DeployConfigReader {
   MountBindOptions getBindOptions(ServiceVolumeBind bind) {
     if (bind?.propagation) {
       return new MountBindOptions(MountBindOptions.Propagation.values().find { MountBindOptions.Propagation propagation -> propagation.getValue() == bind.propagation }, null)
-    }
-    else {
+    } else {
       return null
     }
   }
@@ -760,11 +753,9 @@ class DeployConfigReader {
             null,
             getLabels(namespace, null)
         )
-      }
-      else if (network?.external?.external) {
+      } else if (network?.external?.external) {
         externalNetworkNames << (network.external.name ?: internalName)
-      }
-      else {
+      } else {
         networkSpec[internalName] = new NetworkCreateRequest(
             internalName,
             true,
