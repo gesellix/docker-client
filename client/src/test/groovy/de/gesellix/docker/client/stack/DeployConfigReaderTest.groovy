@@ -556,14 +556,16 @@ class DeployConfigReaderTest extends Specification {
         test: new Command(parts: ["EXEC", "touch", "/foo"]),
         timeout: "30s",
         interval: "2ms",
-        retries: 10
+        retries: 10,
+        startPeriod: "1s",
+        startInterval: "500ms",
     )) == new HealthConfig(
         ["EXEC", "touch", "/foo"],
         Duration.of(2, ChronoUnit.MILLIS).toNanos().longValue(),
         Duration.of(30, ChronoUnit.SECONDS).toNanos().longValue(),
         10,
-        null,
-        null
+        Duration.of(1, ChronoUnit.SECONDS).toNanos().longValue(),
+        Duration.of(500, ChronoUnit.MILLIS).toNanos().longValue()
     )
   }
 
