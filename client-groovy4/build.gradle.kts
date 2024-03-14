@@ -116,7 +116,7 @@ dependencies {
   api("com.squareup.okhttp3:okhttp:4.12.0")
   testImplementation("com.squareup.okhttp3:mockwebserver:[4,5)")
 
-  implementation("org.apache.commons:commons-compress:1.26.0")
+  implementation("org.apache.commons:commons-compress:1.26.1")
 
 //  implementation("org.bouncycastle:bcpkix-jdk18on:1.76")
 
