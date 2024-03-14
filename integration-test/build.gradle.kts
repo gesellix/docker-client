@@ -29,7 +29,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api") {
       version {
         strictly("[1.7,3)")
-        prefer("2.0.11")
+        prefer("2.0.12")
       }
     }
     listOf(
@@ -69,7 +69,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[1.6,1.10)")
-          prefer("1.9.22")
+          prefer("1.9.23")
         }
       }
     }
