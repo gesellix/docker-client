@@ -55,7 +55,7 @@ allprojects {
       // https://docs.gradle.org/current/userguide/resolution_rules.html
       dependencySubstitution {
         substitute(module("org.bouncycastle:bcpkix-jdk15on"))
-            .using(module("org.bouncycastle:bcpkix-jdk18on:1.77"))
+            .using(module("org.bouncycastle:bcpkix-jdk18on:1.78"))
       }
     }
   }
