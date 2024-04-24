@@ -124,7 +124,7 @@ dependencies {
 
   testImplementation("org.junit.platform:junit-platform-launcher:1.10.2")
   testImplementation("org.spockframework:spock-core:2.3-groovy-4.0")
-  testRuntimeOnly("net.bytebuddy:byte-buddy:1.14.13")
+  testRuntimeOnly("net.bytebuddy:byte-buddy:1.14.14")
   testRuntimeOnly("org.objenesis:objenesis:3.3")
   testImplementation("io.github.joke:spock-mockable:2.3.0")
 
