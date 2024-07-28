@@ -118,7 +118,7 @@ dependencies {
 
   implementation("org.apache.commons:commons-compress:1.26.2")
 
-  implementation("org.bouncycastle:bcpkix-jdk18on:1.77")
+  implementation("org.bouncycastle:bcpkix-jdk18on:1.78.1")
 
   testImplementation("de.gesellix:testutil:[2024-01-01T01-01-01,)")
 
