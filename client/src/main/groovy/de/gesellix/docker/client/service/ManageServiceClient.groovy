@@ -12,7 +12,7 @@ import de.gesellix.docker.remote.api.ServiceUpdateRequest
 import de.gesellix.docker.remote.api.ServiceUpdateResponse
 import de.gesellix.docker.remote.api.Task
 import de.gesellix.docker.remote.api.client.ServiceApi
-import de.gesellix.util.QueryUtil
+import de.gesellix.util.QueryParameterEncoder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -21,7 +21,7 @@ class ManageServiceClient implements ManageService {
   private final Logger log = LoggerFactory.getLogger(ManageServiceClient)
 
   private EngineApiClient client
-  private QueryUtil queryUtil
+  private QueryParameterEncoder queryParameterEncoder
   private ManageTask manageTask
   private NodeUtil nodeUtil
 
@@ -30,7 +30,7 @@ class ManageServiceClient implements ManageService {
       ManageTask manageTask,
       NodeUtil nodeUtil) {
     this.client = client
-    this.queryUtil = new QueryUtil()
+    this.queryParameterEncoder = new QueryParameterEncoder()
     this.manageTask = manageTask
     this.nodeUtil = nodeUtil
   }
@@ -42,7 +42,7 @@ class ManageServiceClient implements ManageService {
     if (query != null) {
       actualQuery.putAll(query)
     }
-    queryUtil.jsonEncodeQueryParameter(actualQuery, "filters")
+    queryParameterEncoder.jsonEncodeQueryParameter(actualQuery, "filters")
     return services(
         (String) actualQuery.get("filters"),
         (Boolean) actualQuery.get("status"))
@@ -133,7 +133,7 @@ class ManageServiceClient implements ManageService {
     if (filters.get("node") != null) {
       filters.put("node", nodeUtil.resolveNodeId(filters.get("node")))
     }
-    new QueryUtil().jsonEncodeQueryParameter(actualQuery, "filters");
+    queryParameterEncoder.jsonEncodeQueryParameter(actualQuery, "filters")
     return manageTask.tasks((String) actualQuery.get("filters"))
   }
 }

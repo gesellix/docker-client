@@ -1,15 +1,16 @@
 package de.gesellix.docker.client.tasks;
 
-import de.gesellix.docker.client.EngineResponseContent;
-import de.gesellix.docker.remote.api.EngineApiClient;
-import de.gesellix.docker.remote.api.Task;
-import de.gesellix.util.QueryUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.gesellix.docker.client.EngineResponseContent;
+import de.gesellix.docker.remote.api.EngineApiClient;
+import de.gesellix.docker.remote.api.Task;
+import de.gesellix.util.QueryParameterEncoder;
 
 public class ManageTaskClient implements ManageTask {
 
@@ -31,7 +32,7 @@ public class ManageTaskClient implements ManageTask {
     if (query != null) {
       actualQuery.putAll(query);
     }
-    new QueryUtil().jsonEncodeQueryParameter(actualQuery, "filters");
+    new QueryParameterEncoder().jsonEncodeQueryParameter(actualQuery, "filters");
     return tasks((String) actualQuery.get("filters"));
   }
 

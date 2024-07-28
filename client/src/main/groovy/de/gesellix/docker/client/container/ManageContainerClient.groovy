@@ -26,7 +26,7 @@ import de.gesellix.docker.remote.api.client.ContainerApi
 import de.gesellix.docker.remote.api.core.ClientException
 import de.gesellix.docker.remote.api.core.Frame
 import de.gesellix.docker.remote.api.core.StreamCallback
-import de.gesellix.util.QueryUtil
+import de.gesellix.util.QueryParameterEncoder
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import org.slf4j.Logger
@@ -45,7 +45,7 @@ class ManageContainerClient implements ManageContainer {
   private EngineApiClient client
   private EngineClient engineClient
   private DockerResponseHandler responseHandler
-  private QueryUtil queryUtil
+  private QueryParameterEncoder queryParameterEncoder
   private ArchiveUtil archiveUtil
   private RepositoryTagParser repositoryTagParser
 
@@ -54,7 +54,7 @@ class ManageContainerClient implements ManageContainer {
     this.engineClient = engineClient
     this.responseHandler = new DockerResponseHandler()
     this.repositoryTagParser = new RepositoryTagParser()
-    this.queryUtil = new QueryUtil()
+    this.queryParameterEncoder = new QueryParameterEncoder()
     this.archiveUtil = new ArchiveUtil()
   }
 
@@ -320,14 +320,6 @@ class ManageContainerClient implements ManageContainer {
     if (query) {
       actualQuery.putAll(query)
     }
-    Map defaults = [
-        follow    : true,
-        stdout    : true,
-        stderr    : true,
-        timestamps: false,
-        since     : 0,
-        tail      : "all"]
-    queryUtil.applyDefaults(actualQuery, defaults)
 
     // When using the TTY setting is enabled in POST /containers/create,
     // the stream is the raw data from the process PTY and client’s stdin.
@@ -335,13 +327,13 @@ class ManageContainerClient implements ManageContainer {
 //    def multiplexStreams = !inspectContainer(container).content.config.tty
 
     client.containerApi.containerLogs(container,
-        actualQuery.follow as Boolean,
-        actualQuery.stdout as Boolean,
-        actualQuery.stderr as Boolean,
-        actualQuery.since as Integer,
+        actualQuery.getOrDefault("follow", true) as Boolean,
+        actualQuery.getOrDefault("stdout", true) as Boolean,
+        actualQuery.getOrDefault("stderr", true) as Boolean,
+        actualQuery.getOrDefault("since", 0) as Integer,
         actualQuery.until as Integer,
-        actualQuery.timestamps as Boolean,
-        actualQuery.tail as String,
+        actualQuery.getOrDefault("timestamps", false) as Boolean,
+        actualQuery.getOrDefault("tail", "all") as String,
         callback, timeout.toMillis())
   }
 
@@ -382,17 +374,15 @@ class ManageContainerClient implements ManageContainer {
   @Override
   EngineResponseContent<List<Map<String, Object>>> ps(Map<String, Object> query) {
     log.info("docker ps")
-    Map actualQuery = [:]
+    Map<String, ?> actualQuery = [:]
     if (query) {
       actualQuery.putAll(query)
     }
-    Map defaults = [all: true, size: false]
-    queryUtil.applyDefaults(actualQuery, defaults)
-    queryUtil.jsonEncodeQueryParameter(actualQuery, "filters")
+    queryParameterEncoder.jsonEncodeQueryParameter(actualQuery, "filters")
     List<Map> containerList = client.containerApi.containerList(
-        actualQuery.all as Boolean,
+        actualQuery.getOrDefault("all", true) as Boolean,
         actualQuery.limit as Integer,
-        actualQuery.size as Boolean,
+        actualQuery.getOrDefault("size", false) as Boolean,
         actualQuery.filters as String)
     return new EngineResponseContent<List<Map<String, Object>>>(containerList)
   }

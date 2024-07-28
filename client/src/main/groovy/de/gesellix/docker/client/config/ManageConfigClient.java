@@ -1,19 +1,20 @@
 package de.gesellix.docker.client.config;
 
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.gesellix.docker.client.EngineResponseContent;
 import de.gesellix.docker.remote.api.Config;
 import de.gesellix.docker.remote.api.ConfigCreateRequest;
 import de.gesellix.docker.remote.api.ConfigSpec;
 import de.gesellix.docker.remote.api.EngineApiClient;
 import de.gesellix.docker.remote.api.IdResponse;
-import de.gesellix.util.QueryUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import de.gesellix.util.QueryParameterEncoder;
 
 public class ManageConfigClient implements ManageConfig {
 
@@ -57,7 +58,7 @@ public class ManageConfigClient implements ManageConfig {
       actualQuery.putAll(query);
     }
 
-    new QueryUtil().jsonEncodeQueryParameter(actualQuery, "filters");
+    new QueryParameterEncoder().jsonEncodeQueryParameter(actualQuery, "filters");
     return configs((String) actualQuery.get("filters"));
   }
 
