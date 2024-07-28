@@ -16,7 +16,7 @@ import de.gesellix.docker.remote.api.ImageSummary
 import de.gesellix.docker.remote.api.PushImageInfo
 import de.gesellix.docker.remote.api.client.ImageApi
 import de.gesellix.docker.remote.api.core.StreamCallback
-import de.gesellix.util.QueryUtil
+import de.gesellix.util.QueryParameterEncoder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -28,14 +28,14 @@ class ManageImageClient implements ManageImage {
 
   private EngineApiClient client
   private RepositoryTagParser repositoryTagParser
-  private QueryUtil queryUtil
+  private QueryParameterEncoder queryParameterEncoder
   private ManageAuthentication manageAuthentication
 
   ManageImageClient(EngineApiClient client, ManageAuthentication manageAuthentication) {
     this.client = client
     this.manageAuthentication = manageAuthentication
     this.repositoryTagParser = new RepositoryTagParser()
-    this.queryUtil = new QueryUtil()
+    this.queryParameterEncoder = new QueryParameterEncoder()
   }
 
   @Override
@@ -47,22 +47,20 @@ class ManageImageClient implements ManageImage {
 
   @Override
   void build(InputStream buildContext) {
-    build(null, null,
-          buildContext)
+    build(null, null, buildContext)
   }
 
   @Override
-  void build(StreamCallback<BuildInfo> callback, Duration timeout,
-             InputStream buildContext) {
+  void build(StreamCallback<BuildInfo> callback, Duration timeout, InputStream buildContext) {
     build(callback, timeout,
-          null, null, null, null, null, null, null, null, null, null, buildContext)
+        null, null, null, null, null, null, null, null, null, null,
+        buildContext)
   }
 
   @Override
   void build(String tag,
              InputStream buildContext) {
-    build(null, null,
-          buildContext)
+    build(null, null, buildContext)
   }
 
   @Override
@@ -70,14 +68,17 @@ class ManageImageClient implements ManageImage {
              String tag,
              InputStream buildContext) {
     build(callback, timeout,
-          null, tag, null, null, null, null, null, null, null, null, buildContext)
+        null, tag, null, null, null, null, null, null, null, null,
+        buildContext)
   }
 
   @Override
   void build(String dockerfile, String tag, Boolean quiet, Boolean nocache, String pull, Boolean rm,
              String buildargs, String labels, String encodedRegistryConfig, String contentType, InputStream buildContext) {
     build(null, null,
-          dockerfile, tag, quiet, nocache, pull, rm, buildargs, labels, encodedRegistryConfig, contentType, buildContext)
+        dockerfile, tag, quiet, nocache, pull, rm,
+        buildargs, labels, encodedRegistryConfig, contentType,
+        buildContext)
   }
 
   @Override
@@ -94,20 +95,20 @@ class ManageImageClient implements ManageImage {
         ? ImageApi.ContentTypeImageBuild.valueOf(contentType)
         : ImageApi.ContentTypeImageBuild.ApplicationSlashXMinusTar
     client.imageApi.imageBuild(dockerfile,
-                               tag, null, null, quiet, nocache, null, pull,
-                               rm == null ? true : rm, null,
-                               null, null, null, null, null, null,
-                               buildargs,
-                               null,
-                               null,
-                               labels,
-                               null,
-                               contentTypeImageBuild,
-                               encodedRegistryConfig,
-                               null, null,
-                               null,
-                               buildContext,
-                               callback, timeout ? timeout.toMillis() : null)
+        tag, null, null, quiet, nocache, null, pull,
+        rm == null ? true : rm, null,
+        null, null, null, null, null, null,
+        buildargs,
+        null,
+        null,
+        labels,
+        null,
+        contentTypeImageBuild,
+        encodedRegistryConfig,
+        null, null,
+        null,
+        buildContext,
+        callback, timeout ? timeout.toMillis() : null)
   }
 
   @Override
@@ -141,11 +142,9 @@ class ManageImageClient implements ManageImage {
     if (query != null) {
       actualQuery.putAll(query)
     }
-    Map<String, Object> defaults = [all: false]
-    queryUtil.applyDefaults(actualQuery, defaults)
-    queryUtil.jsonEncodeQueryParameter(actualQuery, "filters")
+    queryParameterEncoder.jsonEncodeQueryParameter(actualQuery, "filters")
     return images(
-        (Boolean) actualQuery.get("all"),
+        (Boolean) actualQuery.getOrDefault("all", false),
         (String) actualQuery.get("filters"),
         (Boolean) actualQuery.get("digests"))
   }
@@ -168,7 +167,7 @@ class ManageImageClient implements ManageImage {
     if (query != null) {
       actualQuery.putAll(query)
     }
-    queryUtil.jsonEncodeQueryParameter(actualQuery, "filters")
+    queryParameterEncoder.jsonEncodeQueryParameter(actualQuery, "filters")
     return pruneImages(actualQuery.filters as String)
   }
 
@@ -257,10 +256,10 @@ class ManageImageClient implements ManageImage {
     RepositoryAndTag repoAndTag = repositoryTagParser.parseRepositoryTag(actualImageName)
 
     client.imageApi.imagePush(repoAndTag.repo as String,
-                              authBase64Encoded ?: ".",
-                              repoAndTag.tag as String,
-                              callback,
-                              timeout ? timeout.toMillis() : null)
+        authBase64Encoded ?: ".",
+        repoAndTag.tag as String,
+        callback,
+        timeout ? timeout.toMillis() : null)
   }
 
   @Override
@@ -310,8 +309,7 @@ class ManageImageClient implements ManageImage {
       }
       log.warn("couldn't find imageId for `${imageName}` via `docker images`")
       return imageName
-    }
-    else {
+    } else {
       String canonicalImageName = "$imageName:${tag ?: 'latest'}"
       if (imageIdsByName[canonicalImageName]) {
         return imageIdsByName[canonicalImageName]

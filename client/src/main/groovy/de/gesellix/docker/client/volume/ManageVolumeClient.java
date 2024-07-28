@@ -1,5 +1,11 @@
 package de.gesellix.docker.client.volume;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.gesellix.docker.client.EngineResponseContent;
 import de.gesellix.docker.remote.api.ClusterVolumeSpec;
 import de.gesellix.docker.remote.api.EngineApiClient;
@@ -7,22 +13,17 @@ import de.gesellix.docker.remote.api.Volume;
 import de.gesellix.docker.remote.api.VolumeCreateOptions;
 import de.gesellix.docker.remote.api.VolumeListResponse;
 import de.gesellix.docker.remote.api.VolumePruneResponse;
-import de.gesellix.util.QueryUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.Map;
+import de.gesellix.util.QueryParameterEncoder;
 
 public class ManageVolumeClient implements ManageVolume {
 
   private final Logger log = LoggerFactory.getLogger(ManageVolumeClient.class);
   private final EngineApiClient client;
-  private final QueryUtil queryUtil;
+  private final QueryParameterEncoder queryParameterEncoder;
 
   public ManageVolumeClient(EngineApiClient client) {
     this.client = client;
-    this.queryUtil = new QueryUtil();
+    this.queryParameterEncoder = new QueryParameterEncoder();
   }
 
   /**
@@ -38,7 +39,7 @@ public class ManageVolumeClient implements ManageVolume {
       actualQuery.putAll(query);
     }
 
-    queryUtil.jsonEncodeQueryParameter(actualQuery, "filters");
+    queryParameterEncoder.jsonEncodeQueryParameter(actualQuery, "filters");
     return volumes((String) actualQuery.get("filters"));
   }
 
@@ -108,7 +109,7 @@ public class ManageVolumeClient implements ManageVolume {
       actualQuery.putAll(query);
     }
 
-    queryUtil.jsonEncodeQueryParameter(actualQuery, "filters");
+    queryParameterEncoder.jsonEncodeQueryParameter(actualQuery, "filters");
     return pruneVolumes((String) actualQuery.get("filters"));
   }
 

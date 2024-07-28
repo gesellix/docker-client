@@ -1,18 +1,19 @@
 package de.gesellix.docker.client.node;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.gesellix.docker.client.EngineResponseContent;
 import de.gesellix.docker.client.tasks.ManageTask;
 import de.gesellix.docker.remote.api.EngineApiClient;
 import de.gesellix.docker.remote.api.Node;
 import de.gesellix.docker.remote.api.NodeSpec;
 import de.gesellix.docker.remote.api.Task;
-import de.gesellix.util.QueryUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import de.gesellix.util.QueryParameterEncoder;
 
 public class ManageNodeClient implements ManageNode {
 
@@ -39,7 +40,7 @@ public class ManageNodeClient implements ManageNode {
     if (query != null) {
       actualQuery.putAll(query);
     }
-    new QueryUtil().jsonEncodeQueryParameter(actualQuery, "filters");
+    new QueryParameterEncoder().jsonEncodeQueryParameter(actualQuery, "filters");
     return nodes((String) actualQuery.get("filters"));
   }
 
@@ -116,7 +117,7 @@ public class ManageNodeClient implements ManageNode {
     }
     Map<String, Object> filters = (Map<String, Object>) actualQuery.get("filters");
     filters.put("node", nodeUtil.resolveNodeId(node));
-    new QueryUtil().jsonEncodeQueryParameter(actualQuery, "filters");
+    new QueryParameterEncoder().jsonEncodeQueryParameter(actualQuery, "filters");
     return manageTask.tasks((String) actualQuery.get("filters"));
   }
 

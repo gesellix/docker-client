@@ -1,19 +1,20 @@
 package de.gesellix.docker.client.secret;
 
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.gesellix.docker.client.EngineResponseContent;
 import de.gesellix.docker.remote.api.EngineApiClient;
 import de.gesellix.docker.remote.api.IdResponse;
 import de.gesellix.docker.remote.api.Secret;
 import de.gesellix.docker.remote.api.SecretCreateRequest;
 import de.gesellix.docker.remote.api.SecretSpec;
-import de.gesellix.util.QueryUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import de.gesellix.util.QueryParameterEncoder;
 
 public class ManageSecretClient implements ManageSecret {
 
@@ -57,7 +58,7 @@ public class ManageSecretClient implements ManageSecret {
       actualQuery.putAll(query);
     }
 
-    new QueryUtil().jsonEncodeQueryParameter(actualQuery, "filters");
+    new QueryParameterEncoder().jsonEncodeQueryParameter(actualQuery, "filters");
     return secrets((String) actualQuery.get("filters"));
   }
 

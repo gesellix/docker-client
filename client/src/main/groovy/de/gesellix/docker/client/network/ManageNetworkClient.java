@@ -1,5 +1,12 @@
 package de.gesellix.docker.client.network;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.gesellix.docker.client.EngineResponseContent;
 import de.gesellix.docker.remote.api.EngineApiClient;
 import de.gesellix.docker.remote.api.IPAM;
@@ -9,23 +16,17 @@ import de.gesellix.docker.remote.api.NetworkCreateRequest;
 import de.gesellix.docker.remote.api.NetworkCreateResponse;
 import de.gesellix.docker.remote.api.NetworkDisconnectRequest;
 import de.gesellix.docker.remote.api.NetworkPruneResponse;
-import de.gesellix.util.QueryUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import de.gesellix.util.QueryParameterEncoder;
 
 public class ManageNetworkClient implements ManageNetwork {
 
   private final Logger log = LoggerFactory.getLogger(ManageNetworkClient.class);
   private final EngineApiClient client;
-  private final QueryUtil queryUtil;
+  private final QueryParameterEncoder queryParameterEncoder;
 
   public ManageNetworkClient(EngineApiClient client) {
     this.client = client;
-    this.queryUtil = new QueryUtil();
+    this.queryParameterEncoder = new QueryParameterEncoder();
   }
 
   /**
@@ -41,7 +42,7 @@ public class ManageNetworkClient implements ManageNetwork {
       actualQuery.putAll(query);
     }
 
-    queryUtil.jsonEncodeQueryParameter(actualQuery, "filters");
+    queryParameterEncoder.jsonEncodeQueryParameter(actualQuery, "filters");
     return networks((String) actualQuery.get("filters"));
   }
 
@@ -153,7 +154,7 @@ public class ManageNetworkClient implements ManageNetwork {
     if (query != null) {
       actualQuery.putAll(query);
     }
-    queryUtil.jsonEncodeQueryParameter(actualQuery, "filters");
+    queryParameterEncoder.jsonEncodeQueryParameter(actualQuery, "filters");
     return pruneNetworks((String) actualQuery.get("filters"));
   }
 
