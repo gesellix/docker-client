@@ -128,7 +128,7 @@ dependencies {
   testRuntimeOnly("org.objenesis:objenesis:3.4")
   testImplementation("io.github.joke:spock-mockable:2.3.0")
 
-  testImplementation("org.apache.commons:commons-lang3:3.15.0")
+  testImplementation("org.apache.commons:commons-lang3:3.16.0")
 }
 
 java {
