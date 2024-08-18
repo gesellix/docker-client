@@ -39,7 +39,7 @@ jobs:
           distribution: 'zulu'
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
       - name: Install Docker on macOS
         if: matrix.os == 'macos-13'
         uses: douglascamata/setup-docker-macos-action@v1-alpha
