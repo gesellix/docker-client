@@ -38,7 +38,7 @@ public class ArchiveUtil {
 
     final TarArchiveEntry entry;
     try {
-      entry = stream.getNextTarEntry();
+      entry = stream.getNextEntry();
       log.debug("entry size: {}", entry.getSize());
     } catch (Exception e) {
       throw new RuntimeException("failed to get next TarArchiveEntry", e);
