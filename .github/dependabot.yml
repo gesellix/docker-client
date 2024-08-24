@@ -21,3 +21,7 @@ updates:
         patterns:
           - "org.codehaus.groovy:*"
           - "org.apache.groovy:*"
+      junit:
+        patterns:
+          - "org.junit:*"
+          - "org.junit.platform:*"
