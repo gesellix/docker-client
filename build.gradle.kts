@@ -11,7 +11,7 @@ val dependencyVersions = listOf(
   "net.bytebuddy:byte-buddy:1.15.1",
   "net.bytebuddy:byte-buddy-agent:1.15.1",
   "org.apache.commons:commons-compress:1.27.1",
-  "org.apache.commons:commons-lang3:3.16.0",
+  "org.apache.commons:commons-lang3:3.17.0",
   "org.codehaus.groovy:groovy:3.0.22",
   "org.codehaus.groovy:groovy-json:3.0.22",
   "org.apache.groovy:groovy:4.0.22",
