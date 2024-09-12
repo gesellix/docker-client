@@ -63,7 +63,7 @@ dependencies {
 //  implementation(project(":client"))
   implementation(project(":client-groovy4"))
 //  implementation("org.codehaus.groovy:groovy:[3,4)")
-  implementation("org.apache.groovy:groovy:4.0.22")
+  implementation("org.apache.groovy:groovy:4.0.23")
   testImplementation("org.apache.commons:commons-compress:1.27.1")
 
   implementation("org.slf4j:slf4j-api:2.0.16")
