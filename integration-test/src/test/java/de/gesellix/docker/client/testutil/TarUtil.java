@@ -19,7 +19,7 @@ public class TarUtil {
 
     TarArchiveInputStream tis = new TarArchiveInputStream(tarFile);
     TarArchiveEntry tarEntry;
-    while ((tarEntry = tis.getNextTarEntry()) != null) {
+    while ((tarEntry = tis.getNextEntry()) != null) {
       File outputFile = new File(destDir, tarEntry.getName());
       if (tarEntry.isDirectory()) {
         if (!outputFile.exists()) {
