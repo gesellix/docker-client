@@ -32,8 +32,8 @@ dependencies {
     ).forEach {
       implementation(it) {
         version {
-          strictly("[1.6,1.10)")
-          prefer("1.9.23")
+          strictly("[1.6,3)")
+          prefer("1.9.25")
         }
       }
     }
@@ -44,7 +44,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[3,4)")
-          prefer("3.0.21")
+          prefer("3.0.22")
         }
       }
     }
@@ -55,7 +55,7 @@ dependencies {
       implementation(it) {
         version {
           strictly("[4,)")
-          prefer("4.0.20")
+          prefer("4.0.23")
         }
       }
     }
