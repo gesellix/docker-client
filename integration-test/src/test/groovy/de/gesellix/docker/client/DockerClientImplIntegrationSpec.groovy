@@ -43,14 +43,19 @@ class DockerClientImplIntegrationSpec extends Specification {
 
     def expectedDriverStatusProperties
     if (nativeWindows) {
-      expectedDriverStatusProperties = ["Windows"]
+      expectedDriverStatusProperties = ["Windows", ""]
+      info.driverStatus.findAll {
+        it.first() in expectedDriverStatusProperties
+      }.size() == expectedDriverStatusProperties.size()
     }
     else {
-      expectedDriverStatusProperties = ["Backing Filesystem"]
+//      expectedDriverStatusProperties = ["driver-type", "io.containerd.snapshotter.v1"]
+//      expectedDriverStatusProperties = ["Backing Filesystem", "extfs"]
+      expectedDriverStatusProperties = ["Backing Filesystem", "driver-type"]
+      info.driverStatus.findAll {
+        it.first() in expectedDriverStatusProperties
+      }.size() == expectedDriverStatusProperties.size()
     }
-    info.driverStatus.findAll {
-      it.first() in expectedDriverStatusProperties
-    }.size() == expectedDriverStatusProperties.size()
     info.httpProxy in ["", "http.docker.internal:3128", "docker.for.mac.http.internal:3128", "gateway.docker.internal:3128"]
     info.httpsProxy in ["", "http.docker.internal:3128", "docker.for.mac.http.internal:3129", "gateway.docker.internal:3129"]
     info.ID =~ "\\w[\\w-]+"

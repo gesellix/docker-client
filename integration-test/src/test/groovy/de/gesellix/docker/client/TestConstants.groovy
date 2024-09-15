@@ -15,27 +15,27 @@ class TestConstants {
   static TestConstants CONSTANTS = new TestConstants()
 
   TestConstants() {
-    // docker inspect --format "{{ json .Created }}, Id: {{ json .Id }}, Digests: {{ json .RepoDigests }}" gesellix/echo-server:2024-07-28T18-30-00
+    // docker inspect --format "{{ json .Created }}, Id: {{ json .Id }}, Digests: {{ json .RepoDigests }}" gesellix/echo-server:2024-09-15T19-35-00
     if (LocalDocker.isNativeWindows()) {
-      imageDigest = "gesellix/echo-server@sha256:f7700fa4af53a3c4405dc728388a3b6d4b9d1271f08dedc87bee12748d18e7b2"
-      imageId = "sha256:692a91727fb2b3b560061203e0844dc44c07ac402856110f78b70bc00fedb6da"
-      imageCreated = 1722184400
+      imageDigest = "gesellix/echo-server@sha256:de454e47bcd8ff5247545ce3c886c0af93be127b771fcd3bfc3651744252e335"
+      imageId = "sha256:662e836a255b25d8c9060c325953027a5296ab8bf689794467361449ead0d1b8"
+      imageCreated = 1726421760
       volumeTarget = "C:/my-volume"
     } else {
-      imageDigest = "gesellix/echo-server@sha256:f7700fa4af53a3c4405dc728388a3b6d4b9d1271f08dedc87bee12748d18e7b2"
+      imageDigest = "gesellix/echo-server@sha256:de454e47bcd8ff5247545ce3c886c0af93be127b771fcd3bfc3651744252e335"
       // this one works on GitHub
-      imageId = "sha256:53f46ff30384f9b3b2700500cbaaa4041b5748e060f77bbaba6e26affbeb6d83"
+      imageId = "sha256:eba6f6644b5255fc5b6ab4dcd4b63495ae2d438723e7da4795ed52dc6d06856d"
       // this one works for containerd
-//      imageId = "sha256:838c203a87cc711eb182d6f8fed10fe6894cdc70fe3dedd0dc1e6111987836b5"
-      imageCreated = 1722184237
+//      imageId = "sha256:de454e47bcd8ff5247545ce3c886c0af93be127b771fcd3bfc3651744252e335"
+      imageCreated = 1726421659
       volumeTarget = "/my-volume"
     }
     imageRepo = "gesellix/echo-server"
-    imageTag = "2024-07-28T18-30-00"
+    imageTag = "2024-09-15T19-35-00"
     imageName = "$imageRepo:$imageTag"
 
     versionDetails = [
-        ApiVersion   : { it in ["1.43", "1.44"] },
+        ApiVersion   : { it in ["1.43", "1.44", "1.45", "1.46", "1.47"] },
         Arch         : { it in ["amd64", "arm64"] },
         BuildTime    : { it =~ "\\d{4}-\\d{2}-\\d{2}T\\w+" },
         GitCommit    : { it =~ "\\w{6,}" },
