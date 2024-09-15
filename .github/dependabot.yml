@@ -25,3 +25,6 @@ updates:
         patterns:
           - "org.junit:*"
           - "org.junit.platform:*"
+      okio:
+        patterns:
+          - "com.squareup.okio:*"
