@@ -21,7 +21,9 @@ class DockerDistributionIntegrationSpec extends Specification {
     def alpineDescriptor = dockerClient.descriptor("alpine:edge")
 
     then:
-    alpineDescriptor.content.descriptor.mediaType == "application/vnd.docker.distribution.manifest.list.v2+json"
+    alpineDescriptor.content.descriptor.mediaType in [
+        "application/vnd.docker.distribution.manifest.list.v2+json",
+        "application/vnd.oci.image.index.v1+json"]
     alpineDescriptor.content.descriptor.digest =~ "sha256:[a-f\\d]{64}"
     alpineDescriptor.content.descriptor.propertySize =~ "\\d{3,4}"
     alpineDescriptor.content.platforms.find { it.architecture == "amd64" && it.os == "linux" }
@@ -33,7 +35,9 @@ class DockerDistributionIntegrationSpec extends Specification {
     def debianDescriptor = dockerClient.descriptor("debian:latest")
 
     then:
-    debianDescriptor.content.descriptor.mediaType == "application/vnd.docker.distribution.manifest.list.v2+json"
+    debianDescriptor.content.descriptor.mediaType in [
+        "application/vnd.docker.distribution.manifest.list.v2+json",
+        "application/vnd.oci.image.index.v1+json"]
     debianDescriptor.content.descriptor.digest =~ "sha256:[a-f\\d]{64}"
     debianDescriptor.content.descriptor.propertySize =~ "\\d{3,4}"
     debianDescriptor.content.platforms.find { it.architecture == "amd64" && it.os == "linux" }
