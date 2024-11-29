@@ -18,7 +18,7 @@ dependencies {
     }
     implementation("de.gesellix:docker-filesocket") {
       version {
-        strictly("[2024-11-06T01-01-01,)")
+        strictly("[2024-11-04T01-01-01,)")
       }
     }
     implementation("de.gesellix:docker-remote-api-model-1-41") {
