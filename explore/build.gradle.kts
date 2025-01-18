@@ -11,68 +11,55 @@ java {
 
 dependencies {
   constraints {
-    implementation("org.slf4j:slf4j-api") {
+    implementation(libs.slf4j) {
       version {
-        strictly("[1.7,3)")
-        prefer("2.0.16")
+        strictly(libs.versions.slf4jVersionrange.get())
+        prefer(libs.versions.slf4j.get())
       }
     }
-    implementation("com.squareup.okio:okio") {
+    implementation(libs.okio) {
       version {
-        strictly("[3,4)")
+        strictly(libs.versions.okioVersionrange.get())
       }
     }
-    listOf(
-      "org.jetbrains.kotlin:kotlin-reflect",
-      "org.jetbrains.kotlin:kotlin-stdlib",
-      "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
-      "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
-      "org.jetbrains.kotlin:kotlin-stdlib-common",
-      "org.jetbrains.kotlin:kotlin-test"
-    ).forEach {
+    listOf(libs.bundles.kotlin).forEach {
       implementation(it) {
         version {
-          strictly("[1.6,3)")
-          prefer("2.1.0")
+          strictly(libs.versions.kotlinVersionrange.get())
+          prefer(libs.versions.kotlin.get())
         }
       }
     }
-    listOf(
-        "org.codehaus.groovy:groovy",
-        "org.codehaus.groovy:groovy-json"
-    ).forEach {
+    listOf(libs.bundles.groovy3).forEach {
       implementation(it) {
         version {
-          strictly("[3,4)")
-          prefer("3.0.23")
+          strictly(libs.versions.groovy3Versionrange.get())
+          prefer(libs.versions.groovy3.get())
         }
       }
     }
-    listOf(
-      "org.apache.groovy:groovy",
-      "org.apache.groovy:groovy-json"
-    ).forEach {
+    listOf(libs.bundles.groovy4).forEach {
       implementation(it) {
         version {
-          strictly("[4,)")
-          prefer("4.0.24")
+          strictly(libs.versions.groovy4Versionrange.get())
+          prefer(libs.versions.groovy4.get())
         }
       }
     }
   }
 //  implementation(project(":client"))
   implementation(project(":client-groovy4"))
-//  implementation("org.codehaus.groovy:groovy:[3,4)")
-  implementation("org.apache.groovy:groovy:4.0.24")
+//  implementation(libs.groovy3)
+  implementation(libs.groovy4)
   testImplementation("org.apache.commons:commons-compress:1.27.1")
 
-  implementation("org.slf4j:slf4j-api:2.0.16")
-  runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.14")
+  implementation(libs.slf4j)
+  runtimeOnly("ch.qos.logback:logback-classic:${libs.versions.logbackVersionrange.get()}!!${libs.versions.logback.get()}")
 
 //  testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
   testImplementation("org.spockframework:spock-core:2.3-groovy-4.0")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.16.0")
-  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.14")
+  testRuntimeOnly("ch.qos.logback:logback-classic:${libs.versions.logbackVersionrange.get()}!!${libs.versions.logback.get()}")
 }
 
 tasks {

@@ -15,82 +15,62 @@ dependencies {
   constraints {
     implementation("de.gesellix:docker-engine") {
       version {
-        strictly("[2024-11-06T01-01-01,)")
+        strictly("[2025-01-01T01-01-01,)")
       }
     }
     implementation("de.gesellix:docker-filesocket") {
       version {
-        strictly("[2024-11-04T01-01-01,)")
+        strictly("[2025-01-01T01-01-01,)")
       }
     }
     implementation("de.gesellix:docker-remote-api-model-1-41") {
       version {
-        strictly("[2024-11-06T01-01-01,)")
+        strictly("[2025-01-01T01-01-01,)")
       }
     }
-    implementation("org.slf4j:slf4j-api") {
+    implementation(libs.slf4j) {
       version {
-        strictly("[1.7,3)")
-        prefer("2.0.16")
+        strictly(libs.versions.slf4jVersionrange.get())
+        prefer(libs.versions.slf4j.get())
       }
     }
-    implementation("com.squareup.okhttp3:mockwebserver") {
-      version {
-        strictly("[4,5)")
-        prefer("4.12.0")
-      }
-    }
-    api("com.squareup.okhttp3:okhttp") {
-      version {
-        strictly("[4,5)")
-        prefer("4.12.0")
-      }
-    }
-    listOf(
-        "com.squareup.okio:okio",
-        "com.squareup.okio:okio-jvm"
-    ).forEach {
+    listOf(libs.bundles.okhttp).forEach {
       implementation(it) {
         version {
-          strictly("[3,4)")
-          prefer("3.9.1")
+          strictly(libs.versions.okhttpVersionrange.get())
+          prefer(libs.versions.okhttp.get())
         }
       }
     }
-    listOf(
-        "org.jetbrains.kotlin:kotlin-reflect",
-        "org.jetbrains.kotlin:kotlin-stdlib",
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
-        "org.jetbrains.kotlin:kotlin-stdlib-common",
-        "org.jetbrains.kotlin:kotlin-test"
-    ).forEach {
+    listOf(libs.bundles.okio).forEach {
       implementation(it) {
         version {
-          strictly("[1.6,3)")
-          prefer("2.1.0")
+          strictly(libs.versions.okioVersionrange.get())
+          prefer(libs.versions.okio.get())
         }
       }
     }
-    listOf(
-        "org.apache.groovy:groovy",
-        "org.apache.groovy:groovy-json"
-    ).forEach {
+    listOf(libs.bundles.kotlin).forEach {
       implementation(it) {
         version {
-          strictly("[4,)")
-          prefer("4.0.24")
+          strictly(libs.versions.kotlinVersionrange.get())
+          prefer(libs.versions.kotlin.get())
         }
       }
     }
-    listOf(
-        "com.squareup.moshi:moshi",
-        "com.squareup.moshi:moshi-kotlin"
-    ).forEach {
+    listOf(libs.bundles.groovy4).forEach {
       implementation(it) {
         version {
-          strictly("[1.12.0,)")
-          prefer("1.15.2")
+          strictly(libs.versions.groovy4Versionrange.get())
+          prefer(libs.versions.groovy4.get())
+        }
+      }
+    }
+    listOf(libs.bundles.moshi).forEach {
+      implementation(it) {
+        version {
+          strictly(libs.versions.moshiVersionrange.get())
+          prefer(libs.versions.moshi.get())
         }
       }
     }
@@ -103,24 +83,24 @@ dependencies {
   api("de.gesellix:docker-engine:2025-01-18T20-36-00")
   api("de.gesellix:docker-compose:2025-01-18T12-54-00")
 
-  implementation("org.apache.groovy:groovy:4.0.24")
-  implementation("org.apache.groovy:groovy-json:4.0.24")
+  implementation(libs.groovy4)
+  implementation(libs.groovy4json)
 
-  api("com.squareup.moshi:moshi:1.15.2")
+  api(libs.moshi)
   implementation("com.google.re2j:re2j:1.8")
 
-  implementation("org.slf4j:slf4j-api:2.0.16")
-  testImplementation("ch.qos.logback:logback-classic:[1.2,2)!!1.3.14")
+  implementation(libs.slf4j)
+  testImplementation("ch.qos.logback:logback-classic:${libs.versions.logbackVersionrange.get()}!!${libs.versions.logback.get()}")
 
-  implementation("com.squareup.okio:okio:3.9.1")
-  api("com.squareup.okhttp3:okhttp:4.12.0")
-  testImplementation("com.squareup.okhttp3:mockwebserver:[4,5)")
+  implementation(libs.okio)
+  api(libs.okhttp)
+  testImplementation("com.squareup.okhttp3:mockwebserver:${libs.versions.okhttp.get()}")
 
   implementation("org.apache.commons:commons-compress:1.27.1")
 
-//  implementation("org.bouncycastle:bcpkix-jdk18on:1.76")
+//  implementation("org.bouncycastle:bcpkix-jdk18on:1.80")
 
-  testImplementation("de.gesellix:testutil:[2024-01-01T01-01-01,)")
+  testImplementation("de.gesellix:testutil:[2025-01-01T01-01-01,)")
 
   testImplementation("org.junit.platform:junit-platform-launcher:1.11.4")
   testImplementation("org.spockframework:spock-core:2.3-groovy-4.0")
