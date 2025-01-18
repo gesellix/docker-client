@@ -58,14 +58,11 @@ dependencies {
         }
       }
     }
-    listOf(
-        "org.codehaus.groovy:groovy",
-        "org.codehaus.groovy:groovy-json"
-    ).forEach {
+    listOf(libs.bundles.groovy3).forEach {
       implementation(it) {
         version {
-          strictly("[3,4)")
-          prefer("3.0.23")
+          strictly(libs.versions.groovy3Versionrange.get())
+          prefer(libs.versions.groovy3.get())
         }
       }
     }
@@ -86,8 +83,8 @@ dependencies {
   api("de.gesellix:docker-engine:2025-01-18T20-36-00")
   api("de.gesellix:docker-compose:2025-01-18T12-54-00")
 
-  implementation("org.codehaus.groovy:groovy:3.0.23")
-  implementation("org.codehaus.groovy:groovy-json:3.0.23")
+  implementation(libs.groovy3)
+  implementation(libs.groovy3json)
 
   api(libs.moshi)
   implementation("com.google.re2j:re2j:1.8")

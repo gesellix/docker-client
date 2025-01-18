@@ -1,4 +1,8 @@
 [versions]
+groovy3 = "3.0.23"
+groovy3Versionrange = "[3,4)"
+groovy4 = "4.0.24"
+groovy4Versionrange = "[4,)"
 junitJupiter = "5.11.4"
 junitPlatform = "1.11.4"
 kotlin = "2.1.0"
@@ -15,6 +19,10 @@ slf4j = "2.0.16"
 slf4jVersionrange = "[1.7,3)"
 
 [libraries]
+groovy3 = { module = "org.codehaus.groovy:groovy", version.ref = "groovy3" }
+groovy3json = { module = "org.codehaus.groovy:groovy-json", version.ref = "groovy3" }
+groovy4 = { module = "org.apache.groovy:groovy", version.ref = "groovy4" }
+groovy4json = { module = "org.apache.groovy:groovy-json", version.ref = "groovy4" }
 junitJupiterApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junitJupiter" }
 junitJupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junitJupiter" }
 junitPlatformCommons = { module = "org.junit.platform:junit-platform-commons", version.ref = "junitPlatform" }
@@ -37,6 +45,8 @@ okioJvm = { module = "com.squareup.okio:okio-jvm", version.ref = "okio" }
 slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 
 [bundles]
+groovy3 = ["groovy3", "groovy3json"]
+groovy4 = ["groovy4", "groovy4json"]
 kotlin = ["kotlin", "kotlinCommon", "kotlinJdk7", "kotlinJdk8", "kotlinReflect", "kotlinScriptingJvm", "kotlinStdlib", "kotlinTest"]
 moshi = ["moshi", "moshiKotlin"]
 okhttp = ["okhttp", "okhttpMockwebserver"]

@@ -58,14 +58,11 @@ dependencies {
         }
       }
     }
-    listOf(
-        "org.apache.groovy:groovy",
-        "org.apache.groovy:groovy-json"
-    ).forEach {
+    listOf(libs.bundles.groovy4).forEach {
       implementation(it) {
         version {
-          strictly("[4,)")
-          prefer("4.0.24")
+          strictly(libs.versions.groovy4Versionrange.get())
+          prefer(libs.versions.groovy4.get())
         }
       }
     }
@@ -86,8 +83,8 @@ dependencies {
   api("de.gesellix:docker-engine:2025-01-18T20-36-00")
   api("de.gesellix:docker-compose:2025-01-18T12-54-00")
 
-  implementation("org.apache.groovy:groovy:4.0.24")
-  implementation("org.apache.groovy:groovy-json:4.0.24")
+  implementation(libs.groovy4)
+  implementation(libs.groovy4json)
 
   api(libs.moshi)
   implementation("com.google.re2j:re2j:1.8")

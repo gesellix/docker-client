@@ -30,33 +30,27 @@ dependencies {
         }
       }
     }
-    listOf(
-        "org.codehaus.groovy:groovy",
-        "org.codehaus.groovy:groovy-json"
-    ).forEach {
+    listOf(libs.bundles.groovy3).forEach {
       implementation(it) {
         version {
-          strictly("[3,4)")
-          prefer("3.0.23")
+          strictly(libs.versions.groovy3Versionrange.get())
+          prefer(libs.versions.groovy3.get())
         }
       }
     }
-    listOf(
-      "org.apache.groovy:groovy",
-      "org.apache.groovy:groovy-json"
-    ).forEach {
+    listOf(libs.bundles.groovy4).forEach {
       implementation(it) {
         version {
-          strictly("[4,)")
-          prefer("4.0.24")
+          strictly(libs.versions.groovy4Versionrange.get())
+          prefer(libs.versions.groovy4.get())
         }
       }
     }
   }
 //  implementation(project(":client"))
   implementation(project(":client-groovy4"))
-//  implementation("org.codehaus.groovy:groovy:[3,4)")
-  implementation("org.apache.groovy:groovy:4.0.24")
+//  implementation(libs.groovy3)
+  implementation(libs.groovy4)
   testImplementation("org.apache.commons:commons-compress:1.27.1")
 
   implementation(libs.slf4j)
