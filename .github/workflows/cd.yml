@@ -38,6 +38,9 @@ jobs:
           java-version: ${{ matrix.java }}
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          dependency-graph: generate-and-submit
+          dependency-graph-continue-on-failure: false
 #      - name: Install Docker on macOS
 #        uses: douglascamata/setup-docker-macos-action@v1-alpha
       - name: build publish
