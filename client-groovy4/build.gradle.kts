@@ -101,7 +101,7 @@ dependencies {
   api("de.gesellix:docker-remote-api-client:2025-01-18T21-21-00")
   api("de.gesellix:docker-remote-api-model-1-41:2025-01-18T20-57-00")
   api("de.gesellix:docker-engine:2025-01-18T20-36-00")
-  api("de.gesellix:docker-compose:2024-11-28T22-05-00")
+  api("de.gesellix:docker-compose:2025-01-18T12-54-00")
 
   implementation("org.apache.groovy:groovy:4.0.24")
   implementation("org.apache.groovy:groovy-json:4.0.24")
