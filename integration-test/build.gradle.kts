@@ -13,63 +13,50 @@ dependencies {
   constraints {
     implementation("de.gesellix:docker-engine") {
       version {
-        strictly("[2024-11-06T01-01-01,)")
+        strictly("[2025-01-01T01-01-01,)")
       }
     }
     implementation("de.gesellix:docker-filesocket") {
       version {
-        strictly("[2024-11-04T01-01-01,)")
+        strictly("[2025-01-01T01-01-01,)")
       }
     }
     implementation("de.gesellix:docker-remote-api-model-1-41") {
       version {
-        strictly("[2024-11-06T01-01-01,)")
+        strictly("[2025-01-01T01-01-01,)")
       }
     }
-    implementation("org.slf4j:slf4j-api") {
+    implementation(libs.slf4j) {
       version {
-        strictly("[1.7,3)")
-        prefer("2.0.16")
+        strictly(libs.versions.slf4jVersionrange.get())
+        prefer(libs.versions.slf4j.get())
       }
     }
-    listOf(
-      "com.squareup.okhttp3:mockwebserver",
-      "com.squareup.okhttp3:okhttp"
-    ).forEach {
+    listOf(libs.bundles.okhttp).forEach {
       implementation(it) {
         version {
-          strictly("[4,5)")
-          prefer("4.12.0")
+          strictly(libs.versions.okhttpVersionrange.get())
+          prefer(libs.versions.okhttp.get())
         }
       }
     }
-    implementation("com.squareup.okio:okio") {
+    implementation(libs.okio) {
       version {
-        strictly("[3,4)")
+        strictly(libs.versions.okioVersionrange.get())
       }
     }
-    implementation("com.squareup.moshi:moshi") {
-      version {
-        strictly("[1.12.0,2)")
-      }
-    }
-    implementation("com.squareup.moshi:moshi-kotlin") {
-      version {
-        strictly("[1.12.0,2)")
-      }
-    }
-    listOf(
-      "org.jetbrains.kotlin:kotlin-reflect",
-      "org.jetbrains.kotlin:kotlin-stdlib",
-      "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
-      "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
-      "org.jetbrains.kotlin:kotlin-stdlib-common",
-      "org.jetbrains.kotlin:kotlin-test"
-    ).forEach {
+    listOf(libs.bundles.moshi).forEach {
       implementation(it) {
         version {
-          strictly("[1.6,3)")
-          prefer("2.1.0")
+          strictly(libs.versions.moshiVersionrange.get())
+        }
+      }
+    }
+    listOf(libs.bundles.kotlin).forEach {
+      implementation(it) {
+        version {
+          strictly(libs.versions.kotlinVersionrange.get())
+          prefer(libs.versions.kotlin.get())
         }
       }
     }
@@ -84,15 +71,15 @@ dependencies {
   testImplementation("org.apache.commons:commons-compress:1.27.1")
 
   testImplementation("org.slf4j:slf4j-api:[1.7,)")
-  runtimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.14")
+  runtimeOnly("ch.qos.logback:logback-classic:${libs.versions.logbackVersionrange.get()}!!${libs.versions.logback.get()}")
 
-  testImplementation("de.gesellix:docker-registry:2024-11-24T11-22-00")
-  testImplementation("de.gesellix:testutil:[2024-01-01T01-01-01,)")
+  testImplementation("de.gesellix:docker-registry:2025-01-18T21-41-00")
+  testImplementation("de.gesellix:testutil:[2025-01-01T01-01-01,)")
   testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
 //  testImplementation("org.spockframework:spock-core:2.3-groovy-4.0")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.16.0")
   testImplementation("org.apache.commons:commons-lang3:3.17.0")
-  testRuntimeOnly("ch.qos.logback:logback-classic:[1.2,2)!!1.3.14")
+  testRuntimeOnly("ch.qos.logback:logback-classic:${libs.versions.logbackVersionrange.get()}!!${libs.versions.logback.get()}")
 }
 
 tasks{
