@@ -17,7 +17,7 @@ val dependencyVersions = listOf(
   "org.codehaus.groovy:groovy-json:3.0.23",
   "org.apache.groovy:groovy:4.0.24",
   "org.apache.groovy:groovy-json:4.0.24",
-  "org.jetbrains:annotations:26.0.1",
+  "org.jetbrains:annotations:26.0.2",
   "org.junit:junit-bom:5.11.4",
 )
 
