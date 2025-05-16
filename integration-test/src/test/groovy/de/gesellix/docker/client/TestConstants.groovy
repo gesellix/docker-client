@@ -35,7 +35,7 @@ class TestConstants {
     imageName = "$imageRepo:$imageTag"
 
     versionDetails = [
-        ApiVersion   : { it in ["1.43", "1.44", "1.45", "1.46", "1.47"] },
+        ApiVersion   : { it in ["1.43", "1.44", "1.45", "1.46", "1.47", "1.48"] },
         Arch         : { it in ["amd64", "arm64"] },
         BuildTime    : { it =~ "\\d{4}-\\d{2}-\\d{2}T\\w+" },
         GitCommit    : { it =~ "\\w{6,}" },
