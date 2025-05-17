@@ -74,6 +74,8 @@ nexusPublishing {
         stagingProfileId.set(System.getenv("SONATYPE_STAGING_PROFILE_ID") ?: findProperty("sonatype.staging.profile.id")) //can reduce execution time by even 10 seconds
         username.set(System.getenv("SONATYPE_USERNAME") ?: findProperty("sonatype.username"))
         password.set(System.getenv("SONATYPE_PASSWORD") ?: findProperty("sonatype.password"))
+        nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+        snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
       }
     }
   }
