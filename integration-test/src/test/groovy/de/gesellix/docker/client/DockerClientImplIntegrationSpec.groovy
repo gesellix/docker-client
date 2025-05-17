@@ -72,7 +72,8 @@ class DockerClientImplIntegrationSpec extends Specification {
     officialRegistry.official
     officialRegistry.secure
 
-    info.registryConfig.insecureRegistryCIDRs == ["127.0.0.0/8"]
+    // [::1/128, 127.0.0.0/8]
+    info.registryConfig.insecureRegistryCIDRs.contains("127.0.0.0/8")
     info.systemTime =~ "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2,}.(\\d{3,}Z)?"
   }
 
