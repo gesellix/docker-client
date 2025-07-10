@@ -78,7 +78,7 @@ dependencies {
   testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
 //  testImplementation("org.spockframework:spock-core:2.3-groovy-4.0")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.17.6")
-  testImplementation("org.apache.commons:commons-lang3:3.17.0")
+  testImplementation("org.apache.commons:commons-lang3:3.18.0")
   testRuntimeOnly("ch.qos.logback:logback-classic:${libs.versions.logbackVersionrange.get()}!!${libs.versions.logback.get()}")
 }
 
