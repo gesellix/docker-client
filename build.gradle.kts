@@ -10,7 +10,7 @@ val dependencyVersions = listOf(
   "com.squareup.okio:okio-jvm:3.15.0",
   "net.bytebuddy:byte-buddy:1.17.6",
   "net.bytebuddy:byte-buddy-agent:1.17.6",
-  "org.apache.commons:commons-compress:1.27.1",
+  "org.apache.commons:commons-compress:1.28.0",
   "org.apache.commons:commons-lang3:3.18.0",
   "org.bouncycastle:bcpkix-jdk18on:1.81",
   "org.codehaus.groovy:groovy:3.0.23",
