@@ -96,7 +96,7 @@ dependencies {
   api(libs.okhttp)
   testImplementation("com.squareup.okhttp3:mockwebserver:${libs.versions.okhttp.get()}")
 
-  implementation("org.apache.commons:commons-compress:1.27.1")
+  implementation("org.apache.commons:commons-compress:1.28.0")
 
   implementation("org.bouncycastle:bcpkix-jdk18on:1.81")
 

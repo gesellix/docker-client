@@ -51,7 +51,7 @@ dependencies {
   implementation(project(":client-groovy4"))
 //  implementation(libs.groovy3)
   implementation(libs.groovy4)
-  testImplementation("org.apache.commons:commons-compress:1.27.1")
+  testImplementation("org.apache.commons:commons-compress:1.28.0")
 
   implementation(libs.slf4j)
   runtimeOnly("ch.qos.logback:logback-classic:${libs.versions.logbackVersionrange.get()}!!${libs.versions.logback.get()}")
