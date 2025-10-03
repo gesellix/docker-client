@@ -78,7 +78,7 @@ dependencies {
   testImplementation("de.gesellix:testutil:[2025-01-01T01-01-01,)")
   testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
 //  testImplementation("org.spockframework:spock-core:2.3-groovy-4.0")
-  testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
+  testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.0")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.17.7")
   testImplementation("org.apache.commons:commons-lang3:3.19.0")
   testRuntimeOnly("ch.qos.logback:logback-classic:${libs.versions.logbackVersionrange.get()}!!${libs.versions.logback.get()}")
