@@ -534,7 +534,7 @@ class DeployConfigReaderTest extends Specification {
     when:
     def policy = reader.restartPolicy("on-failure:4", null)
     then:
-    policy.condition == TaskSpecRestartPolicy.Condition.OnMinusFailure
+    policy.condition == TaskSpecRestartPolicy.Condition.OnFailure
     policy.maxAttempts == 4
   }
 
