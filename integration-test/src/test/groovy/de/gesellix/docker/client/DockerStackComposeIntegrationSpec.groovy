@@ -68,7 +68,7 @@ class DockerStackComposeIntegrationSpec extends Specification {
     spec.mode.replicated.replicas == 1
     spec.name == "${namespace}_service"
     spec.networks.aliases == [['service']]
-    spec.taskTemplate.restartPolicy.condition == TaskSpecRestartPolicy.Condition.OnMinusFailure
+    spec.taskTemplate.restartPolicy.condition == TaskSpecRestartPolicy.Condition.OnFailure
     spec.taskTemplate.restartPolicy.delay == 5000000000
     spec.taskTemplate.restartPolicy.maxAttempts == 3
     spec.taskTemplate.restartPolicy.window == 120000000000

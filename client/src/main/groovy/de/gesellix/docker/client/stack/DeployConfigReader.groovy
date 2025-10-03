@@ -493,7 +493,7 @@ class DeployConfigReader {
 
         case "on-failure":
           return new TaskSpecRestartPolicy(
-              TaskSpecRestartPolicy.Condition.OnMinusFailure,
+              TaskSpecRestartPolicy.Condition.OnFailure,
               null,
               policy.maximumRetryCount as int,
               null

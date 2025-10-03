@@ -286,7 +286,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     when:
     def updateConfig = isNativeWindows
-        ? new ContainerUpdateRequest().tap { restartPolicy = new RestartPolicy(RestartPolicy.Name.UnlessMinusStopped, null) }
+        ? new ContainerUpdateRequest().tap { restartPolicy = new RestartPolicy(RestartPolicy.Name.UnlessStopped, null) }
         : new ContainerUpdateRequest().tap { memory = 314572800; memorySwap = 514288000 }
 
     def updateResult = dockerClient.updateContainer(containerId, updateConfig)
