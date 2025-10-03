@@ -24,6 +24,7 @@ updates:
       junit:
         patterns:
           - "org.junit:*"
+          - "org.junit.jupiter:*"
           - "org.junit.platform:*"
       okio:
         patterns:
