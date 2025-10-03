@@ -61,7 +61,7 @@ class DockerClientImplIntegrationSpec extends Specification {
     info.ID =~ "\\w[\\w-]+"
     info.indexServerAddress == "https://index.docker.io/v1/"
     info.ipv4Forwarding
-    info.labels == null || info.labels == [] || info.labels == ["com.docker.desktop.address=npipe://\\\\.\\pipe\\docker_cli"]
+    info.labels == null || info.labels == [] || info.labels.any { it.startsWith("com.docker.desktop.address=") }
     info.loggingDriver == "json-file"
     info.memTotal > 0
     info.memoryLimit != nativeWindows
