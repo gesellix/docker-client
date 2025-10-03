@@ -941,7 +941,9 @@ class DockerContainerIntegrationSpec extends Specification {
     notThrown(Throwable)
     Thread.sleep(500)
     def matchingFrames = frames.findAll {
-      it.streamType == Frame.StreamType.STDOUT
+      // we receive a RAW response because the connection is not upgraded - which is ok for non-interactive usage
+//      it.streamType == Frame.StreamType.STDOUT
+      it.streamType == Frame.StreamType.RAW
           && it.payloadAsString.contains("Listening and serving HTTP")
     }
     1 == matchingFrames?.size()
