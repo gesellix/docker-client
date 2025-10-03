@@ -25,8 +25,7 @@ jobs:
         #          - windows-latest
         #          - macos-latest
         java:
-          - 8
-    #          - 17
+          - '21'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
