@@ -7,7 +7,7 @@ plugins {
   id("maven-publish")
   id("signing")
   id("com.github.ben-manes.versions")
-  id("net.ossindex.audit")
+  id("org.sonatype.gradle.plugins.scan")
   id("io.freefair.maven-central.validate-poms")
 }
 
