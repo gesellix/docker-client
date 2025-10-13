@@ -17,6 +17,14 @@ dependencies {
         prefer(libs.versions.slf4j.get())
       }
     }
+    listOf(libs.bundles.okhttp).forEach {
+      implementation(it) {
+        version {
+          strictly(libs.versions.okhttpVersionrange.get())
+          prefer(libs.versions.okhttp.get())
+        }
+      }
+    }
     implementation(libs.okio) {
       version {
         strictly(libs.versions.okioVersionrange.get())
