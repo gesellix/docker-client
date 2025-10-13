@@ -82,7 +82,7 @@ dependencies {
   implementation("de.gesellix:docker-filesocket:2025-07-24T23-40-00")
   api("de.gesellix:docker-remote-api-model-1-41:2025-09-27T23-27-00")
   api("de.gesellix:docker-engine:2025-09-27T28-03-00")
-  api("de.gesellix:docker-compose:2025-09-27T22-55-00")
+  api("de.gesellix:docker-compose:2025-10-11T21-56-00")
 
   implementation(libs.groovy4)
   implementation(libs.groovy4json)
