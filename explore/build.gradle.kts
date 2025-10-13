@@ -52,7 +52,7 @@ dependencies {
 //  implementation(libs.groovy3)
   implementation(libs.groovy4)
   testImplementation("org.apache.commons:commons-compress:1.28.0")
-  implementation("de.gesellix:docker-remote-api-model-1-41:2025-09-27T23-27-00")
+  implementation("de.gesellix:docker-remote-api-model-1-41:2025-10-11T21-57-00")
   implementation("de.gesellix:docker-filesocket:2025-07-24T23-40-00")
 
   implementation(libs.slf4j)
