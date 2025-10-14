@@ -58,6 +58,11 @@ class ManageContainerClient implements ManageContainer {
     this.archiveUtil = new ArchiveUtil()
   }
 
+  /**
+   * @deprecated removed
+   * @see #attach(java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, de.gesellix.docker.remote.api.core.StreamCallback, java.time.Duration)
+   */
+  @Deprecated
   @Override
   EngineResponse attach(String containerId, Map<String, Object> query, AttachConfig callback = null) {
     log.info("docker attach")
@@ -212,6 +217,11 @@ class ManageContainerClient implements ManageContainer {
     return new EngineResponseContent<IdResponse>(containerExec)
   }
 
+  /**
+   * @deprecated removed
+   * @see #startExec(java.lang.String, de.gesellix.docker.remote.api.ExecStartConfig, de.gesellix.docker.remote.api.core.StreamCallback, java.time.Duration)
+   */
+  @Deprecated
   @Override
   void startExec(String execId, ExecStartConfig execStartConfig, AttachConfig attachConfig) {
     log.info("docker start exec '${execId}'")
