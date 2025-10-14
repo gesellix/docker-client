@@ -2,7 +2,6 @@ package de.gesellix.docker.client.container;
 
 import de.gesellix.docker.client.EngineResponseContent;
 import de.gesellix.docker.engine.AttachConfig;
-import de.gesellix.docker.engine.EngineResponse;
 import de.gesellix.docker.remote.api.ContainerCreateRequest;
 import de.gesellix.docker.remote.api.ContainerCreateResponse;
 import de.gesellix.docker.remote.api.ContainerInspectResponse;
@@ -29,20 +28,6 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 public interface ManageContainer {
-
-  /**
-   * @deprecated removed
-   * @see #attach(java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, de.gesellix.docker.remote.api.core.StreamCallback, java.time.Duration)
-   */
-  @Deprecated
-  EngineResponse attach(String container, Map<String, Object> query);
-
-  /**
-   * @deprecated removed
-   * @see #attach(java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, de.gesellix.docker.remote.api.core.StreamCallback, java.time.Duration)
-   */
-  @Deprecated
-  EngineResponse attach(String container, Map<String, Object> query, AttachConfig callback);
 
   void attach(String containerId,
               String detachKeys,
