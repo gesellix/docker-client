@@ -1130,7 +1130,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def entryNames = []
     TarArchiveEntry entry
-    while (entry = stream.nextTarEntry) {
+    while (entry = stream.nextEntry) {
       def entryName = entry.name
       entryNames << entryName
 
