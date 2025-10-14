@@ -30,8 +30,18 @@ import java.util.function.Predicate;
 
 public interface ManageContainer {
 
+  /**
+   * @deprecated removed
+   * @see #attach(java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, de.gesellix.docker.remote.api.core.StreamCallback, java.time.Duration)
+   */
+  @Deprecated
   EngineResponse attach(String container, Map<String, Object> query);
 
+  /**
+   * @deprecated removed
+   * @see #attach(java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, de.gesellix.docker.remote.api.core.StreamCallback, java.time.Duration)
+   */
+  @Deprecated
   EngineResponse attach(String container, Map<String, Object> query, AttachConfig callback);
 
   void attach(String containerId,
@@ -66,6 +76,11 @@ public interface ManageContainer {
 
   EngineResponseContent<IdResponse> createExec(String container, ExecConfig execConfig);
 
+  /**
+   * @deprecated removed
+   * @see #startExec(java.lang.String, de.gesellix.docker.remote.api.ExecStartConfig, de.gesellix.docker.remote.api.core.StreamCallback, java.time.Duration)
+   */
+  @Deprecated
   void startExec(String execId, ExecStartConfig execStartConfig, AttachConfig attachConfig);
 
   void startExec(String execId, ExecStartConfig execStartConfig, StreamCallback<Frame> callback, Duration timeout);
