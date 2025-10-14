@@ -1,7 +1,6 @@
 package de.gesellix.docker.client
 
 import de.gesellix.docker.client.container.ArchiveUtil
-import de.gesellix.docker.client.testutil.TeeOutputStream
 import de.gesellix.docker.engine.AttachConfig
 import de.gesellix.docker.remote.api.ChangeType
 import de.gesellix.docker.remote.api.ContainerCreateRequest
@@ -14,6 +13,7 @@ import de.gesellix.docker.remote.api.PortBinding
 import de.gesellix.docker.remote.api.RestartPolicy
 import de.gesellix.docker.remote.api.SystemInfo
 import de.gesellix.docker.remote.api.client.CreateImageInfoExtensionsKt
+import de.gesellix.docker.remote.api.core.Cancellable
 import de.gesellix.docker.remote.api.core.ClientException
 import de.gesellix.docker.remote.api.core.Frame
 import de.gesellix.docker.remote.api.core.StreamCallback
@@ -25,6 +25,7 @@ import okhttp3.Response
 import okhttp3.WebSocket
 import okio.ByteString
 import okio.Okio
+import okio.Sink
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import spock.lang.IgnoreIf
@@ -954,8 +955,6 @@ class DockerContainerIntegrationSpec extends Specification {
     dockerClient.rm(containerId)
   }
 
-  // TODO Currently not supported, partially broken/unreliable
-  @IgnoreIf({ Boolean.parseBoolean(System.getenv("CI")) })
   def "attach (interactive)"() {
     given:
     dockerClient.pull(null, null, CONSTANTS.imageRepo, CONSTANTS.imageTag)
@@ -974,55 +973,55 @@ class DockerContainerIntegrationSpec extends Specification {
     String containerId = dockerClient.run(containerConfig).content.id
 
     String content = "attach ${UUID.randomUUID()}"
-    String expectedOutput = containerConfig.tty ? "$content\r\n#$content#\r\n" : "#$content#\n"
+    String expectedOutput = containerConfig.tty ? "$content\r\n#$content#" : "#$content#\n"
 
-    def stdout = new ByteArrayOutputStream(expectedOutput.length())
-    def stdin = new PipedOutputStream()
+    List<Frame> frames = []
+    def streamCallback = new StreamCallback<Frame>() {
+      @Override
+      void onStarting(Cancellable cancellable) {
+        log.info("[attach (interactive)] onStarting")
+      }
 
-    def onSinkClosed = new CountDownLatch(1)
-    def onSinkWritten = new CountDownLatch(1)
-    def onSourceConsumed = new CountDownLatch(1)
+      @Override
+      void attachInput(Sink sink) {
+        log.info("[attach (interactive)] attachInput")
+        Sink bufferedSink = Okio.buffer(sink)
+        try {
+          bufferedSink.write(content.bytes).write("\n".bytes)
+          bufferedSink.flush()
+          Thread.sleep(100)
+        } finally {
+          bufferedSink.close()
+        }
+      }
 
-    def attachConfig = new AttachConfig(!containerConfig.tty)
-    attachConfig.streams.stdin = new PipedInputStream(stdin)
-    attachConfig.streams.stdout = new TeeOutputStream(stdout, System.out)
-    attachConfig.onResponse = { Response response ->
-      log.info("[attach (interactive)] got response")
-    }
-    attachConfig.onSinkClosed = { Response response ->
-      log.info("[attach (interactive)] sink closed (complete: ${stdout.toString() == expectedOutput})\n${stdout.toString()}")
-      onSinkClosed.countDown()
-    }
-    attachConfig.onSinkWritten = { Response response ->
-      log.info("[attach (interactive)] sink written (complete: ${stdout.toString() == expectedOutput})\n${stdout.toString()}")
-      onSinkWritten.countDown()
-    }
-    attachConfig.onSourceConsumed = {
-      if (stdout.toString() == expectedOutput) {
-        log.info("[attach (interactive)] consumed (complete: ${stdout.toString() == expectedOutput})\n${stdout.toString()}")
-        onSourceConsumed.countDown()
-      } else {
-        log.info("[attach (interactive)] consumed (complete: ${stdout.toString() == expectedOutput})\n${stdout.toString()}")
+      @Override
+      void onNext(Frame frame) {
+        log.info("[attach (interactive)] onNext")
+        frames << frame
+      }
+
+      @Override
+      void onFinished() {
+        log.info("[attach (interactive)] onFinished")
+      }
+
+      @Override
+      void onFailed(Exception e) {
+        log.info("[attach (interactive)] onFailed {}", e.getMessage())
       }
     }
-    dockerClient.attach(containerId,
-        [logs: 1, stream: 1, stdin: 1, stdout: 1, stderr: 1],
-        attachConfig)
 
     when:
-    stdin.write("$content\n".bytes)
-    stdin.flush()
-    stdin.close()
-    boolean sourceConsumed = onSourceConsumed.await(5, SECONDS)
-    boolean sinkWritten = onSinkWritten.await(5, SECONDS)
-    boolean sinkClosed = onSinkClosed.await(5, SECONDS)
+    dockerClient.attach(containerId, null,
+        true, true, true, true, true,
+        streamCallback, Duration.ofSeconds(10))
 
     then:
-    sinkClosed
-    sinkWritten
-    sourceConsumed
-    stdout.size() > 0
-    stdout.toByteArray() == expectedOutput.bytes
+    frames.any { f ->
+      f.streamType == Frame.StreamType.RAW
+          && f.payloadAsString == expectedOutput
+    }
 
     cleanup:
     dockerClient.stop(containerId)
