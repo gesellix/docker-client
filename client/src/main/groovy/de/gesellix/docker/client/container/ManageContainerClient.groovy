@@ -43,6 +43,10 @@ class ManageContainerClient implements ManageContainer {
   private final Logger log = LoggerFactory.getLogger(ManageContainerClient)
 
   private EngineApiClient client
+  /**
+   * @deprecated for removal
+   */
+  @Deprecated
   private EngineClient engineClient
   private DockerResponseHandler responseHandler
   private QueryParameterEncoder queryParameterEncoder
@@ -56,33 +60,6 @@ class ManageContainerClient implements ManageContainer {
     this.repositoryTagParser = new RepositoryTagParser()
     this.queryParameterEncoder = new QueryParameterEncoder()
     this.archiveUtil = new ArchiveUtil()
-  }
-
-  /**
-   * @deprecated removed
-   * @see #attach(java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, java.lang.Boolean, de.gesellix.docker.remote.api.core.StreamCallback, java.time.Duration)
-   */
-  @Deprecated
-  @Override
-  EngineResponse attach(String containerId, Map<String, Object> query, AttachConfig callback = null) {
-    log.info("docker attach")
-
-    // When using the TTY setting is enabled in POST /containers/create,
-    // the stream is the raw data from the process PTY and client’s stdin.
-    // When the TTY is disabled, then the stream is multiplexed to separate stdout and stderr.
-    EngineResponseContent<ContainerInspectResponse> container = inspectContainer(containerId)
-    boolean multiplexStreams = !container.content.config.tty
-
-    EngineResponse response = engineClient.post([
-        path            : "/containers/${containerId}/attach".toString(),
-        query           : query,
-        attach          : callback,
-        multiplexStreams: multiplexStreams])
-
-    if (!callback) {
-      response.stream.multiplexStreams = multiplexStreams
-    }
-    return response
   }
 
   @Override
