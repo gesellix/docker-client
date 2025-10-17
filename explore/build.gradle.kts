@@ -61,7 +61,7 @@ dependencies {
   implementation(libs.groovy4)
   testImplementation("org.apache.commons:commons-compress:1.28.0")
   implementation("de.gesellix:docker-remote-api-model-1-41:2025-10-16T20-26-00")
-  implementation("de.gesellix:docker-filesocket:2025-10-12T22-15-00")
+  implementation("de.gesellix:docker-filesocket:2025-10-16T20-25-00")
 
   implementation(libs.slf4j)
   runtimeOnly("ch.qos.logback:logback-classic:${libs.versions.logbackVersionrange.get()}!!${libs.versions.logback.get()}")
