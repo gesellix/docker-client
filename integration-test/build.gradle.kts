@@ -66,7 +66,7 @@ dependencies {
 //  testImplementation("org.apache.groovy:groovy-json:[4,)")
   testImplementation("com.kohlschutter.junixsocket:junixsocket-core:[2.4,)")
   testImplementation("com.kohlschutter.junixsocket:junixsocket-common:[2.4,)")
-  implementation("de.gesellix:docker-remote-api-model-1-41:2025-10-16T20-26-00")
+  implementation("de.gesellix:docker-remote-api-model-1-41:2025-10-31T17-49-00")
   implementation("de.gesellix:docker-filesocket:2025-10-16T20-25-00")
 
   testImplementation("net.jodah:failsafe:2.4.4")
