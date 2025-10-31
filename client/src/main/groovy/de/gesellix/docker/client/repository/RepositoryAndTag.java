@@ -2,8 +2,8 @@ package de.gesellix.docker.client.repository;
 
 public class RepositoryAndTag {
 
-  String repo;
-  String tag;
+  public String repo;
+  public String tag;
 
   public RepositoryAndTag(String repo, String tag) {
     this.repo = repo;

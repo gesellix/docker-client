@@ -78,7 +78,7 @@ class DockerContainerIntegrationSpec extends Specification {
 
     def imageId = CreateImageInfoExtensionsKt.getImageId(infos)
     String container = dockerClient.createContainer(new ContainerCreateRequest().tap {
-      image = imageId;
+      image = imageId
       cmd = ["-"]
     }).content.id
 

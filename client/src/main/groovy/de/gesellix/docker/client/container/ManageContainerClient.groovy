@@ -11,6 +11,7 @@ import de.gesellix.docker.remote.api.ContainerCreateRequest
 import de.gesellix.docker.remote.api.ContainerCreateResponse
 import de.gesellix.docker.remote.api.ContainerInspectResponse
 import de.gesellix.docker.remote.api.ContainerPruneResponse
+import de.gesellix.docker.remote.api.ContainerSummary
 import de.gesellix.docker.remote.api.ContainerTopResponse
 import de.gesellix.docker.remote.api.ContainerUpdateRequest
 import de.gesellix.docker.remote.api.ContainerUpdateResponse
@@ -359,30 +360,30 @@ class ManageContainerClient implements ManageContainer {
   }
 
   @Override
-  EngineResponseContent<List<Map<String, Object>>> ps(Map<String, Object> query) {
+  EngineResponseContent<List<ContainerSummary>> ps(Map<String, Object> query) {
     log.info("docker ps")
     Map<String, ?> actualQuery = [:]
     if (query) {
       actualQuery.putAll(query)
     }
     queryParameterEncoder.jsonEncodeQueryParameter(actualQuery, "filters")
-    List<Map> containerList = client.containerApi.containerList(
+    List<ContainerSummary> containerList = client.containerApi.containerList(
         actualQuery.getOrDefault("all", true) as Boolean,
         actualQuery.limit as Integer,
         actualQuery.getOrDefault("size", false) as Boolean,
         actualQuery.filters as String)
-    return new EngineResponseContent<List<Map<String, Object>>>(containerList)
+    return new EngineResponseContent<List<ContainerSummary>>(containerList)
   }
 
   @Override
-  EngineResponseContent<List<Map<String, Object>>> ps(Boolean all = true, Integer limit = null, Boolean size = false, String filters = null) {
+  EngineResponseContent<List<ContainerSummary>> ps(Boolean all = true, Integer limit = null, Boolean size = false, String filters = null) {
     log.info("docker ps")
-    List<Map> containerList = client.containerApi.containerList(
+    List<ContainerSummary> containerList = client.containerApi.containerList(
         all == null ? true : all,
         limit,
         size ?: false,
         filters)
-    return new EngineResponseContent<List<Map<String, Object>>>(containerList)
+    return new EngineResponseContent<List<ContainerSummary>>(containerList)
   }
 
   @Override

@@ -6,6 +6,7 @@ import de.gesellix.docker.remote.api.ContainerCreateRequest;
 import de.gesellix.docker.remote.api.ContainerCreateResponse;
 import de.gesellix.docker.remote.api.ContainerInspectResponse;
 import de.gesellix.docker.remote.api.ContainerPruneResponse;
+import de.gesellix.docker.remote.api.ContainerSummary;
 import de.gesellix.docker.remote.api.ContainerTopResponse;
 import de.gesellix.docker.remote.api.ContainerUpdateRequest;
 import de.gesellix.docker.remote.api.ContainerUpdateResponse;
@@ -88,17 +89,17 @@ public interface ManageContainer {
 
   void waitForLogEvent(String container, Map<String, Object> query, Predicate<Frame> matcher, Duration timeout);
 
-  EngineResponseContent<List<Map<String, Object>>> ps(Map<String, Object> query);
+  EngineResponseContent<List<ContainerSummary>> ps(Map<String, Object> query);
 
-  EngineResponseContent<List<Map<String, Object>>> ps();
+  EngineResponseContent<List<ContainerSummary>> ps();
 
-  EngineResponseContent<List<Map<String, Object>>> ps(Boolean all);
+  EngineResponseContent<List<ContainerSummary>> ps(Boolean all);
 
-  EngineResponseContent<List<Map<String, Object>>> ps(Boolean all, Integer limit);
+  EngineResponseContent<List<ContainerSummary>> ps(Boolean all, Integer limit);
 
-  EngineResponseContent<List<Map<String, Object>>> ps(Boolean all, Integer limit, Boolean size);
+  EngineResponseContent<List<ContainerSummary>> ps(Boolean all, Integer limit, Boolean size);
 
-  EngineResponseContent<List<Map<String, Object>>> ps(Boolean all, Integer limit, Boolean size, String filters);
+  EngineResponseContent<List<ContainerSummary>> ps(Boolean all, Integer limit, Boolean size, String filters);
 
   void pause(String container);
 
