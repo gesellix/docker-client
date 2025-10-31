@@ -1,7 +1,6 @@
 package de.gesellix.docker.client.container;
 
 import de.gesellix.docker.client.EngineResponseContent;
-import de.gesellix.docker.engine.AttachConfig;
 import de.gesellix.docker.remote.api.ContainerCreateRequest;
 import de.gesellix.docker.remote.api.ContainerCreateResponse;
 import de.gesellix.docker.remote.api.ContainerInspectResponse;
@@ -61,13 +60,6 @@ public interface ManageContainer {
   EngineResponseContent<List<FilesystemChange>> diff(String container);
 
   EngineResponseContent<IdResponse> createExec(String container, ExecConfig execConfig);
-
-  /**
-   * @deprecated removed
-   * @see #startExec(java.lang.String, de.gesellix.docker.remote.api.ExecStartConfig, de.gesellix.docker.remote.api.core.StreamCallback, java.time.Duration)
-   */
-  @Deprecated
-  void startExec(String execId, ExecStartConfig execStartConfig, AttachConfig attachConfig);
 
   void startExec(String execId, ExecStartConfig execStartConfig, StreamCallback<Frame> callback, Duration timeout);
 
