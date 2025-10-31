@@ -3,9 +3,7 @@ package de.gesellix.docker.client.container
 import de.gesellix.docker.client.EngineResponseContent
 import de.gesellix.docker.client.repository.RepositoryAndTag
 import de.gesellix.docker.client.repository.RepositoryTagParser
-import de.gesellix.docker.engine.AttachConfig
 import de.gesellix.docker.engine.EngineClient
-import de.gesellix.docker.engine.EngineResponse
 import de.gesellix.docker.remote.api.ContainerConfig
 import de.gesellix.docker.remote.api.ContainerCreateRequest
 import de.gesellix.docker.remote.api.ContainerCreateResponse
@@ -193,37 +191,6 @@ class ManageContainerClient implements ManageContainer {
     log.info("docker create exec on '${containerId}'")
     IdResponse containerExec = client.execApi.containerExec(containerId, execConfig)
     return new EngineResponseContent<IdResponse>(containerExec)
-  }
-
-  /**
-   * @deprecated removed
-   * @see #startExec(java.lang.String, de.gesellix.docker.remote.api.ExecStartConfig, de.gesellix.docker.remote.api.core.StreamCallback, java.time.Duration)
-   */
-  @Deprecated
-  @Override
-  void startExec(String execId, ExecStartConfig execStartConfig, AttachConfig attachConfig) {
-    log.info("docker start exec '${execId}'")
-
-    // When using the TTY setting is enabled in POST /containers/create,
-    // the stream is the raw data from the process PTY and client’s stdin.
-    // When the TTY is disabled, then the stream is multiplexed to separate stdout and stderr.
-    ExecInspectResponse execInspect = client.execApi.execInspect(execId)
-    boolean multiplexStreams = !execInspect.processConfig.tty
-    EngineResponse response = engineClient.post([
-        path              : "/exec/${execId}/start".toString(),
-        body              : [Detach: execStartConfig.detach, Tty: execStartConfig.tty],
-        requestContentType: "application/json",
-        attach            : attachConfig,
-        multiplexStreams  : multiplexStreams])
-
-    if (!attachConfig) {
-      if (response.status?.code == 404) {
-        log.error("no such exec '${execId}'")
-      }
-      responseHandler.ensureSuccessfulResponse(response, new IllegalStateException("docker exec start failed"))
-      response.stream.multiplexStreams = multiplexStreams
-    }
-//    return response
   }
 
   @Override

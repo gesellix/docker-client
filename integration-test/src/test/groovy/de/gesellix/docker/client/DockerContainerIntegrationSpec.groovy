@@ -1,7 +1,6 @@
 package de.gesellix.docker.client
 
 import de.gesellix.docker.client.container.ArchiveUtil
-import de.gesellix.docker.engine.AttachConfig
 import de.gesellix.docker.remote.api.ChangeType
 import de.gesellix.docker.remote.api.ContainerCreateRequest
 import de.gesellix.docker.remote.api.ContainerUpdateRequest
@@ -23,6 +22,7 @@ import groovy.json.JsonOutput
 import groovy.util.logging.Slf4j
 import okhttp3.Response
 import okhttp3.WebSocket
+import okio.BufferedSink
 import okio.ByteString
 import okio.Okio
 import okio.Sink
@@ -657,35 +657,79 @@ class DockerContainerIntegrationSpec extends Specification {
 
     String input = "exec ${UUID.randomUUID()}"
     String expectedOutput = "#$input#"
-    def outputStream = new ByteArrayOutputStream()
-
-    def onSinkClosed = new CountDownLatch(1)
-    def onSourceConsumed = new CountDownLatch(1)
-
-    def attachConfig = new AttachConfig()
-    attachConfig.streams.stdin = new ByteArrayInputStream("$input\n".bytes)
-    attachConfig.streams.stdout = outputStream
-    attachConfig.onFailure = { Exception e ->
-      log.error("exec failed", e)
-    }
-    attachConfig.onResponse = { Response response ->
-      log.trace("onResponse (${response})")
-    }
-    attachConfig.onSinkClosed = { Response response ->
-      log.trace("onSinkClosed (${response})")
-      onSinkClosed.countDown()
-    }
-    attachConfig.onSourceConsumed = {
-      log.trace("onSourceConsumed")
-      onSourceConsumed.countDown()
-    }
 
     when:
+    Cancellable job = null
+    List<Frame> frames = []
     def execStartConfig = new ExecStartConfig(false, true, null)
-    dockerClient.startExec(execId, execStartConfig, attachConfig)
-//    dockerClient.startExec(execId, execStartConfig, callback, Duration.of(1, ChronoUnit.MINUTES))
-    onSinkClosed.await(5, SECONDS)
-    onSourceConsumed.await(5, SECONDS)
+    def callback = new StreamCallback<Frame>() {
+
+      @Override
+      void onStarting(Cancellable cancellable) {
+        job = cancellable
+      }
+
+      @Override
+      void attachInput(Sink sink) {
+        System.out.println("attachInput, sending data...")
+        new Thread(() -> {
+          BufferedSink buffer = Okio.buffer(sink)
+          try {
+            buffer.writeUtf8("$input\n")
+            buffer.flush()
+            System.out.println("... data sent")
+          } catch (IOException e) {
+            e.printStackTrace()
+            System.err.println("Failed to write to stdin: " + e.getMessage())
+          } finally {
+            try {
+              Thread.sleep(100)
+              sink.close()
+            } catch (Exception ignored) {
+              // ignore
+            }
+          }
+        }).start()
+      }
+
+      @Override
+      void onNext(Frame element) {
+        log.info(element?.toString())
+        frames.add(element)
+      }
+
+      @Override
+      void onFailed(Exception e) {
+        log.error("Exec Attach failed", e)
+      }
+
+      @Override
+      void onFinished() {
+        log.info("Exec Attach finished")
+      }
+    }
+
+    new Thread(() -> {
+      dockerClient.startExec(execId, execStartConfig, callback, Duration.ofSeconds(10))
+    }, "exec-client").start()
+
+    CountDownLatch wait = new CountDownLatch(1)
+    new Timer().schedule(new TimerTask() {
+      @Override
+      void run() {
+        if (job != null) {
+          job.cancel()
+        }
+        wait.countDown()
+      }
+    }, 5000)
+
+    try {
+      wait.await()
+    }
+    catch (InterruptedException e) {
+      e.printStackTrace()
+    }
 
     def containerIsolation = dockerClient.inspectContainer(containerId).content.hostConfig?.isolation
     def actualIsolation = containerIsolation ? SystemInfo.Isolation.values().find { it.value == containerIsolation.value } : LocalDocker.getDaemonIsolation()
