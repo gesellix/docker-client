@@ -39,6 +39,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
 #      - name: Install Docker on macOS
 #        uses: douglascamata/setup-docker-macos-action@v1-alpha
+      # consider something like this for the artifact version:
+      # git describe --tags --match "v[0-9]*" --dirty=".m" --always
       - name: Set artifact version
         run: |
           echo "RELEASE_VERSION=$(echo '${{ github.event.release.tag_name }}' | sed -e s/^v//)" >> $GITHUB_ENV
