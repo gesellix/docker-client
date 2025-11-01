@@ -3,7 +3,6 @@ package de.gesellix.docker.client.container
 import de.gesellix.docker.client.EngineResponseContent
 import de.gesellix.docker.client.repository.RepositoryAndTag
 import de.gesellix.docker.client.repository.RepositoryTagParser
-import de.gesellix.docker.engine.EngineClient
 import de.gesellix.docker.remote.api.ContainerConfig
 import de.gesellix.docker.remote.api.ContainerCreateRequest
 import de.gesellix.docker.remote.api.ContainerCreateResponse
@@ -42,19 +41,13 @@ class ManageContainerClient implements ManageContainer {
   private final Logger log = LoggerFactory.getLogger(ManageContainerClient)
 
   private EngineApiClient client
-  /**
-   * @deprecated for removal
-   */
-  @Deprecated
-  private EngineClient engineClient
   private DockerResponseHandler responseHandler
   private QueryParameterEncoder queryParameterEncoder
   private ArchiveUtil archiveUtil
   private RepositoryTagParser repositoryTagParser
 
-  ManageContainerClient(EngineApiClient client, EngineClient engineClient) {
+  ManageContainerClient(EngineApiClient client) {
     this.client = client
-    this.engineClient = engineClient
     this.responseHandler = new DockerResponseHandler()
     this.repositoryTagParser = new RepositoryTagParser()
     this.queryParameterEncoder = new QueryParameterEncoder()
@@ -67,27 +60,6 @@ class ManageContainerClient implements ManageContainer {
               StreamCallback<Frame> callback, Duration timeout) {
     log.info("docker attach")
     client.containerApi.containerAttach(containerId, detachKeys, logs, stream, stdin, stdout, stderr, callback, timeout.toMillis())
-  }
-
-  /**
-   * @deprecated use {@link #attachWebsocket(String, String, Boolean, Boolean, Boolean, Boolean, Boolean, WebSocketListener)}
-   * @see #attachWebsocket(String, String, Boolean, Boolean, Boolean, Boolean, Boolean, WebSocketListener)
-   */
-  @Deprecated
-  @Override
-  WebSocket attachWebsocket(String containerId, Map<String, Object> query, WebSocketListener listener) {
-    def oneToTrue = (i) -> {
-      return (i == 1 || i == "1")
-    }
-    return attachWebsocket(containerId,
-        query.getOrDefault("detachKeys", null) as String,
-        oneToTrue(query.getOrDefault("logs", false)),
-        oneToTrue(query.getOrDefault("stream", false)),
-        oneToTrue(query.getOrDefault("stdin", false)),
-        oneToTrue(query.getOrDefault("stdout", false)),
-        oneToTrue(query.getOrDefault("stderr", false)),
-        listener
-    )
   }
 
   @Override
