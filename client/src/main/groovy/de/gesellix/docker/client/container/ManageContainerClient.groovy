@@ -69,12 +69,35 @@ class ManageContainerClient implements ManageContainer {
     client.containerApi.containerAttach(containerId, detachKeys, logs, stream, stdin, stdout, stderr, callback, timeout.toMillis())
   }
 
+  /**
+   * @deprecated use {@link #attachWebsocket(String, String, Boolean, Boolean, Boolean, Boolean, Boolean, WebSocketListener)}
+   * @see #attachWebsocket(String, String, Boolean, Boolean, Boolean, Boolean, Boolean, WebSocketListener)
+   */
+  @Deprecated
   @Override
   WebSocket attachWebsocket(String containerId, Map<String, Object> query, WebSocketListener listener) {
+    def oneToTrue = (i) -> {
+      return (i == 1 || i == "1")
+    }
+    return attachWebsocket(containerId,
+        query.getOrDefault("detachKeys", null) as String,
+        oneToTrue(query.getOrDefault("logs", false)),
+        oneToTrue(query.getOrDefault("stream", false)),
+        oneToTrue(query.getOrDefault("stdin", false)),
+        oneToTrue(query.getOrDefault("stdout", false)),
+        oneToTrue(query.getOrDefault("stderr", false)),
+        listener
+    )
+  }
+
+  @Override
+  WebSocket attachWebsocket(String containerId, String detachKeys,
+                            Boolean logs, Boolean stream, Boolean stdin, Boolean stdout, Boolean stderr,
+                            WebSocketListener listener) {
     log.info("docker attach via websocket")
-    WebSocket webSocket = engineClient.webSocket(
-        [path : "/containers/${containerId}/attach/ws".toString(),
-         query: query],
+    WebSocket webSocket = client.containerApi.containerAttachWebsocket(
+        containerId, detachKeys,
+        logs, stream, stdin, stdout, stderr,
         listener
     )
     return webSocket

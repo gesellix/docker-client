@@ -1148,7 +1148,8 @@ class DockerContainerIntegrationSpec extends Specification {
 
     when:
     WebSocket wsCall = tcpClient.attachWebsocket(containerId,
-        [stream: 1, stdin: 1, stdout: 1, stderr: 1],
+        null,
+        false, true, true, true, true,
         listener)
 
     openConnection.await(500, MILLISECONDS)
