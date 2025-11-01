@@ -122,7 +122,6 @@ class DockerClientImplIntegrationSpec extends Specification {
     def client = new DockerClientImpl(env: new DockerEnv(dockerHost: exampleHost))
 
     then:
-    client.httpClient.dockerClientConfig.env.dockerHost == exampleHost
     client.dockerClientConfig.env.dockerHost == exampleHost
     client.env.dockerHost == exampleHost
   }

@@ -33,8 +33,6 @@ import de.gesellix.docker.client.volume.ManageVolume
 import de.gesellix.docker.client.volume.ManageVolumeClient
 import de.gesellix.docker.engine.DockerClientConfig
 import de.gesellix.docker.engine.DockerEnv
-import de.gesellix.docker.engine.EngineClient
-import de.gesellix.docker.engine.OkDockerClient
 import de.gesellix.docker.remote.api.EngineApiClient
 import de.gesellix.docker.remote.api.EngineApiClientImpl
 import de.gesellix.docker.remote.api.Node
@@ -52,7 +50,6 @@ class DockerClientImpl implements DockerClient {
   Proxy proxy
   DockerClientConfig dockerClientConfig
   DockerEnv env
-  EngineClient httpClient
   EngineApiClient engineApiClient
 
   @Delegate
@@ -107,7 +104,6 @@ class DockerClientImpl implements DockerClient {
 
     AuthConfigReader authConfigReader = new AuthConfigReader(env)
     this.engineApiClient = new EngineApiClientImpl(dockerClientConfig, proxy)
-    this.httpClient = new OkDockerClient(dockerClientConfig, proxy)
     log.info("using docker at '${env.dockerHost}'")
 
     this.repositoryTagParser = new RepositoryTagParser()
@@ -116,7 +112,7 @@ class DockerClientImpl implements DockerClient {
     this.manageAuthentication = new ManageAuthenticationClient(engineApiClient, authConfigReader, env.dockerConfigReader)
     this.manageImage = new ManageImageClient(engineApiClient, manageAuthentication)
     this.manageDistribution = new ManageDistributionService(engineApiClient)
-    this.manageContainer = new ManageContainerClient(engineApiClient, httpClient)
+    this.manageContainer = new ManageContainerClient(engineApiClient)
     this.manageVolume = new ManageVolumeClient(engineApiClient)
     this.manageNetwork = new ManageNetworkClient(engineApiClient)
     this.manageSwarm = new ManageSwarmClient(engineApiClient)
