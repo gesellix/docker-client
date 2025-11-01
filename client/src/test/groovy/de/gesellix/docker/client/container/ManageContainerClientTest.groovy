@@ -19,7 +19,7 @@ import de.gesellix.docker.remote.api.client.ContainerApi
 import de.gesellix.docker.remote.api.client.ExecApi
 import de.gesellix.docker.remote.api.client.ImageApi
 import de.gesellix.docker.remote.api.core.StreamCallback
-import spock.lang.Ignore
+import de.gesellix.docker.websocket.DefaultWebSocketListener
 import spock.lang.Specification
 
 import java.time.Duration
@@ -405,24 +405,20 @@ class ManageContainerClientTest extends Specification {
     1 * containerApi.containerAttach("a-container", null, true, true, false, true, true, callback, timeout.toMillis())
   }
 
-  // TODO
-  @Ignore
-  "attach websocket"() {
-//        given:
-//        def listener = new DefaultWebSocketListener()
-//        def wsCall = new OkHttpClient.Builder().build().newWebSocket(
-//                new Request.Builder()
-//                        .url("").build(), (listener))
-//
-//        when:
-//        dockerClient.attachWebsocket("a-container", [stream: true], listener)
-//
-//        then:
-//        1 * httpClient.webSocket(
-//                [path : "/containers/a-container/attach/ws",
-//                 query: [stream: true]], (listener)) >> wsCall
-//        and:
-//        1 * wsCall.enqueue(listener)
+  def "attach websocket"() {
+        given:
+        def listener = new DefaultWebSocketListener()
+        def containerApi = Mock(ContainerApi)
+        client.getContainerApi() >> containerApi
+
+        when:
+        service.attachWebsocket("a-container", null, null, true, null, null, null, listener)
+
+        then:
+        1 * containerApi.containerAttachWebsocket(
+            "a-container", null,
+            null, true, null, null, null,
+            listener)
   }
 
   def "commit container"() {
