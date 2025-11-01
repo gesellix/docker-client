@@ -172,6 +172,7 @@ class DockerContainerIntegrationSpec extends Specification {
     dockerClient.stop(containerId)
     dockerClient.wait(containerId)
 
+
     def awaitChange = { String container ->
       CountDownLatch latch = new CountDownLatch(1)
       Thread.start {

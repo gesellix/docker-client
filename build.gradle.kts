@@ -55,10 +55,23 @@ allprojects {
         }
       }
       // https://docs.gradle.org/current/userguide/resolution_rules.html
-      dependencySubstitution {
-        substitute(module("org.bouncycastle:bcpkix-jdk15on"))
-            .using(module("org.bouncycastle:bcpkix-jdk18on:1.82"))
-      }
+//      dependencySubstitution {
+//        substitute(module("org.bouncycastle:bcpkix-jdk15on"))
+//            .using(module("org.bouncycastle:bcpkix-jdk18on:1.82"))
+//      }
+//      dependencySubstitution {
+//        all {
+//          requested.let {
+//            if (it is ModuleComponentSelector && it.group == "org.codehaus.groovy") {
+//              logger.lifecycle("substituting $it to groupId 'org.apache.groovy'")
+//              useTarget(
+//                  "org.apache.groovy:${it.module}:${it.version}",
+//                  "Changed Maven coordinates since Groovy 4"
+//              )
+//            }
+//          }
+//        }
+//      }
     }
   }
 }
