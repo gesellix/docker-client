@@ -37,7 +37,16 @@ public interface ManageContainer {
 
   void resizeTTY(String container, Integer height, Integer width);
 
+  /**
+   * @deprecated use {@link #attachWebsocket(String, String, Boolean, Boolean, Boolean, Boolean, Boolean, WebSocketListener)}
+   * @see #attachWebsocket(String, String, Boolean, Boolean, Boolean, Boolean, Boolean, WebSocketListener)
+   */
+  @Deprecated
   WebSocket attachWebsocket(String container, Map<String, Object> query, WebSocketListener listener);
+
+  WebSocket attachWebsocket(String containerId, String detachKeys,
+                            Boolean logs, Boolean stream, Boolean stdin, Boolean stdout, Boolean stderr,
+                            WebSocketListener listener);
 
   EngineResponseContent<IdResponse> commit(String container, Map query);
 
