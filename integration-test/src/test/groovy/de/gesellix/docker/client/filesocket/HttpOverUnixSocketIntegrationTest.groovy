@@ -1,10 +1,9 @@
 package de.gesellix.docker.client.filesocket
 
-import de.gesellix.docker.engine.EngineClient
-import de.gesellix.docker.engine.OkDockerClient
+import de.gesellix.docker.engine.DockerClientConfig
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.EngineApiClientImpl
 import de.gesellix.docker.testutil.UnixSocketTestServer
-import de.gesellix.util.IOUtils
-import okio.Okio
 import org.apache.commons.lang3.SystemUtils
 import spock.lang.Requires
 import spock.lang.Specification
@@ -15,7 +14,7 @@ class HttpOverUnixSocketIntegrationTest extends Specification {
   File defaultDockerSocket = new File("/var/run/docker.sock")
   def runDummyDaemon = !defaultDockerSocket.exists()
   File socketFile = defaultDockerSocket
-  EngineClient httpClient
+  EngineApiClient httpClient
 
   def setup() {
     String unixSocket
@@ -29,7 +28,7 @@ class HttpOverUnixSocketIntegrationTest extends Specification {
       socketFile.deleteOnExit()
       unixSocket = "unix://${socketFile.getCanonicalPath()}".toString()
     }
-    httpClient = new OkDockerClient(unixSocket)
+    httpClient = new EngineApiClientImpl(new DockerClientConfig(unixSocket))
   }
 
   def "info via unix socket"() {
@@ -55,16 +54,12 @@ class HttpOverUnixSocketIntegrationTest extends Specification {
     }
 
     when:
-    def ping = httpClient.get([path: "/_ping"])
-    def content = ping.content ?: Okio.buffer(Okio.source(ping.stream)).readUtf8()
+    def content = httpClient.systemApi.systemPing()
 
     then:
     content == "OK"
 
     cleanup:
     testserver?.stop()
-    if (ping.stream) {
-      IOUtils.closeQuietly(Okio.source(ping.stream))
-    }
   }
 }

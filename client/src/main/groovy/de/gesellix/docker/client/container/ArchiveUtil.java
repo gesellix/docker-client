@@ -1,9 +1,8 @@
 package de.gesellix.docker.client.container;
 
-import de.gesellix.util.IOUtils;
+import okio.BufferedSink;
+import okio.BufferedSource;
 import okio.Okio;
-import okio.Sink;
-import okio.Source;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.slf4j.Logger;
@@ -54,26 +53,16 @@ public class ArchiveUtil {
     final byte[] content = new byte[(int) entry.getSize()];
     log.debug("going to read {} bytes", content.length);
 
-    final Source source = Okio.source(stream);
-    final Sink sink = Okio.sink(target);
     try {
-      IOUtils.copy(source, sink);
+      try (BufferedSink sink = Okio.buffer(Okio.sink(target));
+           BufferedSource source = Okio.buffer(Okio.source(stream))) {
+        long read = source.readAll(sink);
+        sink.flush();
+//        return read;
+      }
       return entry.getSize();
     } catch (Exception e) {
       throw new RuntimeException("failed to write TarArchiveEntry to target OutputStream", e);
-    } finally {
-      silently(() -> {
-        sink.flush();
-        return null;
-      });
-      silently(() -> {
-        sink.close();
-        return null;
-      });
-      silently(() -> {
-        source.close();
-        return null;
-      });
     }
   }
 

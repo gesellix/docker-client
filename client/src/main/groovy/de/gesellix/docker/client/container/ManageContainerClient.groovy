@@ -41,14 +41,12 @@ class ManageContainerClient implements ManageContainer {
   private final Logger log = LoggerFactory.getLogger(ManageContainerClient)
 
   private EngineApiClient client
-  private DockerResponseHandler responseHandler
   private QueryParameterEncoder queryParameterEncoder
   private ArchiveUtil archiveUtil
   private RepositoryTagParser repositoryTagParser
 
   ManageContainerClient(EngineApiClient client) {
     this.client = client
-    this.responseHandler = new DockerResponseHandler()
     this.repositoryTagParser = new RepositoryTagParser()
     this.queryParameterEncoder = new QueryParameterEncoder()
     this.archiveUtil = new ArchiveUtil()

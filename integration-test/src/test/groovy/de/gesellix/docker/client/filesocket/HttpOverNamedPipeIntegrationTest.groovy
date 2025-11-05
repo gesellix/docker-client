@@ -3,8 +3,9 @@ package de.gesellix.docker.client.filesocket
 import de.gesellix.docker.client.DockerClient
 import de.gesellix.docker.client.DockerClientImpl
 import de.gesellix.docker.client.LocalDocker
-import de.gesellix.docker.engine.EngineClient
-import de.gesellix.docker.engine.OkDockerClient
+import de.gesellix.docker.engine.DockerClientConfig
+import de.gesellix.docker.remote.api.EngineApiClient
+import de.gesellix.docker.remote.api.EngineApiClientImpl
 import de.gesellix.docker.testutil.NpipeExecutable
 import groovy.util.logging.Slf4j
 import org.apache.commons.lang3.SystemUtils
@@ -31,13 +32,10 @@ class HttpOverNamedPipeIntegrationTest extends Specification {
     def process = runNpipe(npipeExe, pipePath, npipeLatch)
     npipeLatch.await(5, SECONDS)
 
-    EngineClient httpClient = new OkDockerClient("npipe://${pipePath}")
+    EngineApiClient httpClient = new EngineApiClientImpl(new DockerClientConfig("npipe://${pipePath}"))
 
     when:
-    def response = httpClient.post([
-        path              : "/foo",
-        requestContentType: "text/plain",
-        body              : new ByteArrayInputStream("hello world".bytes)])
+    def response = httpClient.containerApi.containerInspect("foo", null)
 
     then:
     response.status.code == 200

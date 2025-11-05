@@ -17,7 +17,6 @@ import de.gesellix.docker.remote.api.core.ClientException
 import de.gesellix.docker.remote.api.core.Frame
 import de.gesellix.docker.remote.api.core.StreamCallback
 import de.gesellix.docker.websocket.DefaultWebSocketListener
-import de.gesellix.util.IOUtils
 import groovy.json.JsonOutput
 import groovy.util.logging.Slf4j
 import okhttp3.Response
@@ -26,6 +25,7 @@ import okio.BufferedSink
 import okio.ByteString
 import okio.Okio
 import okio.Sink
+import okio.Source
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import spock.lang.IgnoreIf
@@ -92,7 +92,7 @@ class DockerContainerIntegrationSpec extends Specification {
     cleanup:
     dockerClient.rm(container)
     dockerClient.rmi(imageId)
-    IOUtils.closeQuietly(Okio.source(stream))
+    closeQuietly(Okio.source(stream))
   }
 
   def "list containers"() {
@@ -1181,7 +1181,17 @@ class DockerContainerIntegrationSpec extends Specification {
       log.debug("entry name: ${entryName}")
 //            log.debug("entry size: ${entry.size}")
     }
-    IOUtils.closeQuietly(Okio.source(stream))
+    closeQuietly(Okio.source(stream))
     return entryNames
+  }
+
+  static void closeQuietly(Source source) {
+    try {
+      if (source != null) {
+        source.close()
+      }
+    }
+    catch (Exception ignored) {
+    }
   }
 }
