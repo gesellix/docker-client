@@ -1,8 +1,14 @@
 package de.gesellix.docker.explore
 
-import de.gesellix.docker.engine.OkDockerClient
+import de.gesellix.docker.engine.DockerClientConfig
+import de.gesellix.docker.remote.api.EngineApiClientImpl
+import de.gesellix.docker.remote.api.core.Frame
+import de.gesellix.docker.remote.api.core.StreamCallback
 import spock.lang.Ignore
 import spock.lang.Specification
+
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 
 @Ignore
 class OkDockerClientExplorationTest extends Specification {
@@ -13,7 +19,7 @@ class OkDockerClientExplorationTest extends Specification {
 //        defaultDockerHost = "http://192.168.99.100:2376"
 //        System.setProperty("docker.cert.path", "/Users/${System.getProperty('user.name')}/.docker/machine/machines/default")
 //        System.setProperty("docker.cert.path", "C:\\Users\\${System.getProperty('user.name')}\\.boot2docker\\certs\\boot2docker-vm")
-    def client = new OkDockerClient(defaultDockerHost ?: "http://172.17.42.1:4243/")
+    def client = new EngineApiClientImpl(new DockerClientConfig(defaultDockerHost ?: "http://172.17.42.1:4243/"))
 
     def response
 //        response = client.get("/_ping")
@@ -41,41 +47,16 @@ class OkDockerClientExplorationTest extends Specification {
 //        response = client.get([path  : "/containers/foo/logs",
 //                               query : [stdout: true],
 //                               stdout: System.out])
-    response = client.get([path : "/containers/foo/logs",
-                           query: [follow: true, stdout: true, stderr: true, timestamps: true, since: 0, tail: "all"],
-                           async: true])
-    new DockerStreamConsumer(response.stream as InputStream).consume(System.out)
+    client.containerApi.containerLogs(
+        "foo", true, true, true, 0, null, true, "all",
+        new StreamCallback<Frame>() {
+          @Override
+          void onNext(Frame element) {
+            println(element)
+          }
+        }, Duration.of(10, ChronoUnit.SECONDS).toMillis())
 
     expect:
     1 == 1
-  }
-
-  static class DockerStreamConsumer {
-
-    private BufferedReader reader
-
-    DockerStreamConsumer(InputStream stream) {
-      this(new BufferedReader(new InputStreamReader(stream)))
-    }
-
-    DockerStreamConsumer(BufferedReader reader) {
-      this.reader = reader
-    }
-
-    def consume(PrintStream os) {
-      try {
-        String line
-
-        int count = 0
-        while ((line = reader.readLine()) != null) {
-          count++
-          os.println("$count | $line")
-        }
-        os.close()
-      }
-      catch (Exception e) {
-        System.err.println("problem reading from stream: ${e.message}")
-      }
-    }
   }
 }
