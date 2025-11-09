@@ -78,7 +78,7 @@ dependencies {
 
   // TODO consider changing this from api to implementation.
   // The change would require to move api.core client classes like `ClientException` to another module.
-  api("de.gesellix:docker-remote-api-client:2025-11-01T10-50-00")
+  api("de.gesellix:docker-remote-api-client:2025-11-09T15-40-00")
   implementation("de.gesellix:docker-filesocket:2025-10-31T17-48-00")
   api("de.gesellix:docker-remote-api-model-1-41:2025-10-31T17-49-00")
   api("de.gesellix:docker-engine:2025-10-31T18-10-00")
