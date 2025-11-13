@@ -93,6 +93,7 @@ dependencies {
   testImplementation("ch.qos.logback:logback-classic:${libs.versions.logbackVersionrange.get()}!!${libs.versions.logback.get()}")
 
   implementation(libs.okio)
+  implementation(libs.okioJvm)
   api(libs.okhttp)
   testImplementation("com.squareup.okhttp3:mockwebserver:${libs.versions.okhttp.get()}")
 
