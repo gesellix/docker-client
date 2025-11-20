@@ -40,9 +40,11 @@ dependencies {
         }
       }
     }
-    implementation(libs.okio) {
-      version {
-        strictly(libs.versions.okioVersionrange.get())
+    listOf(libs.bundles.okio).forEach {
+      implementation(it) {
+        version {
+          strictly(libs.versions.okioVersionrange.get())
+        }
       }
     }
     listOf(libs.bundles.moshi).forEach {
@@ -66,7 +68,7 @@ dependencies {
 //  testImplementation("org.apache.groovy:groovy-json:[4,)")
   testImplementation("com.kohlschutter.junixsocket:junixsocket-core:[2.4,)")
   testImplementation("com.kohlschutter.junixsocket:junixsocket-common:[2.4,)")
-  implementation("de.gesellix:docker-remote-api-model-1-41:2025-10-31T17-49-00")
+  implementation(libs.remoteApi)
   implementation("de.gesellix:docker-filesocket:2025-10-31T17-48-00")
 
   testImplementation("net.jodah:failsafe:2.4.4")
