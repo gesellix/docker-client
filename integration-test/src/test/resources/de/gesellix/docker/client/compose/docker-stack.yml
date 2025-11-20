@@ -20,7 +20,10 @@ services:
     configs:
       - my-config
     networks:
-      - "my-subnet"
+      my-subnet:
+      ext-network:
+        aliases:
+          - my-alias
     volumes:
       - type: volume
         source: example
@@ -28,6 +31,9 @@ services:
 
 networks:
   my-subnet:
+  ext-network:
+    external:
+      name: an-ext-network
 
 volumes:
   example:
