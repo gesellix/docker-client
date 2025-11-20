@@ -5,6 +5,7 @@ import de.gesellix.docker.client.stack.DeployStackOptions
 import de.gesellix.docker.remote.api.EndpointSpec
 import de.gesellix.docker.remote.api.Mount
 import de.gesellix.docker.remote.api.MountVolumeOptions
+import de.gesellix.docker.remote.api.NetworkCreateRequest
 import de.gesellix.docker.remote.api.SwarmInitRequest
 import de.gesellix.docker.remote.api.TaskSpecRestartPolicy
 import de.gesellix.docker.testutil.SwarmUtil
@@ -43,6 +44,10 @@ class DockerStackComposeIntegrationSpec extends Specification {
     def swarmConfig = dockerClient.newSwarmInitRequest()
     dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null))
 
+    dockerClient.createNetwork(new NetworkCreateRequest("an-ext-network", null,
+        "overlay", null, null, null, null, null, null, null
+    ))
+
     def composeStream = composeFilePath.toFile().newInputStream()
     def environment = [
         IMAGE_VERSION: TestConstants.CONSTANTS.imageTag,
@@ -67,7 +72,7 @@ class DockerStackComposeIntegrationSpec extends Specification {
     spec.labels == ['com.docker.stack.namespace': namespace]
     spec.mode.replicated.replicas == 1
     spec.name == "${namespace}_service"
-    spec.networks.aliases == [['service']]
+    spec.taskTemplate.networks.aliases == [['my-alias', 'service'], ['service']]
     spec.taskTemplate.restartPolicy.condition == TaskSpecRestartPolicy.Condition.OnFailure
     spec.taskTemplate.restartPolicy.delay == 5000000000
     spec.taskTemplate.restartPolicy.maxAttempts == 3
@@ -83,11 +88,10 @@ class DockerStackComposeIntegrationSpec extends Specification {
             "${namespace}_example",
             Mount.Type.Volume,
             null, null, null,
-            new MountVolumeOptions(
-                false,
-                ['com.docker.stack.namespace': namespace],
-                null
-            ),
+            new MountVolumeOptions().tap {
+              it.noCopy = false
+              it.labels = ['com.docker.stack.namespace': namespace]
+            },
             null
         )
     ]

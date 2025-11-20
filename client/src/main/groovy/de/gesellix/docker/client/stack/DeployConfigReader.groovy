@@ -149,7 +149,8 @@ class DeployConfigReader {
       serviceConfig.labels = serviceLabels
       serviceConfig.endpointSpec = serviceEndpoints(service.deploy?.endpointMode, service.ports)
       serviceConfig.mode = serviceMode(service.deploy?.mode, service.deploy?.replicas)
-      serviceConfig.networks = convertServiceNetworks(service.networks ?: [:], networks, namespace, name)
+      def serviceNetworks = convertServiceNetworks(service.networks ?: [:], networks, namespace, name)
+      serviceConfig.networks = serviceNetworks
       serviceConfig.updateConfig = convertUpdateConfig(service.deploy?.updateConfig)
       serviceConfig.taskTemplate = new TaskSpec(
           null,
@@ -193,7 +194,7 @@ class DeployConfigReader {
           ),
           null,
           null,
-          [],
+          serviceNetworks,
           logDriver(service.logging)
       )
       serviceSpec[name] = serviceConfig
@@ -643,19 +644,18 @@ class DeployConfigReader {
     String source = volumeSpec.source
     MountVolumeOptions volumeOptions
     if (stackVolume?.external?.name) {
-      volumeOptions = new MountVolumeOptions(
-          volumeSpec.volume?.nocopy ?: false,
-          null,
-          null)
+      volumeOptions = new MountVolumeOptions().tap {
+        it.noCopy = volumeSpec.volume?.nocopy ?: false
+      }
       source = stackVolume.external.name
     } else {
       Map<String, String> labels = stackVolume?.labels?.entries ?: [:]
       labels[(ManageStackClient.LabelNamespace)] = namespace
-      volumeOptions = new MountVolumeOptions(
-          volumeSpec.volume?.nocopy ?: false,
-          labels,
-          getMountVolumeOptionsDriverConfig(stackVolume)
-      )
+      volumeOptions = new MountVolumeOptions().tap {
+        it.noCopy = volumeSpec.volume?.nocopy ?: false
+        it.labels = labels
+        it.driverConfig = getMountVolumeOptionsDriverConfig(stackVolume)
+      }
       source = "${namespace}_${volumeSpec.source}" as String
       if (stackVolume?.name) {
         source = stackVolume.name
