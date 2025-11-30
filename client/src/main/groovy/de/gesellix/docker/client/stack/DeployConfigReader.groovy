@@ -694,7 +694,7 @@ class DeployConfigReader {
 
   MountBindOptions getBindOptions(ServiceVolumeBind bind) {
     if (bind?.propagation) {
-      return new MountBindOptions(MountBindOptions.Propagation.values().find { MountBindOptions.Propagation propagation -> propagation.getValue() == bind.propagation }, null)
+      return new MountBindOptions(MountBindOptions.Propagation.values().find { MountBindOptions.Propagation propagation -> propagation.getValue() == bind.propagation }, null, null, null, null)
     } else {
       return null
     }
@@ -748,9 +748,9 @@ class DeployConfigReader {
             internalName,
             true,
             "overlay",
-            null, null,
             null, null, null,
-            null,
+            null, null, null,
+            null, null, null,
             getLabels(namespace, null)
         )
       } else if (network?.external?.external) {
@@ -760,8 +760,11 @@ class DeployConfigReader {
             internalName,
             true,
             network.driver ?: "overlay",
+            null,
             Boolean.valueOf(network.internal),
             network.attachable,
+            null,
+            null,
             null,
             getIpam(network),
             null,

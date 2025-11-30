@@ -61,7 +61,7 @@ class DockerNetworkIntegrationSpec extends Specification {
     when:
     dockerClient.createNetwork(new NetworkCreateRequest(
         "test-net", true, "overlay",
-        null, null, null,
+        null, null, null, null, null, null,
         new IPAM("default", null, null),
         null, null, null))
 

@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.gesellix.docker.client.EngineResponseContent;
-import de.gesellix.docker.remote.api.ClusterVolumeSpec;
 import de.gesellix.docker.remote.api.EngineApiClient;
 import de.gesellix.docker.remote.api.Volume;
 import de.gesellix.docker.remote.api.VolumeCreateOptions;
@@ -60,22 +59,6 @@ public class ManageVolumeClient implements ManageVolume {
     log.info("docker volume inspect");
     Volume volumeInspect = client.getVolumeApi().volumeInspect(name);
     return new EngineResponseContent<>(volumeInspect);
-  }
-
-  /**
-   * @see #createVolume(VolumeCreateOptions)
-   * @deprecated use {@link #createVolume(VolumeCreateOptions)}
-   */
-  @Deprecated
-  @Override
-  public EngineResponseContent<Volume> createVolume(Map<String, Object> config) {
-    log.info("docker volume create");
-    return createVolume(new VolumeCreateOptions(
-        config == null ? null : (String) config.get("Name"),
-        config == null ? null : (String) config.get("Driver"),
-        config == null ? null : (Map) config.get("DriverOpts"),
-        config == null ? null : (Map) config.get("Labels"),
-        config == null ? null : (ClusterVolumeSpec) config.get("ClusterVolumeSpec")));
   }
 
   @Override

@@ -21,7 +21,7 @@ dependencies {
         strictly("[2025-01-01T01-01-01,)")
       }
     }
-    implementation("de.gesellix:docker-remote-api-model-1-41") {
+    implementation(libs.remoteApi) {
       version {
         strictly("[2025-01-01T01-01-01,)")
       }

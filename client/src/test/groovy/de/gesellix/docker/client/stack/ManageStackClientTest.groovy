@@ -205,9 +205,9 @@ class ManageStackClientTest extends Specification {
     config.services["service1"] = serviceSpec
     config.networks["network1"] = new NetworkCreateRequest(
         "network1",
-        null, null, false, false,
+        null, null, null, false, false,
         null, null, null,
-        null, [foo: 'bar']
+        null, null, null, [foo: 'bar']
     )
     config.secrets["secret1"] = new StackSecret(name: "secret-name-1", data: 'secret'.bytes)
     config.configs["config1"] = new StackConfig(name: "config-name-1", data: 'config'.bytes)

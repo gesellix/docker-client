@@ -45,7 +45,7 @@ class DockerStackComposeIntegrationSpec extends Specification {
     dockerClient.initSwarm(new SwarmInitRequest(swarmConfig.listenAddr, swarmAdvertiseAddr, null, null, null, null, null, null))
 
     dockerClient.createNetwork(new NetworkCreateRequest("an-ext-network", null,
-        "overlay", null, null, null, null, null, null, null
+        "overlay", null, null, null, null, null, null, null, null, null, null
     ))
 
     def composeStream = composeFilePath.toFile().newInputStream()

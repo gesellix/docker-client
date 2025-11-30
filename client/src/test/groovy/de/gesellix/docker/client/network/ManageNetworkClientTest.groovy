@@ -80,7 +80,8 @@ class ManageNetworkClientTest extends Specification {
     1 * networkApi.networkCreate(new NetworkCreateRequest(
         "network-name",
         true,
-        null,
+        null, null,
+        null, null,
         null, null,
         null, null, null,
         null, null)) >> networkResponse
@@ -95,7 +96,7 @@ class ManageNetworkClientTest extends Specification {
         "network-name",
         false,
         "bridge",
-        null, null, null, null, null, [:], null
+        null, null, null, null, null, null, null, null, [:], null
     )
     def networkResponse = Mock(NetworkCreateResponse)
 

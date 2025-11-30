@@ -212,14 +212,14 @@ class DeployConfigReaderTest extends Specification {
     networks["default"] == new NetworkCreateRequest(
         "default", true,
         "overlay",
-        null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null,
         [(ManageStackClient.LabelNamespace): "name-space"])
     networks["attachablenet"] == new NetworkCreateRequest(
-        "attachablenet", true, "overlay", false, true,
-        null, null, null, [:], [(ManageStackClient.LabelNamespace): "name-space"])
+        "attachablenet", true, "overlay", null, false, true,
+        null, null, null, null, null, [:], [(ManageStackClient.LabelNamespace): "name-space"])
     networks["normal"] == new NetworkCreateRequest(
         "normal", true, "overlay",
-        false, false, null,
+        null, false, false, null, null, null,
         new IPAM("driver",
                  [new IPAMConfig().tap { subnet = '10.0.0.0' }],
                  null),
@@ -309,7 +309,7 @@ class DeployConfigReaderTest extends Specification {
 
   def "test getBindOptions with known mode"() {
     expect:
-    reader.getBindOptions(new ServiceVolumeBind(PropagationSlave.propagation)) == new MountBindOptions(MountBindOptions.Propagation.Slave, null)
+    reader.getBindOptions(new ServiceVolumeBind(PropagationSlave.propagation)) == new MountBindOptions(MountBindOptions.Propagation.Slave, null, null, null, null)
   }
 
   def "test getBindOptions with unknown mode"() {
@@ -458,7 +458,7 @@ class DeployConfigReaderTest extends Specification {
         null,
         new MountBindOptions(
             MountBindOptions.Propagation.Shared,
-            null
+            null, null, null, null
         ),
         null,
         null
