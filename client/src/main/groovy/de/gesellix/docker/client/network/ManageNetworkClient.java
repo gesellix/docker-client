@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import de.gesellix.docker.client.EngineResponseContent;
 import de.gesellix.docker.remote.api.EngineApiClient;
-import de.gesellix.docker.remote.api.IPAM;
 import de.gesellix.docker.remote.api.Network;
 import de.gesellix.docker.remote.api.NetworkConnectRequest;
 import de.gesellix.docker.remote.api.NetworkCreateRequest;
@@ -65,40 +64,14 @@ public class ManageNetworkClient implements ManageNetwork {
     return new EngineResponseContent<>(network);
   }
 
-  /**
-   * @see #createNetwork(NetworkCreateRequest)
-   * @deprecated use {@link #createNetwork(NetworkCreateRequest)}
-   */
-  @Deprecated
-  @Override
-  public EngineResponseContent<NetworkCreateResponse> createNetwork(String name, Map<String, Object> config) {
-    Map<String, Object> actualConfig = new HashMap<>();
-    if (config != null) {
-      actualConfig.putAll(config);
-    }
-
-    Map<String, Object> ipam = (Map<String, Object>) actualConfig.get("IPAM");
-    NetworkCreateRequest request = new NetworkCreateRequest(
-        name, true,
-        (String) actualConfig.get("Driver"),
-        (Boolean) actualConfig.get("Internal"),
-        (Boolean) actualConfig.get("Attachable"),
-        (Boolean) actualConfig.get("Ingress"),
-        ipam == null ? null : new IPAM(
-            ipam == null ? null : (String) ipam.get("Driver"),
-            ipam == null ? null : (List) ipam.get("Config"),
-            ipam == null ? null : (Map) ipam.get("Options")),
-        (Boolean) actualConfig.get("EnableIPv6"),
-        (Map<String, String>) actualConfig.get("Options"),
-        (Map<String, String>) actualConfig.get("Labels"));
-    return createNetwork(request);
-  }
-
   @Override
   public EngineResponseContent<NetworkCreateResponse> createNetwork(String name) {
     NetworkCreateRequest request = new NetworkCreateRequest(
         name,
         true,
+        null,
+        null,
+        null,
         null,
         null,
         null,

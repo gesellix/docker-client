@@ -1,6 +1,7 @@
 package de.gesellix.docker.client
 
 import de.gesellix.docker.remote.api.Volume
+import de.gesellix.docker.remote.api.VolumeCreateOptions
 import groovy.util.logging.Slf4j
 import spock.lang.Requires
 import spock.lang.Specification
@@ -30,10 +31,10 @@ class DockerVolumeIntegrationSpec extends Specification {
 
   def "create volume"() {
     given:
-    def volumeConfig = [
-        Name      : "my-volume",
-        Driver    : "local",
-        DriverOpts: [:]]
+    def volumeConfig = new VolumeCreateOptions()
+    volumeConfig.setName("my-volume")
+    volumeConfig.setDriver("local")
+    volumeConfig.setDriverOpts([:])
 
     when:
     def volume = dockerClient.createVolume(volumeConfig).content

@@ -10,13 +10,6 @@ import java.util.Map;
 
 public interface ManageVolume {
 
-  /**
-   * @see #createVolume(VolumeCreateOptions)
-   * @deprecated use {@link #createVolume(VolumeCreateOptions)}
-   */
-  @Deprecated
-  EngineResponseContent<Volume> createVolume(Map<String, Object> config);
-
   EngineResponseContent<Volume> createVolume();
 
   EngineResponseContent<Volume> createVolume(VolumeCreateOptions volumeCreateOptions);

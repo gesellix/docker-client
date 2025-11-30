@@ -44,7 +44,7 @@ okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 okhttpMockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okioJvm = { module = "com.squareup.okio:okio-jvm", version.ref = "okio" }
-remoteApi = { module = "de.gesellix:docker-remote-api-model-1-41", version.ref = "remoteApi" }
+remoteApi = { module = "de.gesellix:docker-remote-api-model-1-44", version.ref = "remoteApi" }
 slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 
 [bundles]

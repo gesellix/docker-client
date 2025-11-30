@@ -15,13 +15,6 @@ public interface ManageNetwork {
 
   void disconnectNetwork(String network, String container);
 
-  /**
-   * @see #createNetwork(NetworkCreateRequest)
-   * @deprecated use {@link #createNetwork(NetworkCreateRequest)}
-   */
-  @Deprecated
-  EngineResponseContent<NetworkCreateResponse> createNetwork(String name, Map<String, Object> config);
-
   EngineResponseContent<NetworkCreateResponse> createNetwork(String name);
 
   EngineResponseContent<NetworkCreateResponse> createNetwork(NetworkCreateRequest networkCreateRequest);
