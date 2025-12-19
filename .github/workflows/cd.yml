@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Upload
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: event-file
           path: ${{ github.event_path }}
@@ -50,7 +50,7 @@ jobs:
         # see publish-test-results.yml for workflow that publishes test results without security issues for forks
         # https://github.com/marketplace/actions/publish-test-results#support-fork-repositories-and-dependabot-branches
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: Test Results (Java ${{ matrix.java }} on ${{ matrix.os }})
           path: '**/build/test-results/test/TEST-*.xml'
