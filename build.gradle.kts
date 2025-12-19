@@ -7,8 +7,8 @@ plugins {
 }
 
 val dependencyVersions = listOf(
-  "net.bytebuddy:byte-buddy:1.18.2",
-  "net.bytebuddy:byte-buddy-agent:1.18.2",
+  "net.bytebuddy:byte-buddy:1.18.3",
+  "net.bytebuddy:byte-buddy-agent:1.18.3",
   "org.apache.commons:commons-compress:1.28.0",
   "org.apache.commons:commons-lang3:3.20.0",
   "org.bouncycastle:bcpkix-jdk18on:1.83",
