@@ -344,7 +344,9 @@ class DeployConfigReader {
   String getTargetNetworkName(String namespace, String networkName, Map<String, StackNetwork> networkConfigs) {
     if (networkConfigs?.containsKey(networkName)) {
       StackNetwork networkConfig = networkConfigs[networkName]
-      if (networkConfig?.external?.external) {
+      if (networkConfig?.name) {
+        return networkConfig.name
+      } else if (networkConfig?.external?.external) {
         if (networkConfig?.external?.name) {
           return networkConfig.external.name
         } else {
@@ -742,10 +744,13 @@ class DeployConfigReader {
 
     List<String> externalNetworkNames = []
     serviceNetworkNames.each { String internalName ->
+      log.debug( "==> internalName: " + internalName )
       StackNetwork network = networks[internalName]
+      String networkName = network?.name ?: "${namespace}_${internalName}"
+      log.debug( "==> networkName: " + networkName )
       if (!network) {
         networkSpec[internalName] = new NetworkCreateRequest(
-            internalName,
+            networkName,
             true,
             "overlay",
             null, null, null,
@@ -754,10 +759,10 @@ class DeployConfigReader {
             getLabels(namespace, null)
         )
       } else if (network?.external?.external) {
-        externalNetworkNames << (network.external.name ?: internalName)
+        externalNetworkNames << (network.external.name ?: networkName)
       } else {
         networkSpec[internalName] = new NetworkCreateRequest(
-            internalName,
+            networkName,
             true,
             network.driver ?: "overlay",
             null,

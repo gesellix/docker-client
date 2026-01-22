@@ -175,15 +175,16 @@ class DeployConfigReaderTest extends Specification {
             driver: "driver",
             config: [new IpamConfig(subnet: '10.0.0.0')]
         ),
-        labels: new Labels(["something": "labeled"])
-    )
+        labels: new Labels(["something": "labeled"]),
+        name: "name-space_normal")
     def outsideNet = new StackNetwork(
         external: new External(
             external: true,
             name: "special"))
     def attachableNet = new StackNetwork(
         driver: "overlay",
-        attachable: true)
+        attachable: true,
+        name: "name-space_attachablenet")
 
     when:
     Map<String, NetworkCreateRequest> networks
@@ -210,15 +211,15 @@ class DeployConfigReaderTest extends Specification {
     externals == ["special"]
     networks.keySet().sort() == ["default", "normal", "attachablenet"].sort()
     networks["default"] == new NetworkCreateRequest(
-        "default", true,
+        "name-space_default", true,
         "overlay",
         null, null, null, null, null, null, null, null, null,
         [(ManageStackClient.LabelNamespace): "name-space"])
     networks["attachablenet"] == new NetworkCreateRequest(
-        "attachablenet", true, "overlay", null, false, true,
+        "name-space_attachablenet", true, "overlay", null, false, true,
         null, null, null, null, null, [:], [(ManageStackClient.LabelNamespace): "name-space"])
     networks["normal"] == new NetworkCreateRequest(
-        "normal", true, "overlay",
+        "name-space_normal", true, "overlay",
         null, false, false, null, null, null,
         new IPAM("driver",
                  [new IPAMConfig().tap { subnet = '10.0.0.0' }],
