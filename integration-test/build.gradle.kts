@@ -63,9 +63,8 @@ dependencies {
       }
     }
   }
-  implementation(project(":client"))
-  testImplementation("org.codehaus.groovy:groovy-json:[3,4)")
-//  testImplementation("org.apache.groovy:groovy-json:[4,)")
+  implementation(project(":client-groovy4"))
+  testImplementation("org.apache.groovy:groovy-json:[4,5)")
   testImplementation("com.kohlschutter.junixsocket:junixsocket-core:[2.4,)")
   testImplementation("com.kohlschutter.junixsocket:junixsocket-common:[2.4,)")
   implementation(libs.remoteApi)
@@ -79,8 +78,7 @@ dependencies {
 
   testImplementation("de.gesellix:docker-registry:2025-11-30T21-04-00")
   testImplementation("de.gesellix:testutil:[2025-01-01T01-01-01,)")
-  testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
-//  testImplementation("org.spockframework:spock-core:2.3-groovy-4.0")
+  testImplementation("org.spockframework:spock-core:2.3-groovy-4.0")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.18.4")
   testImplementation("org.apache.commons:commons-lang3:3.20.0")

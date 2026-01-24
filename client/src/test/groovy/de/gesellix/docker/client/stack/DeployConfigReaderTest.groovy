@@ -229,8 +229,8 @@ class DeployConfigReaderTest extends Specification {
         "name-space_normal", true, "overlay",
         null, false, false, null, null, null,
         new IPAM("driver",
-                 [new IPAMConfig().tap { subnet = '10.0.0.0' }],
-                 null),
+            [new IPAMConfig().tap { subnet = '10.0.0.0' }],
+            null),
         null, [opt: "value"],
         [
             (ManageStackClient.LabelNamespace): "name-space",
@@ -242,14 +242,16 @@ class DeployConfigReaderTest extends Specification {
   def "converts service endpoints"() {
     given:
     def ports = new PortConfigs([
-        new PortConfig("host",
-                       53,
-                       1053,
-                       "udp"),
-        new PortConfig(null,
-                       8080,
-                       80,
-                       null
+        new PortConfig(
+            "host",
+            53,
+            1053,
+            "udp"),
+        new PortConfig(
+            null,
+            8080,
+            80,
+            null
         )
     ])
 
@@ -351,11 +353,11 @@ class DeployConfigReaderTest extends Specification {
   }
 
   def "test ConvertVolumeToMountNamedVolume"() {
-    def stackVolumes = ["normal": new StackVolume(
-        driver: "glusterfs",
-        driverOpts: new DriverOpts(["opt": "value"]),
-        labels: new Labels(["something": "labeled"])
-    )]
+    def stackVolumes = ["normal": new StackVolume().tap {
+      driver = "glusterfs"
+      driverOpts = new DriverOpts(["opt": "value"])
+      labels = new Labels(["something": "labeled"])
+    }]
 
     when:
     def mount = reader.volumeToMount(
@@ -389,12 +391,9 @@ class DeployConfigReaderTest extends Specification {
   }
 
   def "test ConvertVolumeToMountNamedVolumeExternal"() {
-    def stackVolumes = ["outside": new StackVolume(
-        external: new External(
-            external: true,
-            name: "special"
-        )
-    )]
+    def stackVolumes = ["outside": new StackVolume().tap {
+      external = new External(true, "special")
+    }]
 
     when:
     def mount = reader.volumeToMount(
@@ -420,12 +419,9 @@ class DeployConfigReaderTest extends Specification {
   }
 
   def "test ConvertVolumeToMountNamedVolumeExternalNoCopy"() {
-    def stackVolumes = ["outside": new StackVolume(
-        external: new External(
-            external: true,
-            name: "special"
-        )
-    )]
+    def stackVolumes = ["outside": new StackVolume().tap {
+      external = new External(true, "special")
+    }]
 
     when:
     def mount = reader.volumeToMount(
@@ -477,7 +473,12 @@ class DeployConfigReaderTest extends Specification {
     when:
     reader.volumeToMount(
         "name-space",
-        new ServiceVolume(type: TypeVolume.typeName, source: "unknown", target: "/foo", readOnly: true),
+        new ServiceVolume().tap {
+          type = TypeVolume.typeName
+          source = "unknown"
+          target = "/foo"
+          readOnly = true
+        },
         [:])
     then:
     def exc = thrown(IllegalArgumentException)
@@ -488,12 +489,8 @@ class DeployConfigReaderTest extends Specification {
     when:
     def result = reader.serviceResources(
         new Resources(
-            limits: new Limits(
-                nanoCpus: "0.003",
-                memory: "300000000"),
-            reservations: new Reservations(
-                nanoCpus: "0.002",
-                memory: "200000000")
+            new Limits("0.003", "300000000"),
+            new Reservations("0.002", "200000000")
         ))
     then:
     result == new TaskSpecResources(
@@ -506,10 +503,8 @@ class DeployConfigReaderTest extends Specification {
     when:
     def result = reader.serviceResources(
         new Resources(
-            limits: new Limits(
-                memory: "300000000"),
-            reservations: new Reservations(
-                memory: "200000000")
+            new Limits().tap { memory = "300000000" },
+            new Reservations().tap { memory = "200000000" }
         ))
     then:
     result == new TaskSpecResources(
@@ -560,14 +555,14 @@ class DeployConfigReaderTest extends Specification {
 
   def "test ConvertHealthcheck"() {
     expect:
-    reader.convertHealthcheck(new Healthcheck(
-        test: new Command(parts: ["EXEC", "touch", "/foo"]),
-        timeout: "30s",
-        interval: "2ms",
-        retries: 10,
-        startPeriod: "1s",
-        startInterval: "500ms",
-    )) == new HealthConfig(
+    reader.convertHealthcheck(new Healthcheck().tap {
+      test = new Command(["EXEC", "touch", "/foo"])
+      timeout = "30s"
+      interval = "2ms"
+      retries = 10
+      startPeriod = "1s"
+      startInterval = "500ms"
+    }) == new HealthConfig(
         ["EXEC", "touch", "/foo"],
         Duration.of(2, ChronoUnit.MILLIS).toNanos().longValue(),
         Duration.of(30, ChronoUnit.SECONDS).toNanos().longValue(),
@@ -579,9 +574,9 @@ class DeployConfigReaderTest extends Specification {
 
   def "test ConvertHealthcheckDisable"() {
     expect:
-    reader.convertHealthcheck(new Healthcheck(
-        disable: true
-    )) == new HealthConfig(
+    reader.convertHealthcheck(new Healthcheck().tap {
+      disable = true
+    }) == new HealthConfig(
         ["NONE"],
         null,
         null,
@@ -593,10 +588,10 @@ class DeployConfigReaderTest extends Specification {
 
   def "test ConvertHealthcheckDisableWithTest"() {
     when:
-    reader.convertHealthcheck(new Healthcheck(
-        disable: true,
-        test: new Command(parts: ["EXEC", "touch"])
-    ))
+    reader.convertHealthcheck(new Healthcheck().tap {
+      disable = true
+      test = new Command(["EXEC", "touch"])
+    })
     then:
     def exc = thrown(IllegalArgumentException)
     exc.message =~ "test and disable can't be set"
@@ -622,16 +617,14 @@ class DeployConfigReaderTest extends Specification {
     given:
     reader.dockerClient.version() >> new EngineResponseContent(new SystemVersion())
     Map<String, StackNetwork> networkConfigs = [
-        "front": new StackNetwork(
-            external: new External(
-                external: true,
-                name: "fronttier"
-            )),
+        "front": new StackNetwork().tap {
+          external = new External(true, "fronttier")
+        },
         "back" : new StackNetwork(),
     ]
     Map<String, ServiceNetwork> networks = [
-        "front": new ServiceNetwork(aliases: ["something"]),
-        "back" : new ServiceNetwork(aliases: ["other"]),
+        "front": new ServiceNetwork().tap { aliases = ["something"] },
+        "back" : new ServiceNetwork().tap { aliases = ["other"] },
     ]
     when:
     def result = reader.convertServiceNetworks(
@@ -650,11 +643,9 @@ class DeployConfigReaderTest extends Specification {
     given:
     reader.dockerClient.version() >> new EngineResponseContent(new SystemVersion())
     Map<String, StackNetwork> networkConfigs = [
-        "default": new StackNetwork(
-            external: new External(
-                external: true,
-                name: "custom"
-            ))
+        "default": new StackNetwork().tap {
+          external = new External(true, "custom")
+        }
     ]
     Map<String, ServiceNetwork> networks = [:]
     when:
