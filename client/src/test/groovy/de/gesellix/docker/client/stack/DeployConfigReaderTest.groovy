@@ -168,22 +168,23 @@ class DeployConfigReaderTest extends Specification {
   def "converts networks"() {
     given:
     reader.dockerClient.version() >> new EngineResponseContent<SystemVersion>(new SystemVersion())
-    def normalNet = new StackNetwork(
-        driver: "overlay",
-        driverOpts: new DriverOpts(["opt": "value"]),
-        ipam: new Ipam(
-            driver: "driver",
-            config: [new IpamConfig(subnet: '10.0.0.0')]
-        ),
-        labels: new Labels(["something": "labeled"])
-    )
-    def outsideNet = new StackNetwork(
-        external: new External(
-            external: true,
-            name: "special"))
-    def attachableNet = new StackNetwork(
-        driver: "overlay",
-        attachable: true)
+    def normalNet = new StackNetwork().tap {
+      driver = "overlay"
+      driverOpts = new DriverOpts(["opt": "value"])
+      ipam = new Ipam("driver", [new IpamConfig('10.0.0.0')])
+      labels = new Labels(["something": "labeled"])
+    }
+    def outsideNet = new StackNetwork().tap {
+      external = new External(true, "special")
+    }
+    def attachableNet = new StackNetwork().tap {
+      driver = "overlay"
+      attachable = true
+    }
+    def namedNet = new StackNetwork().tap {
+      driver = "overlay"
+      name = "named-network"
+    }
 
     when:
     Map<String, NetworkCreateRequest> networks
@@ -195,12 +196,14 @@ class DeployConfigReaderTest extends Specification {
             'normal',
             'outside',
             'default',
-            'attachablenet'
+            'attachablenet',
+            'namednet'
         ],
         [
             'normal'       : normalNet,
             'outside'      : outsideNet,
-            'attachablenet': attachableNet
+            'attachablenet': attachableNet,
+            'namednet'     : namedNet
         ]
     )
 
@@ -208,17 +211,22 @@ class DeployConfigReaderTest extends Specification {
     1 * reader.dockerClient.inspectNetwork("special") >> new EngineResponseContent<Network>(new Network().tap { scope = "swarm" })
 
     externals == ["special"]
-    networks.keySet().sort() == ["default", "normal", "attachablenet"].sort()
+    networks.keySet().sort() == ["default", "normal", "attachablenet", "namednet"].sort()
     networks["default"] == new NetworkCreateRequest(
-        "default", true,
+        "name-space_default", true,
         "overlay",
         null, null, null, null, null, null, null, null, null,
         [(ManageStackClient.LabelNamespace): "name-space"])
     networks["attachablenet"] == new NetworkCreateRequest(
-        "attachablenet", true, "overlay", null, false, true,
-        null, null, null, null, null, [:], [(ManageStackClient.LabelNamespace): "name-space"])
+        "name-space_attachablenet", true, "overlay", null, false, true,
+        null, null, null, null, null, [:],
+        [(ManageStackClient.LabelNamespace): "name-space"])
+    networks["namednet"] == new NetworkCreateRequest(
+        "named-network", true, "overlay", null, false, false,
+        null, null, null, null, null, [:],
+        [(ManageStackClient.LabelNamespace): "name-space"])
     networks["normal"] == new NetworkCreateRequest(
-        "normal", true, "overlay",
+        "name-space_normal", true, "overlay",
         null, false, false, null, null, null,
         new IPAM("driver",
                  [new IPAMConfig().tap { subnet = '10.0.0.0' }],

@@ -204,7 +204,7 @@ class ManageStackClientTest extends Specification {
     }
     config.services["service1"] = serviceSpec
     config.networks["network1"] = new NetworkCreateRequest(
-        "network1",
+        "the-stack_network1",
         null, null, null, false, false,
         null, null, null,
         null, null, null, [foo: 'bar']

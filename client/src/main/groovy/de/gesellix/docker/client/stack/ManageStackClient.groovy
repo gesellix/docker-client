@@ -140,10 +140,9 @@ class ManageStackClient implements ManageStack {
       existingNetworkNames << network.name
     }
     networks.each { String name, NetworkCreateRequest network ->
-      name = "${namespace}_${name}" as String
+      name = network.name
       if (!existingNetworkNames.contains(name)) {
         log.info("create network $name: $network")
-        network.name = name
         if (!network.labels) {
           network.labels = [:]
         }

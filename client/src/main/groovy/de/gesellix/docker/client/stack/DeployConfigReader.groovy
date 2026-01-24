@@ -344,7 +344,9 @@ class DeployConfigReader {
   String getTargetNetworkName(String namespace, String networkName, Map<String, StackNetwork> networkConfigs) {
     if (networkConfigs?.containsKey(networkName)) {
       StackNetwork networkConfig = networkConfigs[networkName]
-      if (networkConfig?.external?.external) {
+      if (networkConfig?.name) {
+        return networkConfig.name
+      } else if (networkConfig?.external?.external) {
         if (networkConfig?.external?.name) {
           return networkConfig.external.name
         } else {
@@ -743,9 +745,10 @@ class DeployConfigReader {
     List<String> externalNetworkNames = []
     serviceNetworkNames.each { String internalName ->
       StackNetwork network = networks[internalName]
+      String namespacedName = network?.name ?: "${namespace}_${internalName}"
       if (!network) {
         networkSpec[internalName] = new NetworkCreateRequest(
-            internalName,
+            namespacedName,
             true,
             "overlay",
             null, null, null,
@@ -757,7 +760,7 @@ class DeployConfigReader {
         externalNetworkNames << (network.external.name ?: internalName)
       } else {
         networkSpec[internalName] = new NetworkCreateRequest(
-            internalName,
+            namespacedName,
             true,
             network.driver ?: "overlay",
             null,
@@ -817,8 +820,8 @@ class DeployConfigReader {
   }
 
   boolean isUserDefined(String networkName, boolean isWindows) {
-    List<String> blacklist = isWindows ? ["default", "none", "nat"] : ["default", "bridge", "host", "none"]
-    return !(networkName in blacklist || isContainerNetwork(networkName))
+    List<String> defaults = isWindows ? ["default", "none", "nat"] : ["default", "bridge", "host", "none"]
+    return !(networkName in defaults || isContainerNetwork(networkName))
   }
 
   void validateExternalNetworks(List<String> externalNetworks) {
