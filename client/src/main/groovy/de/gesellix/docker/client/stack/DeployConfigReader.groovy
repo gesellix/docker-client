@@ -744,13 +744,11 @@ class DeployConfigReader {
 
     List<String> externalNetworkNames = []
     serviceNetworkNames.each { String internalName ->
-      log.debug( "==> internalName: " + internalName )
       StackNetwork network = networks[internalName]
-      String networkName = network?.name ?: "${namespace}_${internalName}"
-      log.debug( "==> networkName: " + networkName )
+      String namespacedName = network?.name ?: "${namespace}_${internalName}"
       if (!network) {
         networkSpec[internalName] = new NetworkCreateRequest(
-            networkName,
+            namespacedName,
             true,
             "overlay",
             null, null, null,
@@ -759,10 +757,10 @@ class DeployConfigReader {
             getLabels(namespace, null)
         )
       } else if (network?.external?.external) {
-        externalNetworkNames << (network.external.name ?: networkName)
+        externalNetworkNames << (network.external.name ?: internalName)
       } else {
         networkSpec[internalName] = new NetworkCreateRequest(
-            networkName,
+            namespacedName,
             true,
             network.driver ?: "overlay",
             null,
@@ -822,8 +820,8 @@ class DeployConfigReader {
   }
 
   boolean isUserDefined(String networkName, boolean isWindows) {
-    List<String> blacklist = isWindows ? ["default", "none", "nat"] : ["default", "bridge", "host", "none"]
-    return !(networkName in blacklist || isContainerNetwork(networkName))
+    List<String> defaults = isWindows ? ["default", "none", "nat"] : ["default", "bridge", "host", "none"]
+    return !(networkName in defaults || isContainerNetwork(networkName))
   }
 
   void validateExternalNetworks(List<String> externalNetworks) {

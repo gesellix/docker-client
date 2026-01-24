@@ -72,7 +72,7 @@ class DockerStackComposeIntegrationSpec extends Specification {
     spec.labels == ['com.docker.stack.namespace': namespace]
     spec.mode.replicated.replicas == 1
     spec.name == "${namespace}_service"
-    spec.taskTemplate.networks.aliases == [['my-alias', 'service'], ['service']]
+    spec.taskTemplate.networks.aliases == [['my-alias', 'service'], ['service'], ['service']]
     spec.taskTemplate.restartPolicy.condition == TaskSpecRestartPolicy.Condition.OnFailure
     spec.taskTemplate.restartPolicy.delay == 5000000000
     spec.taskTemplate.restartPolicy.maxAttempts == 3
@@ -98,8 +98,12 @@ class DockerStackComposeIntegrationSpec extends Specification {
     containerSpec.configs.findAll { it.configName == "${namespace}_my-config" }.size() == 1
     containerSpec.secrets.findAll { it.secretName == "${namespace}_my-secret" }.size() == 1
 
-    def networkInfo = delayAndRetrySilently { dockerClient.inspectNetwork("${namespace}_my-subnet") }
-    networkInfo.content.name == "${namespace}_my-subnet"
+    def networkInfo1 = delayAndRetrySilently { dockerClient.inspectNetwork("${namespace}_my-subnet") }
+    networkInfo1?.content?.name == "${namespace}_my-subnet"
+    def networkInfo2 = delayAndRetrySilently { dockerClient.inspectNetwork("an-ext-network") }
+    networkInfo2?.content?.name == "an-ext-network"
+    def networkInfo3 = delayAndRetrySilently { dockerClient.inspectNetwork("my-named-network") }
+    networkInfo3?.content?.name == "my-named-network"
 
     def volumeInfo = delayAndRetrySilently { dockerClient.inspectVolume("${namespace}_example") }
     println "volumes: ${dockerClient.volumes().content}"

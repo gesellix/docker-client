@@ -24,16 +24,22 @@ services:
       ext-network:
         aliases:
           - my-alias
+      named-network:
     volumes:
       - type: volume
         source: example
         target: ${VOLUME_TARGET}
 
 networks:
+  # will be namespaced to the stack
   my-subnet:
+  # will be created outside the stack (no namespace)
   ext-network:
     external:
       name: an-ext-network
+  # will be created with the specified name (no namespace)
+  named-network:
+    name: my-named-network
 
 volumes:
   example:
