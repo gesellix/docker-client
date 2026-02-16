@@ -80,7 +80,7 @@ dependencies {
   testImplementation("de.gesellix:testutil:[2025-01-01T01-01-01,)")
   testImplementation("org.spockframework:spock-core:2.3-groovy-4.0")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
-  testRuntimeOnly("net.bytebuddy:byte-buddy:1.18.4")
+  testRuntimeOnly("net.bytebuddy:byte-buddy:1.18.5")
   testImplementation("org.apache.commons:commons-lang3:3.20.0")
   testRuntimeOnly("ch.qos.logback:logback-classic:${libs.versions.logbackVersionrange.get()}!!${libs.versions.logback.get()}")
 }
