@@ -42,7 +42,7 @@ jobs:
         if: matrix.os == 'macos-15-intel'
         uses: douglascamata/setup-docker-macos-action@v1.1.0
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
