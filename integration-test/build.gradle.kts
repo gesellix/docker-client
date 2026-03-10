@@ -11,19 +11,14 @@ java {
 
 dependencies {
   constraints {
-    implementation("de.gesellix:docker-engine") {
-      version {
-        strictly("[2025-01-01T01-01-01,)")
-      }
-    }
     implementation("de.gesellix:docker-filesocket") {
       version {
-        strictly("[2025-01-01T01-01-01,)")
+        strictly("[2026-01-01T01-01-01,)")
       }
     }
     implementation(libs.remoteApi) {
       version {
-        strictly("[2025-01-01T01-01-01,)")
+        strictly("[2026-01-01T01-01-01,)")
       }
     }
     implementation(libs.slf4j) {
@@ -68,7 +63,7 @@ dependencies {
   testImplementation("com.kohlschutter.junixsocket:junixsocket-core:[2.4,)")
   testImplementation("com.kohlschutter.junixsocket:junixsocket-common:[2.4,)")
   implementation(libs.remoteApi)
-  implementation("de.gesellix:docker-filesocket:2025-11-30T20-20-00")
+  implementation("de.gesellix:docker-filesocket:2026-03-08T13-37-00")
 
   testImplementation("net.jodah:failsafe:2.4.4")
   testImplementation("org.apache.commons:commons-compress:1.28.0")
@@ -76,8 +71,8 @@ dependencies {
   testImplementation("org.slf4j:slf4j-api:[1.7,)")
   runtimeOnly("ch.qos.logback:logback-classic:${libs.versions.logbackVersionrange.get()}!!${libs.versions.logback.get()}")
 
-  testImplementation("de.gesellix:docker-registry:2025-11-30T21-04-00")
-  testImplementation("de.gesellix:testutil:[2025-01-01T01-01-01,)")
+  testImplementation("de.gesellix:docker-registry:2026-03-08T22-45-00")
+  testImplementation("de.gesellix:testutil:[2026-01-01T01-01-01,)")
   testImplementation("org.spockframework:spock-core:2.3-groovy-4.0")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.18.7")

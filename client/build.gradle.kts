@@ -13,19 +13,14 @@ plugins {
 
 dependencies {
   constraints {
-    implementation("de.gesellix:docker-engine") {
-      version {
-        strictly("[2025-01-01T01-01-01,)")
-      }
-    }
     implementation("de.gesellix:docker-filesocket") {
       version {
-        strictly("[2025-01-01T01-01-01,)")
+        strictly("[2026-01-01T01-01-01,)")
       }
     }
     implementation(libs.remoteApi) {
       version {
-        strictly("[2025-01-01T01-01-01,)")
+        strictly("[2026-01-01T01-01-01,)")
       }
     }
     implementation(libs.slf4j) {
@@ -78,10 +73,10 @@ dependencies {
 
   // TODO consider changing this from api to implementation.
   // The change would require to move api.core client classes like `ClientException` to another module.
-  api("de.gesellix:docker-remote-api-client:2025-11-30T21-03-00")
-  implementation("de.gesellix:docker-filesocket:2025-11-30T20-20-00")
+  api("de.gesellix:docker-remote-api-client:2026-03-08T22-20-00")
+  implementation("de.gesellix:docker-filesocket:2026-03-08T13-37-00")
   api(libs.remoteApi)
-  api("de.gesellix:docker-compose:2026-01-22T20-11-00")
+  api("de.gesellix:docker-compose:2026-03-08T13-38-00")
 
   implementation(libs.groovy3)
   implementation(libs.groovy3json)
@@ -101,7 +96,7 @@ dependencies {
 
   implementation("org.bouncycastle:bcpkix-jdk18on:1.83")
 
-  testImplementation("de.gesellix:testutil:[2025-01-01T01-01-01,)")
+  testImplementation("de.gesellix:testutil:[2026-01-01T01-01-01,)")
 
   testImplementation("org.junit.platform:junit-platform-launcher:1.13.4")
   testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
