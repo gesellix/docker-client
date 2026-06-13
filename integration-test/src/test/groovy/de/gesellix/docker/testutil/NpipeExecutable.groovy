@@ -7,7 +7,7 @@ import de.gesellix.docker.remote.api.ContainerCreateRequest
 class NpipeExecutable {
 
   File createNpipeExe(DockerClientImpl docker) {
-    String repository = "gesellix/npipe:2024-09-15T22-35-00"
+    String repository = "gesellix/npipe:2.0.0-202606131520"
     docker.createContainer(new ContainerCreateRequest().tap { image = repository }, "npipe")
     InputStream archive = docker.getArchive("npipe", "/npipe.exe").content
     def npipeExe = new File("npipe.exe")
