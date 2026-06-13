@@ -99,7 +99,7 @@ dependencies {
   testImplementation("de.gesellix:testutil:[2.0.0-202606131033,)")
 
   testImplementation("org.junit.platform:junit-platform-launcher:6.1.0")
-  testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
+  testImplementation("org.spockframework:spock-core:2.4-groovy-3.0")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.18.10")
   testRuntimeOnly("org.objenesis:objenesis:3.5")
   testImplementation("io.github.joke:spock-mockable:2.3.0")
