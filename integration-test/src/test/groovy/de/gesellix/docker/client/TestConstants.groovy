@@ -18,7 +18,7 @@ class TestConstants {
     // docker inspect --format "{{ json .Created }}, Id: {{ json .Id }}, Digests: {{ json .RepoDigests }}" gesellix/echo-server:2.0.0-202606131519
     if (LocalDocker.isNativeWindows()) {
       imageDigest = "gesellix/echo-server@sha256:2b721139e29a631c701f544855c0a466caad1e591433b5fa91f4988a8a52277a"
-      imageId = "sha256:8d5dfeabe0e079a04ceac6be266dbc13230ec1e018ac04ff1f244f62b465e49e"
+      imageId = "sha256:83645f4f5e4284555f624b0a7c61af2aee44e75e196072c5311a75d300058f73"
       imageCreated = 1753647324
       volumeTarget = "C:/my-volume"
     } else {
