@@ -15,14 +15,14 @@ class TestConstants {
   static TestConstants CONSTANTS = new TestConstants()
 
   TestConstants() {
-    // docker inspect --format "{{ json .Created }}, Id: {{ json .Id }}, Digests: {{ json .RepoDigests }}" gesellix/echo-server:2025-07-27T22-12-00
+    // docker inspect --format "{{ json .Created }}, Id: {{ json .Id }}, Digests: {{ json .RepoDigests }}" gesellix/echo-server:2.0.0-202606131519
     if (LocalDocker.isNativeWindows()) {
-      imageDigest = "gesellix/echo-server@sha256:e07c7a757334d40c56035c74d4e46a6c4b0295fe6cb8fd22c0db81b5f8670365"
+      imageDigest = "gesellix/echo-server@sha256:2b721139e29a631c701f544855c0a466caad1e591433b5fa91f4988a8a52277a"
       imageId = "sha256:8d5dfeabe0e079a04ceac6be266dbc13230ec1e018ac04ff1f244f62b465e49e"
       imageCreated = 1753647324
       volumeTarget = "C:/my-volume"
     } else {
-      imageDigest = "gesellix/echo-server@sha256:e07c7a757334d40c56035c74d4e46a6c4b0295fe6cb8fd22c0db81b5f8670365"
+      imageDigest = "gesellix/echo-server@sha256:2b721139e29a631c701f544855c0a466caad1e591433b5fa91f4988a8a52277a"
       // this one works on GitHub
       imageId = "sha256:c59e7878cd83c4bc1703f8be1e440c00eed24ccb0e196dae234abea2fb39277f"
       imageCreated = 1753647218
@@ -32,7 +32,7 @@ class TestConstants {
       volumeTarget = "/my-volume"
     }
     imageRepo = "gesellix/echo-server"
-    imageTag = "2025-07-27T22-12-00"
+    imageTag = "2.0.0-202606131519"
     imageName = "$imageRepo:$imageTag"
 
     versionDetails = [
