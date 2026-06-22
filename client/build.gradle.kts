@@ -76,7 +76,7 @@ dependencies {
   api("de.gesellix:docker-remote-api-client:2.0.1-202606132059")
   implementation("de.gesellix:docker-filesocket:2.0.1-202606132052")
   api(libs.remoteApi)
-  api("de.gesellix:docker-compose:2.0.0-202606131123")
+  api("de.gesellix:docker-compose:2.0.1-202606212108")
 
   implementation(libs.groovy3)
   implementation(libs.groovy3json)
