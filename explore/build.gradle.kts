@@ -67,7 +67,7 @@ dependencies {
   runtimeOnly("ch.qos.logback:logback-classic:${libs.versions.logbackVersionrange.get()}!!${libs.versions.logback.get()}")
 
   testImplementation("org.spockframework:spock-core:2.4-groovy-4.0")
-  testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.0")
+  testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.1")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.18.10")
   testRuntimeOnly("ch.qos.logback:logback-classic:${libs.versions.logbackVersionrange.get()}!!${libs.versions.logback.get()}")
 }
