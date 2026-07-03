@@ -100,7 +100,7 @@ dependencies {
 
   testImplementation("org.junit.platform:junit-platform-launcher:6.1.1")
   testImplementation("org.spockframework:spock-core:2.4-groovy-3.0")
-  testRuntimeOnly("net.bytebuddy:byte-buddy:1.18.10")
+  testRuntimeOnly("net.bytebuddy:byte-buddy:1.18.11")
   testRuntimeOnly("org.objenesis:objenesis:3.5")
   testImplementation("org.mockito:mockito-core:5.23.0")
 
