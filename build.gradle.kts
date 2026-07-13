@@ -12,7 +12,7 @@ val dependencyVersions = listOf(
   "org.objenesis:objenesis:3.5",
   "org.apache.commons:commons-compress:1.28.0",
   "org.apache.commons:commons-lang3:3.20.0",
-  "org.bouncycastle:bcpkix-jdk18on:1.84",
+  "org.bouncycastle:bcpkix-jdk18on:1.85",
   "org.codehaus.groovy:groovy:3.0.23",
   "org.codehaus.groovy:groovy-json:3.0.23",
   "org.apache.groovy:groovy:4.0.24",
@@ -57,7 +57,7 @@ allprojects {
       // https://docs.gradle.org/current/userguide/resolution_rules.html
       dependencySubstitution {
         substitute(module("org.bouncycastle:bcpkix-jdk15on"))
-            .using(module("org.bouncycastle:bcpkix-jdk18on:1.84"))
+            .using(module("org.bouncycastle:bcpkix-jdk18on:1.85"))
       }
     }
   }
