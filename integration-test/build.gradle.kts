@@ -74,7 +74,7 @@ dependencies {
   testImplementation("de.gesellix:docker-registry:2.0.202607051031")
   testImplementation("de.gesellix:testutil:[2.0.0-202606131033,)")
   testImplementation("org.spockframework:spock-core:2.4-groovy-4.0")
-  testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.1")
+  testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.2")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.18.11")
   testImplementation("org.apache.commons:commons-lang3:3.20.0")
   testRuntimeOnly("ch.qos.logback:logback-classic:${libs.versions.logbackVersionrange.get()}!!${libs.versions.logback.get()}")
