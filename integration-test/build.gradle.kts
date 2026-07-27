@@ -63,7 +63,7 @@ dependencies {
   testImplementation("com.kohlschutter.junixsocket:junixsocket-core:[2.4,)")
   testImplementation("com.kohlschutter.junixsocket:junixsocket-common:[2.4,)")
   implementation(libs.remoteApi)
-  implementation("de.gesellix:docker-filesocket:2.0.202607051046")
+  implementation("de.gesellix:docker-filesocket:2.0.202607262218")
 
   testImplementation("net.jodah:failsafe:2.4.4")
   testImplementation("org.apache.commons:commons-compress:1.28.0")
