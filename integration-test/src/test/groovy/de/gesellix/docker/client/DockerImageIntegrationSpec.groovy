@@ -304,14 +304,13 @@ class DockerImageIntegrationSpec extends Specification {
 
     then:
     !infos.empty
-    infos.find { it.status.contains("digest") || it.status.contains("aux") }.status =~ "sha256:\\w+"
+    infos.find { it.status?.contains("digest") || it.status?.contains("aux") }.status =~ "sha256:\\w+"
 //    pushResult.content.last().aux.Digest =~ "sha256:\\w+"
 
     cleanup:
     dockerClient.rmi(imageName)
   }
 
-  @Ignore
   void "push image with registry (registry api v2)"() {
     given:
     def authDetails = dockerClient.readDefaultAuthConfig()
@@ -351,7 +350,7 @@ class DockerImageIntegrationSpec extends Specification {
 
     then:
     !infos.empty
-    infos.find { it.status.contains("digest") || it.status.contains("aux") }.status =~ "sha256:\\w+"
+    infos.find { it.status?.contains("digest") || it.status?.contains("aux") }.status =~ "sha256:\\w+"
 //    pushResult.content.last().aux.Digest =~ "sha256:\\w+"
 
     cleanup:
