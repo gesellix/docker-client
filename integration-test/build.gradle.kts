@@ -1,6 +1,6 @@
 plugins {
   groovy
-  id("com.github.ben-manes.versions")
+  id("io.github.ben-manes.versions")
 }
 
 java {
