@@ -17,7 +17,7 @@ okio = "3.18.1"
 okioVersionrange = "[3.16.0,4)"
 remoteApi = "2.0.202607262220"
 remoteApiVersionrange = "[2.0.0-202606131148,)"
-slf4j = "2.0.18"
+slf4j = "2.0.19"
 slf4jVersionrange = "[1.7,3)"
 
 [libraries]
