@@ -104,7 +104,7 @@ dependencies {
   testRuntimeOnly("org.objenesis:objenesis:3.6")
   testImplementation("org.mockito:mockito-core:5.23.0")
 
-  testImplementation("org.apache.commons:commons-lang3:3.20.0")
+  testImplementation("org.apache.commons:commons-lang3:3.21.0")
 }
 
 java {
