@@ -73,7 +73,7 @@ dependencies {
 
   testImplementation("de.gesellix:docker-registry:2.0.202607262217")
   testImplementation("de.gesellix:testutil:[2.0.0-202606131033,)")
-  testImplementation("org.spockframework:spock-core:2.4-groovy-4.0")
+  testImplementation("org.spockframework:spock-core:2.5-groovy-3.0")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.3")
   testRuntimeOnly("net.bytebuddy:byte-buddy:1.18.13")
   testImplementation("org.apache.commons:commons-lang3:3.20.0")
